@@ -960,6 +960,139 @@ textarea {
   padding: 24px;
 }
 
+.editor-shell {
+  display: grid;
+  gap: 18px;
+  margin: 0 0 18px;
+}
+
+.editor-header {
+  align-items: end;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.editor-header h2 {
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.1;
+  margin: 10px 0 0;
+}
+
+.editor-header p {
+  color: #4b5563;
+  line-height: 1.7;
+  margin: 12px 0 0;
+}
+
+.editor-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.editor-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.editor-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editor-card h3 {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 16px;
+  margin: 0;
+  padding: 14px 16px;
+}
+
+.editor-card-body {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.editor-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.editor-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.editor-item strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.editor-field {
+  color: #374151;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.editor-field input,
+.editor-field textarea {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #111827;
+  font: inherit;
+  padding: 12px 13px;
+  width: 100%;
+}
+
+.editor-field textarea {
+  resize: vertical;
+}
+
+.editor-field input:focus,
+.editor-field textarea:focus {
+  border-color: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
+  outline: none;
+}
+
+.editor-preview {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editor-preview img {
+  aspect-ratio: 16 / 10;
+  display: block;
+  object-fit: cover;
+  width: 100%;
+}
+
+.content-loading {
+  background: #111827;
+  bottom: 88px;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  left: 18px;
+  padding: 10px 12px;
+  position: fixed;
+  z-index: 28;
+}
+
 .spin {
   animation: spin 1s linear infinite;
 }
@@ -1103,5 +1236,15 @@ textarea {
   .admin-status-button {
     min-width: 0;
     width: 100%;
+  }
+
+  .editor-header,
+  .editor-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .editor-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -55,6 +55,47 @@ export type WorkProcessStep = {
   icon: LucideIcon;
 };
 
+export type EditableServiceCard = {
+  title: string;
+  text: string;
+};
+
+export type EditableCaseCard = {
+  title: string;
+  area: string;
+  problem: string;
+  solution: string;
+  image: string;
+};
+
+export type EditableProcessStep = {
+  title: string;
+  text: string;
+};
+
+export type HomepageContent = {
+  hero: {
+    title: string;
+    description: string;
+    image: string;
+    mediaNote: string;
+  };
+  about: {
+    eyebrow: string;
+    title: string;
+    description: string;
+    strengths: string[];
+  };
+  symptoms: string[];
+  services: EditableServiceCard[];
+  cases: EditableCaseCard[];
+  process: EditableProcessStep[];
+  contact: {
+    title: string;
+    description: string;
+  };
+};
+
 export type InquiryStatus = "new" | "contacted" | "done" | "spam";
 
 export type InquiryRow = {

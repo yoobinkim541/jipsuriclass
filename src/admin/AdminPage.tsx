@@ -13,6 +13,7 @@ import { supabase } from "../lib/supabaseClient";
 import { AuthService } from "../services/AuthService";
 import { AdminService } from "../services/AdminService";
 import type { InquiryRow, InquiryStatus } from "../types";
+import { HomepageEditor } from "./HomepageEditor";
 
 const authService = new AuthService();
 const adminService = new AdminService();
@@ -167,6 +168,8 @@ export function AdminPage() {
           )}
         </div>
       </section>
+
+      <HomepageEditor isAuthenticated={Boolean(sessionEmail)} />
 
       <section className="admin-toolbar">
         {statusOrder.map((status) => (

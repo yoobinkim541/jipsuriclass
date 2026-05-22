@@ -273,3 +273,28 @@ Verification:
 
 Follow-up:
 - Confirm the live site shows the new header login links after the updated service worker ships.
+
+## 2026-05-22 - Admin Homepage Editor
+
+Changed files:
+- `src/App.tsx`
+- `src/admin/AdminPage.tsx`
+- `src/admin/HomepageEditor.tsx`
+- `src/services/SiteContentService.ts`
+- `src/types.ts`
+- `src/styles.css`
+- Supabase `public.site_content` and `public.admin_users`
+
+Implemented behavior:
+- Added a Supabase-backed homepage content store for the editable landing page sections.
+- Added a dedicated admin editor panel for the hero, about, services, cases, process, and contact copy.
+- Added image URL fields with live previews for the hero and case cards.
+- Kept the homepage on the same public route, but changed it to load and merge editable content from Supabase.
+- Seeded `public.site_content` with a homepage row and kept admin-only update access through RLS.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- To edit the homepage, log in at `/admin` with the Google account and save from the homepage editor.
+- If you want file uploads instead of image URLs, the next step is Supabase Storage.

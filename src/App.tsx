@@ -12,12 +12,14 @@ import {
 import { business, cases, navItems, pinnedPosts, process, services, symptoms } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { InquiryService } from "./services/InquiryService";
+import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import type { PortfolioPost } from "./types";
 import { AdminPage } from "./admin/AdminPage";
 import { AccountPage } from "./account/AccountPage";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const inquiryService = new InquiryService();
+const siteContentService = new SiteContentService();
 
 function App() {
   if (window.location.pathname.startsWith("/admin")) {
@@ -27,16 +29,35 @@ function App() {
     return <AccountPage />;
   }
 
+  return <HomePage />;
+}
+
+function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [blogPosts, setBlogPosts] = useState<PortfolioPost[]>(pinnedPosts);
   const [blogSource, setBlogSource] = useState<"loading" | "naver" | "fallback">("loading");
   const [estimateStatus, setEstimateStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [homeContent, setHomeContent] = useState(defaultHomepageContent);
+  const [contentReady, setContentReady] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
+    void siteContentService.loadHomepageContent().then((content) => {
+      if (!mounted) return;
+      setHomeContent(content);
+      setContentReady(true);
+    });
+
     blogPortfolioService.loadPortfolioPosts().then(({ posts, source }) => {
+      if (!mounted) return;
       setBlogPosts(posts);
       setBlogSource(source);
     });
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   async function handleEstimateSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -63,16 +84,17 @@ function App() {
     <>
       <SiteHeader menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} />
       <main id="top">
-        <HeroSection />
-        <AboutSection />
-        <SymptomsSection />
-        <ServicesSection />
+        <HeroSection content={homeContent.hero} />
+        <AboutSection content={homeContent.about} />
+        <SymptomsSection symptoms={homeContent.symptoms} />
+        <ServicesSection services={homeContent.services} />
         <SpecialtiesSection />
-        <CasesSection />
+        <CasesSection cases={homeContent.cases} />
         <BlogSection posts={blogPosts} source={blogSource} />
-        <ProcessSection />
-        <ContactSection status={estimateStatus} onSubmit={handleEstimateSubmit} />
+        <ProcessSection steps={homeContent.process} />
+        <ContactSection content={homeContent.contact} status={estimateStatus} onSubmit={handleEstimateSubmit} />
       </main>
+      {!contentReady ? <div className="content-loading">페이지 내용을 불러오는 중</div> : null}
       <SiteFooter />
       <MobileQuickCta />
     </>
@@ -149,27 +171,21 @@ function SiteHeader({
  * 첫 화면 전환 영역
  * 브랜드 포지션, 즉시 상담 CTA, 신뢰 포인트를 한 화면에 배치합니다.
  */
-function HeroSection() {
+function HeroSection({ content }: { content: { title: string; description: string; image: string; mediaNote: string } }) {
   return (
     <section className="hero section">
       <div className="hero-copy">
-        <h1>누수부터 부분수리까지, 집 문제를 정확히 고칩니다</h1>
-        <p>
-          사진 상담으로 증상을 먼저 확인하고, 필요한 작업만 설명합니다. 생활 집수리, 누수 복구,
-          원상복구까지 현장 중심으로 처리합니다.
-        </p>
+        <h1>{content.title}</h1>
+        <p>{content.description}</p>
         <CtaButtons />
         <LoginButtons />
         <ProofList />
       </div>
       <div className="hero-media" aria-label="집수리 현장 이미지">
-        <img
-          src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1100&q=80"
-          alt="공구를 사용해 집수리 현장을 점검하는 모습"
-        />
+        <img src={content.image} alt={content.mediaNote} />
         <div className="media-note">
           <CheckCircle2 size={18} />
-          현장 사진 확인 후 작업 범위를 안내합니다
+          {content.mediaNote}
         </div>
       </div>
     </section>
@@ -226,16 +242,20 @@ function ProofList() {
   );
 }
 
-function AboutSection() {
+function AboutSection({
+  content
+}: {
+  content: { eyebrow: string; title: string; description: string; strengths: string[] };
+}) {
   return (
     <section className="about section" id="about" aria-labelledby="about-title">
       <div className="about-copy">
-        <span>{business.name}</span>
-        <h2 id="about-title">작은 불편도 현장에서 끝까지 확인합니다</h2>
-        <p>{business.introduction}</p>
+        <span>{content.eyebrow}</span>
+        <h2 id="about-title">{content.title}</h2>
+        <p>{content.description}</p>
       </div>
       <ul className="about-strengths">
-        {business.strengths.map((item) => (
+        {content.strengths.map((item) => (
           <li key={item}>
             <CheckCircle2 size={20} />
             {item}
@@ -247,7 +267,7 @@ function AboutSection() {
 }
 
 /** 증상 기반 진입 영역: 고객이 전문 공종명을 몰라도 문의할 수 있게 돕습니다. */
-function SymptomsSection() {
+function SymptomsSection({ symptoms }: { symptoms: string[] }) {
   return (
     <section className="symptoms section" aria-labelledby="symptoms-title">
       <SectionHeading
@@ -268,7 +288,11 @@ function SymptomsSection() {
 }
 
 /** 서비스 카드 영역: 새 공종 추가 시 data.ts의 services 배열만 수정하면 됩니다. */
-function ServicesSection() {
+function ServicesSection({
+  services: editableServices
+}: {
+  services: { title: string; text: string }[];
+}) {
   return (
     <section className="services section" id="services" aria-labelledby="services-title">
       <SectionHeading
@@ -277,13 +301,16 @@ function ServicesSection() {
         description="큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다."
       />
       <div className="service-grid">
-        {services.map((service) => (
-          <article className="service-card" key={service.title}>
-            <service.icon size={26} />
-            <h3>{service.title}</h3>
-            <p>{service.text}</p>
-          </article>
-        ))}
+        {services.map((service, index) => {
+          const item = editableServices[index] ?? { title: service.title, text: service.text };
+          return (
+            <article className="service-card" key={item.title}>
+              <service.icon size={26} />
+              <h3>{item.title}</h3>
+              <p>{item.text}</p>
+            </article>
+          );
+        })}
       </div>
     </section>
   );
@@ -309,7 +336,7 @@ function SpecialtiesSection() {
 }
 
 /** 수동 대표 사례 영역: 실제 사진이 들어오면 data.ts의 cases.image만 교체합니다. */
-function CasesSection() {
+function CasesSection({ cases: editableCases }: { cases: { title: string; area: string; problem: string; solution: string; image: string }[] }) {
   return (
     <section className="cases section" id="cases" aria-labelledby="cases-title">
       <RowHeading
@@ -320,7 +347,7 @@ function CasesSection() {
         href={business.naverBlogUrl}
       />
       <div className="case-grid">
-        {cases.map((item) => (
+        {editableCases.map((item) => (
           <article className="case-card" key={item.title}>
             <img src={item.image} alt={item.title} />
             <div>
@@ -375,7 +402,7 @@ function BlogSection({ posts, source }: { posts: PortfolioPost[]; source: "loadi
 }
 
 /** 작업 절차 영역: 상담에서 시공 확인까지의 기대 흐름을 고정합니다. */
-function ProcessSection() {
+function ProcessSection({ steps }: { steps: { title: string; text: string }[] }) {
   return (
     <section className="process section" id="process" aria-labelledby="process-title">
       <SectionHeading
@@ -388,8 +415,8 @@ function ProcessSection() {
           <article key={step.title}>
             <span>{index + 1}</span>
             <step.icon size={24} />
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
+            <h3>{steps[index]?.title ?? step.title}</h3>
+            <p>{steps[index]?.text ?? step.text}</p>
           </article>
         ))}
       </div>
@@ -399,20 +426,19 @@ function ProcessSection() {
 
 /** 문의 영역: 지금은 데모 제출 상태이며, 추후 API 또는 폼 서비스 연결 지점입니다. */
 function ContactSection({
+  content,
   status,
   onSubmit
 }: {
+  content: { title: string; description: string };
   status: "idle" | "submitting" | "success" | "error";
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
     <section className="contact section" id="contact" aria-labelledby="contact-title">
       <div className="contact-copy">
-        <h2 id="contact-title">사진을 보내주시면 작업 가능 여부부터 확인합니다</h2>
-        <p>
-          급한 누수, 부분 파손, 퇴거 전 복구처럼 상황이 명확할수록 상담이 빠릅니다. 모바일에서는
-          하단 버튼으로 바로 연락할 수 있습니다.
-        </p>
+        <h2 id="contact-title">{content.title}</h2>
+        <p>{content.description}</p>
         <div className="contact-actions">
           <a className="primary-button" href={business.phoneHref}>
             <Phone size={20} />
