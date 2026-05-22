@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { geocodeNaverAddress } from "../services/NaverMapsService";
+import { business } from "../data";
+import { geocodeNaverAddress, loadNaverMapsSdk } from "../services/NaverMapsService";
 
 type MapStatus = "loading" | "ready" | "error" | "missing-key";
 
@@ -40,6 +41,7 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
       }
 
       try {
+        await loadNaverMapsSdk(clientId);
         const resolved = await geocodeNaverAddress(address);
 
         if (!active) return;
@@ -76,7 +78,8 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
       } catch (error) {
         if (!active) return;
         setStatus("error");
-        setMessage(error instanceof Error ? error.message : "지도를 불러오지 못했습니다.");
+        console.error(error);
+        setMessage("네이버 지도 연결에 실패했습니다. 아래 지도를 확인해 주세요.");
       }
     }
 
@@ -92,7 +95,7 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
   return (
     <div className="office-map-shell">
       <div className="office-map" aria-label="네이버 지도에서 사무실 위치">
-        <div ref={mapRef} className="office-map-canvas" />
+        {status === "ready" ? <div ref={mapRef} className="office-map-canvas" /> : <iframe src={business.mapUrl} title={`${title} 네이버 지도`} className="office-map-iframe" loading="lazy" />}
         <div className="office-map-overlay">
           <span className="office-label">NAVER MAP</span>
           <strong>{title}</strong>

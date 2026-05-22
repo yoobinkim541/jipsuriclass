@@ -220,6 +220,64 @@ function inquiryApi(): Plugin {
   };
 }
 
+function naverGeocodeApi(): Plugin {
+  return {
+    name: "naver-geocode-api",
+    configureServer(server) {
+      server.middlewares.use("/api/naver-geocode", async (req, res) => {
+        const env = loadEnv(server.config.mode, process.cwd(), "");
+        const clientId = env.NAVER_CLIENT_ID;
+        const clientSecret = env.NAVER_CLIENT_SECRET;
+        const address = new URL(req.url || "", "http://localhost").searchParams.get("address") || "";
+
+        if (!clientId || !clientSecret) {
+          res.statusCode = 503;
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.end(JSON.stringify({ error: "missing_naver_credentials" }));
+          return;
+        }
+
+        if (!address.trim()) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.end(JSON.stringify({ error: "missing_address" }));
+          return;
+        }
+
+        try {
+          const response = await fetch(`https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`, {
+            headers: {
+              "x-ncp-apigw-api-key-id": clientId,
+              "x-ncp-apigw-api-key": clientSecret,
+              Accept: "application/json"
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Naver geocode returned ${response.status}`);
+          }
+
+          const data = await response.json();
+          const firstAddress = Array.isArray(data.addresses) ? data.addresses[0] : undefined;
+          const lat = Number(firstAddress?.y);
+          const lng = Number(firstAddress?.x);
+
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            throw new Error("Geocoding response missing coordinates");
+          }
+
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.end(JSON.stringify({ lat, lng }));
+        } catch (error) {
+          res.statusCode = 502;
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          res.end(JSON.stringify({ error: String(error) }));
+        }
+      });
+    }
+  };
+}
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -304,5 +362,5 @@ function formatIntakeSummary(intake: Record<string, unknown>) {
 }
 
 export default defineConfig({
-  plugins: [react(), naverBlogApi(), inquiryApi()]
+  plugins: [react(), naverBlogApi(), inquiryApi(), naverGeocodeApi()]
 });

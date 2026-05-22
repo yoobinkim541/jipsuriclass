@@ -460,3 +460,26 @@ Verification:
 
 Follow-up:
 - Confirm the live deployment after redeploying, especially the office map, mobile spacing, and tablet layout.
+
+## 2026-05-23 - Naver Map Geocode Fallback
+
+Changed files:
+- `api/naver-geocode.ts`
+- `src/components/NaverMapEmbed.tsx`
+- `src/services/NaverMapsService.ts`
+- `src/styles.css`
+- `vite.config.ts`
+- `.env`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved NAVER map geocoding to a server-side `/api/naver-geocode` endpoint so the browser no longer depends on `naver.maps.Service.geocode`.
+- Kept the interactive map SDK load for the office section, but added a fallback to the existing Naver map URL if geocoding or SDK rendering fails.
+- Replaced the user-facing technical error text with a short fallback message so the page does not expose internal exceptions.
+
+Verification:
+- `npm run build` passed.
+- Local geocode request returned `403`, so the fallback path is now the safe default instead of a crash.
+
+Follow-up:
+- If the server-side geocode permission is fixed later, the interactive map will automatically resume without another code change.

@@ -3,32 +3,8 @@ export type NaverMapCoordinates = {
   lng: number;
 };
 
-type NaverMapWindow = Window & {
-  naver?: {
-    maps?: {
-      Map: new (element: HTMLElement | string, options?: Record<string, unknown>) => unknown;
-      Marker: new (options?: Record<string, unknown>) => unknown;
-      LatLng: new (lat: number, lng: number) => { lat: () => number; lng: () => number };
-      Service: {
-        Status: {
-          OK: string;
-          ERROR: string;
-        };
-        geocode: (
-          options: { query: string },
-          callback: (status: string, response: { v2?: { addresses?: Array<{ x?: string; y?: string }> } }) => void
-        ) => void;
-      };
-    };
-  };
-};
-
 const scriptId = "naver-maps-sdk";
 let loadPromise: Promise<void> | null = null;
-
-function getWindow() {
-  return window as NaverMapWindow;
-}
 
 export function isLikelyMobileDevice() {
   if (typeof navigator === "undefined") {
@@ -92,8 +68,7 @@ export function buildNaverMapNavigationUrl(coords: NaverMapCoordinates, name: st
 
 export function buildNaverMapsScriptUrl(clientId: string) {
   const query = new URLSearchParams({
-    ncpKeyId: clientId,
-    submodules: "geocoder"
+    ncpKeyId: clientId
   });
 
   return `https://oapi.map.naver.com/openapi/v3/maps.js?${query.toString()}`;
@@ -141,39 +116,19 @@ export function loadNaverMapsSdk(clientId: string) {
 }
 
 export async function geocodeNaverAddress(address: string) {
-  const clientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID as string | undefined;
+  const response = await fetch(`/api/naver-geocode?address=${encodeURIComponent(address)}`);
 
-  if (!clientId) {
-    throw new Error("Missing VITE_NAVER_MAP_CLIENT_ID");
+  if (!response.ok) {
+    throw new Error(`Geocoding failed: ${response.status}`);
   }
 
-  await loadNaverMapsSdk(clientId);
+  const data = (await response.json()) as { lat?: number; lng?: number; error?: string };
+  const lat = Number(data.lat);
+  const lng = Number(data.lng);
 
-  return new Promise<NaverMapCoordinates>((resolve, reject) => {
-    const naver = getWindow().naver;
-    const maps = naver?.maps;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    throw new Error(data.error || "Geocoding response missing coordinates.");
+  }
 
-    if (!maps) {
-      reject(new Error("Naver Maps SDK is unavailable."));
-      return;
-    }
-
-    maps.Service.geocode({ query: address }, (status, response) => {
-      if (status !== maps.Service.Status.OK) {
-        reject(new Error(`Geocoding failed: ${status}`));
-        return;
-      }
-
-      const firstAddress = response.v2?.addresses?.[0];
-      const lat = Number(firstAddress?.y);
-      const lng = Number(firstAddress?.x);
-
-      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-        reject(new Error("Geocoding response missing coordinates."));
-        return;
-      }
-
-      resolve({ lat, lng });
-    });
-  });
+  return { lat, lng };
 }
