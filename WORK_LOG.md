@@ -434,6 +434,11 @@ Follow-up:
 - 변경 파일: `src/estimate/EstimatePage.tsx`, `src/styles.css`
 - 구현 동작: `견적상담` 페이지를 8단계 상담 신청서로 재구성했습니다. 1~6단계는 공간 종류, 평수, 집 상태, 상담 이유, 상담 공간 다중 선택, 예산으로 나누고, 7단계는 시공 희망 시점, 8단계는 이름/휴대폰/주소/상세주소/요청사항/개인정보 동의/사진 첨부로 분리했습니다. 첫 화면은 풀사이즈 히어로와 소개 문구만 보여주고 `진행하기`를 눌러 설문으로 들어가게 했습니다.
 - 검증 결과: `npm run build` 통과
+- 커밋/배포: `2a2a126`로 커밋 후 GitHub push 완료, Vercel production 재배포 및 `https://www.jipsuriclass.kr` alias 갱신 완료
+
+- 변경 파일: `src/estimate/EstimatePage.tsx`, `src/styles.css`
+- 구현 동작: 견적상담 첫 화면을 스크롤 없는 풀뷰 히어로로 바꾸고, 상담 화면은 왼쪽 1/3에 모던 인테리어 이미지 패널, 오른쪽 2/3에 8단계 질문 패널을 두는 구조로 재정리했습니다. 모바일에서는 이미지와 폼을 세로로 쌓고 패딩/버튼/선택칩 크기를 줄여 따로 최적화했습니다. 이미지는 `src/assets/images.ts` 한 파일의 자산 경로를 그대로 사용해 관리합니다.
+- 검증 결과: `npm run build` 통과
 - 검증 결과: `npm run build` 통과, Supabase `admin_users` RLS 활성화 확인
 - 남은 후속 작업: 브라우저 실화면에서 첨부 미리보기, 오시는 길 iframe, 사례 카드 링크 동작 확인 후 GitHub push 및 Vercel 재배포
 

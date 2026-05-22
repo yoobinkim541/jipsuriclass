@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, CheckCircle2, Home, Phone, Send, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Phone, Send, ShieldCheck } from "lucide-react";
 import { images } from "../assets/images";
 import { business } from "../data";
 import { InquiryService } from "../services/InquiryService";
@@ -262,7 +262,7 @@ export function EstimatePage() {
   }
 
   return (
-    <main className="estimate-shell">
+    <main className={`estimate-shell ${stage === "intro" ? "estimate-shell-intro" : "estimate-shell-survey"}`}>
       <header className="estimate-header">
         <a className="admin-home" href="/">
           <ArrowLeft size={18} />
@@ -299,8 +299,21 @@ export function EstimatePage() {
           </div>
         </section>
       ) : (
-        <section className="estimate-grid estimate-consult-grid">
-          <form className="estimate-panel estimate-consult-panel" onSubmit={handleSubmit}>
+        <section className="estimate-survey-layout">
+          <aside className="estimate-survey-visual" aria-hidden="true">
+            <img src={images.consultHero} alt="" />
+            <div className="estimate-survey-visual-overlay" />
+            <div className="estimate-survey-visual-copy">
+              <span className="admin-kicker">
+                <ShieldCheck size={16} />
+                견적상담
+              </span>
+              <strong>깔끔하고 모던한 인테리어의 집을 먼저 보여드리고,</strong>
+              <p>상담에 필요한 정보만 차근차근 받아서 더 빠르게 연결합니다.</p>
+            </div>
+          </aside>
+
+          <form className="estimate-panel estimate-consult-panel estimate-survey-form" onSubmit={handleSubmit}>
             <div className="estimate-panel-head estimate-consult-head">
               <div>
                 <span>{currentStep.title}</span>
@@ -331,7 +344,7 @@ export function EstimatePage() {
                           ? draft.reason
                           : currentStep.field === "budget"
                             ? draft.budget
-                          : draft.startTiming
+                            : draft.startTiming
                 }
                 options={currentStep.options}
                 onSelect={(value) => {
@@ -510,7 +523,7 @@ export function EstimatePage() {
                   <ArrowRight size={18} />
                 </button>
               ) : (
-                <button className="primary-button" type="submit" disabled={status === "submitting"}>
+                <button className="primary-button" type="submit" disabled={status === "submitting" || !draft.consent}>
                   <Send size={19} />
                   {status === "submitting" ? "저장 중" : "견적상담 보내기"}
                 </button>
@@ -520,28 +533,6 @@ export function EstimatePage() {
             {status === "success" ? <p className="form-success">문의가 저장되었습니다. 확인 후 연락드리겠습니다.</p> : null}
             {status === "error" ? <p className="form-error">{error || "문의 저장에 실패했습니다."}</p> : null}
           </form>
-
-          <aside className="estimate-aside">
-            <div className="estimate-aside-card">
-              <Home size={20} />
-              <strong>선택 내용</strong>
-              <ul>
-                <li>공간: {draft.spaceType || "-"}</li>
-                <li>평수: {draft.areaBand || "-"}</li>
-                <li>집 상태: {draft.propertyStatus || "-"}</li>
-                <li>상담 이유: {draft.reason || "-"}</li>
-                <li>상담 공간: {draft.selectedRooms.join(", ") || "-"}</li>
-                <li>예산: {draft.budget || "-"}</li>
-                <li>시공 희망 시점: {draft.startTiming || "-"}</li>
-                <li>주소: {[draft.postalCode, draft.address, draft.detailAddress].filter(Boolean).join(" ") || "-"}</li>
-              </ul>
-            </div>
-            <div className="estimate-aside-card">
-              <CheckCircle2 size={20} />
-              <strong>진행 방식</strong>
-              <p>질문을 한 번에 많이 보여주지 않고 단계별로 나눠서 작성 시간을 줄입니다.</p>
-            </div>
-          </aside>
         </section>
       )}
     </main>

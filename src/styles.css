@@ -282,6 +282,137 @@ textarea {
   line-height: 1.6;
 }
 
+.auth-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 14px;
+  margin: 0 auto;
+  max-width: 520px;
+  padding: clamp(20px, 4vw, 32px);
+}
+
+.auth-panel h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.12;
+  margin: 0;
+}
+
+.auth-panel > p {
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.auth-panel-kicker {
+  align-items: center;
+  color: var(--accent-strong);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 900;
+  gap: 8px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-field span {
+  color: #111827;
+}
+
+.auth-field input {
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  color: #111827;
+  min-height: 46px;
+  padding: 0 14px;
+}
+
+.auth-error {
+  color: #b42318;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.auth-submit,
+.auth-secondary {
+  align-items: center;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 15px;
+  font-weight: 800;
+  gap: 10px;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 16px;
+}
+
+.auth-submit {
+  background: #0f172a;
+  border: 1px solid #0f172a;
+  color: #ffffff;
+}
+
+.auth-secondary {
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  color: #111827;
+}
+
+.auth-divider {
+  align-items: center;
+  color: #6b7280;
+  display: flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 10px;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  background: #e5e7eb;
+  content: "";
+  flex: 1;
+  height: 1px;
+}
+
+.admin-corner-link,
+.admin-login-return {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  bottom: 16px;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.22);
+  color: #ffffff;
+  display: inline-flex;
+  gap: 6px;
+  padding: 9px 12px;
+  position: fixed;
+  right: 16px;
+  z-index: 20;
+}
+
+.admin-login-return {
+  bottom: auto;
+  position: static;
+  right: auto;
+  box-shadow: none;
+  padding: 8px 12px;
+}
+
 .section {
   padding: clamp(58px, 8vw, 104px) clamp(18px, 5vw, 64px);
 }
@@ -1165,7 +1296,19 @@ textarea {
 
 .estimate-shell {
   min-height: 100svh;
-  padding: 24px clamp(18px, 5vw, 64px) 64px;
+  height: 100svh;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  padding: 24px clamp(18px, 5vw, 64px) 32px;
+}
+
+.estimate-shell-intro {
+  padding-bottom: 24px;
+}
+
+.estimate-shell-survey {
+  padding-bottom: 24px;
 }
 
 .estimate-header {
@@ -1269,6 +1412,110 @@ textarea {
   display: grid;
   gap: 18px;
   grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+}
+
+.estimate-intro-hero {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  border-radius: 28px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.estimate-intro-image,
+.estimate-survey-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.estimate-intro-overlay,
+.estimate-survey-visual-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(14, 14, 14, 0.28) 0%, rgba(14, 14, 14, 0.52) 55%, rgba(14, 14, 14, 0.72) 100%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+}
+
+.estimate-intro-content {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  max-width: min(760px, 88vw);
+  margin: auto;
+  padding: clamp(28px, 5vw, 68px);
+  color: #fff;
+}
+
+.estimate-intro-content h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 4.4rem);
+  line-height: 1.1;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.estimate-intro-content p {
+  margin: 0;
+  max-width: 36rem;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.9);
+  word-break: keep-all;
+}
+
+.estimate-intro-button {
+  align-self: start;
+  min-height: 56px;
+  padding-inline: 22px;
+}
+
+.estimate-survey-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  gap: 18px;
+  min-height: 0;
+}
+
+.estimate-survey-visual {
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  border-radius: 28px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #111;
+}
+
+.estimate-survey-visual-copy {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  padding: 24px;
+  color: #fff;
+}
+
+.estimate-survey-visual-copy strong {
+  font-size: clamp(1.2rem, 1.6vw, 2rem);
+  line-height: 1.25;
+  word-break: keep-all;
+}
+
+.estimate-survey-visual-copy p {
+  margin: 0;
+  max-width: 24rem;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.65;
+  word-break: keep-all;
 }
 
 .estimate-panel,
@@ -1391,6 +1638,10 @@ textarea {
   line-height: 1.5;
 }
 
+.estimate-survey-layout {
+  min-height: 0;
+}
+
 .estimate-consult-grid {
   align-items: start;
 }
@@ -1398,9 +1649,12 @@ textarea {
 .estimate-consult-panel {
   padding: 0;
   overflow: hidden;
+  min-height: 0;
 }
 
-.estimate-consult-panel form {
+.estimate-survey-form {
+  height: 100%;
+  overflow: auto;
   padding: 28px;
 }
 
@@ -1593,8 +1847,24 @@ textarea {
   word-break: keep-all;
 }
 
+.estimate-survey-form .estimate-choice-grid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.estimate-survey-form .estimate-choice-grid-multi {
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+
+.estimate-survey-form .estimate-final-grid {
+  grid-template-columns: 1fr;
+}
+
 @media (max-width: 1024px) {
-  .estimate-consult-panel form {
+  .estimate-survey-layout {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+
+  .estimate-survey-form {
     padding: 22px;
   }
 
@@ -1604,6 +1874,65 @@ textarea {
 }
 
 @media (max-width: 720px) {
+  .estimate-shell {
+    height: auto;
+    min-height: 100svh;
+    overflow: auto;
+    padding: 14px 14px 22px;
+  }
+
+  .estimate-header {
+    margin-bottom: 10px;
+  }
+
+  .estimate-intro-hero {
+    min-height: calc(100svh - 96px);
+    border-radius: 22px;
+  }
+
+  .estimate-intro-content {
+    justify-content: flex-end;
+    padding: 22px 18px;
+    gap: 12px;
+  }
+
+  .estimate-intro-content h1 {
+    font-size: 2rem;
+  }
+
+  .estimate-intro-content p {
+    font-size: 0.95rem;
+  }
+
+  .estimate-intro-button {
+    min-height: 48px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .estimate-survey-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .estimate-survey-visual {
+    min-height: 210px;
+    border-radius: 22px;
+  }
+
+  .estimate-survey-visual-copy {
+    padding: 18px;
+  }
+
+  .estimate-survey-visual-copy strong {
+    font-size: 1.05rem;
+  }
+
+  .estimate-survey-form {
+    max-height: none;
+    padding: 18px 16px;
+  }
+
   .estimate-consult-head {
     flex-direction: column;
   }
@@ -1630,6 +1959,22 @@ textarea {
 
   .estimate-choice-grid-multi {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .estimate-question-block h2 {
+    font-size: 1.22rem;
+  }
+
+  .estimate-choice-grid .estimate-choice {
+    min-height: 60px;
+    padding: 14px 12px;
+    font-size: 0.95rem;
+  }
+
+  .estimate-form .secondary-button,
+  .estimate-form .ghost-button {
+    width: 100%;
+    justify-content: center;
   }
 }
 
@@ -1983,6 +2328,41 @@ textarea {
   display: grid;
   gap: 10px;
   padding: 18px;
+}
+
+.admin-session-card-stack {
+  gap: 14px;
+}
+
+.account-identity-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.account-identity-field {
+  display: grid;
+  gap: 8px;
+}
+
+.account-identity-field span {
+  color: #374151;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.account-identity-field input {
+  background: #ffffff;
+  border: 1px solid #d8dee6;
+  border-radius: 8px;
+  color: #111827;
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+.account-identity-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .admin-session-card {
@@ -3225,6 +3605,7 @@ textarea {
   .estimate-panel,
   .estimate-aside-card,
   .admin-login-card,
+  .auth-panel,
   .admin-insight-card,
   .admin-breakdown-card,
   .office-card,
@@ -3253,6 +3634,31 @@ textarea {
     font-size: 14px;
     line-height: 1.55;
     margin-top: 12px;
+  }
+
+  .auth-panel {
+    gap: 12px;
+    margin: 0;
+    max-width: none;
+    padding: 16px;
+  }
+
+  .auth-panel h1 {
+    font-size: 26px;
+  }
+
+  .auth-submit,
+  .auth-secondary {
+    min-height: 44px;
+  }
+
+  .admin-corner-link {
+    bottom: 12px;
+    right: 12px;
+  }
+
+  .account-identity-buttons {
+    flex-direction: column;
   }
 
   .proof-list,
