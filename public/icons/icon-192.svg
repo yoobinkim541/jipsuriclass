@@ -1,9 +1,10 @@
 <svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
   <rect width="192" height="192" rx="42" fill="#0F172A"/>
-  <rect x="28" y="28" width="136" height="136" rx="30" fill="url(#paint0_linear)" opacity="0.22"/>
-  <path d="M48 93L96 54L144 93V147H114V111H78V147H48V93Z" fill="white"/>
-  <path d="M54 92L96 60L138 92" stroke="#E2E8F0" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M117 48L144 69" stroke="#94A3B8" stroke-width="12" stroke-linecap="round"/>
+  <rect x="28" y="28" width="136" height="136" rx="30" fill="url(#paint0_linear)" opacity="0.2"/>
+  <path d="M47 93L96 53L145 93" stroke="#E2E8F0" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M57 90V148H135V90" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M79 148V112H113V148" fill="#FFFFFF"/>
+  <path d="M116 49L144 69" stroke="#94A3B8" stroke-width="11" stroke-linecap="round"/>
   <defs>
     <linearGradient id="paint0_linear" x1="32" y1="28" x2="160" y2="164" gradientUnits="userSpaceOnUse">
       <stop stop-color="#334155"/>
