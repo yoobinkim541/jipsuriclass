@@ -74,5 +74,6 @@ This website is designed around easy maintenance, fast navigation, and increment
 - Do not hide API response parsing inside UI components. Normalize external data in a service first.
 - Prefer names that make search easy, such as `BlogSection`, `ContactSection`, `BlogPortfolioService`, and `BusinessProfile`.
 - After changes, run `npm run build` unless the change is documentation-only.
+- At the end of every task, update `WORK_LOG.md` with the changed files, implemented behavior, verification result, and any remaining follow-up. Keep it short so future agents can understand the project state without re-reading the whole codebase.
 
 For a fuller project map, read `README.md`.

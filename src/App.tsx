@@ -11,15 +11,26 @@ import {
 } from "lucide-react";
 import { business, cases, navItems, pinnedPosts, process, services, symptoms } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
+import { InquiryService } from "./services/InquiryService";
 import type { PortfolioPost } from "./types";
+import { AdminPage } from "./admin/AdminPage";
+import { AccountPage } from "./account/AccountPage";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
+const inquiryService = new InquiryService();
 
 function App() {
+  if (window.location.pathname.startsWith("/admin")) {
+    return <AdminPage />;
+  }
+  if (window.location.pathname.startsWith("/account")) {
+    return <AccountPage />;
+  }
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [blogPosts, setBlogPosts] = useState<PortfolioPost[]>(pinnedPosts);
   const [blogSource, setBlogSource] = useState<"loading" | "naver" | "fallback">("loading");
-  const [estimateSubmitted, setEstimateSubmitted] = useState(false);
+  const [estimateStatus, setEstimateStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
   useEffect(() => {
     blogPortfolioService.loadPortfolioPosts().then(({ posts, source }) => {
@@ -28,10 +39,24 @@ function App() {
     });
   }, []);
 
-  function handleEstimateSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleEstimateSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setEstimateSubmitted(true);
-    window.setTimeout(() => setEstimateSubmitted(false), 3600);
+    const formData = new FormData(event.currentTarget);
+
+    setEstimateStatus("submitting");
+    try {
+      await inquiryService.createInquiry({
+        name: String(formData.get("name") || ""),
+        phone: String(formData.get("phone") || ""),
+        serviceArea: String(formData.get("area") || ""),
+        message: String(formData.get("message") || "")
+      });
+      event.currentTarget.reset();
+      setEstimateStatus("success");
+      window.setTimeout(() => setEstimateStatus("idle"), 4200);
+    } catch {
+      setEstimateStatus("error");
+    }
   }
 
   return (
@@ -39,12 +64,14 @@ function App() {
       <SiteHeader menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} />
       <main id="top">
         <HeroSection />
+        <AboutSection />
         <SymptomsSection />
         <ServicesSection />
+        <SpecialtiesSection />
         <CasesSection />
         <BlogSection posts={blogPosts} source={blogSource} />
         <ProcessSection />
-        <ContactSection submitted={estimateSubmitted} onSubmit={handleEstimateSubmit} />
+        <ContactSection status={estimateStatus} onSubmit={handleEstimateSubmit} />
       </main>
       <SiteFooter />
       <MobileQuickCta />
@@ -171,6 +198,26 @@ function ProofList() {
   );
 }
 
+function AboutSection() {
+  return (
+    <section className="about section" id="about" aria-labelledby="about-title">
+      <div className="about-copy">
+        <span>{business.name}</span>
+        <h2 id="about-title">작은 불편도 현장에서 끝까지 확인합니다</h2>
+        <p>{business.introduction}</p>
+      </div>
+      <ul className="about-strengths">
+        {business.strengths.map((item) => (
+          <li key={item}>
+            <CheckCircle2 size={20} />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** 증상 기반 진입 영역: 고객이 전문 공종명을 몰라도 문의할 수 있게 돕습니다. */
 function SymptomsSection() {
   return (
@@ -208,6 +255,25 @@ function ServicesSection() {
             <h3>{service.title}</h3>
             <p>{service.text}</p>
           </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SpecialtiesSection() {
+  return (
+    <section className="specialties section" id="specialties" aria-labelledby="specialties-title">
+      <SectionHeading
+        id="specialties-title"
+        title="가능 작업"
+        description="집 안팎에서 필요한 수리, 설비, 마감, 리모델링 작업을 폭넓게 상담합니다."
+      />
+      <div className="specialty-list">
+        {business.specialties.map((item) => (
+          <a href="#contact" key={item}>
+            {item}
+          </a>
         ))}
       </div>
     </section>
@@ -304,7 +370,13 @@ function ProcessSection() {
 }
 
 /** 문의 영역: 지금은 데모 제출 상태이며, 추후 API 또는 폼 서비스 연결 지점입니다. */
-function ContactSection({ submitted, onSubmit }: { submitted: boolean; onSubmit: (event: React.FormEvent<HTMLFormElement>) => void }) {
+function ContactSection({
+  status,
+  onSubmit
+}: {
+  status: "idle" | "submitting" | "success" | "error";
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+}) {
   return (
     <section className="contact section" id="contact" aria-labelledby="contact-title">
       <div className="contact-copy">
@@ -325,7 +397,7 @@ function ContactSection({ submitted, onSubmit }: { submitted: boolean; onSubmit:
         </div>
         <BusinessInfoList />
       </div>
-      <EstimateForm submitted={submitted} onSubmit={onSubmit} />
+      <EstimateForm status={status} onSubmit={onSubmit} />
     </section>
   );
 }
@@ -343,12 +415,14 @@ function BusinessInfoList() {
 }
 
 function EstimateForm({
-  submitted,
+  status,
   onSubmit
 }: {
-  submitted: boolean;
+  status: "idle" | "submitting" | "success" | "error";
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
+  const isSubmitting = status === "submitting";
+
   return (
     <form className="estimate-form" onSubmit={onSubmit}>
       <label>
@@ -367,11 +441,14 @@ function EstimateForm({
         문의 내용
         <textarea required name="message" rows={5} placeholder="증상, 건물 유형, 사진 보유 여부를 적어주세요." />
       </label>
-      <button type="submit">
+      <button type="submit" disabled={isSubmitting}>
         <Send size={19} />
-        간단 견적 문의
+        {isSubmitting ? "문의 저장 중" : "간단 견적 문의"}
       </button>
-      {submitted && <p className="form-success">문의 내용이 확인되었습니다. 실제 전송 API 연결 전 데모 상태입니다.</p>}
+      {status === "success" && <p className="form-success">문의가 저장되었습니다. 확인 후 연락드리겠습니다.</p>}
+      {status === "error" && (
+        <p className="form-error">문의 저장에 실패했습니다. 전화 또는 카카오톡으로 바로 연락해주세요.</p>
+      )}
     </form>
   );
 }
@@ -421,6 +498,12 @@ function SiteFooter() {
         {business.registrationNumber} · {business.owner} · {business.address}
       </p>
       <p>개인정보는 상담 목적 외 사용하지 않으며, 실제 운영 시 개인정보처리방침 페이지를 연결합니다.</p>
+      <a className="footer-admin-link" href="/account">
+        고객 로그인
+      </a>
+      <a className="footer-admin-link" href="/admin">
+        관리자 로그인
+      </a>
     </footer>
   );
 }

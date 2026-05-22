@@ -25,20 +25,59 @@ import type {
  * 실제 전화번호, 카카오톡 채널, 사업자 정보가 생기면 이 객체만 먼저 수정하세요.
  */
 export const business: BusinessProfile = {
-  name: "집수리 클라쓰",
-  phone: "010-0000-0000",
-  phoneHref: "tel:010-0000-0000",
+  name: "집수리클라쓰",
+  introduction:
+    "모든 공사에 품격을 더하는 종합 집수리·설비공사업체 집수리클라쓰입니다. 7개의 국가공인 건축자격이 있는 대표가 모든 공사에 직접 함께하며, 고객님의 니즈에 맞는 품격 있는 시공을 약속드립니다.",
+  strengths: ["대표 직접 참여 시공", "7개 국가공인 건축자격 보유", "네이버·카카오톡 집수리클라쓰 검색"],
+  specialties: [
+    "수도 배관",
+    "전기 배선",
+    "커튼/블라인드",
+    "줄눈",
+    "조명",
+    "열쇠/도어락",
+    "방충망",
+    "창문/샷시",
+    "문 설치/수리",
+    "중문",
+    "바닥재",
+    "도배",
+    "필름",
+    "페인트",
+    "타일",
+    "방풍시공",
+    "온수기 설치/수리",
+    "환풍기",
+    "주방후드",
+    "가구 조립",
+    "방범창",
+    "욕실 리모델링",
+    "싱크대 교체",
+    "붙박이장",
+    "주방 리모델링",
+    "옥상 방수",
+    "전동 빨래건조대",
+    "실리콘 시공",
+    "탄성코트 시공",
+    "집 전체 리모델링",
+    "냉장고장 설치",
+    "단열시공"
+  ],
+  phone: "010-3323-9677",
+  phoneHref: "tel:010-3323-9677",
   kakaoUrl: "https://pf.kakao.com/",
-  naverBlogUrl: "https://blog.naver.com/",
+  naverBlogUrl: "https://m.blog.naver.com/it77khy?tab=1",
   area: "서울·경기 및 수도권 협의",
-  hours: "평일 09:00 - 19:00 / 긴급 상담 협의",
-  registrationNumber: "사업자등록번호 입력 예정",
-  owner: "대표자 입력 예정",
-  address: "사업장 주소 입력 예정"
+  hours: "08:00 - 21:00 / 매주 일요일 휴무",
+  registrationNumber: "사업자등록번호 633-25-01331",
+  owner: "대표자 이보미",
+  address: "경기도 남양주시 화도읍 경춘로 1790-2 106호"
 };
 
 export const navItems: NavItem[] = [
+  { label: "소개", href: "#about" },
   { label: "서비스", href: "#services" },
+  { label: "가능작업", href: "#specialties" },
   { label: "현장사례", href: "#cases" },
   { label: "블로그", href: "#blog" },
   { label: "작업절차", href: "#process" },
@@ -50,14 +89,14 @@ export const navItems: NavItem[] = [
  * 홈 화면의 "생활 집수리 서비스" 카드에 그대로 표시됩니다.
  */
 export const services: ServiceCategory[] = [
-  { title: "누수·복구", icon: Droplets, text: "천장, 욕실, 배관 누수 원인 확인과 손상 부위 복구" },
-  { title: "욕실·타일", icon: Bath, text: "깨진 타일, 실리콘, 줄눈, 욕실 부속 보수" },
-  { title: "도배·장판", icon: PaintRoller, text: "들뜸, 오염, 곰팡이 흔적, 부분 교체와 마감 정리" },
-  { title: "문·몰딩", icon: Home, text: "문틀, 방문, 몰딩, 걸레받이 파손과 뒤틀림 보수" },
-  { title: "싱크대·주방", icon: Wrench, text: "상판, 수전, 경첩, 배수, 주방 수납 부속 교체" },
-  { title: "전기·조명", icon: LampCeiling, text: "스위치, 콘센트, 조명 교체와 생활 전기 점검" },
-  { title: "원상복구", icon: Building2, text: "임대차 퇴거 전 부분 복구, 훼손 부위 정리" },
-  { title: "소규모 리모델링", icon: Ruler, text: "생활 불편을 줄이는 실용 중심의 부분 공사" }
+  { title: "부분·전체 리모델링", icon: Ruler, text: "공간 상태와 예산에 맞춘 인테리어 리모델링 공사" },
+  { title: "종합 설비", icon: Droplets, text: "누수탐지, 상하수도 공사, 막힘 해결, 해빙 작업" },
+  { title: "방수·타일", icon: Bath, text: "옥상방수, 욕실·주방 타일 시공과 파손 부위 보수" },
+  { title: "목공", icon: Home, text: "문, 문틀, 몰딩, 걸레받이, 수납 등 생활 목공 보수" },
+  { title: "전기", icon: LampCeiling, text: "스위치, 콘센트, 조명 교체와 생활 전기 점검" },
+  { title: "도배·바닥", icon: PaintRoller, text: "도배, 장판, 바닥 마감, 오염·들뜸 부분 복구" },
+  { title: "도장·페인트", icon: Building2, text: "실내외 페인트, 도장 마감, 보수 도색 작업" },
+  { title: "인테리어 필름", icon: Wrench, text: "문, 몰딩, 가구, 싱크대 표면 필름 시공과 리폼" }
 ];
 
 export const symptoms = [

@@ -14,7 +14,7 @@ type NaverBlogItem = {
 export default async function handler(_request: VercelRequest, response: VercelResponse) {
   const clientId = process.env.NAVER_CLIENT_ID;
   const clientSecret = process.env.NAVER_CLIENT_SECRET;
-  const blogId = process.env.NAVER_BLOG_ID || "집수리클라쓰";
+  const blogId = process.env.NAVER_BLOG_ID || "it77khy";
 
   if (!clientId || !clientSecret) {
     response.status(503).json({ items: [], source: "fallback", reason: "missing_naver_credentials" });

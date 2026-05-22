@@ -2,6 +2,9 @@ import type { LucideIcon } from "lucide-react";
 
 export type BusinessProfile = {
   name: string;
+  introduction: string;
+  strengths: string[];
+  specialties: string[];
   phone: string;
   phoneHref: string;
   kakaoUrl: string;
@@ -50,4 +53,20 @@ export type WorkProcessStep = {
   title: string;
   text: string;
   icon: LucideIcon;
+};
+
+export type InquiryStatus = "new" | "contacted" | "done" | "spam";
+
+export type InquiryRow = {
+  id: string;
+  name: string;
+  phone: string;
+  service_area: string | null;
+  message: string;
+  status: InquiryStatus;
+  source: string;
+  user_id: string | null;
+  user_email: string | null;
+  created_at: string;
+  notified_at: string | null;
 };

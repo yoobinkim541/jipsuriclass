@@ -49,7 +49,12 @@ Add these in Vercel Project Settings -> Environment Variables:
 ```text
 NAVER_CLIENT_ID=
 NAVER_CLIENT_SECRET=
-NAVER_BLOG_ID=
+NAVER_BLOG_ID=it77khy
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+ADMIN_EMAIL=
+RESEND_API_KEY=
+CRON_SECRET=
 ```
 
 ### Domain DNS
@@ -73,8 +78,13 @@ src/
   types.ts                        # 공통 타입 정의
   styles.css                      # 전체 디자인 토큰과 반응형 스타일
   main.tsx                        # React/PWA 진입점
+  lib/
+    supabaseClient.ts             # 브라우저 Supabase 클라이언트
   services/
     BlogPortfolioService.ts       # 네이버 블로그 API 정제와 fallback 처리
+    InquiryService.ts             # 문의 저장 로직
+supabase/
+  schema.sql                      # 초기 DB/RLS 스키마
 public/
   manifest.webmanifest            # PWA 설치 정보
   service-worker.js               # 앱 셸 캐시
@@ -101,6 +111,9 @@ vercel.json                       # Vercel 배포 설정
   - `src/services/BlogPortfolioService.ts`
   - `vite.config.ts`의 `/api/naver-blog`
   - `api/naver-blog.ts`의 프로덕션 서버리스 API
+- 문의 저장 방식 수정:
+  - `src/services/InquiryService.ts`
+  - `supabase/schema.sql`
 - 화면 섹션 순서나 배치 수정:
   - `src/App.tsx`
 - 색상, 여백, 모바일 반응형 수정:
@@ -140,6 +153,7 @@ UI 컴포넌트는 외부 API 응답 형식을 직접 알지 않도록 합니다
 현재 서비스:
 
 - `BlogPortfolioService`: 네이버 블로그 응답을 화면용 `PortfolioPost`로 변환합니다.
+- `InquiryService`: 견적 문의를 Supabase `inquiries` 테이블에 저장합니다.
 
 추가 예정 서비스 예시:
 
@@ -152,15 +166,20 @@ UI 컴포넌트는 외부 API 응답 형식을 직접 알지 않도록 합니다
 현재 백엔드가 필요한 지점은 두 곳입니다.
 
 - 네이버 블로그 API 프록시: `vite.config.ts`의 `/api/naver-blog`
-- 견적 문의 전송/저장: 아직 데모 상태이며, 추후 `POST /api/inquiries`로 확장 권장
+- 견적 문의 저장: `src/services/InquiryService.ts`에서 Supabase `inquiries` 테이블에 저장
+- 관리자 로그인 및 문의 관리: `src/admin/AdminPage.tsx`와 `supabase/schema.sql`의 `admin_users` / RLS 정책
+- 고객 로그인 및 내 문의 관리: `src/account/AccountPage.tsx`와 `supabase/schema.sql`의 사용자 소유 정책
 
 추천 확장 순서:
 
 1. `.env.local`에 네이버 API 키 추가
-2. `POST /api/inquiries` 추가
-3. Supabase에 문의 내역 저장
-4. 관리자 페이지에서 시공사례/고정 블로그 글 관리
-5. Capacitor로 APK 패키징
+2. Supabase 프로젝트 생성
+3. `supabase/schema.sql` 실행
+4. `public.admin_users`에 관리자 Google 이메일 추가
+5. Supabase Auth에서 Google provider 활성화
+6. `ADMIN_EMAIL`, `RESEND_API_KEY`, `CRON_SECRET`을 Vercel 환경변수에 설정
+7. 관리자 페이지에서 시공사례/고정 블로그 글 관리
+8. Capacitor로 APK 패키징
 
 ## Environment Variables
 
@@ -169,10 +188,41 @@ UI 컴포넌트는 외부 API 응답 형식을 직접 알지 않도록 합니다
 ```text
 NAVER_CLIENT_ID=
 NAVER_CLIENT_SECRET=
-NAVER_BLOG_ID=
+NAVER_BLOG_ID=it77khy
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 `.env.local`에 넣고 dev 서버를 재시작하세요.
+
+## Admin Login
+
+관리자 로그인은 Supabase Auth Google OAuth를 사용합니다.
+
+- 로그인 화면: `/admin`
+- 접근 권한: `public.admin_users` 테이블에 등록된 이메일만 허용
+- RLS 정책: `private.is_admin_user()`가 `auth.jwt()->>'email'`을 확인
+
+Google provider를 켠 뒤, 관리자 이메일을 `public.admin_users`에 추가하세요.
+예시:
+
+```sql
+insert into public.admin_users (email) values ('admin@example.com');
+```
+
+## Customer Login
+
+고객도 Google 로그인으로 자신의 견적 요청 기록을 볼 수 있습니다.
+
+- 로그인 화면: `/account`
+- 고객이 로그인 상태에서 남긴 문의는 `user_id`로 본인 계정에 연결됩니다.
+- 고객은 자신의 문의를 수정할 수 있습니다.
+- 고객 로그인을 쓰려면 Supabase Auth에서 Google provider를 활성화하세요.
+
+## Inquiry Alerts
+
+Vercel Cron이 5분 간격으로 `/api/notify-inquiries`를 호출합니다.
+이 기능은 `ADMIN_EMAIL`, `RESEND_API_KEY`, `CRON_SECRET`이 있어야 실제 이메일이 전송됩니다.
 
 ## PWA And APK Readiness
 
