@@ -18,6 +18,18 @@
     {
       "source": "/account/:path*",
       "destination": "/"
+    },
+    {
+      "source": "/login",
+      "destination": "/"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/"
+    },
+    {
+      "source": "/estimate",
+      "destination": "/"
     }
   ]
 }
