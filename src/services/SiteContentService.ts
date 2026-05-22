@@ -1,4 +1,4 @@
-import { business, cases as defaultCases, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
+import { business, cases as defaultCases, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
 import { images } from "../assets/images";
 import { supabase } from "../lib/supabaseClient";
 import type { HomepageContent } from "../types";
@@ -36,6 +36,13 @@ export const defaultHomepageContent: HomepageContent = {
     solution: item.solution,
     image: item.image,
     link: item.link
+  })),
+  blog: pinnedPosts.slice(0, 3).map((post) => ({
+    title: post.title,
+    description: post.description,
+    date: post.date,
+    link: post.link,
+    image: post.image
   })),
   process: defaultProcess.map((item) => ({
     title: item.title,
@@ -115,6 +122,15 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
           link: typeof item?.link === "string" ? item.link : base.cases[index]?.link ?? ""
         }))
       : base.cases,
+    blog: Array.isArray(input.blog)
+      ? input.blog.map((item, index) => ({
+          title: typeof item?.title === "string" ? item.title : base.blog[index]?.title ?? "",
+          description: typeof item?.description === "string" ? item.description : base.blog[index]?.description ?? "",
+          date: typeof item?.date === "string" ? item.date : base.blog[index]?.date ?? "",
+          link: typeof item?.link === "string" ? item.link : base.blog[index]?.link ?? "",
+          image: typeof item?.image === "string" ? item.image : base.blog[index]?.image ?? ""
+        }))
+      : base.blog,
     process: Array.isArray(input.process)
       ? input.process.map((item, index) => ({
           title: typeof item?.title === "string" ? item.title : base.process[index]?.title ?? "",

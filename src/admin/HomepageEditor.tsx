@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
   CheckCircle2,
   ChevronLeft,
@@ -10,7 +10,7 @@ import {
   RotateCcw,
   Save
 } from "lucide-react";
-import { business, cases as defaultCases, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
+import { business, cases as defaultCases, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
 import { SiteContentService, defaultHomepageContent } from "../services/SiteContentService";
 import { MediaService } from "../services/MediaService";
 import type { HomepageContent } from "../types";
@@ -21,13 +21,14 @@ const AUTOSAVE_DELAY = 1200;
 
 const emptyStrengths = ["", "", ""];
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
-type EditorSection = "hero" | "about" | "services" | "cases" | "process" | "contact";
+type EditorSection = "hero" | "about" | "services" | "cases" | "blog" | "process" | "contact";
 
 const sectionLabels: Record<EditorSection, string> = {
   hero: "히어로",
   about: "소개",
   services: "서비스",
   cases: "사례",
+  blog: "블로그",
   process: "작업 절차",
   contact: "문의"
 };
@@ -42,6 +43,12 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
   const [draft, setDraft] = useState<HomepageContent>(defaultHomepageContent);
   const [selectedSection, setSelectedSection] = useState<EditorSection>("hero");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [contactPreview, setContactPreview] = useState({
+    name: "홍길동",
+    phone: "010-0000-0000",
+    area: "예: 서울 강동구",
+    message: "증상, 건물 유형, 사진 보유 여부를 적어주세요."
+  });
 
   const draftRef = useRef(draft);
   const lastSavedRef = useRef(JSON.stringify(defaultHomepageContent));
@@ -196,6 +203,20 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
     markEdited();
   }
 
+  function updateBlog(index: number, field: keyof HomepageContent["blog"][number], value: string) {
+    setDraft((current) => {
+      const blog = current.blog.slice();
+      blog[index] = {
+        ...(blog[index] ?? { title: "", description: "", date: "", link: "", image: "" }),
+        [field]: value
+      };
+      return { ...current, blog };
+    });
+    setSelectedSection("blog");
+    setSelectedIndex(index);
+    markEdited();
+  }
+
   async function uploadCaseImage(index: number, file: File) {
     setSaving(true);
     setError(null);
@@ -248,6 +269,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       { key: "about", label: "소개" },
       { key: "services", label: "서비스" },
       { key: "cases", label: "사례" },
+      { key: "blog", label: "블로그" },
       { key: "process", label: "작업 절차" },
       { key: "contact", label: "문의" }
     ],
@@ -259,6 +281,8 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       ? draft.services.length
       : selectedSection === "cases"
         ? draft.cases.length
+        : selectedSection === "blog"
+          ? draft.blog.length
         : selectedSection === "process"
           ? draft.process.length
           : 0;
@@ -304,7 +328,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
             type="button"
             onClick={() => {
               setSelectedSection(item.key);
-              if (item.key === "services" || item.key === "cases" || item.key === "process") {
+              if (item.key === "services" || item.key === "cases" || item.key === "blog" || item.key === "process") {
                 setSelectedIndex(0);
               }
             }}
@@ -349,8 +373,15 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                 }}
               />
 
-              <PreviewSectionLabel label="블로그" active={false} onClick={() => undefined} />
-              <BlogPreview />
+              <PreviewSectionLabel label="블로그" active={selectedSection === "blog"} onClick={() => setSelectedSection("blog")} />
+              <BlogPreview
+                posts={draft.blog}
+                activeIndex={selectedSection === "blog" ? selectedIndex : -1}
+                onSelect={(index) => {
+                  setSelectedSection("blog");
+                  setSelectedIndex(index);
+                }}
+              />
 
               <PreviewSectionLabel label="작업 절차" active={selectedSection === "process"} onClick={() => setSelectedSection("process")} />
               <ProcessPreview
@@ -363,7 +394,12 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
               />
 
               <PreviewSectionLabel label="문의" active={selectedSection === "contact"} onClick={() => setSelectedSection("contact")} />
-              <ContactPreview content={draft.contact} onSelect={() => setSelectedSection("contact")} />
+              <ContactPreview
+                content={draft.contact}
+                preview={contactPreview}
+                setPreview={setContactPreview}
+                onSelect={() => setSelectedSection("contact")}
+              />
             </div>
           </div>
 
@@ -499,6 +535,53 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                   <input
                     value={draft.cases[selectedIndex]?.link ?? ""}
                     onChange={(event) => updateCase(selectedIndex, "link", event.target.value)}
+                  />
+                </Field>
+              </InspectorGroup>
+            ) : null}
+
+            {selectedSection === "blog" ? (
+              <InspectorGroup title="블로그 포스트">
+                {draft.blog.map((post, index) => (
+                  <button
+                    className={index === selectedIndex ? "preview-item-card active" : "preview-item-card"}
+                    key={`${post.title}-${index}`}
+                    type="button"
+                    onClick={() => setSelectedIndex(index)}
+                  >
+                    <strong>{index + 1}. {post.title}</strong>
+                    <span>{post.date}</span>
+                  </button>
+                ))}
+                <Field label={`제목 (${selectedIndex + 1})`}>
+                  <input
+                    value={draft.blog[selectedIndex]?.title ?? ""}
+                    onChange={(event) => updateBlog(selectedIndex, "title", event.target.value)}
+                  />
+                </Field>
+                <Field label="설명">
+                  <textarea
+                    rows={4}
+                    value={draft.blog[selectedIndex]?.description ?? ""}
+                    onChange={(event) => updateBlog(selectedIndex, "description", event.target.value)}
+                  />
+                </Field>
+                <Field label="날짜">
+                  <input
+                    value={draft.blog[selectedIndex]?.date ?? ""}
+                    onChange={(event) => updateBlog(selectedIndex, "date", event.target.value)}
+                  />
+                </Field>
+                <Field label="링크">
+                  <input
+                    value={draft.blog[selectedIndex]?.link ?? ""}
+                    onChange={(event) => updateBlog(selectedIndex, "link", event.target.value)}
+                  />
+                </Field>
+                <Field label="이미지 URL">
+                  <input
+                    value={draft.blog[selectedIndex]?.image ?? ""}
+                    onChange={(event) => updateBlog(selectedIndex, "image", event.target.value)}
                   />
                 </Field>
               </InspectorGroup>
@@ -760,21 +843,37 @@ function CasesPreview({
   );
 }
 
-function BlogPreview() {
+function BlogPreview({
+  posts,
+  activeIndex,
+  onSelect
+}: {
+  posts: HomepageContent["blog"];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}) {
   return (
     <section className="blog section editor-preview-section" aria-labelledby="blog-preview-title">
+      <button className="preview-edit-trigger" type="button" onClick={() => onSelect(0)}>
+        편집
+      </button>
       <div className="section-heading row-heading">
         <div>
           <h2 id="blog-preview-title">네이버 블로그 포트폴리오</h2>
-          <p>네이버 블로그 최신 현장 글을 자동으로 가져와 사진 카드로 보여줍니다.</p>
+          <p>관리자 지정 포스트를 바로 교체할 수 있습니다.</p>
         </div>
         <a className="naver-link" href={business.naverBlogUrl} target="_blank" rel="noreferrer">
           N 블로그 <ExternalLink size={17} />
         </a>
       </div>
       <div className="blog-card-grid">
-        {pinnedPosts.slice(0, 3).map((post) => (
-          <a className="blog-card" href={post.link} target="_blank" rel="noreferrer" key={post.title}>
+        {posts.map((post, index) => (
+          <button
+            className={index === activeIndex ? "blog-card preview-card active" : "blog-card preview-card"}
+            key={`${post.title}-${index}`}
+            type="button"
+            onClick={() => onSelect(index)}
+          >
             <img className="blog-card-image" src={post.image} alt={post.title} />
             <div className="blog-card-body">
               <div className="blog-card-meta">
@@ -787,7 +886,7 @@ function BlogPreview() {
                 자세히 보기 <ExternalLink size={16} />
               </span>
             </div>
-          </a>
+          </button>
         ))}
       </div>
     </section>
@@ -836,9 +935,25 @@ function ProcessPreview({
 
 function ContactPreview({
   content,
+  preview,
+  setPreview,
   onSelect
 }: {
   content: HomepageContent["contact"];
+  preview: {
+    name: string;
+    phone: string;
+    area: string;
+    message: string;
+  };
+  setPreview: Dispatch<
+    SetStateAction<{
+      name: string;
+      phone: string;
+      area: string;
+      message: string;
+    }>
+  >;
   onSelect: () => void;
 }) {
   return (
@@ -865,19 +980,23 @@ function ContactPreview({
         <div className="estimate-form">
           <label>
             이름
-            <input value="홍길동" readOnly />
+            <input value={preview.name} onChange={(event) => setPreview((current) => ({ ...current, name: event.target.value }))} />
           </label>
           <label>
             연락처
-            <input value="010-0000-0000" readOnly />
+            <input value={preview.phone} onChange={(event) => setPreview((current) => ({ ...current, phone: event.target.value }))} />
           </label>
           <label>
             지역
-            <input value="예: 서울 강동구" readOnly />
+            <input value={preview.area} onChange={(event) => setPreview((current) => ({ ...current, area: event.target.value }))} />
           </label>
           <label>
             문의 내용
-            <textarea rows={5} value="증상, 건물 유형, 사진 보유 여부를 적어주세요." readOnly />
+            <textarea
+              rows={5}
+              value={preview.message}
+              onChange={(event) => setPreview((current) => ({ ...current, message: event.target.value }))}
+            />
           </label>
           <span className="preview-static-button primary-button">간단 견적 문의</span>
         </div>

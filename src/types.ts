@@ -73,6 +73,14 @@ export type EditableCaseCard = {
   link: string;
 };
 
+export type EditableBlogPost = {
+  title: string;
+  description: string;
+  date: string;
+  link: string;
+  image: string;
+};
+
 export type EditableProcessStep = {
   title: string;
   text: string;
@@ -94,6 +102,7 @@ export type HomepageContent = {
   symptoms: string[];
   services: EditableServiceCard[];
   cases: EditableCaseCard[];
+  blog: EditableBlogPost[];
   process: EditableProcessStep[];
   contact: {
     title: string;
