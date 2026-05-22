@@ -430,6 +430,10 @@ Follow-up:
 # 2026-05-22
 - 변경 파일: `src/App.tsx`, `src/admin/AdminPage.tsx`, `src/admin/HomepageEditor.tsx`, `src/account/AccountPage.tsx`, `src/services/InquiryService.ts`, `src/services/AdminService.ts`, `src/services/MediaService.ts`, `src/services/SiteContentService.ts`, `src/data.ts`, `src/styles.css`, `src/types.ts`, `api/inquiries.ts`, `api/naver-blog.ts`, `vite.config.ts`, `supabase/schema.sql`, `src/privacy/PrivacyPolicyPage.tsx`
 - 구현 동작: 간단 견적 문의에 사진 첨부 업로드를 추가하고, 단계형 `견적상담` 페이지를 만들어 집 환경과 공사 유형을 먼저 고른 뒤 연락처, 주소, 상담 가능 시간, 사진, 예산, 세부사항을 입력하게 했습니다. 증상 버튼은 `/estimate`로 바로 연결되며, 대표 현장 사례는 관리자 페이지에서 이미지 업로드와 블로그 링크 편집이 가능해졌고 카드 클릭 시 실제 블로그 글로 이동합니다. 개인정보처리방침 페이지와 푸터 링크, 오시는 길 섹션, 블로그 썸네일 이미지 추출 개선, 상단 카피를 `클라쓰가 다른 종합집수리`로 교체한 내용도 반영했습니다. 설문 대시보드에는 집 환경/공사 유형/예산/상담 가능 시간 분포를 한눈에 보는 카드와 목록을 추가했고, 설문 첫 화면은 생성한 상담 이미지로 교체했으며 이미지 경로는 `src/assets/images.ts` 한 파일에서 관리하도록 정리했습니다.
+
+- 변경 파일: `src/estimate/EstimatePage.tsx`, `src/styles.css`
+- 구현 동작: `견적상담` 페이지를 8단계 상담 신청서로 재구성했습니다. 1~6단계는 공간 종류, 평수, 집 상태, 상담 이유, 상담 공간 다중 선택, 예산으로 나누고, 7단계는 시공 희망 시점, 8단계는 이름/휴대폰/주소/상세주소/요청사항/개인정보 동의/사진 첨부로 분리했습니다. 첫 화면은 풀사이즈 히어로와 소개 문구만 보여주고 `진행하기`를 눌러 설문으로 들어가게 했습니다.
+- 검증 결과: `npm run build` 통과
 - 검증 결과: `npm run build` 통과, Supabase `admin_users` RLS 활성화 확인
 - 남은 후속 작업: 브라우저 실화면에서 첨부 미리보기, 오시는 길 iframe, 사례 카드 링크 동작 확인 후 GitHub push 및 Vercel 재배포
 

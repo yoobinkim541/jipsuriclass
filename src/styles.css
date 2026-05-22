@@ -1391,6 +1391,248 @@ textarea {
   line-height: 1.5;
 }
 
+.estimate-consult-grid {
+  align-items: start;
+}
+
+.estimate-consult-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.estimate-consult-panel form {
+  padding: 28px;
+}
+
+.estimate-consult-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.estimate-step-count {
+  min-width: 72px;
+  border: 1px solid rgba(122, 122, 122, 0.22);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.estimate-progress {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  margin: 20px 0 24px;
+  background: rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.estimate-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(47, 47, 47, 0.78), rgba(122, 122, 122, 0.68));
+}
+
+.estimate-question-block {
+  margin-bottom: 22px;
+}
+
+.estimate-question-block h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.45rem, 2vw, 2.15rem);
+  line-height: 1.22;
+  letter-spacing: 0;
+  word-break: keep-all;
+}
+
+.estimate-question-block p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.estimate-room-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.estimate-choice-grid-multi {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+
+.estimate-inline-field,
+.estimate-final-group label,
+.estimate-form label {
+  display: grid;
+  gap: 10px;
+  font-size: 0.96rem;
+  color: var(--text);
+}
+
+.estimate-inline-field input,
+.estimate-final-group input,
+.estimate-final-group textarea,
+.estimate-form input,
+.estimate-form textarea {
+  width: 100%;
+  border: 1px solid rgba(122, 122, 122, 0.22);
+  border-radius: 16px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.estimate-inline-field input:focus,
+.estimate-final-group input:focus,
+.estimate-final-group textarea:focus,
+.estimate-form input:focus,
+.estimate-form textarea:focus {
+  outline: none;
+  border-color: rgba(47, 47, 47, 0.38);
+  box-shadow: 0 0 0 4px rgba(47, 47, 47, 0.08);
+}
+
+.estimate-inline-action {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.estimate-postcode-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 160px) auto;
+  gap: 10px;
+}
+
+.estimate-final-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 20px;
+}
+
+.estimate-final-group {
+  display: grid;
+  gap: 18px;
+}
+
+.estimate-final-upload {
+  align-content: start;
+}
+
+.estimate-field-help {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.estimate-counter {
+  justify-self: end;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.estimate-consent-box {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid rgba(122, 122, 122, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.estimate-consent-box input {
+  margin-top: 4px;
+}
+
+.estimate-consent-box strong {
+  font-weight: 700;
+}
+
+.estimate-form .secondary-button,
+.estimate-form .ghost-button {
+  border: 1px solid rgba(122, 122, 122, 0.22);
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 12px 16px;
+  font-size: 0.96rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.estimate-form .secondary-button:disabled,
+.estimate-form .ghost-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.estimate-step-actions {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.estimate-step-actions .primary-button {
+  min-width: 148px;
+}
+
+.estimate-choice-grid .estimate-choice {
+  min-height: 72px;
+  padding: 18px 16px;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+@media (max-width: 1024px) {
+  .estimate-consult-panel form {
+    padding: 22px;
+  }
+
+  .estimate-final-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .estimate-consult-head {
+    flex-direction: column;
+  }
+
+  .estimate-inline-action,
+  .estimate-postcode-row {
+    grid-template-columns: 1fr;
+  }
+
+  .estimate-step-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .estimate-step-actions .primary-button,
+  .estimate-step-actions .ghost-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .estimate-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estimate-choice-grid-multi {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .inquiry-intake-list {
   color: var(--muted-strong);
   display: grid;
