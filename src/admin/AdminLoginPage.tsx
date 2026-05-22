@@ -20,6 +20,7 @@ export function AdminLoginPage() {
         title="관리자 로그인"
         description="관리자 이메일과 비밀번호, 또는 Google로 같은 계정에 들어갑니다."
         redirectTo="/admin/inquiries"
+        adminRedirectTo="/admin/inquiries"
         submitLabel="이메일 로그인"
         googleLabel="Google로 로그인"
       />

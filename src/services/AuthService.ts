@@ -74,4 +74,22 @@ export class AuthService {
 
     return data.session;
   }
+
+  async isAdminEmail(email: string) {
+    if (!supabase) {
+      throw new Error("Supabase environment variables are not configured");
+    }
+
+    const { data, error } = await supabase
+      .from("admin_users")
+      .select("email")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    return Boolean(data);
+  }
 }

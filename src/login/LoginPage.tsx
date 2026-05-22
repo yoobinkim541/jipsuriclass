@@ -16,6 +16,7 @@ export function LoginPage() {
         title="고객 로그인"
         description="이메일과 비밀번호, 또는 Google로 같은 계정에 들어갑니다."
         redirectTo="/mypage"
+        adminRedirectTo="/admin/inquiries"
         submitLabel="이메일 로그인"
         googleLabel="Google로 로그인"
       />

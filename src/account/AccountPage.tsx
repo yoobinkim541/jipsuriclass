@@ -35,6 +35,11 @@ export function AccountPage() {
   const [passwordDraft, setPasswordDraft] = useState("");
   const [accountActionLoading, setAccountActionLoading] = useState<"password" | "google" | null>(null);
   const [accountMessage, setAccountMessage] = useState<string | null>(null);
+  const [accountPanelOpen, setAccountPanelOpen] = useState(() => window.innerWidth > 720);
+
+  const totalInquiries = inquiries.length;
+  const newInquiries = inquiries.filter((item) => item.status === "new").length;
+  const notifiedInquiries = inquiries.filter((item) => item.notified_at).length;
 
   useEffect(() => {
     let mounted = true;
@@ -209,52 +214,73 @@ export function AccountPage() {
           <p>
             문의 내역을 보고, 이 계정에 이메일 비밀번호나 Google 로그인 수단을 추가할 수 있습니다.
           </p>
+          <div className="account-hero-notes" aria-label="계정 안내">
+            <span>실시간 문의 확인</span>
+            <span>계정 보안 관리</span>
+            <span>첨부 사진 포함</span>
+          </div>
         </div>
         <div className="admin-login-card">
           {sessionLoading ? (
             <p className="admin-muted">세션 확인 중</p>
           ) : sessionEmail ? (
             <div className="admin-session-card admin-session-card-stack">
-              <div>
-                <strong>로그인됨</strong>
-                <p>{sessionEmail}</p>
-              </div>
-              <div className="account-identity-actions">
-                <label className="account-identity-field">
-                  <span>비밀번호 추가/변경</span>
-                  <input
-                    autoComplete="new-password"
-                    placeholder="새 비밀번호"
-                    type="password"
-                    value={passwordDraft}
-                    onChange={(event) => setPasswordDraft(event.target.value)}
-                  />
-                </label>
-                <div className="account-identity-buttons">
-                  <button
-                    className="admin-primary-button"
-                    type="button"
-                    onClick={() => void handleAddPassword()}
-                    disabled={accountActionLoading === "password"}
-                  >
-                    <KeyRound size={16} />
-                    {accountActionLoading === "password" ? "저장 중" : "비밀번호 저장"}
-                  </button>
-                  <button
-                    className="admin-ghost-button"
-                    type="button"
-                    onClick={() => void handleLinkGoogle()}
-                    disabled={accountActionLoading === "google"}
-                  >
-                    <Globe size={16} />
-                    {accountActionLoading === "google" ? "연결 중" : "Google 연결"}
-                  </button>
+              <div className="account-login-head">
+                <div>
+                  <span className="account-session-label">현재 로그인</span>
+                  <strong>{sessionEmail}</strong>
                 </div>
-                {accountMessage ? <p className="admin-muted">{accountMessage}</p> : null}
+                <button
+                  className="admin-status-button account-login-toggle"
+                  type="button"
+                  onClick={() => setAccountPanelOpen((current) => !current)}
+                >
+                  {accountPanelOpen ? "접기" : "펼치기"}
+                </button>
               </div>
+              {accountPanelOpen ? (
+                <div className="account-identity-actions">
+                  <label className="account-identity-field">
+                    <span>비밀번호 추가/변경</span>
+                    <input
+                      autoComplete="new-password"
+                      placeholder="새 비밀번호"
+                      type="password"
+                      value={passwordDraft}
+                      onChange={(event) => setPasswordDraft(event.target.value)}
+                    />
+                  </label>
+                  <div className="account-identity-buttons">
+                    <button
+                      className="admin-primary-button"
+                      type="button"
+                      onClick={() => void handleAddPassword()}
+                      disabled={accountActionLoading === "password"}
+                    >
+                      <KeyRound size={16} />
+                      {accountActionLoading === "password" ? "저장 중" : "비밀번호 저장"}
+                    </button>
+                    <button
+                      className="admin-ghost-button"
+                      type="button"
+                      onClick={() => void handleLinkGoogle()}
+                      disabled={accountActionLoading === "google"}
+                    >
+                      <Globe size={16} />
+                      {accountActionLoading === "google" ? "연결 중" : "Google 연결"}
+                    </button>
+                  </div>
+                  {accountMessage ? <p className="admin-muted">{accountMessage}</p> : null}
+                </div>
+              ) : (
+                <p className="admin-muted account-login-collapsed-note">
+                  모바일에서는 계정 관리 영역을 접어 문의 목록이 먼저 보이도록 합니다.
+                </p>
+              )}
             </div>
           ) : (
             <>
+              <span className="account-session-label">세션 없음</span>
               <strong>로그인이 필요합니다</strong>
               <p>이전에 남긴 문의를 보려면 로그인하세요.</p>
               <a className="admin-primary-button" href="/login">
@@ -265,126 +291,161 @@ export function AccountPage() {
         </div>
       </section>
 
+      <section className="account-summary-grid" aria-label="마이페이지 요약">
+        <article className="account-summary-card">
+          <span>총 문의</span>
+          <strong>{totalInquiries}</strong>
+          <p>최근 100건까지 빠르게 확인합니다.</p>
+        </article>
+        <article className="account-summary-card">
+          <span>새 문의</span>
+          <strong>{newInquiries}</strong>
+          <p>아직 처리 전인 문의만 따로 볼 수 있습니다.</p>
+        </article>
+        <article className="account-summary-card">
+          <span>알림 발송</span>
+          <strong>{notifiedInquiries}</strong>
+          <p>관리자 알림이 전송된 항목을 보여줍니다.</p>
+        </article>
+      </section>
+
       {error ? <p className="admin-error">{error}</p> : null}
 
-      <section className="admin-list" aria-label="내 문의 목록">
-        {loading ? (
-          <div className="admin-empty">
-            <LoaderCircle size={18} className="spin" />
-            문의를 불러오는 중
+      <section className="account-list-section" aria-label="내 문의 목록">
+        <div className="account-list-head">
+          <div>
+            <span className="account-list-kicker">문의 관리</span>
+            <h2>내가 남긴 문의를 바로 수정할 수 있습니다</h2>
           </div>
-        ) : ownInquiries.length ? (
-          ownInquiries.map((item) => {
-            const draft = drafts[item.id] || {
-              name: item.name,
-              phone: item.phone,
-              service_area: item.service_area || "",
-              message: item.message
-            };
-            const isEditing = editingId === item.id;
+          <p>상태와 첨부 파일, 메모를 한 화면에서 정리합니다.</p>
+        </div>
+        <div className="admin-list">
+          {loading ? (
+            <div className="admin-empty">
+              <LoaderCircle size={18} className="spin" />
+              문의를 불러오는 중
+            </div>
+          ) : ownInquiries.length ? (
+            ownInquiries.map((item) => {
+              const draft = drafts[item.id] || {
+                name: item.name,
+                phone: item.phone,
+                service_area: item.service_area || "",
+                message: item.message
+              };
+              const isEditing = editingId === item.id;
 
-            return (
-              <article className="admin-row" key={item.id}>
-                <div className="admin-row-main">
-                  <div className="admin-row-top">
-                    <strong>{item.name}</strong>
-                    <span className={`status-badge status-${item.status}`}>{item.status}</span>
+              return (
+                <article className="admin-row" key={item.id}>
+                  <div className="admin-row-main">
+                    <div className="admin-row-top">
+                      <div className="account-row-title">
+                        <strong>{item.name}</strong>
+                        <span className="account-row-subtitle">{item.phone}</span>
+                      </div>
+                      <span className={`status-badge status-${item.status}`}>{item.status}</span>
+                    </div>
+                    <p>
+                      {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
+                    </p>
+                    {isEditing ? (
+                      <div className="account-edit-form">
+                        <label>
+                          이름
+                          <input
+                            value={draft.name}
+                            onChange={(event) =>
+                              setDrafts((current) => ({
+                                ...current,
+                                [item.id]: { ...draft, name: event.target.value }
+                              }))
+                            }
+                          />
+                        </label>
+                        <label>
+                          연락처
+                          <input
+                            value={draft.phone}
+                            onChange={(event) =>
+                              setDrafts((current) => ({
+                                ...current,
+                                [item.id]: { ...draft, phone: event.target.value }
+                              }))
+                            }
+                          />
+                        </label>
+                        <label>
+                          지역
+                          <input
+                            value={draft.service_area}
+                            onChange={(event) =>
+                              setDrafts((current) => ({
+                                ...current,
+                                [item.id]: { ...draft, service_area: event.target.value }
+                              }))
+                            }
+                          />
+                        </label>
+                        <label>
+                          문의 내용
+                          <textarea
+                            rows={5}
+                            value={draft.message}
+                            onChange={(event) =>
+                              setDrafts((current) => ({
+                                ...current,
+                                [item.id]: { ...draft, message: event.target.value }
+                              }))
+                            }
+                          />
+                        </label>
+                      </div>
+                    ) : (
+                      <p className="admin-message">{item.message}</p>
+                    )}
+                    {item.intake ? (
+                      <ul className="inquiry-intake-list">
+                        {formatIntakeEntries(item.intake).map((entry) => (
+                          <li key={entry.label}>
+                            <strong>{entry.label}</strong> {entry.value}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    <div className="account-row-meta">
+                      <span>출처 {item.source}</span>
+                      <span>첨부 {item.attachments?.length ?? 0}개</span>
+                      <span>{item.notified_at ? `알림 ${formatDate(item.notified_at)}` : "알림 미발송"}</span>
+                    </div>
+                    {item.attachments?.length ? (
+                      <div className="inquiry-attachment-grid" aria-label="첨부 사진">
+                        {item.attachments.map((attachment) => (
+                          <a className="inquiry-attachment" href={attachment.url} target="_blank" rel="noreferrer" key={attachment.url}>
+                            <img src={attachment.url} alt={attachment.name} />
+                            <span>{attachment.name}</span>
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
-                  <p>
-                    {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
-                  </p>
-                  {isEditing ? (
-                    <div className="account-edit-form">
-                      <label>
-                        이름
-                        <input
-                          value={draft.name}
-                          onChange={(event) =>
-                            setDrafts((current) => ({
-                              ...current,
-                              [item.id]: { ...draft, name: event.target.value }
-                            }))
-                          }
-                        />
-                      </label>
-                      <label>
-                        연락처
-                        <input
-                          value={draft.phone}
-                          onChange={(event) =>
-                            setDrafts((current) => ({
-                              ...current,
-                              [item.id]: { ...draft, phone: event.target.value }
-                            }))
-                          }
-                        />
-                      </label>
-                      <label>
-                        지역
-                        <input
-                          value={draft.service_area}
-                          onChange={(event) =>
-                            setDrafts((current) => ({
-                              ...current,
-                              [item.id]: { ...draft, service_area: event.target.value }
-                            }))
-                          }
-                        />
-                      </label>
-                      <label>
-                        문의 내용
-                        <textarea
-                          rows={5}
-                          value={draft.message}
-                          onChange={(event) =>
-                            setDrafts((current) => ({
-                              ...current,
-                              [item.id]: { ...draft, message: event.target.value }
-                            }))
-                          }
-                        />
-                      </label>
-                    </div>
-                  ) : (
-                    <p className="admin-message">{item.message}</p>
-                  )}
-                  {item.intake ? (
-                    <ul className="inquiry-intake-list">
-                      {formatIntakeEntries(item.intake).map((entry) => (
-                        <li key={entry.label}>
-                          <strong>{entry.label}</strong> {entry.value}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {item.attachments?.length ? (
-                    <div className="inquiry-attachment-grid" aria-label="첨부 사진">
-                      {item.attachments.map((attachment) => (
-                        <a className="inquiry-attachment" href={attachment.url} target="_blank" rel="noreferrer" key={attachment.url}>
-                          <img src={attachment.url} alt={attachment.name} />
-                          <span>{attachment.name}</span>
-                        </a>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-                <div className="admin-row-actions">
-                  <button className="admin-status-button" type="button" onClick={() => setEditingId(isEditing ? null : item.id)}>
-                    <Edit2 size={14} />
-                    {isEditing ? "취소" : "수정"}
-                  </button>
-                  {isEditing ? (
-                    <button className="admin-primary-button" type="button" disabled={savingId === item.id} onClick={() => void saveInquiry(item.id)}>
-                      {savingId === item.id ? "저장 중" : "저장"}
+                  <div className="admin-row-actions">
+                    <button className="admin-status-button" type="button" onClick={() => setEditingId(isEditing ? null : item.id)}>
+                      <Edit2 size={14} />
+                      {isEditing ? "취소" : "수정"}
                     </button>
-                  ) : null}
-                </div>
-              </article>
-            );
-          })
-        ) : (
-          <div className="admin-empty">본인 명의의 문의가 없습니다.</div>
-        )}
+                    {isEditing ? (
+                      <button className="admin-primary-button" type="button" disabled={savingId === item.id} onClick={() => void saveInquiry(item.id)}>
+                        {savingId === item.id ? "저장 중" : "저장"}
+                      </button>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })
+          ) : (
+            <div className="admin-empty">본인 명의의 문의가 없습니다.</div>
+          )}
+        </div>
       </section>
     </main>
   );

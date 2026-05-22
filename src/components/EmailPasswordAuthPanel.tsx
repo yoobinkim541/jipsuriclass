@@ -8,6 +8,7 @@ type EmailPasswordAuthPanelProps = {
   title: string;
   description: string;
   redirectTo: string;
+  adminRedirectTo: string;
   submitLabel: string;
   googleLabel?: string;
 };
@@ -16,6 +17,7 @@ export function EmailPasswordAuthPanel({
   title,
   description,
   redirectTo,
+  adminRedirectTo,
   submitLabel,
   googleLabel
 }: EmailPasswordAuthPanelProps) {
@@ -29,16 +31,27 @@ export function EmailPasswordAuthPanel({
 
     authService
       .getSession()
-      .then((session) => {
+      .then(async (session) => {
         if (!mounted || !session?.user) return;
-        window.location.replace(redirectTo);
+        const nextPath = (await authService.isAdminEmail(session.user.email ?? "")) ? adminRedirectTo : redirectTo;
+        window.location.replace(nextPath);
       })
       .catch(() => undefined);
 
     return () => {
       mounted = false;
     };
-  }, [redirectTo]);
+  }, [adminRedirectTo, redirectTo]);
+
+  async function resolveSessionRedirect(session: Awaited<ReturnType<typeof authService.getSession>>) {
+    if (!session?.user.email) {
+      window.location.replace(redirectTo);
+      return;
+    }
+
+    const nextPath = (await authService.isAdminEmail(session.user.email)) ? adminRedirectTo : redirectTo;
+    window.location.replace(nextPath);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -46,8 +59,8 @@ export function EmailPasswordAuthPanel({
     setError(null);
 
     try {
-      await authService.signInWithEmailPassword(email.trim(), password);
-      window.location.replace(redirectTo);
+      const session = await authService.signInWithEmailPassword(email.trim(), password);
+      await resolveSessionRedirect(session);
     } catch (signInError) {
       const message = signInError instanceof Error ? signInError.message : "로그인에 실패했습니다.";
       setError(message);
@@ -61,7 +74,7 @@ export function EmailPasswordAuthPanel({
     setError(null);
 
     try {
-      await authService.signInWithGoogle(redirectTo);
+      await authService.signInWithGoogle(window.location.pathname);
     } catch (signInError) {
       const message = signInError instanceof Error ? signInError.message : "Google 로그인에 실패했습니다.";
       setError(message);

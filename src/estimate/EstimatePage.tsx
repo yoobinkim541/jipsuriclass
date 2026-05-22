@@ -169,6 +169,7 @@ export function EstimatePage() {
   const stepFiveReady = draft.selectedRooms.length > 0;
   const stepSixReady = Boolean(draft.budget);
   const stepSevenReady = Boolean(draft.startTiming);
+  const reviewEntries = buildReviewEntries(draft);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -279,7 +280,7 @@ export function EstimatePage() {
           <img className="estimate-intro-image" src={images.consultHero} alt="상담을 준비하는 리모델링 안내 이미지" />
           <div className="estimate-intro-overlay" />
           <div className="estimate-intro-content">
-            <h1 id="estimate-intro-title">깔끔하고 모던한 인테리어 상담</h1>
+            <h1 id="estimate-intro-title">나에게 맞는 최고의 전문가를 만나보세요</h1>
             <p>시작하기 전에 상담 신청지를 미리 작성해서 상담 대기 시간을 줄여보세요!</p>
             <button
               className="primary-button estimate-intro-button"
@@ -302,16 +303,13 @@ export function EstimatePage() {
           </aside>
 
           <form className="estimate-panel estimate-consult-panel estimate-survey-form" onSubmit={handleSubmit}>
-            <div className="estimate-panel-head estimate-consult-head">
-              <div>
-                <span>{currentStep.title}</span>
-                <strong>{currentStep.label}</strong>
-              </div>
-              <span className="estimate-step-count">{currentStep.count}</span>
-            </div>
-
             <div className="estimate-progress" aria-hidden="true">
               <span style={{ width: `${(step / 8) * 100}%` }} />
+            </div>
+
+            <div className="estimate-panel-head estimate-consult-head">
+              <span className="estimate-step-count">{currentStep.count}</span>
+              <strong>{currentStep.label}</strong>
             </div>
 
             <div className="estimate-question-block">
@@ -385,8 +383,21 @@ export function EstimatePage() {
             ) : null}
 
             {currentStep.mode === "final" ? (
-              <div className="estimate-final-grid">
-                <div className="estimate-final-group">
+              <>
+                <div className="estimate-review-card">
+                  <span className="admin-kicker">선택 내용 확인</span>
+                  <div className="estimate-review-grid">
+                    {reviewEntries.map((item) => (
+                      <div className="estimate-review-item" key={item.label}>
+                        <span>{item.label}</span>
+                        <strong>{item.value}</strong>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="estimate-final-grid">
+                  <div className="estimate-final-group">
                   <label>
                     이름
                     <input
@@ -476,7 +487,8 @@ export function EstimatePage() {
                     </div>
                   ) : null}
                 </div>
-              </div>
+                </div>
+              </>
             ) : null}
 
             <div className="estimate-step-actions">
@@ -550,4 +562,21 @@ function ChoiceGroup({
       ))}
     </div>
   );
+}
+
+function buildReviewEntries(draft: EstimateState) {
+  const rooms = draft.selectedRooms.length ? draft.selectedRooms.join(", ") : "-";
+  const roomDetail = draft.selectedRooms.includes("기타 입력") && draft.otherRoomDetail ? draft.otherRoomDetail : "-";
+
+  return [
+    { label: "공간", value: draft.spaceType || "-" },
+    { label: "평수", value: draft.areaBand || "-" },
+    { label: "집 상태", value: draft.propertyStatus || "-" },
+    { label: "상담 이유", value: draft.reason || "-" },
+    { label: "상담 공간", value: rooms },
+    { label: "기타 입력", value: roomDetail },
+    { label: "예산", value: draft.budget || "-" },
+    { label: "시공 일정", value: draft.startTiming || "-" },
+    { label: "요청사항", value: draft.requestNote || "-" }
+  ];
 }

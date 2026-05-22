@@ -1126,6 +1126,20 @@ textarea {
   width: 100%;
 }
 
+.office-map-fallback {
+  align-items: center;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  min-height: 420px;
+  padding: 24px;
+}
+
+.office-map-fallback .secondary-button {
+  width: fit-content;
+}
+
 .office-map-iframe {
   border: 0;
   min-height: 420px;
@@ -1641,15 +1655,13 @@ textarea {
 }
 
 .estimate-consult-head {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 16px;
+  display: grid;
+  gap: 8px;
   margin-top: -2px;
 }
 
 .estimate-step-count {
-  min-width: 72px;
+  width: fit-content;
   border: 1px solid rgba(122, 122, 122, 0.22);
   border-radius: 999px;
   padding: 8px 12px;
@@ -1957,8 +1969,8 @@ textarea {
     padding: 18px 16px;
   }
 
-  .estimate-consult-head {
-    flex-direction: column;
+.estimate-consult-head {
+    gap: 6px;
   }
 
   .estimate-inline-action,
@@ -1982,7 +1994,7 @@ textarea {
   }
 
   .estimate-choice-grid-multi {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .estimate-question-block h2 {
@@ -2789,24 +2801,29 @@ textarea {
 
 .admin-mobile-overview-card {
   align-items: center;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background:
+    radial-gradient(circle at top left, rgba(226, 232, 240, 0.45), transparent 40%),
+    rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
   display: grid;
   gap: 4px;
   min-width: 0;
-  padding: 12px 14px;
+  padding: 14px 14px 15px;
 }
 
 .admin-mobile-overview-card span {
-  color: var(--muted);
-  font-size: 12px;
+  color: #64748b;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .admin-mobile-overview-card strong {
-  color: var(--text);
-  font-size: 16px;
+  color: #0f172a;
+  font-size: 18px;
 }
 
 .account-list-section .admin-empty {
@@ -3385,6 +3402,34 @@ textarea {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .estimate-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .estimate-hero-media img {
+    aspect-ratio: 4 / 3;
+  }
+
+  .estimate-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estimate-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .estimate-choice-grid-multi {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .estimate-review-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .estimate-final-grid {
+    grid-template-columns: 1fr;
+  }
+
   .hero h1 {
     font-size: 56px;
   }
@@ -3473,7 +3518,8 @@ textarea {
   }
 
   .office-map-canvas,
-  .office-map-iframe {
+  .office-map-iframe,
+  .office-map-fallback {
     min-height: 300px;
   }
 
@@ -3706,6 +3752,10 @@ textarea {
     background: #334155;
   }
 
+  .footer {
+    padding-bottom: calc(132px + env(safe-area-inset-bottom));
+  }
+
   .admin-header,
   .admin-actions {
     align-items: stretch;
@@ -3824,6 +3874,19 @@ textarea {
     padding: 0 8px 8px;
   }
 
+  .admin-mobile-overview {
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-mobile-overview-card {
+    padding: 12px 12px 13px;
+  }
+
+  .admin-mobile-overview-card strong {
+    font-size: 16px;
+  }
+
   .admin-detail-grid {
     grid-template-columns: 1fr;
   }
@@ -3895,7 +3958,8 @@ textarea {
   }
 
   .office-map-canvas,
-  .office-map-iframe {
+  .office-map-iframe,
+  .office-map-fallback {
     min-height: 280px;
   }
 
@@ -4055,5 +4119,36 @@ textarea {
   .admin-count,
   .admin-sync {
     font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .login-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-home,
+  .admin-login-return,
+  .login-shell.admin-login-shell .admin-login-return {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer {
+    padding-bottom: 132px;
+  }
+
+  .admin-mobile-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .inquiry-attachment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .estimate-choice-grid-multi {
+    grid-template-columns: 1fr;
   }
 }
