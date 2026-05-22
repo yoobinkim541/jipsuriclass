@@ -1,14 +1,24 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="112" fill="#0F172A"/>
-  <rect x="76" y="76" width="360" height="360" rx="80" fill="url(#paint0_linear)" opacity="0.2"/>
-  <path d="M127 248L256 142L385 248" stroke="#E2E8F0" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M143 242V392H369V242" stroke="#FFFFFF" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M201 392V304H311V392" fill="#FFFFFF"/>
-  <path d="M312 128L384 184" stroke="#94A3B8" stroke-width="30" stroke-linecap="round"/>
   <defs>
-    <linearGradient id="paint0_linear" x1="88" y1="76" x2="424" y2="436" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#334155"/>
-      <stop offset="1" stop-color="#0F172A"/>
+    <linearGradient id="bg" x1="76" y1="64" x2="436" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B3A37" />
+      <stop offset="1" stop-color="#151515" />
+    </linearGradient>
+    <linearGradient id="ring" x1="92" y1="88" x2="420" y2="424" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6E6CA" />
+      <stop offset="1" stop-color="#DEC6A0" />
     </linearGradient>
   </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#bg)" />
+  <circle cx="256" cy="256" r="208" stroke="url(#ring)" stroke-width="18" />
+  <path d="M156 247L256 160L356 247" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M178 246V376H334V246" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M209 376V304H303V376" fill="url(#ring)" />
+  <path d="M256 234C240.6 234 228 246.6 228 262C228 277.4 240.6 290 256 290C271.4 290 284 277.4 284 262C284 246.6 271.4 234 256 234Z" fill="#151515" stroke="url(#ring)" stroke-width="18" />
+  <path d="M314 320L372 378" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" />
+  <path d="M335 299L387 351" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" />
+  <path d="M312 323L278 357" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" />
+  <path d="M370 262L336 296" stroke="url(#ring)" stroke-width="18" stroke-linecap="round" />
+  <path d="M345 262.5C337.5 270 337.5 282 345 289.5C352.5 297 364.5 297 372 289.5L386.8 274.7C394.3 267.2 394.3 255.2 386.8 247.7C379.3 240.2 367.3 240.2 359.8 247.7L345 262.5Z" fill="url(#ring)" />
+  <circle cx="343" cy="335" r="6" fill="url(#ring)" />
 </svg>

@@ -1,14 +1,24 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="64" height="64" rx="14" fill="#0F172A"/>
-  <rect x="10" y="10" width="44" height="44" rx="10" fill="url(#paint0_linear)" opacity="0.2"/>
-  <path d="M15 31L32 17L49 31" stroke="#E2E8F0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M19 29V48H45V29" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M27 48V37H37V48" fill="#FFFFFF"/>
-  <path d="M39 18L49 25" stroke="#94A3B8" stroke-width="3.5" stroke-linecap="round"/>
   <defs>
-    <linearGradient id="paint0_linear" x1="12" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#334155"/>
-      <stop offset="1" stop-color="#0F172A"/>
+    <linearGradient id="bg" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B3A37" />
+      <stop offset="1" stop-color="#151515" />
+    </linearGradient>
+    <linearGradient id="ring" x1="14" y1="12" x2="50" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6E6CA" />
+      <stop offset="1" stop-color="#DEC6A0" />
     </linearGradient>
   </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#bg)" />
+  <circle cx="32" cy="32" r="26" stroke="url(#ring)" stroke-width="2.5" />
+  <path d="M19 31.2L32 20L45 31.2" stroke="url(#ring)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M22 30.8V47H42V30.8" stroke="url(#ring)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M26.5 47V38.5H37.5V47" fill="url(#ring)" />
+  <path d="M32 29.8C29.8 29.8 28 31.6 28 33.8C28 36 29.8 37.8 32 37.8C34.2 37.8 36 36 36 33.8C36 31.6 34.2 29.8 32 29.8Z" fill="#151515" stroke="url(#ring)" stroke-width="2.4" />
+  <path d="M40.6 42.2L48 49.6" stroke="url(#ring)" stroke-width="2.4" stroke-linecap="round" />
+  <path d="M43.2 39.6L49.8 46.2" stroke="url(#ring)" stroke-width="2.4" stroke-linecap="round" />
+  <path d="M39 42.8L34.6 47.2" stroke="url(#ring)" stroke-width="2.4" stroke-linecap="round" />
+  <path d="M47.5 34.4L43.1 38.8" stroke="url(#ring)" stroke-width="2.4" stroke-linecap="round" />
+  <path d="M44.2 34.5C43.2 35.5 43.2 37.1 44.2 38.1C45.2 39.1 46.8 39.1 47.8 38.1L49.8 36.1C50.8 35.1 50.8 33.5 49.8 32.5C48.8 31.5 47.2 31.5 46.2 32.5L44.2 34.5Z" fill="url(#ring)" />
+  <circle cx="43.9" cy="41.8" r="0.9" fill="url(#ring)" />
 </svg>

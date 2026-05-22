@@ -379,3 +379,20 @@ Verification:
 
 Follow-up:
 - Check the live site to confirm the hero carousel feels smooth on desktop and mobile.
+
+## 2026-05-22 - Icon Redesign From Reference Image
+
+Changed files:
+- `public/icons/icon.svg`
+- `public/icons/icon-192.svg`
+- `public/icons/icon-512.svg`
+
+Implemented behavior:
+- Rebuilt the web and web app icons from the provided reference image.
+- Used a dark circular badge, beige ring, house outline, central circular detail, and crossed tool motif to match the reference more closely.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Push and redeploy if the new icon set should ship immediately.
