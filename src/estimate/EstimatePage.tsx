@@ -279,11 +279,7 @@ export function EstimatePage() {
           <img className="estimate-intro-image" src={images.consultHero} alt="상담을 준비하는 리모델링 안내 이미지" />
           <div className="estimate-intro-overlay" />
           <div className="estimate-intro-content">
-            <span className="admin-kicker">
-              <ShieldCheck size={16} />
-              단계형 견적 상담
-            </span>
-            <h1 id="estimate-intro-title">나에게 맞는 최고의 전문가를 만나보세요</h1>
+            <h1 id="estimate-intro-title">깔끔하고 모던한 인테리어 상담</h1>
             <p>시작하기 전에 상담 신청지를 미리 작성해서 상담 대기 시간을 줄여보세요!</p>
             <button
               className="primary-button estimate-intro-button"
@@ -303,14 +299,6 @@ export function EstimatePage() {
           <aside className="estimate-survey-visual" aria-hidden="true">
             <img src={images.consultHero} alt="" />
             <div className="estimate-survey-visual-overlay" />
-            <div className="estimate-survey-visual-copy">
-              <span className="admin-kicker">
-                <ShieldCheck size={16} />
-                견적상담
-              </span>
-              <strong>깔끔하고 모던한 인테리어의 집을 먼저 보여드리고,</strong>
-              <p>상담에 필요한 정보만 차근차근 받아서 더 빠르게 연결합니다.</p>
-            </div>
           </aside>
 
           <form className="estimate-panel estimate-consult-panel estimate-survey-form" onSubmit={handleSubmit}>

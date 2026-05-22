@@ -1456,7 +1456,7 @@ textarea {
 
 .estimate-intro-content h1 {
   margin: 0;
-  font-size: clamp(2rem, 4vw, 4.4rem);
+  font-size: clamp(2rem, 4vw, 4rem);
   line-height: 1.1;
   letter-spacing: 0;
   word-break: keep-all;
@@ -1464,10 +1464,10 @@ textarea {
 
 .estimate-intro-content p {
   margin: 0;
-  max-width: 36rem;
-  font-size: clamp(1rem, 1.5vw, 1.2rem);
-  line-height: 1.75;
-  color: rgba(255, 255, 255, 0.9);
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.35vw, 1.15rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.92);
   word-break: keep-all;
 }
 
@@ -1484,6 +1484,10 @@ textarea {
   min-height: 0;
 }
 
+.estimate-survey-layout > * {
+  min-width: 0;
+}
+
 .estimate-survey-visual {
   position: relative;
   min-height: 0;
@@ -1492,30 +1496,6 @@ textarea {
   overflow: hidden;
   isolation: isolate;
   background: #111;
-}
-
-.estimate-survey-visual-copy {
-  position: absolute;
-  inset: auto 0 0 0;
-  z-index: 1;
-  display: grid;
-  gap: 10px;
-  padding: 24px;
-  color: #fff;
-}
-
-.estimate-survey-visual-copy strong {
-  font-size: clamp(1.2rem, 1.6vw, 2rem);
-  line-height: 1.25;
-  word-break: keep-all;
-}
-
-.estimate-survey-visual-copy p {
-  margin: 0;
-  max-width: 24rem;
-  color: rgba(255, 255, 255, 0.88);
-  line-height: 1.65;
-  word-break: keep-all;
 }
 
 .estimate-panel,
@@ -1530,6 +1510,7 @@ textarea {
   display: grid;
   gap: 18px;
   padding: 24px;
+  min-width: 0;
 }
 
 .estimate-panel-head {
@@ -1580,6 +1561,7 @@ textarea {
 .estimate-step-actions {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .estimate-step-actions .primary-button {
@@ -1727,6 +1709,7 @@ textarea {
   gap: 10px;
   font-size: 0.96rem;
   color: var(--text);
+  min-width: 0;
 }
 
 .estimate-inline-field input,
@@ -1757,18 +1740,21 @@ textarea {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 10px;
+  min-width: 0;
 }
 
 .estimate-postcode-row {
   display: grid;
   grid-template-columns: minmax(120px, 160px) auto;
   gap: 10px;
+  min-width: 0;
 }
 
 .estimate-final-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
   gap: 20px;
+  min-width: 0;
 }
 
 .estimate-final-group {
@@ -1918,14 +1904,6 @@ textarea {
   .estimate-survey-visual {
     min-height: 210px;
     border-radius: 22px;
-  }
-
-  .estimate-survey-visual-copy {
-    padding: 18px;
-  }
-
-  .estimate-survey-visual-copy strong {
-    font-size: 1.05rem;
   }
 
   .estimate-survey-form {
