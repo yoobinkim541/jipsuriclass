@@ -396,3 +396,18 @@ Verification:
 
 Follow-up:
 - Push and redeploy if the new icon set should ship immediately.
+
+## 2026-05-22 - Header Brand Mark Icon Update
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+
+Implemented behavior:
+- Replaced the top-left text brand mark with the new icon asset in the sticky navigation bar.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Commit, push, and redeploy if the header icon should ship immediately.
