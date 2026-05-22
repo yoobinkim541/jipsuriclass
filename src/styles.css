@@ -78,9 +78,9 @@ textarea {
 
 .brand-mark {
   border-radius: 8px;
-  height: 36px;
+  height: 40px;
   object-fit: cover;
-  width: 36px;
+  width: 40px;
 }
 
 .desktop-nav {
@@ -223,10 +223,14 @@ textarea {
 
 .hero-carousel {
   position: relative;
+  overflow: hidden;
 }
 
 .hero-background {
+  display: block;
   object-fit: cover;
+  height: 100%;
+  width: 100%;
 }
 
 .hero-slide {
@@ -234,6 +238,8 @@ textarea {
   opacity: 0;
   position: absolute;
   transform: scale(1.04);
+  height: 100%;
+  width: 100%;
   transition:
     opacity 360ms ease,
     transform 520ms ease;

@@ -10,15 +10,8 @@
     </linearGradient>
   </defs>
   <circle cx="96" cy="96" r="90" fill="url(#bg)" />
-  <circle cx="96" cy="96" r="78" stroke="url(#ring)" stroke-width="7" />
-  <path d="M59 91.5L96 59L133 91.5" stroke="url(#ring)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M67 91V139H125V91" stroke="url(#ring)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M79 139V113H113V139" fill="url(#ring)" />
-  <path d="M96 86.5C89.6 86.5 84.5 91.6 84.5 98C84.5 104.4 89.6 109.5 96 109.5C102.4 109.5 107.5 104.4 107.5 98C107.5 91.6 102.4 86.5 96 86.5Z" fill="#151515" stroke="url(#ring)" stroke-width="7" />
-  <path d="M121 124.5L143 146.5" stroke="url(#ring)" stroke-width="7" stroke-linecap="round" />
-  <path d="M128.5 117L148 136.5" stroke="url(#ring)" stroke-width="7" stroke-linecap="round" />
-  <path d="M119.5 126.5L106.5 139.5" stroke="url(#ring)" stroke-width="7" stroke-linecap="round" />
-  <path d="M145 104L132 117" stroke="url(#ring)" stroke-width="7" stroke-linecap="round" />
-  <path d="M135 104.5C132 107.5 132 112.3 135 115.3C138 118.3 142.8 118.3 145.8 115.3L151.7 109.4C154.7 106.4 154.7 101.6 151.7 98.6C148.7 95.6 143.9 95.6 140.9 98.6L135 104.5Z" fill="url(#ring)" />
-  <circle cx="134.2" cy="130.4" r="2.6" fill="url(#ring)" />
+  <circle cx="96" cy="96" r="78" stroke="url(#ring)" stroke-width="8" />
+  <path d="M60 92L96 61L132 92" stroke="url(#ring)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M67 90V138H125V90" stroke="url(#ring)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="96" cy="98" r="11" fill="#151515" stroke="url(#ring)" stroke-width="8" />
 </svg>

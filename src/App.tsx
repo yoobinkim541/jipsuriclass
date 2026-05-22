@@ -133,14 +133,6 @@ function SiteHeader({
             </a>
           ))}
         </nav>
-        <div className="header-auth">
-          <a className="header-auth-link" href="/account">
-            고객 로그인
-          </a>
-          <a className="header-auth-link" href="/admin">
-            관리자 로그인
-          </a>
-        </div>
         <a className="header-call" href={business.phoneHref}>
           <Phone size={18} />
           {business.phone}
@@ -160,12 +152,6 @@ function SiteHeader({
               {item.label}
             </a>
           ))}
-          <a href="/account" onClick={onCloseMenu}>
-            고객 로그인
-          </a>
-          <a href="/admin" onClick={onCloseMenu}>
-            관리자 로그인
-          </a>
         </div>
       )}
     </>
@@ -214,7 +200,6 @@ function HeroSection({
         <h1>{content.title}</h1>
         <p>{content.description}</p>
         <CtaButtons />
-        <LoginButtons />
         <ProofList />
       </div>
       {heroSlides.length > 1 ? (
@@ -252,19 +237,6 @@ function CtaButtons() {
       <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
         <MessageCircle size={20} />
         카카오톡 상담
-      </a>
-    </div>
-  );
-}
-
-function LoginButtons() {
-  return (
-    <div className="hero-login-actions">
-      <a className="hero-login-link" href="/account">
-        고객 로그인
-      </a>
-      <a className="hero-login-link" href="/admin">
-        관리자 로그인
       </a>
     </div>
   );
@@ -504,10 +476,6 @@ function ContactSection({
             카카오톡으로 사진 보내기
           </a>
         </div>
-        <div className="contact-login-actions">
-          <a href="/account">고객 로그인</a>
-          <a href="/admin">관리자 로그인</a>
-        </div>
         <BusinessInfoList />
       </div>
       <EstimateForm status={status} onSubmit={onSubmit} />
@@ -611,12 +579,6 @@ function SiteFooter() {
         {business.registrationNumber} · {business.owner} · {business.address}
       </p>
       <p>개인정보는 상담 목적 외 사용하지 않으며, 실제 운영 시 개인정보처리방침 페이지를 연결합니다.</p>
-      <a className="footer-admin-link" href="/account">
-        고객 로그인
-      </a>
-      <a className="footer-admin-link" href="/admin">
-        관리자 로그인
-      </a>
     </footer>
   );
 }

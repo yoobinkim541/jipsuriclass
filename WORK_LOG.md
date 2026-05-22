@@ -411,3 +411,19 @@ Verification:
 
 Follow-up:
 - Commit, push, and redeploy if the header icon should ship immediately.
+
+## 2026-05-22 - Public Site Without Login CTAs
+
+Changed files:
+- `src/App.tsx`
+
+Implemented behavior:
+- Removed visible customer/admin login CTAs from the public homepage, header menu, mobile menu, hero, contact area, and footer.
+- Kept the public site usable without signing in.
+- Left direct `/admin` and `/account` routes in place for explicit access when needed.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Push and redeploy if the no-login public experience should ship immediately.
