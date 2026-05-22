@@ -123,7 +123,7 @@ function HomePage() {
         <ServicesSection services={homeContent.services} />
         <SpecialtiesSection />
         <CasesSection cases={homeContent.cases} />
-        <BlogSection posts={blogPosts} source={blogSource} fallbackPosts={homeContent.blog} />
+        <BlogSection posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />
         <ProcessSection steps={homeContent.process} />
         <ContactSection content={homeContent.contact} status={estimateStatus} onSubmit={handleEstimateSubmit} />
         <OfficeSection />
@@ -450,14 +450,11 @@ function CasesSection({
 /** 네이버 블로그 자동 연동 영역: API 실패 시 관리자 지정 포스트가 표시됩니다. */
 function BlogSection({
   posts,
-  source,
-  fallbackPosts
+  source
 }: {
   posts: PortfolioPost[];
   source: "loading" | "naver" | "fallback";
-  fallbackPosts: PortfolioPost[];
 }) {
-  const displayPosts = source === "naver" ? posts : fallbackPosts;
   const description =
     source === "naver"
       ? "네이버 블로그 최신 현장 글을 자동으로 가져와 사진 카드로 보여줍니다."
@@ -474,7 +471,7 @@ function BlogSection({
         className="naver-link"
       />
       <div className="blog-card-grid">
-        {displayPosts.map((post) => (
+        {posts.map((post) => (
           <a className="blog-card" href={post.link} target="_blank" rel="noreferrer" key={post.title}>
             <img className="blog-card-image" src={post.image} alt={post.title} />
             <div className="blog-card-body">

@@ -72,12 +72,17 @@ export class SiteContentService {
     }
 
     const row = data as SiteContentRow;
-    return mergeHomepageContent(defaultHomepageContent, row.payload);
+    const merged = mergeHomepageContent(defaultHomepageContent, row.payload);
+    return isHomepageContent(merged) ? merged : defaultHomepageContent;
   }
 
   async saveHomepageContent(content: HomepageContent) {
     if (!supabase) {
       throw new Error("Supabase environment variables are not configured");
+    }
+
+    if (!isHomepageContent(content)) {
+      throw new Error("Invalid homepage content schema");
     }
 
     const { error } = await supabase
@@ -91,12 +96,101 @@ export class SiteContentService {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string");
+}
+
+function isServiceCard(value: unknown): value is HomepageContent["services"][number] {
+  return isRecord(value) && isString(value.title) && isString(value.text);
+}
+
+function isCaseCard(value: unknown): value is HomepageContent["cases"][number] {
+  return (
+    isRecord(value) &&
+    isString(value.title) &&
+    isString(value.area) &&
+    isString(value.problem) &&
+    isString(value.solution) &&
+    isString(value.image) &&
+    isString(value.link)
+  );
+}
+
+function isBlogPost(value: unknown): value is HomepageContent["blog"][number] {
+  return isRecord(value) && isString(value.title) && isString(value.description) && isString(value.date) && isString(value.link) && isString(value.image);
+}
+
+function isProcessStep(value: unknown): value is HomepageContent["process"][number] {
+  return isRecord(value) && isString(value.title) && isString(value.text);
+}
+
+function isHomepageContent(value: unknown): value is HomepageContent {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isRecord(value.hero) &&
+    isString(value.hero.title) &&
+    isString(value.hero.description) &&
+    isString(value.hero.image) &&
+    isString(value.hero.mediaNote) &&
+    isRecord(value.about) &&
+    isString(value.about.eyebrow) &&
+    isString(value.about.title) &&
+    isString(value.about.description) &&
+    isStringArray(value.about.strengths) &&
+    Array.isArray(value.symptoms) &&
+    value.symptoms.every((item) => typeof item === "string") &&
+    Array.isArray(value.services) &&
+    value.services.every(isServiceCard) &&
+    Array.isArray(value.cases) &&
+    value.cases.every(isCaseCard) &&
+    Array.isArray(value.blog) &&
+    value.blog.every(isBlogPost) &&
+    Array.isArray(value.process) &&
+    value.process.every(isProcessStep) &&
+    isRecord(value.contact) &&
+    isString(value.contact.title) &&
+    isString(value.contact.description)
+  );
+}
+
 export function mergeHomepageContent(base: HomepageContent, override: unknown): HomepageContent {
   if (!override || typeof override !== "object") {
     return base;
   }
 
   const input = override as Partial<HomepageContent>;
+
+  function mergeTextArray<T>(
+    source: unknown,
+    baseItems: T[],
+    createItem: (item: Record<string, unknown>, index: number) => T,
+    isItem: (value: unknown) => value is Record<string, unknown>
+  ): T[] {
+    if (!Array.isArray(source)) {
+      return baseItems;
+    }
+
+    const length = Math.max(baseItems.length, source.length);
+    return Array.from({ length }, (_, index) => {
+      const incoming = source[index];
+      if (isItem(incoming)) {
+        return createItem(incoming, index);
+      }
+
+      return baseItems[index] ?? createItem({}, index);
+    });
+  }
 
   return {
     hero: { ...base.hero, ...(input.hero ?? {}) },
@@ -106,37 +200,49 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
       strengths: Array.isArray(input.about?.strengths) ? input.about!.strengths : base.about.strengths
     },
     symptoms: Array.isArray(input.symptoms) ? input.symptoms.filter((item): item is string => typeof item === "string") : base.symptoms,
-    services: Array.isArray(input.services)
-      ? input.services.map((item, index) => ({
-          title: typeof item?.title === "string" ? item.title : base.services[index]?.title ?? "",
-          text: typeof item?.text === "string" ? item.text : base.services[index]?.text ?? ""
-        }))
-      : base.services,
-    cases: Array.isArray(input.cases)
-      ? input.cases.map((item, index) => ({
-          title: typeof item?.title === "string" ? item.title : base.cases[index]?.title ?? "",
-          area: typeof item?.area === "string" ? item.area : base.cases[index]?.area ?? "",
-          problem: typeof item?.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
-          solution: typeof item?.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
-          image: typeof item?.image === "string" ? item.image : base.cases[index]?.image ?? "",
-          link: typeof item?.link === "string" ? item.link : base.cases[index]?.link ?? ""
-        }))
-      : base.cases,
-    blog: Array.isArray(input.blog)
-      ? input.blog.map((item, index) => ({
-          title: typeof item?.title === "string" ? item.title : base.blog[index]?.title ?? "",
-          description: typeof item?.description === "string" ? item.description : base.blog[index]?.description ?? "",
-          date: typeof item?.date === "string" ? item.date : base.blog[index]?.date ?? "",
-          link: typeof item?.link === "string" ? item.link : base.blog[index]?.link ?? "",
-          image: typeof item?.image === "string" ? item.image : base.blog[index]?.image ?? ""
-        }))
-      : base.blog,
-    process: Array.isArray(input.process)
-      ? input.process.map((item, index) => ({
-          title: typeof item?.title === "string" ? item.title : base.process[index]?.title ?? "",
-          text: typeof item?.text === "string" ? item.text : base.process[index]?.text ?? ""
-        }))
-      : base.process,
+    services: mergeTextArray(
+      input.services,
+      base.services,
+      (item, index) => ({
+        title: typeof item.title === "string" ? item.title : base.services[index]?.title ?? "",
+        text: typeof item.text === "string" ? item.text : base.services[index]?.text ?? ""
+      }),
+      (value): value is Record<string, unknown> => typeof value === "object" && value !== null
+    ),
+    cases: mergeTextArray(
+      input.cases,
+      base.cases,
+      (item, index) => ({
+        title: typeof item.title === "string" ? item.title : base.cases[index]?.title ?? "",
+        area: typeof item.area === "string" ? item.area : base.cases[index]?.area ?? "",
+        problem: typeof item.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
+        solution: typeof item.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
+        image: typeof item.image === "string" ? item.image : base.cases[index]?.image ?? "",
+        link: typeof item.link === "string" ? item.link : base.cases[index]?.link ?? ""
+      }),
+      (value): value is Record<string, unknown> => typeof value === "object" && value !== null
+    ),
+    blog: mergeTextArray(
+      input.blog,
+      base.blog,
+      (item, index) => ({
+        title: typeof item.title === "string" ? item.title : base.blog[index]?.title ?? "",
+        description: typeof item.description === "string" ? item.description : base.blog[index]?.description ?? "",
+        date: typeof item.date === "string" ? item.date : base.blog[index]?.date ?? "",
+        link: typeof item.link === "string" ? item.link : base.blog[index]?.link ?? "",
+        image: typeof item.image === "string" ? item.image : base.blog[index]?.image ?? ""
+      }),
+      (value): value is Record<string, unknown> => typeof value === "object" && value !== null
+    ),
+    process: mergeTextArray(
+      input.process,
+      base.process,
+      (item, index) => ({
+        title: typeof item.title === "string" ? item.title : base.process[index]?.title ?? "",
+        text: typeof item.text === "string" ? item.text : base.process[index]?.text ?? ""
+      }),
+      (value): value is Record<string, unknown> => typeof value === "object" && value !== null
+    ),
     contact: {
       ...base.contact,
       ...(input.contact ?? {})
