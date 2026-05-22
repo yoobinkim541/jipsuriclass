@@ -148,13 +148,15 @@ export const pinnedPosts: PortfolioPost[] = [
     title: "누수 흔적이 남은 욕실 천장 복구 사례",
     description: "사진 상담 후 현장 확인, 손상 부위 철거와 마감 복구까지 진행한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl
+    link: business.naverBlogUrl,
+    image: cases[0].image
   },
   {
     title: "퇴거 전 원상복구와 부분 도배 작업",
     description: "임대차 종료 전 자주 발생하는 훼손 부위를 필요한 만큼만 정리했습니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl
+    link: business.naverBlogUrl,
+    image: cases[2].image
   }
 ];
 

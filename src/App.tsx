@@ -367,8 +367,8 @@ function CasesSection({ cases: editableCases }: { cases: { title: string; area: 
 function BlogSection({ posts, source }: { posts: PortfolioPost[]; source: "loading" | "naver" | "fallback" }) {
   const description =
     source === "naver"
-      ? "네이버 블로그 최신 현장 글을 자동으로 가져왔습니다."
-      : "API 키가 없거나 연결되지 않으면 대표글을 대신 보여줍니다.";
+      ? "네이버 블로그 최신 현장 글을 자동으로 가져와 사진 카드로 보여줍니다."
+      : "API 키가 없거나 연결되지 않으면 대표 사례 사진 카드로 대신 보여줍니다.";
 
   return (
     <section className="blog section" id="blog" aria-labelledby="blog-title">
@@ -380,16 +380,21 @@ function BlogSection({ posts, source }: { posts: PortfolioPost[]; source: "loadi
         href={business.naverBlogUrl}
         className="naver-link"
       />
-      <div className="blog-list">
+      <div className="blog-card-grid">
         {posts.map((post) => (
-          <a className="blog-row" href={post.link} target="_blank" rel="noreferrer" key={post.title}>
-            <span className="naver-mark">N</span>
-            <div>
-              <time>{post.date}</time>
+          <a className="blog-card" href={post.link} target="_blank" rel="noreferrer" key={post.title}>
+            <img className="blog-card-image" src={post.image} alt={post.title} />
+            <div className="blog-card-body">
+              <div className="blog-card-meta">
+                <span className="naver-mark">N</span>
+                <time>{post.date}</time>
+              </div>
               <h3>{post.title}</h3>
               <p>{post.description}</p>
+              <span className="blog-card-link">
+                자세히 보기 <ExternalLink size={16} />
+              </span>
             </div>
-            <ExternalLink size={18} />
           </a>
         ))}
       </div>

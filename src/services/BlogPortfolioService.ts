@@ -27,7 +27,7 @@ export class BlogPortfolioService {
 
       return {
         source: "naver",
-        posts: naverItems.map((item) => this.toPortfolioPost(item))
+        posts: naverItems.map((item, index) => this.toPortfolioPost(item, index))
       };
     } catch {
       return this.fallbackResult();
@@ -38,12 +38,13 @@ export class BlogPortfolioService {
     return { source: "fallback" as const, posts: this.fallbackPosts };
   }
 
-  private toPortfolioPost(item: NaverBlogItem): PortfolioPost {
+  private toPortfolioPost(item: NaverBlogItem, index: number): PortfolioPost {
     return {
       title: this.stripHtml(item.title),
       description: this.stripHtml(item.description),
       date: this.formatPostDate(item.postdate),
-      link: item.link
+      link: item.link,
+      image: item.image ?? this.fallbackPosts[index % this.fallbackPosts.length]?.image ?? this.fallbackPosts[0]?.image ?? ""
     };
   }
 

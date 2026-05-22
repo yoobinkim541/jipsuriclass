@@ -1,19 +1,31 @@
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LoaderCircle, PencilLine, RotateCcw, Save } from "lucide-react";
 import { SiteContentService, defaultHomepageContent } from "../services/SiteContentService";
 import type { HomepageContent } from "../types";
 
 const siteContentService = new SiteContentService();
+const AUTOSAVE_DELAY = 1200;
 
 const emptyStrengths = ["", "", ""];
+
+type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveNote, setSaveNote] = useState<string>("편집 내용을 불러오는 중입니다.");
   const [draft, setDraft] = useState<HomepageContent>(defaultHomepageContent);
+
+  const draftRef = useRef(draft);
+  const lastSavedRef = useRef(JSON.stringify(defaultHomepageContent));
+  const autosaveTimerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    draftRef.current = draft;
+  }, [draft]);
 
   useEffect(() => {
     let mounted = true;
@@ -22,10 +34,16 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       .then((content) => {
         if (!mounted) return;
         setDraft(content);
+        draftRef.current = content;
+        lastSavedRef.current = JSON.stringify(content);
+        setSaveState("saved");
+        setSaveNote("현재 내용이 저장되어 있습니다.");
       })
       .catch((loadError) => {
         if (!mounted) return;
         setError(loadError instanceof Error ? loadError.message : "편집 내용을 불러오지 못했습니다.");
+        setSaveState("error");
+        setSaveNote("불러오기에 실패했습니다.");
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -36,30 +54,87 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
     };
   }, []);
 
+  useEffect(() => {
+    if (loading || !isAuthenticated) return;
+
+    const snapshot = JSON.stringify(draft);
+    if (snapshot === lastSavedRef.current) {
+      if (saveState !== "saving") {
+        setSaveState("saved");
+        setSaveNote("현재 내용이 저장되어 있습니다.");
+      }
+      return;
+    }
+
+    setSaveState("dirty");
+    setSaveNote("변경 내용을 자동 저장합니다.");
+
+    if (autosaveTimerRef.current) {
+      window.clearTimeout(autosaveTimerRef.current);
+    }
+
+    autosaveTimerRef.current = window.setTimeout(() => {
+      void persistDraft("auto");
+    }, AUTOSAVE_DELAY);
+
+    return () => {
+      if (autosaveTimerRef.current) {
+        window.clearTimeout(autosaveTimerRef.current);
+      }
+    };
+    // saveState intentionally omitted; we only need to react to draft/auth/loading changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draft, isAuthenticated, loading]);
+
   const strengthsText = useMemo(() => draft.about.strengths.join("\n"), [draft.about.strengths]);
 
-  async function handleSave() {
+  async function persistDraft(mode: "auto" | "manual") {
+    const payload = draftRef.current;
+    const snapshot = JSON.stringify(payload);
+
     setSaving(true);
     setError(null);
-    setSuccess(null);
+    setSaveState("saving");
+    setSaveNote(mode === "auto" ? "자동 저장 중입니다." : "저장 중입니다.");
 
     try {
-      await siteContentService.saveHomepageContent(draft);
-      setSuccess("홈페이지 내용이 저장되었습니다.");
-      window.setTimeout(() => setSuccess(null), 3500);
+      await siteContentService.saveHomepageContent(payload);
+      lastSavedRef.current = snapshot;
+      setSaveState("saved");
+      setSaveNote(mode === "auto" ? "자동 저장되었습니다." : "저장되었습니다.");
+      window.setTimeout(() => {
+        if (lastSavedRef.current === snapshot) {
+          setSaveNote("현재 내용이 저장되어 있습니다.");
+        }
+      }, 2200);
     } catch (saveError) {
+      setSaveState("error");
       setError(saveError instanceof Error ? saveError.message : "저장에 실패했습니다.");
+      setSaveNote("저장하지 못했습니다.");
     } finally {
       setSaving(false);
     }
   }
 
+  async function handleSave() {
+    await persistDraft("manual");
+  }
+
+  function markEdited() {
+    if (saveState !== "saving") {
+      setSaveState("dirty");
+      setSaveNote("변경 내용을 자동 저장합니다.");
+    }
+  }
+
   function updateHero(field: keyof HomepageContent["hero"], value: string) {
     setDraft((current) => ({ ...current, hero: { ...current.hero, [field]: value } }));
+    markEdited();
   }
 
   function updateAbout(field: keyof HomepageContent["about"], value: string) {
     setDraft((current) => ({ ...current, about: { ...current.about, [field]: value } }));
+    markEdited();
   }
 
   function updateStrengths(value: string) {
@@ -70,6 +145,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
         strengths: normalizeLines(value, current.about.strengths.length || emptyStrengths.length)
       }
     }));
+    markEdited();
   }
 
   function updateService(index: number, field: "title" | "text", value: string) {
@@ -78,6 +154,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       services[index] = { ...(services[index] ?? { title: "", text: "" }), [field]: value };
       return { ...current, services };
     });
+    markEdited();
   }
 
   function updateCase(index: number, field: keyof HomepageContent["cases"][number], value: string) {
@@ -86,6 +163,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       cases[index] = { ...(cases[index] ?? { title: "", area: "", problem: "", solution: "", image: "" }), [field]: value };
       return { ...current, cases };
     });
+    markEdited();
   }
 
   function updateProcess(index: number, field: "title" | "text", value: string) {
@@ -94,15 +172,18 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       process[index] = { ...(process[index] ?? { title: "", text: "" }), [field]: value };
       return { ...current, process };
     });
+    markEdited();
   }
 
   function updateContact(field: keyof HomepageContent["contact"], value: string) {
     setDraft((current) => ({ ...current, contact: { ...current.contact, [field]: value } }));
+    markEdited();
   }
 
   function resetDraft() {
     setDraft(defaultHomepageContent);
-    setSuccess(null);
+    setSaveState("dirty");
+    setSaveNote("기본값으로 되돌렸습니다. 자동 저장됩니다.");
     setError(null);
   }
 
@@ -116,6 +197,12 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
           </span>
           <h2 id="homepage-editor-title">지금 페이지에 보이는 글과 사진을 수정합니다</h2>
           <p>저장하면 홈 화면의 문구, 대표 사진, 소개, 서비스, 사례, 작업 절차, 문의 영역이 함께 바뀝니다.</p>
+          <div className="editor-save-state" aria-live="polite">
+            <span data-state={saveState}>
+              {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
+            </span>
+            <p>{saveNote}</p>
+          </div>
         </div>
         <div className="editor-actions">
           <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
@@ -124,14 +211,13 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
           </button>
           <button className="admin-primary-button" type="button" onClick={() => void handleSave()} disabled={!isAuthenticated || loading || saving}>
             {saving ? <LoaderCircle size={16} className="spin" /> : <Save size={16} />}
-            {saving ? "저장 중" : "저장"}
+            {saving ? "저장 중" : "즉시 저장"}
           </button>
         </div>
       </div>
 
       {!isAuthenticated ? <p className="admin-banner">편집하려면 Google로 로그인한 관리자 계정이어야 합니다.</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
-      {success ? <p className="admin-banner">{success}</p> : null}
 
       {loading ? (
         <div className="admin-empty">

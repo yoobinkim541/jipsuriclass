@@ -5,6 +5,7 @@ type NaverBlogItem = {
   description: string;
   link: string;
   postdate?: string;
+  image?: string;
 };
 
 /**
@@ -38,8 +39,35 @@ export default async function handler(_request: VercelRequest, response: VercelR
     }
 
     const data = (await naverResponse.json()) as { items?: NaverBlogItem[] };
-    response.status(200).json({ items: data.items ?? [], source: "naver" });
+    const items = Array.isArray(data.items) ? data.items.slice(0, 6) : [];
+    const enrichedItems = await Promise.all(items.map(async (item) => ({ ...item, image: await resolveBlogImage(item.link) })));
+    response.status(200).json({ items: enrichedItems, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });
   }
+}
+
+async function resolveBlogImage(link: string) {
+  try {
+    const blogResponse = await fetch(link, {
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+
+    if (!blogResponse.ok) return undefined;
+
+    const html = await blogResponse.text();
+    const ogImageMatch =
+      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ??
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+
+    return ogImageMatch?.[1] ? decodeHtml(ogImageMatch[1]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function decodeHtml(value: string) {
+  return value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }

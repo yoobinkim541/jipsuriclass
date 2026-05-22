@@ -316,3 +316,48 @@ Verification:
 
 Follow-up:
 - Verify the live page on a phone-sized viewport and a tablet-sized viewport after the next deployment.
+
+## 2026-05-22 - Portfolio Cards, Neutral Palette, And Icon Refresh
+
+Changed files:
+- `src/App.tsx`
+- `src/data.ts`
+- `src/services/BlogPortfolioService.ts`
+- `api/naver-blog.ts`
+- `vite.config.ts`
+- `src/types.ts`
+- `src/styles.css`
+- `index.html`
+- `public/icons/icon.svg`
+- `public/icons/icon-192.svg`
+- `public/icons/icon-512.svg`
+
+Implemented behavior:
+- Converted the blog portfolio area to photo cards instead of text rows.
+- Added Naver blog thumbnail extraction from each post page's `og:image`, with fallback case images when a thumbnail is missing.
+- Shifted the site to a cooler neutral palette with Google Fonts `Inter` + `Noto Sans KR`.
+- Replaced the web/app SVG icons with a darker, more minimal house-style mark inspired by the existing blog icon.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Check the live site on a browser to confirm the new card thumbnails render for Naver blog posts.
+
+## 2026-05-22 - Admin Split Pages, Autosave, And Inquiry Analytics
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `src/admin/HomepageEditor.tsx`
+- `src/styles.css`
+
+Implemented behavior:
+- Split the admin experience into `/admin/editor` and `/admin/inquiries`.
+- Added automatic save behavior in the homepage editor after edits settle.
+- Added inquiry summary cards and a 7-day bar chart on the inquiry page.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Rework the editor into a more direct click-to-edit preview flow if you want the admin page to mirror the public homepage more closely.

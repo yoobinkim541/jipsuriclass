@@ -35,8 +35,15 @@ function naverBlogApi(): Plugin {
           }
 
           const data = await response.json();
+          const items = Array.isArray(data.items) ? data.items.slice(0, 6) : [];
+          const enrichedItems = await Promise.all(
+            items.map(async (item: { link: string }) => ({
+              ...item,
+              image: await resolveBlogImage(item.link)
+            }))
+          );
           res.setHeader("Content-Type", "application/json; charset=utf-8");
-          res.end(JSON.stringify({ items: data.items ?? [], source: "naver" }));
+          res.end(JSON.stringify({ items: enrichedItems, source: "naver" }));
         } catch (error) {
           res.statusCode = 502;
           res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -184,6 +191,31 @@ function escapeHtml(value: string) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+async function resolveBlogImage(link: string) {
+  try {
+    const response = await fetch(link, {
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+
+    if (!response.ok) return undefined;
+
+    const html = await response.text();
+    const match =
+      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ??
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+
+    return match?.[1] ? decodeHtml(match[1]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function decodeHtml(value: string) {
+  return value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
 }
 
 export default defineConfig({
