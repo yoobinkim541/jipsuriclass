@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  Globe,
   Edit2,
+  KeyRound,
   LoaderCircle,
   LogOut,
   RefreshCcw,
   ShieldCheck,
-  User
 } from "lucide-react";
 import { business } from "../data";
 import { supabase } from "../lib/supabaseClient";
@@ -31,6 +32,9 @@ export function AccountPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [passwordDraft, setPasswordDraft] = useState("");
+  const [accountActionLoading, setAccountActionLoading] = useState<"password" | "google" | null>(null);
+  const [accountMessage, setAccountMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -100,18 +104,39 @@ export function AccountPage() {
     }
   }
 
-  async function handleSignIn() {
-    setError(null);
-    try {
-      await authService.signInWithGoogle(`${window.location.origin}/account`);
-    } catch (signInError) {
-      setError(signInError instanceof Error ? signInError.message : "Google 로그인에 실패했습니다.");
-    }
-  }
-
   async function handleSignOut() {
     await authService.signOut();
     window.location.reload();
+  }
+
+  async function handleAddPassword() {
+    if (!passwordDraft.trim()) {
+      setAccountMessage("비밀번호를 입력하세요.");
+      return;
+    }
+
+    setAccountActionLoading("password");
+    setAccountMessage(null);
+    try {
+      await authService.updatePassword(passwordDraft.trim());
+      setPasswordDraft("");
+      setAccountMessage("비밀번호를 이 계정에 추가했습니다.");
+    } catch (passwordError) {
+      setAccountMessage(passwordError instanceof Error ? passwordError.message : "비밀번호 설정에 실패했습니다.");
+    } finally {
+      setAccountActionLoading(null);
+    }
+  }
+
+  async function handleLinkGoogle() {
+    setAccountActionLoading("google");
+    setAccountMessage(null);
+    try {
+      await authService.linkGoogleIdentity();
+    } catch (googleError) {
+      setAccountMessage(googleError instanceof Error ? googleError.message : "Google 연결에 실패했습니다.");
+      setAccountActionLoading(null);
+    }
   }
 
   async function saveInquiry(id: string) {
@@ -178,29 +203,63 @@ export function AccountPage() {
         <div>
           <span className="admin-kicker">
             <ShieldCheck size={16} />
-            고객 계정
+            마이페이지
           </span>
-          <h1>내 견적 요청과 작업 기록을 확인합니다</h1>
+          <h1>내 문의와 로그인 수단을 관리합니다</h1>
           <p>
-            구글 로그인으로 본인 문의만 보고, 수정이 필요한 요청은 바로 업데이트할 수 있습니다.
+            문의 내역을 보고, 이 계정에 이메일 비밀번호나 Google 로그인 수단을 추가할 수 있습니다.
           </p>
         </div>
         <div className="admin-login-card">
           {sessionLoading ? (
             <p className="admin-muted">세션 확인 중</p>
           ) : sessionEmail ? (
-            <div className="admin-session-card">
-              <strong>로그인됨</strong>
-              <p>{sessionEmail}</p>
+            <div className="admin-session-card admin-session-card-stack">
+              <div>
+                <strong>로그인됨</strong>
+                <p>{sessionEmail}</p>
+              </div>
+              <div className="account-identity-actions">
+                <label className="account-identity-field">
+                  <span>비밀번호 추가/변경</span>
+                  <input
+                    autoComplete="new-password"
+                    placeholder="새 비밀번호"
+                    type="password"
+                    value={passwordDraft}
+                    onChange={(event) => setPasswordDraft(event.target.value)}
+                  />
+                </label>
+                <div className="account-identity-buttons">
+                  <button
+                    className="admin-primary-button"
+                    type="button"
+                    onClick={() => void handleAddPassword()}
+                    disabled={accountActionLoading === "password"}
+                  >
+                    <KeyRound size={16} />
+                    {accountActionLoading === "password" ? "저장 중" : "비밀번호 저장"}
+                  </button>
+                  <button
+                    className="admin-ghost-button"
+                    type="button"
+                    onClick={() => void handleLinkGoogle()}
+                    disabled={accountActionLoading === "google"}
+                  >
+                    <Globe size={16} />
+                    {accountActionLoading === "google" ? "연결 중" : "Google 연결"}
+                  </button>
+                </div>
+                {accountMessage ? <p className="admin-muted">{accountMessage}</p> : null}
+              </div>
             </div>
           ) : (
             <>
-              <strong>Google 로그인</strong>
-              <p>고객 계정으로 로그인해 이전 문의를 확인하세요.</p>
-              <button className="admin-primary-button" onClick={() => void handleSignIn()} type="button">
-                <User size={18} />
-                Google로 로그인
-              </button>
+              <strong>로그인이 필요합니다</strong>
+              <p>이전에 남긴 문의를 보려면 로그인하세요.</p>
+              <a className="admin-primary-button" href="/login">
+                로그인 페이지로 이동
+              </a>
             </>
           )}
         </div>

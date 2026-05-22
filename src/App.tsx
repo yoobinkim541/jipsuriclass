@@ -17,6 +17,7 @@ import { InquiryService } from "./services/InquiryService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import type { PortfolioPost } from "./types";
 import { AdminPage } from "./admin/AdminPage";
+import { AdminLoginPage } from "./admin/AdminLoginPage";
 import { AccountPage } from "./account/AccountPage";
 import { LoginPage } from "./login/LoginPage";
 import { PrivacyPolicyPage } from "./privacy/PrivacyPolicyPage";
@@ -30,10 +31,13 @@ const siteContentService = new SiteContentService();
 const mediaService = new MediaService();
 
 function App() {
+  if (window.location.pathname.startsWith("/admin/login")) {
+    return <AdminLoginPage />;
+  }
   if (window.location.pathname.startsWith("/admin")) {
     return <AdminPage />;
   }
-  if (window.location.pathname.startsWith("/account")) {
+  if (window.location.pathname.startsWith("/mypage") || window.location.pathname.startsWith("/account")) {
     return <AccountPage />;
   }
   if (window.location.pathname.startsWith("/login")) {
@@ -119,7 +123,7 @@ function HomePage() {
         <ServicesSection services={homeContent.services} />
         <SpecialtiesSection />
         <CasesSection cases={homeContent.cases} />
-        <BlogSection posts={blogPosts} source={blogSource} />
+        <BlogSection posts={blogPosts} source={blogSource} fallbackPosts={homeContent.blog} />
         <ProcessSection steps={homeContent.process} />
         <ContactSection content={homeContent.contact} status={estimateStatus} onSubmit={handleEstimateSubmit} />
         <OfficeSection />
@@ -443,12 +447,21 @@ function CasesSection({
   );
 }
 
-/** 네이버 블로그 자동 연동 영역: API 실패 시 pinnedPosts가 표시됩니다. */
-function BlogSection({ posts, source }: { posts: PortfolioPost[]; source: "loading" | "naver" | "fallback" }) {
+/** 네이버 블로그 자동 연동 영역: API 실패 시 관리자 지정 포스트가 표시됩니다. */
+function BlogSection({
+  posts,
+  source,
+  fallbackPosts
+}: {
+  posts: PortfolioPost[];
+  source: "loading" | "naver" | "fallback";
+  fallbackPosts: PortfolioPost[];
+}) {
+  const displayPosts = source === "naver" ? posts : fallbackPosts;
   const description =
     source === "naver"
       ? "네이버 블로그 최신 현장 글을 자동으로 가져와 사진 카드로 보여줍니다."
-      : "API 키가 없거나 연결되지 않으면 대표 사례 사진 카드로 대신 보여줍니다.";
+      : "API 키가 없거나 연결되지 않으면 관리자 지정 포트폴리오 카드로 대신 보여줍니다.";
 
   return (
     <section className="blog section" id="blog" aria-labelledby="blog-title">
@@ -461,7 +474,7 @@ function BlogSection({ posts, source }: { posts: PortfolioPost[]; source: "loadi
         className="naver-link"
       />
       <div className="blog-card-grid">
-        {posts.map((post) => (
+        {displayPosts.map((post) => (
           <a className="blog-card" href={post.link} target="_blank" rel="noreferrer" key={post.title}>
             <img className="blog-card-image" src={post.image} alt={post.title} />
             <div className="blog-card-body">

@@ -12,7 +12,6 @@ import {
   Search,
   ShieldCheck,
   SortAsc,
-  User
 } from "lucide-react";
 import { business } from "../data";
 import { supabase } from "../lib/supabaseClient";
@@ -114,15 +113,6 @@ export function AdminPage() {
     }
 
     window.location.reload();
-  }
-
-  async function handleSignIn() {
-    setError(null);
-    try {
-      await authService.signInWithGoogle(`${window.location.origin}/admin/${view}`);
-    } catch (signInError) {
-      setError(signInError instanceof Error ? signInError.message : "Google 로그인에 실패했습니다.");
-    }
   }
 
   async function handleSignOut() {
@@ -239,12 +229,11 @@ export function AdminPage() {
             </div>
           ) : (
             <>
-              <strong>Google 로그인</strong>
-              <p>관리자 구글 계정으로 로그인하세요.</p>
-              <button className="admin-primary-button" onClick={() => void handleSignIn()} type="button">
-                <User size={18} />
-                Google로 로그인
-              </button>
+              <strong>관리자 로그인 필요</strong>
+              <p>관리자 이메일과 비밀번호, 또는 Google로 로그인하세요.</p>
+              <a className="admin-primary-button" href="/admin/login">
+                관리자 로그인
+              </a>
             </>
           )}
         </div>

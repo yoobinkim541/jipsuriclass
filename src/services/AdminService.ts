@@ -2,19 +2,6 @@ import { supabase } from "../lib/supabaseClient";
 import type { InquiryRow, InquiryStatus } from "../types";
 
 export class AdminService {
-  async signInWithGoogle() {
-    if (!supabase) {
-      throw new Error("Supabase environment variables are not configured");
-    }
-
-    return supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/admin`
-      }
-    });
-  }
-
   async signOut() {
     if (!supabase) {
       throw new Error("Supabase environment variables are not configured");
