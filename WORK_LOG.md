@@ -361,3 +361,21 @@ Verification:
 
 Follow-up:
 - Rework the editor into a more direct click-to-edit preview flow if you want the admin page to mirror the public homepage more closely.
+
+## 2026-05-22 - Hero Carousel And Click-To-Edit Admin Preview
+
+Changed files:
+- `src/App.tsx`
+- `src/admin/HomepageEditor.tsx`
+- `src/styles.css`
+
+Implemented behavior:
+- Turned the hero into an auto-rotating carousel with manual previous/next controls and dots.
+- Rebuilt the admin editor into a live homepage preview on the left and a click-to-edit inspector on the right.
+- Kept autosave in place so edits persist after the user pauses typing.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Check the live site to confirm the hero carousel feels smooth on desktop and mobile.

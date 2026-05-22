@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   Menu,
   MessageCircle,
@@ -84,7 +86,10 @@ function HomePage() {
     <>
       <SiteHeader menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} />
       <main id="top">
-        <HeroSection content={homeContent.hero} />
+        <HeroSection
+          content={homeContent.hero}
+          slides={[homeContent.hero.image, ...homeContent.cases.slice(0, 2).map((item) => item.image)]}
+        />
         <AboutSection content={homeContent.about} />
         <SymptomsSection symptoms={homeContent.symptoms} />
         <ServicesSection services={homeContent.services} />
@@ -171,10 +176,38 @@ function SiteHeader({
  * 첫 화면 전환 영역
  * 브랜드 포지션, 즉시 상담 CTA, 신뢰 포인트를 한 화면에 배치합니다.
  */
-function HeroSection({ content }: { content: { title: string; description: string; image: string; mediaNote: string } }) {
+function HeroSection({
+  content,
+  slides
+}: {
+  content: { title: string; description: string; image: string; mediaNote: string };
+  slides: string[];
+}) {
+  const heroSlides = useMemo(() => slides.filter(Boolean).slice(0, 3), [slides]);
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    if (heroSlides.length < 2) return;
+
+    const timer = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % heroSlides.length);
+    }, 6000);
+
+    return () => window.clearInterval(timer);
+  }, [heroSlides.length]);
+
   return (
     <section className="hero hero-fullbleed">
-      <img className="hero-background" src={content.image} alt="" aria-hidden="true" />
+      <div className="hero-carousel" aria-hidden="true">
+        {heroSlides.map((image, index) => (
+          <img
+            key={image}
+            className={index === activeSlide ? "hero-background hero-slide active" : "hero-background hero-slide"}
+            src={image}
+            alt=""
+          />
+        ))}
+      </div>
       <div className="hero-overlay" />
       <div className="hero-copy">
         <span className="hero-kicker">{content.mediaNote}</span>
@@ -184,6 +217,27 @@ function HeroSection({ content }: { content: { title: string; description: strin
         <LoginButtons />
         <ProofList />
       </div>
+      {heroSlides.length > 1 ? (
+        <div className="hero-carousel-controls" aria-label="히어로 이미지 전환">
+          <button type="button" onClick={() => setActiveSlide((current) => (current - 1 + heroSlides.length) % heroSlides.length)}>
+            <ChevronLeft size={18} />
+          </button>
+          <div className="hero-carousel-dots">
+            {heroSlides.map((image, index) => (
+              <button
+                key={image}
+                type="button"
+                className={index === activeSlide ? "hero-dot active" : "hero-dot"}
+                onClick={() => setActiveSlide(index)}
+                aria-label={`슬라이드 ${index + 1}`}
+              />
+            ))}
+          </div>
+          <button type="button" onClick={() => setActiveSlide((current) => (current + 1) % heroSlides.length)}>
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }
