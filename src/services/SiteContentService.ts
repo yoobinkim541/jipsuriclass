@@ -1,4 +1,5 @@
 import { business, cases as defaultCases, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
+import { images } from "../assets/images";
 import { supabase } from "../lib/supabaseClient";
 import type { HomepageContent } from "../types";
 
@@ -11,10 +12,10 @@ const CONTENT_ID = "homepage";
 
 export const defaultHomepageContent: HomepageContent = {
   hero: {
-    title: "누수부터 부분수리까지, 집 문제를 정확히 고칩니다",
+    title: "클라쓰가 다른 종합집수리",
     description:
       "사진 상담으로 증상을 먼저 확인하고, 필요한 작업만 설명합니다. 생활 집수리, 누수 복구, 원상복구까지 현장 중심으로 처리합니다.",
-    image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=1100&q=80",
+    image: images.heroFallback,
     mediaNote: "현장 사진 확인 후 작업 범위를 안내합니다"
   },
   about: {
@@ -33,7 +34,8 @@ export const defaultHomepageContent: HomepageContent = {
     area: item.area,
     problem: item.problem,
     solution: item.solution,
-    image: item.image
+    image: item.image,
+    link: item.link
   })),
   process: defaultProcess.map((item) => ({
     title: item.title,
@@ -109,7 +111,8 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
           area: typeof item?.area === "string" ? item.area : base.cases[index]?.area ?? "",
           problem: typeof item?.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
           solution: typeof item?.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
-          image: typeof item?.image === "string" ? item.image : base.cases[index]?.image ?? ""
+          image: typeof item?.image === "string" ? item.image : base.cases[index]?.image ?? "",
+          link: typeof item?.link === "string" ? item.link : base.cases[index]?.link ?? ""
         }))
       : base.cases,
     process: Array.isArray(input.process)

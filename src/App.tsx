@@ -18,10 +18,15 @@ import { SiteContentService, defaultHomepageContent } from "./services/SiteConte
 import type { PortfolioPost } from "./types";
 import { AdminPage } from "./admin/AdminPage";
 import { AccountPage } from "./account/AccountPage";
+import { LoginPage } from "./login/LoginPage";
+import { PrivacyPolicyPage } from "./privacy/PrivacyPolicyPage";
+import { EstimatePage } from "./estimate/EstimatePage";
+import { MediaService } from "./services/MediaService";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const inquiryService = new InquiryService();
 const siteContentService = new SiteContentService();
+const mediaService = new MediaService();
 
 function App() {
   if (window.location.pathname.startsWith("/admin")) {
@@ -29,6 +34,15 @@ function App() {
   }
   if (window.location.pathname.startsWith("/account")) {
     return <AccountPage />;
+  }
+  if (window.location.pathname.startsWith("/login")) {
+    return <LoginPage />;
+  }
+  if (window.location.pathname.startsWith("/privacy")) {
+    return <PrivacyPolicyPage />;
+  }
+  if (window.location.pathname.startsWith("/estimate")) {
+    return <EstimatePage />;
   }
 
   return <HomePage />;
@@ -65,14 +79,23 @@ function HomePage() {
   async function handleEstimateSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    const attachments = formData
+      .getAll("attachments")
+      .filter((item): item is File => item instanceof File && item.size > 0);
 
     setEstimateStatus("submitting");
     try {
+      const uploadedAttachments =
+        attachments.length > 0
+          ? await Promise.all(attachments.map((file) => mediaService.uploadInquiryAttachment(file)))
+          : [];
+
       await inquiryService.createInquiry({
         name: String(formData.get("name") || ""),
         phone: String(formData.get("phone") || ""),
         serviceArea: String(formData.get("area") || ""),
-        message: String(formData.get("message") || "")
+        message: String(formData.get("message") || ""),
+        attachments: uploadedAttachments
       });
       event.currentTarget.reset();
       setEstimateStatus("success");
@@ -98,6 +121,7 @@ function HomePage() {
         <BlogSection posts={blogPosts} source={blogSource} />
         <ProcessSection steps={homeContent.process} />
         <ContactSection content={homeContent.contact} status={estimateStatus} onSubmit={handleEstimateSubmit} />
+        <OfficeSection />
       </main>
       {!contentReady ? <div className="content-loading">페이지 내용을 불러오는 중</div> : null}
       <SiteFooter />
@@ -122,7 +146,7 @@ function SiteHeader({
   return (
     <>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="집수리 클라쓰 홈">
+        <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
           <img className="brand-mark" src="/icons/icon.svg" alt="" aria-hidden="true" />
           <span>{business.name}</span>
         </a>
@@ -133,6 +157,9 @@ function SiteHeader({
             </a>
           ))}
         </nav>
+        <a className="header-login-link" href="/login">
+          로그인
+        </a>
         <a className="header-call" href={business.phoneHref}>
           <Phone size={18} />
           {business.phone}
@@ -152,6 +179,9 @@ function SiteHeader({
               {item.label}
             </a>
           ))}
+          <a href="/login" onClick={onCloseMenu}>
+            로그인
+          </a>
         </div>
       )}
     </>
@@ -238,6 +268,10 @@ function CtaButtons() {
         <MessageCircle size={20} />
         카카오톡 상담
       </a>
+      <a className="secondary-button" href="/estimate">
+        <ArrowUpRight size={20} />
+        상세 견적 상담
+      </a>
     </div>
   );
 }
@@ -290,6 +324,15 @@ function AboutSection({
 
 /** 증상 기반 진입 영역: 고객이 전문 공종명을 몰라도 문의할 수 있게 돕습니다. */
 function SymptomsSection({ symptoms }: { symptoms: string[] }) {
+  const symptomRoutes: Record<string, string> = {
+    "물이 샌다": "누수/배관",
+    "벽지가 들뜬다": "도배/바닥",
+    "타일이 깨졌다": "욕실",
+    "문이 안 닫힌다": "문/목공",
+    "곰팡이가 생겼다": "방수",
+    "수전·배수가 불편하다": "주방"
+  };
+
   return (
     <section className="symptoms section" aria-labelledby="symptoms-title">
       <SectionHeading
@@ -299,7 +342,10 @@ function SymptomsSection({ symptoms }: { symptoms: string[] }) {
       />
       <div className="symptom-grid">
         {symptoms.map((item) => (
-          <a href="#contact" key={item}>
+          <a
+            href={`/estimate?project=${encodeURIComponent(symptomRoutes[item] ?? "")}&issue=${encodeURIComponent(item)}`}
+            key={item}
+          >
             {item}
             <ArrowUpRight size={18} />
           </a>
@@ -358,7 +404,11 @@ function SpecialtiesSection() {
 }
 
 /** 수동 대표 사례 영역: 실제 사진이 들어오면 data.ts의 cases.image만 교체합니다. */
-function CasesSection({ cases: editableCases }: { cases: { title: string; area: string; problem: string; solution: string; image: string }[] }) {
+function CasesSection({
+  cases: editableCases
+}: {
+  cases: { title: string; area: string; problem: string; solution: string; image: string; link: string }[];
+}) {
   return (
     <section className="cases section" id="cases" aria-labelledby="cases-title">
       <RowHeading
@@ -370,7 +420,7 @@ function CasesSection({ cases: editableCases }: { cases: { title: string; area: 
       />
       <div className="case-grid">
         {editableCases.map((item) => (
-          <article className="case-card" key={item.title}>
+          <a className="case-card case-link" href={item.link} target="_blank" rel="noreferrer" key={item.title}>
             <img src={item.image} alt={item.title} />
             <div>
               <span>{item.area}</span>
@@ -381,8 +431,11 @@ function CasesSection({ cases: editableCases }: { cases: { title: string; area: 
               <p>
                 <strong>해결</strong> {item.solution}
               </p>
+              <span className="case-card-link">
+                블로그 보기 <ExternalLink size={16} />
+              </span>
             </div>
-          </article>
+          </a>
         ))}
       </div>
     </section>
@@ -475,10 +528,53 @@ function ContactSection({
             <MessageCircle size={20} />
             카카오톡으로 사진 보내기
           </a>
+          <a className="secondary-button" href="/estimate">
+            <ArrowUpRight size={20} />
+            상담 폼으로 이동
+          </a>
         </div>
         <BusinessInfoList />
       </div>
       <EstimateForm status={status} onSubmit={onSubmit} />
+    </section>
+  );
+}
+
+function OfficeSection() {
+  return (
+    <section className="office section" id="location" aria-labelledby="location-title">
+      <SectionHeading
+        id="location-title"
+        title="오시는 길"
+        description="사무실 위치는 네이버 지도로 바로 확인할 수 있습니다."
+      />
+      <div className="office-grid">
+        <div className="office-card">
+          <span className="office-label">사무실</span>
+          <h3>{business.address}</h3>
+          <p>{business.area}</p>
+          <p>{business.hours}</p>
+          <div className="office-actions">
+            <a className="primary-button" href={business.mapUrl} target="_blank" rel="noreferrer">
+              네이버 지도 열기
+            </a>
+            <a className="secondary-button" href={business.phoneHref}>
+              전화 상담
+            </a>
+          </div>
+        </div>
+        <div className="office-map" aria-label="네이버 지도에서 사무실 위치">
+          <iframe
+            src={business.mapUrl}
+            title={`${business.name} 사무실 위치`}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+          <a className="office-map-link" href={business.mapUrl} target="_blank" rel="noreferrer">
+            네이버 지도에서 위치 확인
+          </a>
+        </div>
+      </div>
     </section>
   );
 }
@@ -503,6 +599,27 @@ function EstimateForm({
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
   const isSubmitting = status === "submitting";
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<Array<{ file: File; url: string }>>([]);
+
+  useEffect(() => {
+    const nextPreviews = files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file)
+    }));
+
+    setPreviews(nextPreviews);
+
+    return () => {
+      nextPreviews.forEach((item) => URL.revokeObjectURL(item.url));
+    };
+  }, [files]);
+
+  useEffect(() => {
+    if (status === "success") {
+      setFiles([]);
+    }
+  }, [status]);
 
   return (
     <form className="estimate-form" onSubmit={onSubmit}>
@@ -522,6 +639,26 @@ function EstimateForm({
         문의 내용
         <textarea required name="message" rows={5} placeholder="증상, 건물 유형, 사진 보유 여부를 적어주세요." />
       </label>
+      <label>
+        사진 첨부
+        <input
+          type="file"
+          name="attachments"
+          accept="image/*"
+          multiple
+          onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
+        />
+      </label>
+      {previews.length ? (
+        <div className="attachment-preview-grid" aria-label="첨부 사진 미리보기">
+          {previews.map((item) => (
+            <figure className="attachment-preview" key={`${item.file.name}-${item.url}`}>
+              <img src={item.url} alt={item.file.name} />
+              <figcaption>{item.file.name}</figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : null}
       <button type="submit" disabled={isSubmitting}>
         <Send size={19} />
         {isSubmitting ? "문의 저장 중" : "간단 견적 문의"}
@@ -578,7 +715,10 @@ function SiteFooter() {
       <p>
         {business.registrationNumber} · {business.owner} · {business.address}
       </p>
-      <p>개인정보는 상담 목적 외 사용하지 않으며, 실제 운영 시 개인정보처리방침 페이지를 연결합니다.</p>
+      <p>개인정보는 상담 목적 외 사용하지 않으며, 아래 정책 페이지에서 처리 방침을 확인할 수 있습니다.</p>
+      <a className="footer-admin-link" href="/privacy">
+        개인정보처리방침
+      </a>
     </footer>
   );
 }

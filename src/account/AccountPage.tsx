@@ -73,7 +73,7 @@ export function AccountPage() {
     try {
       const { data, error: queryError } = await supabase!
         .from("inquiries")
-        .select("id,name,phone,service_area,message,status,source,user_id,user_email,created_at,notified_at")
+        .select("id,name,phone,service_area,message,attachments,intake,status,source,user_id,user_email,created_at,notified_at")
         .order("created_at", { ascending: false })
         .limit(100);
 
@@ -289,6 +289,25 @@ export function AccountPage() {
                   ) : (
                     <p className="admin-message">{item.message}</p>
                   )}
+                  {item.intake ? (
+                    <ul className="inquiry-intake-list">
+                      {formatIntakeEntries(item.intake).map((entry) => (
+                        <li key={entry.label}>
+                          <strong>{entry.label}</strong> {entry.value}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {item.attachments?.length ? (
+                    <div className="inquiry-attachment-grid" aria-label="첨부 사진">
+                      {item.attachments.map((attachment) => (
+                        <a className="inquiry-attachment" href={attachment.url} target="_blank" rel="noreferrer" key={attachment.url}>
+                          <img src={attachment.url} alt={attachment.name} />
+                          <span>{attachment.name}</span>
+                        </a>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="admin-row-actions">
                   <button className="admin-status-button" type="button" onClick={() => setEditingId(isEditing ? null : item.id)}>
@@ -321,4 +340,14 @@ function formatDate(value: string) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(date);
+}
+
+function formatIntakeEntries(intake: Record<string, unknown>) {
+  return [
+    { label: "집 환경", value: String(intake.propertyType ?? "-") },
+    { label: "공사 유형", value: String(intake.projectType ?? "-") },
+    { label: "주소", value: String(intake.address ?? "-") },
+    { label: "상담 가능 시간", value: String(intake.preferredTime ?? "-") },
+    { label: "예산", value: String(intake.budget ?? "-") }
+  ];
 }

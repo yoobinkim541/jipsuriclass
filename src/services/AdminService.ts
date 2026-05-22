@@ -43,7 +43,7 @@ export class AdminService {
 
     const { data, error } = await supabase
       .from("inquiries")
-      .select("id,name,phone,service_area,message,status,source,user_id,user_email,created_at,notified_at")
+      .select("id,name,phone,service_area,message,attachments,intake,status,source,user_id,user_email,created_at,notified_at")
       .order("created_at", { ascending: false })
       .limit(100);
 

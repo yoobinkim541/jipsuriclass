@@ -12,9 +12,11 @@ import {
 } from "lucide-react";
 import { business, cases as defaultCases, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
 import { SiteContentService, defaultHomepageContent } from "../services/SiteContentService";
+import { MediaService } from "../services/MediaService";
 import type { HomepageContent } from "../types";
 
 const siteContentService = new SiteContentService();
+const mediaService = new MediaService();
 const AUTOSAVE_DELAY = 1200;
 
 const emptyStrengths = ["", "", ""];
@@ -180,12 +182,34 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
   function updateCase(index: number, field: keyof HomepageContent["cases"][number], value: string) {
     setDraft((current) => {
       const cases = current.cases.slice();
-      cases[index] = { ...(cases[index] ?? { title: "", area: "", problem: "", solution: "", image: "" }), [field]: value };
+      cases[index] = {
+        ...(cases[index] ?? { title: "", area: "", problem: "", solution: "", image: "", link: "" }),
+        [field]: value
+      };
       return { ...current, cases };
     });
     setSelectedSection("cases");
     setSelectedIndex(index);
     markEdited();
+  }
+
+  async function uploadCaseImage(index: number, file: File) {
+    setSaving(true);
+    setError(null);
+    setSaveNote("사례 이미지를 업로드 중입니다.");
+    setSaveState("saving");
+
+    try {
+      const uploaded = await mediaService.uploadCaseImage(file);
+      updateCase(index, "image", uploaded.url);
+      setSaveNote("이미지를 업로드했습니다.");
+    } catch (uploadError) {
+      setSaveState("error");
+      setError(uploadError instanceof Error ? uploadError.message : "이미지를 업로드하지 못했습니다.");
+      setSaveNote("이미지 업로드에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function updateProcess(index: number, field: "title" | "text", value: string) {
@@ -423,6 +447,25 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                   <input
                     value={draft.cases[selectedIndex]?.image ?? ""}
                     onChange={(event) => updateCase(selectedIndex, "image", event.target.value)}
+                  />
+                </Field>
+                <Field label="이미지 업로드">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => {
+                      const file = event.currentTarget.files?.[0];
+                      if (file) {
+                        void uploadCaseImage(selectedIndex, file);
+                      }
+                      event.currentTarget.value = "";
+                    }}
+                  />
+                </Field>
+                <Field label="블로그 링크">
+                  <input
+                    value={draft.cases[selectedIndex]?.link ?? ""}
+                    onChange={(event) => updateCase(selectedIndex, "link", event.target.value)}
                   />
                 </Field>
               </InspectorGroup>

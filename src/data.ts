@@ -19,6 +19,7 @@ import type {
   ServiceCategory,
   WorkProcessStep
 } from "./types";
+import { images } from "./assets/images";
 
 /**
  * 운영 정보 편집 구역
@@ -71,7 +72,8 @@ export const business: BusinessProfile = {
   hours: "08:00 - 21:00 / 매주 일요일 휴무",
   registrationNumber: "사업자등록번호 633-25-01331",
   owner: "대표자 이보미",
-  address: "경기도 남양주시 화도읍 경춘로 1790-2 106호"
+  address: "경기도 남양주시 화도읍 경춘로 1790-2 106호",
+  mapUrl: "https://naver.me/FRLt7TOJ"
 };
 
 export const navItems: NavItem[] = [
@@ -81,6 +83,8 @@ export const navItems: NavItem[] = [
   { label: "현장사례", href: "#cases" },
   { label: "블로그", href: "#blog" },
   { label: "작업절차", href: "#process" },
+  { label: "오시는길", href: "#location" },
+  { label: "견적상담", href: "/estimate" },
   { label: "문의", href: "#contact" }
 ];
 
@@ -118,24 +122,24 @@ export const cases: ConstructionCase[] = [
     area: "아파트 욕실",
     problem: "윗층 배관 누수 후 천장 마감 손상",
     solution: "누수 흔적 확인, 손상 면 정리, 마감재 교체",
-    image:
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=900&q=80"
+    link: business.naverBlogUrl,
+    image: images.cases.bathroomLeak
   },
   {
     title: "주방 싱크대 배수 보수",
     area: "빌라 주방",
     problem: "배수 냄새와 하부장 습기",
     solution: "배수 부속 교체, 하부장 내부 건조와 실리콘 마감",
-    image:
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=900&q=80"
+    link: business.naverBlogUrl,
+    image: images.cases.kitchenRepair
   },
   {
     title: "벽지 들뜸 부분 복구",
     area: "원룸 거실",
     problem: "누수 이후 벽지 들뜸과 얼룩",
     solution: "기초면 정리, 부분 도배, 마감 라인 보정",
-    image:
-      "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=900&q=80"
+    link: business.naverBlogUrl,
+    image: images.cases.wallRepair
   }
 ];
 

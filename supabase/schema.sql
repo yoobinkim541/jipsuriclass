@@ -7,6 +7,8 @@ create table if not exists public.inquiries (
   phone text not null,
   service_area text,
   message text not null,
+  attachments jsonb not null default '[]'::jsonb,
+  intake jsonb not null default '{}'::jsonb,
   status text not null default 'new',
   source text not null default 'website',
   user_id uuid,
@@ -17,6 +19,8 @@ create table if not exists public.inquiries (
 
 comment on table public.inquiries is '웹사이트 간단 견적 문의';
 comment on column public.inquiries.service_area is '고객이 입력한 지역. area는 Postgres 타입/함수와 혼동될 수 있어 service_area를 사용한다.';
+comment on column public.inquiries.attachments is '견적 문의에 첨부된 사진 메타데이터';
+comment on column public.inquiries.intake is '견적 설문에서 선택한 집 환경, 공사 유형, 예산, 상담 시간 등의 메타데이터';
 comment on column public.inquiries.user_id is 'Supabase Auth user id';
 comment on column public.inquiries.user_email is 'Supabase Auth email';
 comment on column public.inquiries.notified_at is '관리자 알림 전송 시각';
@@ -29,6 +33,15 @@ create table if not exists public.admin_users (
 );
 
 comment on table public.admin_users is '관리자 로그인 allowlist';
+alter table public.admin_users enable row level security;
+grant select on public.admin_users to authenticated;
+
+drop policy if exists "Authenticated users can read their admin row" on public.admin_users;
+create policy "Authenticated users can read their admin row"
+  on public.admin_users
+  for select
+  to authenticated
+  using (email = (auth.jwt() ->> 'email'));
 
 create schema if not exists private;
 
@@ -114,3 +127,15 @@ create policy "Customers can update own inquiries"
 create index if not exists inquiries_created_at_idx on public.inquiries (created_at desc);
 create index if not exists inquiries_notified_at_idx on public.inquiries (notified_at desc);
 create index if not exists inquiries_user_id_idx on public.inquiries (user_id);
+
+insert into storage.buckets (id, name, public)
+values ('jipsuri-media', 'jipsuri-media', true)
+on conflict (id) do update set public = excluded.public;
+
+alter table storage.objects enable row level security;
+drop policy if exists "Anyone can upload jipsuri media" on storage.objects;
+create policy "Anyone can upload jipsuri media"
+  on storage.objects
+  for insert
+  to anon, authenticated
+  with check (bucket_id = 'jipsuri-media');

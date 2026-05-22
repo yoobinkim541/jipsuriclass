@@ -58,14 +58,49 @@ async function resolveBlogImage(link: string) {
     if (!blogResponse.ok) return undefined;
 
     const html = await blogResponse.text();
-    const ogImageMatch =
-      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ??
-      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-
-    return ogImageMatch?.[1] ? decodeHtml(ogImageMatch[1]) : undefined;
+    return pickBestBlogImage(extractImageCandidates(html));
   } catch {
     return undefined;
   }
+}
+
+function extractImageCandidates(html: string) {
+  const candidates = new Set<string>();
+  const patterns = [
+    /<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/gi,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::secure_url)?["']/gi,
+    /<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/gi,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image(?::src)?["']/gi,
+    /<article[\s\S]*?<img[^>]+(?:data-lazy-src|data-src|src)=["']([^"']+)["']/gi,
+    /<div[^>]+class=["'][^"']*(?:post|content|se-container)[^"']*["'][\s\S]*?<img[^>]+(?:data-lazy-src|data-src|src)=["']([^"']+)["']/gi,
+    /<img[^>]+(?:data-lazy-src|data-src|src)=["']([^"']+)["']/gi
+  ];
+
+  for (const pattern of patterns) {
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(html))) {
+      const url = decodeHtml(match[1]);
+      if (!isLikelyBlogImage(url)) continue;
+      candidates.add(url);
+    }
+  }
+
+  return Array.from(candidates);
+}
+
+function pickBestBlogImage(candidates: string[]) {
+  return candidates.find((url) => !isLikelyPlaceholderImage(url)) ?? candidates[0];
+}
+
+function isLikelyBlogImage(url: string) {
+  return (
+    !/blog\/logo|sp_blog|static\/blog\/img|profile|icon|emoji/i.test(url) &&
+    /^https?:\/\//i.test(url)
+  );
+}
+
+function isLikelyPlaceholderImage(url: string) {
+  return /blog\/logo|sp_blog|static\/blog\/img|profile|icon|emoji/i.test(url);
 }
 
 function decodeHtml(value: string) {

@@ -5,6 +5,8 @@ type InquiryPayload = {
   phone?: string;
   serviceArea?: string;
   message?: string;
+  attachments?: Array<{ name?: string; url?: string; type?: string }>;
+  intake?: Record<string, unknown>;
   userId?: string | null;
   userEmail?: string | null;
 };
@@ -31,6 +33,16 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const phone = String(payload.phone || "").trim();
   const serviceArea = String(payload.serviceArea || "").trim();
   const message = String(payload.message || "").trim();
+  const attachments = Array.isArray(payload.attachments)
+    ? payload.attachments
+        .map((item) => ({
+          name: String(item?.name || "").trim(),
+          url: String(item?.url || "").trim(),
+          type: String(item?.type || "").trim()
+        }))
+        .filter((item) => item.url)
+    : [];
+  const intake = payload.intake && typeof payload.intake === "object" ? payload.intake : {};
   const userId = payload.userId ? String(payload.userId).trim() : null;
   const userEmail = payload.userEmail ? String(payload.userEmail).trim() : null;
 
@@ -56,6 +68,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
       phone,
       service_area: serviceArea || null,
       message,
+      attachments,
+      intake,
       user_id: userId,
       user_email: userEmail,
       status: "new",
@@ -81,7 +95,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
         from: "집수리클라쓰 <onboarding@resend.dev>",
         to: [adminEmail],
         subject: `새 견적 문의: ${name}`,
-        html: buildEmailHtml({ name, phone, serviceArea, message, userEmail })
+        html: buildEmailHtml({ name, phone, serviceArea, message, userEmail, attachments, intake })
       })
     });
 
@@ -97,7 +111,10 @@ function buildEmailHtml(input: {
   serviceArea: string;
   message: string;
   userEmail: string | null;
+  attachments: Array<{ name: string; url: string; type: string }>;
+  intake: Record<string, unknown>;
 }) {
+  const summary = formatIntakeSummary(input.intake);
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
       <h2 style="margin: 0 0 12px;">새 견적 문의</h2>
@@ -105,10 +122,40 @@ function buildEmailHtml(input: {
       <p><strong>연락처:</strong> ${escapeHtml(input.phone)}</p>
       <p><strong>지역:</strong> ${escapeHtml(input.serviceArea || "-")}</p>
       <p><strong>이메일:</strong> ${escapeHtml(input.userEmail || "-")}</p>
+      ${summary ? `<p><strong>설문 요약:</strong><br />${summary}</p>` : ""}
+      ${
+        input.attachments.length
+          ? `
+            <p><strong>첨부사진:</strong></p>
+            <ul style="padding-left: 18px;">
+              ${input.attachments
+                .map(
+                  (attachment) =>
+                    `<li><a href="${escapeHtml(attachment.url)}" target="_blank" rel="noreferrer">${escapeHtml(attachment.name || "첨부파일")}</a></li>`
+                )
+                .join("")}
+            </ul>
+          `
+          : ""
+      }
       <p><strong>문의내용:</strong></p>
       <pre style="white-space: pre-wrap; background: #f9fafb; padding: 12px; border-radius: 8px;">${escapeHtml(input.message)}</pre>
     </div>
   `;
+}
+
+function formatIntakeSummary(intake: Record<string, unknown>) {
+  const entries = [
+    ["집 환경", intake.propertyType],
+    ["공사 유형", intake.projectType],
+    ["상담 가능 시간", intake.preferredTime],
+    ["예산", intake.budget],
+    ["주소", intake.address]
+  ]
+    .filter(([, value]) => typeof value === "string" && value.trim())
+    .map(([label, value]) => `${label}: ${escapeHtml(String(value))}`);
+
+  return entries.join("<br />");
 }
 
 function escapeHtml(value: string) {

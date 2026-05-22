@@ -1,10 +1,13 @@
 import { supabase } from "../lib/supabaseClient";
+import type { InquiryAttachment } from "../types";
 
 export type InquiryInput = {
   name: string;
   phone: string;
   serviceArea?: string;
   message: string;
+  attachments?: InquiryAttachment[];
+  intake?: Record<string, unknown>;
 };
 
 /**
@@ -26,15 +29,17 @@ export class InquiryService {
         "Content-Type": "application/json",
         ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {})
       },
-      body: JSON.stringify({
-        name: input.name.trim(),
-        phone: input.phone.trim(),
-        serviceArea: input.serviceArea?.trim() || "",
-        message: input.message.trim(),
-        userId: session?.user.id ?? null,
-        userEmail: session?.user.email ?? null
-      })
-    });
+        body: JSON.stringify({
+          name: input.name.trim(),
+          phone: input.phone.trim(),
+          serviceArea: input.serviceArea?.trim() || "",
+          message: input.message.trim(),
+          attachments: input.attachments ?? [],
+          intake: input.intake ?? {},
+          userId: session?.user.id ?? null,
+          userEmail: session?.user.email ?? null
+        })
+      });
 
     if (!response.ok) {
       const data = (await response.json().catch(() => null)) as { error?: string } | null;

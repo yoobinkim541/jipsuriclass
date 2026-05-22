@@ -120,6 +120,7 @@ export function AdminPage() {
   );
 
   const analytics = useMemo(() => buildAnalytics(inquiries), [inquiries]);
+  const intakeStats = useMemo(() => buildIntakeStats(inquiries), [inquiries]);
 
   const pageMeta =
     view === "editor"
@@ -224,6 +225,44 @@ export function AdminPage() {
             </article>
           </section>
 
+          <section className="admin-insight-grid admin-insight-grid-secondary" aria-label="설문 선택 요약">
+            <article className="admin-insight-card">
+              <span>가장 많은 집 환경</span>
+              <strong>{intakeStats.topPropertyType.label}</strong>
+              <p>{intakeStats.topPropertyType.count}건</p>
+            </article>
+            <article className="admin-insight-card">
+              <span>가장 많은 공사 유형</span>
+              <strong>{intakeStats.topProjectType.label}</strong>
+              <p>{intakeStats.topProjectType.count}건</p>
+            </article>
+            <article className="admin-insight-card">
+              <span>가장 많은 예산대</span>
+              <strong>{intakeStats.topBudget.label}</strong>
+              <p>{intakeStats.topBudget.count}건</p>
+            </article>
+            <article className="admin-insight-card">
+              <span>가장 많은 상담 시간</span>
+              <strong>{intakeStats.topTime.label}</strong>
+              <p>{intakeStats.topTime.count}건</p>
+            </article>
+          </section>
+
+          <section className="admin-breakdown-section" aria-labelledby="intake-breakdown-title">
+            <div className="section-heading row-heading">
+              <div>
+                <h2 id="intake-breakdown-title">설문 선택 분포</h2>
+                <p>고객이 실제로 많이 고르는 집 환경과 공사 유형을 한눈에 확인합니다.</p>
+              </div>
+            </div>
+            <div className="admin-breakdown-grid">
+              <BreakdownCard title="집 환경" items={intakeStats.propertyTypes} />
+              <BreakdownCard title="공사 유형" items={intakeStats.projectTypes} />
+              <BreakdownCard title="상담 가능 시간" items={intakeStats.times} />
+              <BreakdownCard title="예산" items={intakeStats.budgets} />
+            </div>
+          </section>
+
           <section className="admin-chart-section" aria-labelledby="inquiry-chart-title">
             <div className="section-heading row-heading">
               <div>
@@ -271,6 +310,22 @@ export function AdminPage() {
                     </p>
                     {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
                     <p className="admin-message">{item.message}</p>
+                    {item.attachments?.length ? (
+                      <div className="inquiry-attachment-grid" aria-label="첨부 사진">
+                        {item.attachments.map((attachment) => (
+                          <a
+                            className="inquiry-attachment"
+                            href={attachment.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            key={attachment.url}
+                          >
+                            <img src={attachment.url} alt={attachment.name} />
+                            <span>{attachment.name}</span>
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                   <div className="admin-row-actions">
                     {(["new", "contacted", "done", "spam"] as InquiryStatus[]).map((status) => (
@@ -339,6 +394,71 @@ function buildAnalytics(inquiries: InquiryRow[]) {
   const today = series[series.length - 1]?.count ?? 0;
 
   return { total, byStatus, series, last7Days, today };
+}
+
+function buildIntakeStats(inquiries: InquiryRow[]) {
+  const propertyTypes = countField(inquiries, (item) => stringField(item.intake?.propertyType));
+  const projectTypes = countField(inquiries, (item) => stringField(item.intake?.projectType));
+  const times = countField(inquiries, (item) => stringField(item.intake?.preferredTime));
+  const budgets = countField(inquiries, (item) => stringField(item.intake?.budget));
+
+  return {
+    propertyTypes,
+    projectTypes,
+    times,
+    budgets,
+    topPropertyType: propertyTypes[0] ?? { label: "-", count: 0 },
+    topProjectType: projectTypes[0] ?? { label: "-", count: 0 },
+    topTime: times[0] ?? { label: "-", count: 0 },
+    topBudget: budgets[0] ?? { label: "-", count: 0 }
+  };
+}
+
+function countField(
+  inquiries: InquiryRow[],
+  selector: (item: InquiryRow) => string | null
+): Array<{ label: string; count: number }> {
+  const counts = new Map<string, number>();
+  inquiries.forEach((item) => {
+    const value = selector(item);
+    if (!value) return;
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  });
+
+  return Array.from(counts.entries())
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "ko-KR"))
+    .slice(0, 6);
+}
+
+function stringField(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function BreakdownCard({
+  title,
+  items
+}: {
+  title: string;
+  items: Array<{ label: string; count: number }>;
+}) {
+  return (
+    <article className="admin-breakdown-card">
+      <strong>{title}</strong>
+      <div className="admin-breakdown-list">
+        {items.length ? (
+          items.map((item) => (
+            <div className="admin-breakdown-item" key={item.label}>
+              <span>{item.label}</span>
+              <strong>{item.count}</strong>
+            </div>
+          ))
+        ) : (
+          <p className="admin-muted">데이터가 없습니다.</p>
+        )}
+      </div>
+    </article>
+  );
 }
 
 function InquiryChart({

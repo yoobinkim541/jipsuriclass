@@ -14,6 +14,7 @@ export type BusinessProfile = {
   registrationNumber: string;
   owner: string;
   address: string;
+  mapUrl: string;
 };
 
 export type NavItem = {
@@ -33,6 +34,7 @@ export type ConstructionCase = {
   problem: string;
   solution: string;
   image: string;
+  link: string;
 };
 
 export type PortfolioPost = {
@@ -68,6 +70,7 @@ export type EditableCaseCard = {
   problem: string;
   solution: string;
   image: string;
+  link: string;
 };
 
 export type EditableProcessStep = {
@@ -98,6 +101,12 @@ export type HomepageContent = {
   };
 };
 
+export type InquiryAttachment = {
+  name: string;
+  url: string;
+  type: string;
+};
+
 export type InquiryStatus = "new" | "contacted" | "done" | "spam";
 
 export type InquiryRow = {
@@ -106,6 +115,8 @@ export type InquiryRow = {
   phone: string;
   service_area: string | null;
   message: string;
+  attachments: InquiryAttachment[] | null;
+  intake: Record<string, unknown> | null;
   status: InquiryStatus;
   source: string;
   user_id: string | null;

@@ -89,6 +89,8 @@ function inquiryApi(): Plugin {
           phone?: string;
           serviceArea?: string;
           message?: string;
+          attachments?: Array<{ name?: string; url?: string; type?: string }>;
+          intake?: Record<string, unknown>;
           userId?: string | null;
           userEmail?: string | null;
         } = {};
@@ -106,6 +108,16 @@ function inquiryApi(): Plugin {
         const phone = String(payload.phone || "").trim();
         const serviceArea = String(payload.serviceArea || "").trim();
         const message = String(payload.message || "").trim();
+        const attachments = Array.isArray(payload.attachments)
+          ? payload.attachments
+              .map((item) => ({
+                name: String(item?.name || "").trim(),
+                url: String(item?.url || "").trim(),
+                type: String(item?.type || "").trim()
+              }))
+              .filter((item) => item.url)
+          : [];
+        const intake = payload.intake && typeof payload.intake === "object" ? payload.intake : {};
         const userId = payload.userId ? String(payload.userId).trim() : null;
         const userEmail = payload.userEmail ? String(payload.userEmail).trim() : null;
 
@@ -134,6 +146,8 @@ function inquiryApi(): Plugin {
             phone,
             service_area: serviceArea || null,
             message,
+            attachments,
+            intake,
             user_id: userId,
             user_email: userEmail,
             status: "new",
@@ -167,6 +181,28 @@ function inquiryApi(): Plugin {
                   <p><strong>연락처:</strong> ${escapeHtml(phone)}</p>
                   <p><strong>지역:</strong> ${escapeHtml(serviceArea || "-")}</p>
                   <p><strong>이메일:</strong> ${escapeHtml(userEmail || "-")}</p>
+                  ${
+                    formatIntakeSummary(intake)
+                      ? `<p><strong>설문 요약:</strong><br />${formatIntakeSummary(intake)}</p>`
+                      : ""
+                  }
+                  ${
+                    attachments.length
+                      ? `
+                        <p><strong>첨부사진:</strong></p>
+                        <ul style="padding-left: 18px;">
+                          ${attachments
+                            .map(
+                              (attachment) =>
+                                `<li><a href="${escapeHtml(attachment.url)}" target="_blank" rel="noreferrer">${escapeHtml(
+                                  attachment.name || "첨부파일"
+                                )}</a></li>`
+                            )
+                            .join("")}
+                        </ul>
+                      `
+                      : ""
+                  }
                   <p><strong>문의내용:</strong></p>
                   <pre style="white-space: pre-wrap; background: #f9fafb; padding: 12px; border-radius: 8px;">${escapeHtml(message)}</pre>
                 </div>
@@ -204,18 +240,67 @@ async function resolveBlogImage(link: string) {
     if (!response.ok) return undefined;
 
     const html = await response.text();
-    const match =
-      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ??
-      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-
-    return match?.[1] ? decodeHtml(match[1]) : undefined;
+    return pickBestBlogImage(extractImageCandidates(html));
   } catch {
     return undefined;
   }
 }
 
+function extractImageCandidates(html: string) {
+  const candidates = new Set<string>();
+  const patterns = [
+    /<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/gi,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image(?::secure_url)?["']/gi,
+    /<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/gi,
+    /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image(?::src)?["']/gi,
+    /<article[\s\S]*?<img[^>]+(?:data-lazy-src|data-src|src)=["']([^"']+)["']/gi,
+    /<div[^>]+class=["'][^"']*(?:post|content|se-container)[^"']*["'][\s\S]*?<img[^>]+(?:data-lazy-src|data-src|src)=["']([^"']+)["']/gi,
+    /<img[^>]+(?:data-lazy-src|data-src|src)=["']([^"']+)["']/gi
+  ];
+
+  for (const pattern of patterns) {
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(html))) {
+      const url = decodeHtml(match[1]);
+      if (!isLikelyBlogImage(url)) continue;
+      candidates.add(url);
+    }
+  }
+
+  return Array.from(candidates);
+}
+
+function pickBestBlogImage(candidates: string[]) {
+  return candidates.find((url) => !isLikelyPlaceholderImage(url)) ?? candidates[0];
+}
+
+function isLikelyBlogImage(url: string) {
+  return (
+    !/blog\/logo|sp_blog|static\/blog\/img|profile|icon|emoji/i.test(url) &&
+    /^https?:\/\//i.test(url)
+  );
+}
+
+function isLikelyPlaceholderImage(url: string) {
+  return /blog\/logo|sp_blog|static\/blog\/img|profile|icon|emoji/i.test(url);
+}
+
 function decodeHtml(value: string) {
   return value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+
+function formatIntakeSummary(intake: Record<string, unknown>) {
+  const entries = [
+    ["집 환경", intake.propertyType],
+    ["공사 유형", intake.projectType],
+    ["상담 가능 시간", intake.preferredTime],
+    ["예산", intake.budget],
+    ["주소", intake.address]
+  ]
+    .filter(([, value]) => typeof value === "string" && String(value).trim())
+    .map(([label, value]) => `${escapeHtml(String(label))}: ${escapeHtml(String(value))}`);
+
+  return entries.join("<br />");
 }
 
 export default defineConfig({
