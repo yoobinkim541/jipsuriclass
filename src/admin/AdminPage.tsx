@@ -3,11 +3,15 @@ import {
   ArrowLeft,
   ArrowUpRight,
   CalendarRange,
+  Clock3,
+  Copy,
   LayoutDashboard,
   LoaderCircle,
   LogOut,
   RefreshCcw,
+  Search,
   ShieldCheck,
+  SortAsc,
   User
 } from "lucide-react";
 import { business } from "../data";
@@ -20,8 +24,15 @@ import { HomepageEditor } from "./HomepageEditor";
 const authService = new AuthService();
 const adminService = new AdminService();
 const statusOrder: Array<"all" | InquiryStatus> = ["all", "new", "contacted", "done", "spam"];
+const sortOrder: Array<{ value: SortMode; label: string }> = [
+  { value: "newest", label: "최신순" },
+  { value: "oldest", label: "오래된순" },
+  { value: "status", label: "상태순" },
+  { value: "name", label: "이름순" }
+];
 
 type AdminView = "editor" | "inquiries";
+type SortMode = "newest" | "oldest" | "status" | "name";
 
 export function AdminPage() {
   const view = getAdminView();
@@ -32,7 +43,12 @@ export function AdminPage() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | InquiryStatus>("all");
+  const [sortMode, setSortMode] = useState<SortMode>("newest");
+  const [searchQuery, setSearchQuery] = useState("");
   const [actionId, setActionId] = useState<string | null>(null);
+  const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -53,15 +69,17 @@ export function AdminPage() {
         setSessionLoading(false);
       });
 
-    const { data } = supabase?.auth.onAuthStateChange((_event, session) => {
-      setSessionEmail(session?.user.email ?? null);
-      setSessionLoading(false);
-      if (session?.user && view === "inquiries") {
-        void loadInquiries();
-      } else {
-        setInquiries([]);
-      }
-    }) ?? { data: { subscription: { unsubscribe: () => undefined } } };
+    const { data } =
+      supabase?.auth.onAuthStateChange((_event, session) => {
+        setSessionEmail(session?.user.email ?? null);
+        setSessionLoading(false);
+        if (session?.user && view === "inquiries") {
+          void loadInquiries();
+        } else {
+          setInquiries([]);
+          setExpandedInquiryId(null);
+        }
+      }) ?? { data: { subscription: { unsubscribe: () => undefined } } };
 
     return () => {
       mounted = false;
@@ -76,6 +94,8 @@ export function AdminPage() {
       const rows = await adminService.listInquiries();
       setInquiries(rows);
       setAuthError(null);
+      setLastRefreshedAt(new Date().toISOString());
+      setExpandedInquiryId((current) => (current && rows.some((item) => item.id === current) ? current : null));
     } catch (loadError) {
       const message = loadError instanceof Error ? loadError.message : "문의 목록을 불러오지 못했습니다.";
       setError(message);
@@ -85,6 +105,15 @@ export function AdminPage() {
     } finally {
       setInquiriesLoading(false);
     }
+  }
+
+  async function handleRefresh() {
+    if (view === "inquiries") {
+      await loadInquiries();
+      return;
+    }
+
+    window.location.reload();
   }
 
   async function handleSignIn() {
@@ -114,13 +143,47 @@ export function AdminPage() {
     }
   }
 
-  const visibleInquiries = useMemo(
-    () => (statusFilter === "all" ? inquiries : inquiries.filter((item) => item.status === statusFilter)),
-    [inquiries, statusFilter]
-  );
+  async function handleCopy(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyFeedback(`${label}를 복사했습니다.`);
+      window.setTimeout(() => setCopyFeedback((current) => (current === `${label}를 복사했습니다.` ? null : current)), 1800);
+    } catch {
+      setCopyFeedback("복사에 실패했습니다.");
+      window.setTimeout(() => setCopyFeedback((current) => (current === "복사에 실패했습니다." ? null : current)), 1800);
+    }
+  }
 
   const analytics = useMemo(() => buildAnalytics(inquiries), [inquiries]);
   const intakeStats = useMemo(() => buildIntakeStats(inquiries), [inquiries]);
+
+  const visibleInquiries = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const filtered = inquiries.filter((item) => {
+      const statusMatch = statusFilter === "all" || item.status === statusFilter;
+      const searchMatch =
+        !normalizedQuery ||
+        [item.name, item.phone, item.service_area, item.message, item.user_email]
+          .filter((value): value is string => Boolean(value))
+          .some((value) => value.toLowerCase().includes(normalizedQuery));
+
+      return statusMatch && searchMatch;
+    });
+
+    return filtered.slice().sort((left, right) => {
+      if (sortMode === "name") {
+        return left.name.localeCompare(right.name, "ko-KR");
+      }
+
+      if (sortMode === "status") {
+        const statusDiff = statusSortValue(left.status) - statusSortValue(right.status);
+        return statusDiff || new Date(right.created_at).getTime() - new Date(left.created_at).getTime();
+      }
+
+      const timeDiff = new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
+      return sortMode === "oldest" ? timeDiff : -timeDiff;
+    });
+  }, [inquiries, searchQuery, sortMode, statusFilter]);
 
   const pageMeta =
     view === "editor"
@@ -132,7 +195,7 @@ export function AdminPage() {
       : {
           kicker: "문의 관리",
           title: "문의 흐름과 추이를 한 번에 확인합니다",
-          description: "최근 문의 수, 상태 분포, 일자별 추이를 보고 바로 대응할 수 있습니다."
+          description: "검색, 필터, 상태 변경을 한 화면에서 끝낼 수 있게 정리했습니다."
         };
 
   return (
@@ -144,7 +207,7 @@ export function AdminPage() {
         </a>
         <div className="admin-actions">
           {sessionEmail ? <span className="admin-email">{sessionEmail}</span> : null}
-          <button className="admin-ghost-button" onClick={() => void loadInquiries()} type="button">
+          <button className="admin-ghost-button" onClick={() => void handleRefresh()} type="button">
             <RefreshCcw size={16} />
             새로고침
           </button>
@@ -203,26 +266,34 @@ export function AdminPage() {
       ) : (
         <>
           <section className="admin-insight-grid" aria-label="문의 요약">
-            <article className="admin-insight-card">
-              <span>전체 문의</span>
-              <strong>{analytics.total}</strong>
-              <p>누적 문의 수</p>
-            </article>
-            <article className="admin-insight-card">
-              <span>최근 7일</span>
-              <strong>{analytics.last7Days}</strong>
-              <p>최근 일주일 유입</p>
-            </article>
-            <article className="admin-insight-card">
-              <span>오늘</span>
-              <strong>{analytics.today}</strong>
-              <p>당일 들어온 문의</p>
-            </article>
-            <article className="admin-insight-card">
-              <span>새 문의</span>
-              <strong>{analytics.byStatus.new}</strong>
-              <p>응답 대기 중</p>
-            </article>
+            <InsightCard
+              label="전체 문의"
+              value={analytics.total}
+              caption="누적 문의 수"
+              onClick={() => setStatusFilter("all")}
+              active={statusFilter === "all"}
+            />
+            <InsightCard
+              label="새 문의"
+              value={analytics.byStatus.new}
+              caption="응답 대기 중"
+              onClick={() => setStatusFilter("new")}
+              active={statusFilter === "new"}
+            />
+            <InsightCard
+              label="처리중"
+              value={analytics.byStatus.contacted}
+              caption="후속 연락 필요"
+              onClick={() => setStatusFilter("contacted")}
+              active={statusFilter === "contacted"}
+            />
+            <InsightCard
+              label="완료"
+              value={analytics.byStatus.done}
+              caption="처리 완료"
+              onClick={() => setStatusFilter("done")}
+              active={statusFilter === "done"}
+            />
           </section>
 
           <section className="admin-insight-grid admin-insight-grid-secondary" aria-label="설문 선택 요약">
@@ -273,23 +344,57 @@ export function AdminPage() {
             <InquiryChart series={analytics.series} />
           </section>
 
-          <section className="admin-toolbar">
-            {statusOrder.map((status) => (
-              <button
-                key={status}
-                className={statusFilter === status ? "admin-filter active" : "admin-filter"}
-                type="button"
-                onClick={() => setStatusFilter(status)}
+          <section className="admin-toolbar" aria-label="문의 검색 및 필터">
+            <div className="admin-search-wrap">
+              <Search size={16} />
+              <input
+                aria-label="문의 검색"
+                className="admin-search"
+                placeholder="이름, 연락처, 메시지 검색"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+              />
+            </div>
+            <div className="admin-toolbar-group">
+              {statusOrder.map((status) => (
+                <button
+                  key={status}
+                  className={statusFilter === status ? "admin-filter active" : "admin-filter"}
+                  type="button"
+                  onClick={() => setStatusFilter(status)}
+                >
+                  {status === "all" ? "전체" : status}
+                </button>
+              ))}
+            </div>
+            <div className="admin-toolbar-group">
+              <SortAsc size={16} className="admin-toolbar-icon" />
+              <select
+                aria-label="문의 정렬"
+                className="admin-sort"
+                value={sortMode}
+                onChange={(event) => setSortMode(event.target.value as SortMode)}
               >
-                {status === "all" ? "전체" : status}
-              </button>
-            ))}
+                {sortOrder.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="admin-spacer" />
-            <span className="admin-count">{visibleInquiries.length}건</span>
+            <div className="admin-toolbar-meta">
+              <span className="admin-count">{visibleInquiries.length}건</span>
+              <span className="admin-sync">
+                <Clock3 size={14} />
+                {lastRefreshedAt ? `마지막 새로고침 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
+              </span>
+            </div>
           </section>
 
           {authError ? <p className="admin-banner">{authError}</p> : null}
           {error ? <p className="admin-error">{error}</p> : null}
+          {copyFeedback ? <p className="admin-banner">{copyFeedback}</p> : null}
 
           <section className="admin-list" aria-label="문의 목록">
             {inquiriesLoading ? (
@@ -298,53 +403,84 @@ export function AdminPage() {
                 문의를 불러오는 중
               </div>
             ) : visibleInquiries.length ? (
-              visibleInquiries.map((item) => (
-                <article className="admin-row" key={item.id}>
-                  <div className="admin-row-main">
-                    <div className="admin-row-top">
-                      <strong>{item.name}</strong>
-                      <span className={`status-badge status-${item.status}`}>{item.status}</span>
-                    </div>
-                    <p>
-                      {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
-                    </p>
-                    {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
-                    <p className="admin-message">{item.message}</p>
-                    {item.attachments?.length ? (
-                      <div className="inquiry-attachment-grid" aria-label="첨부 사진">
-                        {item.attachments.map((attachment) => (
-                          <a
-                            className="inquiry-attachment"
-                            href={attachment.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            key={attachment.url}
-                          >
-                            <img src={attachment.url} alt={attachment.name} />
-                            <span>{attachment.name}</span>
-                          </a>
-                        ))}
+              visibleInquiries.map((item) => {
+                const isExpanded = expandedInquiryId === item.id;
+
+                return (
+                  <article className="admin-row" key={item.id}>
+                    <div className="admin-row-main">
+                      <div className="admin-row-top">
+                        <strong>{item.name}</strong>
+                        <span className={`status-badge status-${item.status}`}>{item.status}</span>
                       </div>
-                    ) : null}
-                  </div>
-                  <div className="admin-row-actions">
-                    {(["new", "contacted", "done", "spam"] as InquiryStatus[]).map((status) => (
+                      <p>
+                        {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
+                      </p>
+                      {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
+                      <p className="admin-message">{item.message}</p>
+                      {isExpanded ? (
+                        <div className="admin-row-detail">
+                          <div className="admin-detail-grid">
+                            <DetailItem label="연락처" value={item.phone} />
+                            <DetailItem label="지역" value={item.service_area || "지역 미입력"} />
+                            <DetailItem label="고객 이메일" value={item.user_email || "-"} />
+                            <DetailItem label="접수 경로" value={item.source} />
+                          </div>
+                          <div className="admin-detail-grid">
+                            <DetailItem label="집 환경" value={stringField(item.intake?.propertyType)} />
+                            <DetailItem label="공사 유형" value={stringField(item.intake?.projectType)} />
+                            <DetailItem label="예산" value={stringField(item.intake?.budget)} />
+                            <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
+                          </div>
+                          {item.attachments?.length ? (
+                            <div className="inquiry-attachment-grid" aria-label="첨부 사진">
+                              {item.attachments.map((attachment) => (
+                                <a
+                                  className="inquiry-attachment"
+                                  href={attachment.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  key={attachment.url}
+                                >
+                                  <img src={attachment.url} alt={attachment.name} />
+                                  <span>{attachment.name}</span>
+                                </a>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="admin-row-actions">
                       <button
-                        key={status}
-                        className="admin-status-button"
+                        className="admin-status-button admin-detail-toggle"
                         type="button"
-                        disabled={actionId === item.id || item.status === status}
-                        onClick={() => void handleStatusChange(item.id, status)}
+                        onClick={() => setExpandedInquiryId((current) => (current === item.id ? null : item.id))}
+                        aria-expanded={isExpanded}
                       >
-                        {status}
+                        {isExpanded ? "접기" : "상세"}
                       </button>
-                    ))}
-                    <a className="admin-link" href={business.phoneHref}>
-                      연락 <ArrowUpRight size={14} />
-                    </a>
-                  </div>
-                </article>
-              ))
+                      {(["new", "contacted", "done", "spam"] as InquiryStatus[]).map((status) => (
+                        <button
+                          key={status}
+                          className="admin-status-button"
+                          type="button"
+                          disabled={actionId === item.id || item.status === status}
+                          onClick={() => void handleStatusChange(item.id, status)}
+                        >
+                          {status}
+                        </button>
+                      ))}
+                      <a className="admin-link" href={business.phoneHref}>
+                        연락 <ArrowUpRight size={14} />
+                      </a>
+                      <button className="admin-link admin-copy-button" type="button" onClick={() => void handleCopy(item.phone, "연락처")}>
+                        복사 <Copy size={14} />
+                      </button>
+                    </div>
+                  </article>
+                );
+              })
             ) : (
               <div className="admin-empty">표시할 문의가 없습니다.</div>
             )}
@@ -433,6 +569,64 @@ function countField(
 
 function stringField(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function statusSortValue(status: InquiryStatus) {
+  switch (status) {
+    case "new":
+      return 0;
+    case "contacted":
+      return 1;
+    case "done":
+      return 2;
+    case "spam":
+      return 3;
+    default:
+      return 4;
+  }
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
+function DetailItem({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div className="admin-detail-item">
+      <span>{label}</span>
+      <strong>{value || "-"}</strong>
+    </div>
+  );
+}
+
+function InsightCard({
+  label,
+  value,
+  caption,
+  onClick,
+  active
+}: {
+  label: string;
+  value: number;
+  caption: string;
+  onClick: () => void;
+  active: boolean;
+}) {
+  return (
+    <button
+      className={active ? "admin-insight-card admin-insight-card-button active" : "admin-insight-card admin-insight-card-button"}
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+    >
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <p>{caption}</p>
+    </button>
+  );
 }
 
 function BreakdownCard({

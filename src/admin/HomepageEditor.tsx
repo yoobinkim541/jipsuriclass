@@ -38,6 +38,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
   const [error, setError] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveNote, setSaveNote] = useState<string>("편집 내용을 불러오는 중입니다.");
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [draft, setDraft] = useState<HomepageContent>(defaultHomepageContent);
   const [selectedSection, setSelectedSection] = useState<EditorSection>("hero");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -61,6 +62,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
         lastSavedRef.current = JSON.stringify(content);
         setSaveState("saved");
         setSaveNote("현재 내용이 저장되어 있습니다.");
+        setLastSavedAt(new Date().toISOString());
       })
       .catch((loadError) => {
         if (!mounted) return;
@@ -122,6 +124,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       lastSavedRef.current = snapshot;
       setSaveState("saved");
       setSaveNote(mode === "auto" ? "자동 저장되었습니다." : "저장되었습니다.");
+      setLastSavedAt(new Date().toISOString());
       window.setTimeout(() => {
         if (lastSavedRef.current === snapshot) {
           setSaveNote("현재 내용이 저장되어 있습니다.");
@@ -239,6 +242,17 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
   }
 
   const strengthsText = useMemo(() => draft.about.strengths.join("\n"), [draft.about.strengths]);
+  const sectionNav: Array<{ key: EditorSection; label: string }> = useMemo(
+    () => [
+      { key: "hero", label: "히어로" },
+      { key: "about", label: "소개" },
+      { key: "services", label: "서비스" },
+      { key: "cases", label: "사례" },
+      { key: "process", label: "작업 절차" },
+      { key: "contact", label: "문의" }
+    ],
+    []
+  );
 
   const currentItemCount =
     selectedSection === "services"
@@ -264,6 +278,7 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
               {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
             </span>
             <p>{saveNote}</p>
+            {lastSavedAt ? <em>최근 저장 {formatEditorTime(lastSavedAt)}</em> : null}
           </div>
         </div>
         <div className="editor-actions">
@@ -280,6 +295,24 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
 
       {!isAuthenticated ? <p className="admin-banner">편집하려면 Google로 로그인한 관리자 계정이어야 합니다.</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
+
+      <div className="editor-section-nav" aria-label="편집 섹션 이동">
+        {sectionNav.map((item) => (
+          <button
+            key={item.key}
+            className={selectedSection === item.key ? "editor-section-chip active" : "editor-section-chip"}
+            type="button"
+            onClick={() => {
+              setSelectedSection(item.key);
+              if (item.key === "services" || item.key === "cases" || item.key === "process") {
+                setSelectedIndex(0);
+              }
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <div className="admin-empty">
@@ -894,4 +927,13 @@ function normalizeLines(value: string, fallbackCount: number) {
   }
 
   return Array.from({ length: fallbackCount }, () => "");
+}
+
+function formatEditorTime(value: string) {
+  return new Intl.DateTimeFormat("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(new Date(value));
 }

@@ -432,3 +432,31 @@ Follow-up:
 - 구현 동작: 간단 견적 문의에 사진 첨부 업로드를 추가하고, 단계형 `견적상담` 페이지를 만들어 집 환경과 공사 유형을 먼저 고른 뒤 연락처, 주소, 상담 가능 시간, 사진, 예산, 세부사항을 입력하게 했습니다. 증상 버튼은 `/estimate`로 바로 연결되며, 대표 현장 사례는 관리자 페이지에서 이미지 업로드와 블로그 링크 편집이 가능해졌고 카드 클릭 시 실제 블로그 글로 이동합니다. 개인정보처리방침 페이지와 푸터 링크, 오시는 길 섹션, 블로그 썸네일 이미지 추출 개선, 상단 카피를 `클라쓰가 다른 종합집수리`로 교체한 내용도 반영했습니다. 설문 대시보드에는 집 환경/공사 유형/예산/상담 가능 시간 분포를 한눈에 보는 카드와 목록을 추가했고, 설문 첫 화면은 생성한 상담 이미지로 교체했으며 이미지 경로는 `src/assets/images.ts` 한 파일에서 관리하도록 정리했습니다.
 - 검증 결과: `npm run build` 통과, Supabase `admin_users` RLS 활성화 확인
 - 남은 후속 작업: 브라우저 실화면에서 첨부 미리보기, 오시는 길 iframe, 사례 카드 링크 동작 확인 후 GitHub push 및 Vercel 재배포
+
+## 2026-05-22 - Tablet And Naver Maps Optimization
+
+Changed files:
+- `src/App.tsx`
+- `src/components/OfficeSection.tsx`
+- `src/components/NaverMapEmbed.tsx`
+- `src/services/NaverMapsService.ts`
+- `src/styles.css`
+- `.env`
+- `.env.example`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Broke the office/location area out into its own component so the main app file stays smaller and easier to maintain.
+- Replaced the old map iframe with the official NAVER Maps JavaScript API and geocoded the office address into an interactive map with a marker.
+- Added mobile-friendly NAVER Map links for place, route search, and navigation, while keeping the public desktop fallback as the existing map URL.
+- Tightened responsive behavior for phone and iPad/tablet widths by reducing section padding, card padding, hero typography, and oversized controls.
+- Reduced the hero carousel bottom controls to small dots on mobile and hid the large arrow buttons there.
+- Removed stray compiled `.js` files from `src/` that were shadowing the TypeScript source and breaking Vite's build.
+- Added `VITE_NAVER_MAP_CLIENT_ID` to the local env file and Vercel production environment.
+
+Verification:
+- `npm run build` passed.
+- `VITE_NAVER_MAP_CLIENT_ID` was added to Vercel production.
+
+Follow-up:
+- Confirm the live deployment after redeploying, especially the office map, mobile spacing, and tablet layout.

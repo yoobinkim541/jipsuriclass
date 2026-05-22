@@ -22,6 +22,7 @@ import { LoginPage } from "./login/LoginPage";
 import { PrivacyPolicyPage } from "./privacy/PrivacyPolicyPage";
 import { EstimatePage } from "./estimate/EstimatePage";
 import { MediaService } from "./services/MediaService";
+import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const inquiryService = new InquiryService();
@@ -537,57 +538,6 @@ function ContactSection({
       </div>
       <EstimateForm status={status} onSubmit={onSubmit} />
     </section>
-  );
-}
-
-function OfficeSection() {
-  return (
-    <section className="office section" id="location" aria-labelledby="location-title">
-      <SectionHeading
-        id="location-title"
-        title="오시는 길"
-        description="사무실 위치는 네이버 지도로 바로 확인할 수 있습니다."
-      />
-      <div className="office-grid">
-        <div className="office-card">
-          <span className="office-label">사무실</span>
-          <h3>{business.address}</h3>
-          <p>{business.area}</p>
-          <p>{business.hours}</p>
-          <div className="office-actions">
-            <a className="primary-button" href={business.mapUrl} target="_blank" rel="noreferrer">
-              네이버 지도 열기
-            </a>
-            <a className="secondary-button" href={business.phoneHref}>
-              전화 상담
-            </a>
-          </div>
-        </div>
-        <div className="office-map" aria-label="네이버 지도에서 사무실 위치">
-          <iframe
-            src={business.mapUrl}
-            title={`${business.name} 사무실 위치`}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-          <a className="office-map-link" href={business.mapUrl} target="_blank" rel="noreferrer">
-            네이버 지도에서 위치 확인
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function BusinessInfoList() {
-  return (
-    <ul className="business-list">
-      <li>영업지역: {business.area}</li>
-      <li>상담시간: {business.hours}</li>
-      <li>{business.registrationNumber}</li>
-      <li>{business.owner}</li>
-      <li>{business.address}</li>
-    </ul>
   );
 }
 
