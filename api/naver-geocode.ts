@@ -16,7 +16,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   try {
-    const naverResponse = await fetch(`https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`, {
+    const naverResponse = await fetch(`https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`, {
       headers: {
         "x-ncp-apigw-api-key-id": clientId,
         "x-ncp-apigw-api-key": clientSecret,

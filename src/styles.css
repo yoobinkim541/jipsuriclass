@@ -2513,39 +2513,38 @@ textarea {
 
 @media (min-width: 721px) and (max-width: 1100px) {
   .site-header {
-    gap: 18px;
-    padding: 0 24px;
+    gap: 26px;
+    padding: 0 clamp(18px, 5vw, 64px);
   }
 
   .desktop-nav {
-    gap: 16px;
-    font-size: 14px;
+    gap: 24px;
+    font-size: 15px;
   }
 
   .hero-fullbleed {
-    min-height: 78svh;
+    min-height: 82svh;
   }
 
   .hero-copy {
     max-width: 760px;
-    padding: 28px 28px 38px;
+    padding: 32px 36px 42px;
   }
 
   .hero h1 {
-    font-size: clamp(42px, 5vw, 54px);
+    font-size: 56px;
   }
 
   .hero-copy > p {
-    max-width: 620px;
-    font-size: 16px;
+    max-width: 640px;
   }
 
   .section {
-    padding: 72px 28px;
+    padding: clamp(58px, 8vw, 104px) clamp(18px, 5vw, 64px);
   }
 
   .section-heading {
-    margin-bottom: 26px;
+    margin-bottom: 34px;
   }
 
   .section-heading h2,
@@ -2553,7 +2552,7 @@ textarea {
   .contact-copy h2,
   .estimate-hero h1,
   .admin-hero h1 {
-    font-size: clamp(28px, 4.2vw, 40px);
+    font-size: clamp(30px, 4vw, 48px);
   }
 
   .editor-grid {
@@ -2576,7 +2575,7 @@ textarea {
   }
 
   .editor-section-nav {
-    gap: 6px;
+    gap: 8px;
   }
 
   .admin-toolbar {
@@ -2621,16 +2620,16 @@ textarea {
 
   .office-map-canvas,
   .office-map-iframe {
-    min-height: 340px;
+    min-height: 300px;
   }
 
   .office-map-overlay {
-    max-width: 280px;
+    max-width: 320px;
   }
 
   .office-map-footer {
-    left: 14px;
-    right: 14px;
+    left: 18px;
+    right: 18px;
   }
 
   .estimate-grid,
@@ -2651,7 +2650,7 @@ textarea {
   .blog-card-body,
   .admin-insight-card,
   .admin-breakdown-card {
-    padding: 18px;
+    padding: 24px;
   }
 
   .estimate-step-actions {

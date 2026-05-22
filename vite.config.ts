@@ -245,7 +245,7 @@ function naverGeocodeApi(): Plugin {
         }
 
         try {
-          const response = await fetch(`https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`, {
+          const response = await fetch(`https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`, {
             headers: {
               "x-ncp-apigw-api-key-id": clientId,
               "x-ncp-apigw-api-key": clientSecret,

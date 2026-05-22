@@ -25,7 +25,6 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
   const mapInstance = useRef<unknown>(null);
   const markerInstance = useRef<unknown>(null);
   const [status, setStatus] = useState<MapStatus>("loading");
-  const [message, setMessage] = useState("네이버 지도 불러오는 중");
 
   useEffect(() => {
     let active = true;
@@ -36,7 +35,6 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
       if (!clientId) {
         if (!active) return;
         setStatus("missing-key");
-        setMessage("지도 API 키가 설정되지 않았습니다.");
         return;
       }
 
@@ -74,12 +72,10 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
         });
 
         setStatus("ready");
-        setMessage("");
       } catch (error) {
         if (!active) return;
         setStatus("error");
         console.error(error);
-        setMessage("네이버 지도 연결에 실패했습니다. 아래 지도를 확인해 주세요.");
       }
     }
 
@@ -101,9 +97,11 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
           <strong>{title}</strong>
           <p>{address}</p>
         </div>
-        <div className="office-map-footer">
-          <small>{status === "ready" ? "네이버 지도에서 위치를 확인할 수 있습니다." : message}</small>
-        </div>
+        {status === "ready" ? (
+          <div className="office-map-footer">
+            <small>네이버 지도에서 위치를 확인할 수 있습니다.</small>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -483,3 +483,20 @@ Verification:
 
 Follow-up:
 - If the server-side geocode permission is fixed later, the interactive map will automatically resume without another code change.
+
+## 2026-05-23 - Hide Map Failure Copy
+
+Changed files:
+- `src/components/NaverMapEmbed.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the visible fallback error copy from the office map area.
+- Kept the iframe fallback in place so users still have a map path even when the interactive geocode flow fails.
+- Left the technical error only in console output for debugging.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If the Naver Maps API permissions are corrected, the dynamic map will continue to recover without UI changes.
