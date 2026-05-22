@@ -13,9 +13,9 @@ type NaverMapEmbedProps = {
 type NaverMapWindow = Window & {
   naver?: {
     maps?: {
-      Map: new (element: HTMLElement, options?: Record<string, unknown>) => any;
-      Marker: new (options?: Record<string, unknown>) => any;
-      LatLng: new (lat: number, lng: number) => any;
+      Map: new (element: HTMLElement, options?: Record<string, unknown>) => unknown;
+      Marker: new (options?: Record<string, unknown>) => unknown;
+      LatLng: new (lat: number, lng: number) => unknown;
     };
   };
 };
@@ -29,8 +29,21 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
   useEffect(() => {
     let active = true;
 
+    function readFixedCoordinates() {
+      const lat = Number(import.meta.env.VITE_NAVER_MAP_LAT);
+      const lng = Number(import.meta.env.VITE_NAVER_MAP_LNG);
+
+      if (Number.isFinite(lat) && Number.isFinite(lng)) {
+        return { lat, lng };
+      }
+
+      return null;
+    }
+
     async function bootstrapMap() {
       const clientId = import.meta.env.VITE_NAVER_MAP_CLIENT_ID as string | undefined;
+      const fixedCoordinates = readFixedCoordinates();
+      const shouldGeocode = import.meta.env.DEV;
 
       if (!clientId) {
         if (!active) return;
@@ -40,9 +53,14 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
 
       try {
         await loadNaverMapsSdk(clientId);
-        const resolved = await geocodeNaverAddress(address);
+        const resolved = fixedCoordinates ?? (shouldGeocode ? await geocodeNaverAddress(address) : null);
 
         if (!active) return;
+
+        if (!resolved) {
+          setStatus("error");
+          return;
+        }
 
         onCoordinatesResolved?.(resolved);
 
@@ -75,7 +93,9 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
       } catch (error) {
         if (!active) return;
         setStatus("error");
-        console.error(error);
+        if (import.meta.env.DEV) {
+          console.error(error);
+        }
       }
     }
 
@@ -91,16 +111,25 @@ export function NaverMapEmbed({ address, title, onCoordinatesResolved }: NaverMa
   return (
     <div className="office-map-shell">
       <div className="office-map" aria-label="네이버 지도에서 사무실 위치">
-        {status === "ready" ? <div ref={mapRef} className="office-map-canvas" /> : <iframe src={business.mapUrl} title={`${title} 네이버 지도`} className="office-map-iframe" loading="lazy" />}
-        <div className="office-map-overlay">
+        {status === "ready" ? <div ref={mapRef} className="office-map-canvas" /> : <div className="office-map-fallback office-map-embed-fallback">
           <span className="office-label">NAVER MAP</span>
           <strong>{title}</strong>
           <p>{address}</p>
-        </div>
+          <a className="secondary-button" href={business.mapUrl} target="_blank" rel="noreferrer">
+            네이버 지도 열기
+          </a>
+        </div>}
         {status === "ready" ? (
-          <div className="office-map-footer">
-            <small>네이버 지도에서 위치를 확인할 수 있습니다.</small>
-          </div>
+          <>
+            <div className="office-map-overlay">
+              <span className="office-label">NAVER MAP</span>
+              <strong>{title}</strong>
+              <p>{address}</p>
+            </div>
+            <div className="office-map-footer">
+              <small>네이버 지도에서 위치를 확인할 수 있습니다.</small>
+            </div>
+          </>
         ) : null}
       </div>
     </div>

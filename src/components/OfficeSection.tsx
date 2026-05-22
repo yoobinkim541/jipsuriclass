@@ -1,13 +1,6 @@
 import { Phone } from "lucide-react";
 import { business } from "../data";
 import { NaverMapEmbed } from "./NaverMapEmbed";
-import {
-  buildNaverMapNavigationUrl,
-  buildNaverMapPlaceUrl,
-  buildNaverMapRouteUrl,
-  isLikelyMobileDevice
-} from "../services/NaverMapsService";
-import { useState } from "react";
 
 export function BusinessInfoList() {
   return (
@@ -22,16 +15,6 @@ export function BusinessInfoList() {
 }
 
 export function OfficeSection() {
-  const [officeCoordinates, setOfficeCoordinates] = useState<{ lat: number; lng: number } | null>(null);
-  const mobileFriendly = isLikelyMobileDevice();
-  const mapLink = mobileFriendly && officeCoordinates ? buildNaverMapPlaceUrl(officeCoordinates, business.name) : business.mapUrl;
-  const routeLink =
-    mobileFriendly && officeCoordinates ? buildNaverMapRouteUrl("public", officeCoordinates, business.name) : business.mapUrl;
-  const navigationLink =
-    mobileFriendly && officeCoordinates
-      ? buildNaverMapNavigationUrl(officeCoordinates, business.name)
-      : business.mapUrl;
-
   return (
     <section className="office section" id="location" aria-labelledby="location-title">
       <div className="section-heading">
@@ -45,19 +28,8 @@ export function OfficeSection() {
           <p>{business.area}</p>
           <p>{business.hours}</p>
           <div className="office-actions">
-            <a className="primary-button" href={mapLink} target={mobileFriendly ? undefined : "_blank"} rel="noreferrer">
+            <a className="primary-button" href={business.mapUrl} target="_blank" rel="noreferrer">
               네이버 지도 열기
-            </a>
-            <a className="secondary-button" href={routeLink} target={mobileFriendly ? undefined : "_blank"} rel="noreferrer">
-              길찾기
-            </a>
-            <a
-              className="secondary-button"
-              href={navigationLink}
-              target={mobileFriendly ? undefined : "_blank"}
-              rel="noreferrer"
-            >
-              네비게이션
             </a>
             <a className="secondary-button" href={business.phoneHref}>
               <Phone size={20} />
@@ -66,7 +38,7 @@ export function OfficeSection() {
           </div>
           <BusinessInfoList />
         </div>
-        <NaverMapEmbed address={business.address} title={business.name} onCoordinatesResolved={setOfficeCoordinates} />
+        <NaverMapEmbed address={business.address} title={business.name} />
       </div>
     </section>
   );
