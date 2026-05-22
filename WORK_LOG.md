@@ -258,3 +258,18 @@ Verification:
 
 Follow-up:
 - None for visibility; the next thing to verify is the live deployment reflecting these header links.
+
+## 2026-05-22 - Service Worker Cache Refresh
+
+Changed files:
+- `public/service-worker.js`
+
+Implemented behavior:
+- Bumped the app shell cache version from `v1` to `v2`.
+- Switched navigation requests to a network-first strategy so live updates replace stale cached HTML more reliably.
+
+Verification:
+- Pending rebuild and redeploy.
+
+Follow-up:
+- Confirm the live site shows the new header login links after the updated service worker ships.
