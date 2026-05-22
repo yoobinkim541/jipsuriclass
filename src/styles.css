@@ -1126,6 +1126,13 @@ textarea {
   width: 100%;
 }
 
+.office-map-image {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
 .office-map-fallback {
   align-items: center;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
@@ -1138,12 +1145,6 @@ textarea {
 
 .office-map-fallback .secondary-button {
   width: fit-content;
-}
-
-.office-map-iframe {
-  border: 0;
-  min-height: 420px;
-  width: 100%;
 }
 
 .office-map-overlay {
@@ -3518,7 +3519,7 @@ textarea {
   }
 
   .office-map-canvas,
-  .office-map-iframe,
+  .office-map-image,
   .office-map-fallback {
     min-height: 300px;
   }
@@ -3958,7 +3959,7 @@ textarea {
   }
 
   .office-map-canvas,
-  .office-map-iframe,
+  .office-map-image,
   .office-map-fallback {
     min-height: 280px;
   }
