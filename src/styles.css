@@ -2969,4 +2969,122 @@ textarea {
     left: 12px;
     right: 12px;
   }
+
+  .login-shell,
+  .privacy-shell,
+  .estimate-shell,
+  .admin-shell {
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 16px;
+  }
+
+  .login-card,
+  .privacy-card,
+  .estimate-panel,
+  .estimate-aside-card,
+  .admin-login-card,
+  .admin-insight-card,
+  .admin-breakdown-card,
+  .office-card,
+  .service-card,
+  .case-card div,
+  .blog-card-body {
+    padding: 14px;
+  }
+
+  .login-card h1,
+  .privacy-card h1,
+  .estimate-hero h1,
+  .admin-hero h1,
+  .hero h1,
+  .contact-copy h2 {
+    font-size: 28px;
+  }
+
+  .hero-copy > p,
+  .contact-copy > p,
+  .estimate-hero p,
+  .privacy-card > p,
+  .privacy-section p,
+  .admin-hero p,
+  .login-card p {
+    font-size: 14px;
+    line-height: 1.55;
+    margin-top: 12px;
+  }
+
+  .proof-list,
+  .estimate-summary,
+  .editor-section-nav,
+  .admin-insight-grid-secondary,
+  .admin-chart-section,
+  .admin-breakdown-section {
+    display: none;
+  }
+
+  .hero-actions,
+  .contact-actions,
+  .hero-login-actions,
+  .contact-login-actions {
+    gap: 6px;
+  }
+
+  .hero-copy {
+    padding-bottom: 22px;
+  }
+
+  .hero-kicker {
+    margin-bottom: 10px;
+    padding: 7px 10px;
+  }
+
+  .estimate-hero-media-caption {
+    padding: 12px;
+  }
+
+  .estimate-choice-grid {
+    gap: 8px;
+  }
+
+  .admin-insight-grid {
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-toolbar {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .admin-row {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .admin-row-main p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+
+  .admin-row-detail {
+    gap: 10px;
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .admin-detail-grid {
+    gap: 8px;
+  }
+
+  .admin-status-button {
+    min-height: 36px;
+  }
+
+  .admin-link,
+  .admin-count,
+  .admin-sync {
+    font-size: 12px;
+  }
 }
