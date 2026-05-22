@@ -241,3 +241,20 @@ Follow-up:
 - Install or provision a supported email provider key so the cron job can actually send mail.
 - Enable Google provider in Supabase Auth if it is not already enabled.
 - Add the actual Google account email to `public.admin_users`.
+
+## 2026-05-22 - Login Entry Point Visibility Fix
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+
+Implemented behavior:
+- Added customer and admin login buttons to the sticky header on desktop.
+- Added the same login links to the mobile menu.
+- Added login shortcuts near the hero CTA and in the contact section so the entry points are visible before scrolling to the footer.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None for visibility; the next thing to verify is the live deployment reflecting these header links.
