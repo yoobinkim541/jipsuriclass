@@ -1,4 +1,4 @@
-import { business, cases as defaultCases, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
+import { business, cases as defaultCases, navItems, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
 import { images } from "../assets/images";
 import { supabase } from "../lib/supabaseClient";
 import type { HomepageContent } from "../types";
@@ -11,12 +11,19 @@ type SiteContentRow = {
 const CONTENT_ID = "homepage";
 
 export const defaultHomepageContent: HomepageContent = {
+  navLabels: navItems.map((item) => item.label),
   hero: {
     title: "클라쓰가 다른 종합집수리",
     description:
       "사진 상담으로 증상을 먼저 확인하고, 필요한 작업만 설명합니다. 생활 집수리, 누수 복구, 원상복구까지 현장 중심으로 처리합니다.",
     image: images.heroFallback,
-    mediaNote: "현장 사진 확인 후 작업 범위를 안내합니다"
+    imagePosition: "center center",
+    imageScale: 1,
+    mediaNote: "현장 사진 확인 후 작업 범위를 안내합니다",
+    primaryActionLabel: "전화 상담",
+    secondaryActionLabel: "카카오톡 상담",
+    tertiaryActionLabel: "견적 상담",
+    slides: []
   },
   about: {
     eyebrow: business.name,
@@ -132,17 +139,30 @@ function isProcessStep(value: unknown): value is HomepageContent["process"][numb
   return isRecord(value) && isString(value.title) && isString(value.text);
 }
 
+function isHeroSlide(value: unknown): value is HomepageContent["hero"]["slides"][number] {
+  return isRecord(value) && isString(value.image) && isString(value.position) && typeof value.scale === "number";
+}
+
 function isHomepageContent(value: unknown): value is HomepageContent {
   if (!isRecord(value)) {
     return false;
   }
 
   return (
+    Array.isArray(value.navLabels) &&
+    value.navLabels.every((item) => typeof item === "string") &&
     isRecord(value.hero) &&
     isString(value.hero.title) &&
     isString(value.hero.description) &&
     isString(value.hero.image) &&
+    isString(value.hero.imagePosition) &&
+    typeof value.hero.imageScale === "number" &&
     isString(value.hero.mediaNote) &&
+    isString(value.hero.primaryActionLabel) &&
+    isString(value.hero.secondaryActionLabel) &&
+    isString(value.hero.tertiaryActionLabel) &&
+    Array.isArray(value.hero.slides) &&
+    value.hero.slides.every(isHeroSlide) &&
     isRecord(value.about) &&
     isString(value.about.eyebrow) &&
     isString(value.about.title) &&
@@ -193,7 +213,14 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
   }
 
   return {
-    hero: { ...base.hero, ...(input.hero ?? {}) },
+    navLabels: Array.isArray(input.navLabels) ? input.navLabels.filter((item): item is string => typeof item === "string") : base.navLabels,
+    hero: {
+      ...base.hero,
+      ...(input.hero ?? {}),
+      slides: Array.isArray(input.hero?.slides)
+        ? input.hero!.slides.filter(isHeroSlide)
+        : base.hero.slides
+    },
     about: {
       ...base.about,
       ...(input.about ?? {}),

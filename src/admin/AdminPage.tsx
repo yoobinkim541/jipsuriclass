@@ -250,6 +250,25 @@ export function AdminPage() {
         </a>
       </nav>
 
+      <section className="admin-mobile-overview" aria-label="모바일 문의 요약">
+        <div className="admin-mobile-metric">
+          <span>전체 문의</span>
+          <strong>{analytics.total}</strong>
+        </div>
+        <div className="admin-mobile-metric">
+          <span>새 문의</span>
+          <strong>{analytics.byStatus.new}</strong>
+        </div>
+        <div className="admin-mobile-metric">
+          <span>처리중</span>
+          <strong>{analytics.byStatus.contacted}</strong>
+        </div>
+        <div className="admin-mobile-metric">
+          <span>새로고침</span>
+          <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
+        </div>
+      </section>
+
       {view === "editor" ? (
         <HomepageEditor isAuthenticated={Boolean(sessionEmail)} />
       ) : (

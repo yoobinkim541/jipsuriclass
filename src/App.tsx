@@ -8,27 +8,22 @@ import {
   Menu,
   MessageCircle,
   Phone,
-  Send,
   X
 } from "lucide-react";
 import { business, cases, navItems, pinnedPosts, process, services, symptoms } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
-import { InquiryService } from "./services/InquiryService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
-import type { PortfolioPost } from "./types";
+import type { HomepageContent, PortfolioPost } from "./types";
 import { AdminPage } from "./admin/AdminPage";
 import { AdminLoginPage } from "./admin/AdminLoginPage";
 import { AccountPage } from "./account/AccountPage";
 import { LoginPage } from "./login/LoginPage";
 import { PrivacyPolicyPage } from "./privacy/PrivacyPolicyPage";
 import { EstimatePage } from "./estimate/EstimatePage";
-import { MediaService } from "./services/MediaService";
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
-const inquiryService = new InquiryService();
 const siteContentService = new SiteContentService();
-const mediaService = new MediaService();
 
 function App() {
   if (window.location.pathname.startsWith("/admin/login")) {
@@ -57,7 +52,6 @@ function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [blogPosts, setBlogPosts] = useState<PortfolioPost[]>(pinnedPosts);
   const [blogSource, setBlogSource] = useState<"loading" | "naver" | "fallback">("loading");
-  const [estimateStatus, setEstimateStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [homeContent, setHomeContent] = useState(defaultHomepageContent);
   const [contentReady, setContentReady] = useState(false);
 
@@ -81,43 +75,28 @@ function HomePage() {
     };
   }, []);
 
-  async function handleEstimateSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const attachments = formData
-      .getAll("attachments")
-      .filter((item): item is File => item instanceof File && item.size > 0);
-
-    setEstimateStatus("submitting");
-    try {
-      const uploadedAttachments =
-        attachments.length > 0
-          ? await Promise.all(attachments.map((file) => mediaService.uploadInquiryAttachment(file)))
-          : [];
-
-      await inquiryService.createInquiry({
-        name: String(formData.get("name") || ""),
-        phone: String(formData.get("phone") || ""),
-        serviceArea: String(formData.get("area") || ""),
-        message: String(formData.get("message") || ""),
-        attachments: uploadedAttachments
-      });
-      event.currentTarget.reset();
-      setEstimateStatus("success");
-      window.setTimeout(() => setEstimateStatus("idle"), 4200);
-    } catch {
-      setEstimateStatus("error");
-    }
-  }
+  const heroSlides = useMemo(
+    () => [
+      {
+        image: homeContent.hero.image,
+        position: homeContent.hero.imagePosition,
+        scale: homeContent.hero.imageScale
+      },
+      ...homeContent.hero.slides
+    ],
+    [homeContent.hero]
+  );
 
   return (
     <>
-      <SiteHeader menuOpen={menuOpen} onOpenMenu={() => setMenuOpen(true)} onCloseMenu={() => setMenuOpen(false)} />
+      <SiteHeader
+        menuOpen={menuOpen}
+        navLabels={homeContent.navLabels}
+        onOpenMenu={() => setMenuOpen(true)}
+        onCloseMenu={() => setMenuOpen(false)}
+      />
       <main id="top">
-        <HeroSection
-          content={homeContent.hero}
-          slides={[homeContent.hero.image, ...homeContent.cases.slice(0, 2).map((item) => item.image)]}
-        />
+        <HeroSection content={homeContent.hero} slides={heroSlides} />
         <AboutSection content={homeContent.about} />
         <SymptomsSection symptoms={homeContent.symptoms} />
         <ServicesSection services={homeContent.services} />
@@ -125,7 +104,7 @@ function HomePage() {
         <CasesSection cases={homeContent.cases} />
         <BlogSection posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />
         <ProcessSection steps={homeContent.process} />
-        <ContactSection content={homeContent.contact} status={estimateStatus} onSubmit={handleEstimateSubmit} />
+        <ContactSection content={homeContent.contact} />
         <OfficeSection />
       </main>
       {!contentReady ? <div className="content-loading">페이지 내용을 불러오는 중</div> : null}
@@ -141,13 +120,20 @@ function HomePage() {
  */
 function SiteHeader({
   menuOpen,
+  navLabels,
   onOpenMenu,
   onCloseMenu
 }: {
   menuOpen: boolean;
+  navLabels: string[];
   onOpenMenu: () => void;
   onCloseMenu: () => void;
 }) {
+  const menuItems = navItems.map((item, index) => ({
+    ...item,
+    label: navLabels[index] ?? item.label
+  }));
+
   return (
     <>
       <header className="site-header">
@@ -156,7 +142,7 @@ function SiteHeader({
           <span>{business.name}</span>
         </a>
         <nav className="desktop-nav" aria-label="주요 메뉴">
-          {navItems.map((item) => (
+          {menuItems.map((item) => (
             <a href={item.href} key={item.href}>
               {item.label}
             </a>
@@ -179,7 +165,7 @@ function SiteHeader({
           <button onClick={onCloseMenu} aria-label="메뉴 닫기">
             <X size={24} />
           </button>
-          {navItems.map((item) => (
+          {menuItems.map((item) => (
             <a href={item.href} key={item.href} onClick={onCloseMenu}>
               {item.label}
             </a>
@@ -201,10 +187,10 @@ function HeroSection({
   content,
   slides
 }: {
-  content: { title: string; description: string; image: string; mediaNote: string };
-  slides: string[];
+  content: HomepageContent["hero"];
+  slides: HomepageContent["hero"]["slides"];
 }) {
-  const heroSlides = useMemo(() => slides.filter(Boolean).slice(0, 3), [slides]);
+  const heroSlides = useMemo(() => slides.filter((slide) => slide.image).slice(0, 3), [slides]);
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
@@ -220,11 +206,12 @@ function HeroSection({
   return (
     <section className="hero hero-fullbleed">
       <div className="hero-carousel" aria-hidden="true">
-        {heroSlides.map((image, index) => (
+        {heroSlides.map((slide, index) => (
           <img
-            key={image}
+            key={slide.image}
             className={index === activeSlide ? "hero-background hero-slide active" : "hero-background hero-slide"}
-            src={image}
+            src={slide.image}
+            style={{ objectPosition: slide.position, transform: `scale(${slide.scale})` }}
             alt=""
           />
         ))}
@@ -234,7 +221,7 @@ function HeroSection({
         <span className="hero-kicker">{content.mediaNote}</span>
         <h1>{content.title}</h1>
         <p>{content.description}</p>
-        <CtaButtons />
+        <CtaButtons content={content} />
         <ProofList />
       </div>
       {heroSlides.length > 1 ? (
@@ -243,9 +230,9 @@ function HeroSection({
             <ChevronLeft size={18} />
           </button>
           <div className="hero-carousel-dots">
-            {heroSlides.map((image, index) => (
+            {heroSlides.map((slide, index) => (
               <button
-                key={image}
+                key={`${slide.image}-${index}`}
                 type="button"
                 className={index === activeSlide ? "hero-dot active" : "hero-dot"}
                 onClick={() => setActiveSlide(index)}
@@ -262,20 +249,20 @@ function HeroSection({
   );
 }
 
-function CtaButtons() {
+function CtaButtons({ content }: { content: HomepageContent["hero"] }) {
   return (
     <div className="hero-actions">
       <a className="primary-button" href={business.phoneHref}>
         <Phone size={20} />
-        전화 상담
+        {content.primaryActionLabel}
       </a>
       <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
         <MessageCircle size={20} />
-        카카오톡 상담
+        {content.secondaryActionLabel}
       </a>
       <a className="secondary-button" href="/estimate">
         <ArrowUpRight size={20} />
-        상세 견적 상담
+        {content.tertiaryActionLabel}
       </a>
     </div>
   );
@@ -517,13 +504,9 @@ function ProcessSection({ steps }: { steps: { title: string; text: string }[] })
 
 /** 문의 영역: 지금은 데모 제출 상태이며, 추후 API 또는 폼 서비스 연결 지점입니다. */
 function ContactSection({
-  content,
-  status,
-  onSubmit
+  content
 }: {
   content: { title: string; description: string };
-  status: "idle" | "submitting" | "success" | "error";
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }) {
   return (
     <section className="contact section" id="contact" aria-labelledby="contact-title">
@@ -541,93 +524,23 @@ function ContactSection({
           </a>
           <a className="secondary-button" href="/estimate">
             <ArrowUpRight size={20} />
-            상담 폼으로 이동
+            견적상담 페이지
           </a>
         </div>
         <BusinessInfoList />
       </div>
-      <EstimateForm status={status} onSubmit={onSubmit} />
+      <div className="contact-estimate-card">
+        <span className="admin-kicker">
+          <ArrowUpRight size={16} />
+          견적상담
+        </span>
+        <h3>상세한 상담은 견적상담 페이지에서 이어집니다</h3>
+        <p>사진 첨부와 단계별 질문으로 더 정확하게 상담을 받을 수 있습니다.</p>
+        <a className="primary-button" href="/estimate">
+          견적상담 페이지로 이동
+        </a>
+      </div>
     </section>
-  );
-}
-
-function EstimateForm({
-  status,
-  onSubmit
-}: {
-  status: "idle" | "submitting" | "success" | "error";
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-}) {
-  const isSubmitting = status === "submitting";
-  const [files, setFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<Array<{ file: File; url: string }>>([]);
-
-  useEffect(() => {
-    const nextPreviews = files.map((file) => ({
-      file,
-      url: URL.createObjectURL(file)
-    }));
-
-    setPreviews(nextPreviews);
-
-    return () => {
-      nextPreviews.forEach((item) => URL.revokeObjectURL(item.url));
-    };
-  }, [files]);
-
-  useEffect(() => {
-    if (status === "success") {
-      setFiles([]);
-    }
-  }, [status]);
-
-  return (
-    <form className="estimate-form" onSubmit={onSubmit}>
-      <label>
-        이름
-        <input required name="name" placeholder="홍길동" />
-      </label>
-      <label>
-        연락처
-        <input required name="phone" placeholder="010-0000-0000" inputMode="tel" />
-      </label>
-      <label>
-        지역
-        <input name="area" placeholder="예: 서울 강동구" />
-      </label>
-      <label>
-        문의 내용
-        <textarea required name="message" rows={5} placeholder="증상, 건물 유형, 사진 보유 여부를 적어주세요." />
-      </label>
-      <label>
-        사진 첨부
-        <input
-          type="file"
-          name="attachments"
-          accept="image/*"
-          multiple
-          onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))}
-        />
-      </label>
-      {previews.length ? (
-        <div className="attachment-preview-grid" aria-label="첨부 사진 미리보기">
-          {previews.map((item) => (
-            <figure className="attachment-preview" key={`${item.file.name}-${item.url}`}>
-              <img src={item.url} alt={item.file.name} />
-              <figcaption>{item.file.name}</figcaption>
-            </figure>
-          ))}
-        </div>
-      ) : null}
-      <button type="submit" disabled={isSubmitting}>
-        <Send size={19} />
-        {isSubmitting ? "문의 저장 중" : "간단 견적 문의"}
-      </button>
-      {status === "success" && <p className="form-success">문의가 저장되었습니다. 확인 후 연락드리겠습니다.</p>}
-      {status === "error" && (
-        <p className="form-error">문의 저장에 실패했습니다. 전화 또는 카카오톡으로 바로 연락해주세요.</p>
-      )}
-    </form>
   );
 }
 

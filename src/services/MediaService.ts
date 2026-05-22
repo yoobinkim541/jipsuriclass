@@ -12,6 +12,10 @@ export class MediaService {
     return this.uploadPublicFile(file, "cases");
   }
 
+  async uploadHomepageImage(file: File): Promise<InquiryAttachment> {
+    return this.uploadPublicFile(file, "homepage");
+  }
+
   private async uploadPublicFile(file: File, folder: string): Promise<InquiryAttachment> {
     if (!supabase) {
       throw new Error("Supabase environment variables are not configured");

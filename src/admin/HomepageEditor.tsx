@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import {
+  ArrowUpRight,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -10,7 +11,7 @@ import {
   RotateCcw,
   Save
 } from "lucide-react";
-import { business, cases as defaultCases, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
+import { business, navItems, process as defaultProcess, services as defaultServices } from "../data";
 import { SiteContentService, defaultHomepageContent } from "../services/SiteContentService";
 import { MediaService } from "../services/MediaService";
 import type { HomepageContent } from "../types";
@@ -157,8 +158,57 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
     }
   }
 
-  function updateHero(field: keyof HomepageContent["hero"], value: string) {
+  function updateHero(field: keyof HomepageContent["hero"], value: string | number) {
     setDraft((current) => ({ ...current, hero: { ...current.hero, [field]: value } }));
+    markEdited();
+  }
+
+  function updateNavLabel(index: number, value: string) {
+    setDraft((current) => {
+      const navLabels = current.navLabels.slice();
+      navLabels[index] = value;
+      return { ...current, navLabels };
+    });
+    markEdited();
+  }
+
+  function updateHeroSlide(index: number, field: "image" | "position", value: string) {
+    setDraft((current) => {
+      const slides = current.hero.slides.slice();
+      slides[index] = { ...(slides[index] ?? { image: "", position: "center center", scale: 1 }), [field]: value };
+      return { ...current, hero: { ...current.hero, slides } };
+    });
+    markEdited();
+  }
+
+  function updateHeroSlideScale(index: number, value: number) {
+    setDraft((current) => {
+      const slides = current.hero.slides.slice();
+      slides[index] = { ...(slides[index] ?? { image: "", position: "center center", scale: 1 }), scale: value };
+      return { ...current, hero: { ...current.hero, slides } };
+    });
+    markEdited();
+  }
+
+  function addHeroSlide() {
+    setDraft((current) => ({
+      ...current,
+      hero: {
+        ...current.hero,
+        slides: [...current.hero.slides, { image: "", position: "center center", scale: 1 }]
+      }
+    }));
+    setSelectedSection("hero");
+    markEdited();
+  }
+
+  function removeHeroSlide(index: number) {
+    setDraft((current) => {
+      const slides = current.hero.slides.filter((_, slideIndex) => slideIndex !== index);
+      return { ...current, hero: { ...current.hero, slides } };
+    });
+    setSelectedSection("hero");
+    setSelectedIndex(0);
     markEdited();
   }
 
@@ -215,6 +265,63 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
     setSelectedSection("blog");
     setSelectedIndex(index);
     markEdited();
+  }
+
+  async function uploadHeroImage(file: File) {
+    setSaving(true);
+    setError(null);
+    setSaveNote("대표 이미지를 업로드 중입니다.");
+    setSaveState("saving");
+
+    try {
+      const uploaded = await mediaService.uploadHomepageImage(file);
+      updateHero("image", uploaded.url);
+      setSaveNote("대표 이미지를 업로드했습니다.");
+    } catch (uploadError) {
+      setSaveState("error");
+      setError(uploadError instanceof Error ? uploadError.message : "이미지를 업로드하지 못했습니다.");
+      setSaveNote("이미지 업로드에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function uploadHeroSlideImage(index: number, file: File) {
+    setSaving(true);
+    setError(null);
+    setSaveNote("캐러셀 이미지를 업로드 중입니다.");
+    setSaveState("saving");
+
+    try {
+      const uploaded = await mediaService.uploadHomepageImage(file);
+      updateHeroSlide(index, "image", uploaded.url);
+      setSaveNote("캐러셀 이미지를 업로드했습니다.");
+    } catch (uploadError) {
+      setSaveState("error");
+      setError(uploadError instanceof Error ? uploadError.message : "이미지를 업로드하지 못했습니다.");
+      setSaveNote("이미지 업로드에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function uploadBlogImage(index: number, file: File) {
+    setSaving(true);
+    setError(null);
+    setSaveNote("블로그 이미지를 업로드 중입니다.");
+    setSaveState("saving");
+
+    try {
+      const uploaded = await mediaService.uploadHomepageImage(file);
+      updateBlog(index, "image", uploaded.url);
+      setSaveNote("블로그 이미지를 업로드했습니다.");
+    } catch (uploadError) {
+      setSaveState("error");
+      setError(uploadError instanceof Error ? uploadError.message : "이미지를 업로드하지 못했습니다.");
+      setSaveNote("이미지 업로드에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function uploadCaseImage(index: number, file: File) {
@@ -412,6 +519,9 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
 
             {selectedSection === "hero" ? (
               <InspectorGroup title="히어로">
+                <Field label="상단 설명">
+                  <input value={draft.hero.mediaNote} onChange={(event) => updateHero("mediaNote", event.target.value)} />
+                </Field>
                 <Field label="제목">
                   <input value={draft.hero.title} onChange={(event) => updateHero("title", event.target.value)} />
                 </Field>
@@ -421,9 +531,96 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                 <Field label="대표 이미지 URL">
                   <input value={draft.hero.image} onChange={(event) => updateHero("image", event.target.value)} />
                 </Field>
-                <Field label="이미지 설명">
-                  <input value={draft.hero.mediaNote} onChange={(event) => updateHero("mediaNote", event.target.value)} />
+                <Field label="대표 이미지 업로드">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => {
+                      const file = event.currentTarget.files?.[0];
+                      if (file) {
+                        void uploadHeroImage(file);
+                        event.currentTarget.value = "";
+                      }
+                    }}
+                  />
                 </Field>
+                <Field label="대표 이미지 위치">
+                  <input value={draft.hero.imagePosition} onChange={(event) => updateHero("imagePosition", event.target.value)} />
+                </Field>
+                <Field label={`대표 이미지 크기 (${draft.hero.imageScale.toFixed(2)})`}>
+                  <input
+                    type="range"
+                    min="0.8"
+                    max="1.35"
+                    step="0.05"
+                    value={draft.hero.imageScale}
+                    onChange={(event) => updateHero("imageScale", Number(event.target.value))}
+                  />
+                </Field>
+                <Field label="기본 버튼 1">
+                  <input value={draft.hero.primaryActionLabel} onChange={(event) => updateHero("primaryActionLabel", event.target.value)} />
+                </Field>
+                <Field label="기본 버튼 2">
+                  <input value={draft.hero.secondaryActionLabel} onChange={(event) => updateHero("secondaryActionLabel", event.target.value)} />
+                </Field>
+                <Field label="기본 버튼 3">
+                  <input value={draft.hero.tertiaryActionLabel} onChange={(event) => updateHero("tertiaryActionLabel", event.target.value)} />
+                </Field>
+                <div className="editor-inline-note">네비게이션은 현재 이동 경로를 유지하고, 아래 텍스트만 바꿉니다.</div>
+                {navItems.map((item, index) => (
+                  <div key={item.href}>
+                    <Field label={`메뉴 ${index + 1}`}>
+                      <input
+                        value={draft.navLabels[index] ?? item.label}
+                        onChange={(event) => updateNavLabel(index, event.target.value)}
+                      />
+                    </Field>
+                  </div>
+                ))}
+                <div className="editor-inspector-subgroup">
+                  <h4>캐러셀 사진</h4>
+                  <p className="editor-inline-note">대표 이미지를 포함해 총 {1 + draft.hero.slides.length}장을 보여줍니다.</p>
+                  {draft.hero.slides.map((slide, index) => (
+                    <div className="preview-item-card" key={`${slide.image || "slide"}-${index}`}>
+                      <strong>추가 사진 {index + 1}</strong>
+                      <Field label="사진 URL">
+                        <input value={slide.image} onChange={(event) => updateHeroSlide(index, "image", event.target.value)} />
+                      </Field>
+                      <Field label="사진 업로드">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(event) => {
+                            const file = event.currentTarget.files?.[0];
+                            if (file) {
+                              void uploadHeroSlideImage(index, file);
+                              event.currentTarget.value = "";
+                            }
+                          }}
+                        />
+                      </Field>
+                      <Field label="위치">
+                        <input value={slide.position} onChange={(event) => updateHeroSlide(index, "position", event.target.value)} />
+                      </Field>
+                      <Field label={`크기 (${slide.scale.toFixed(2)})`}>
+                        <input
+                          type="range"
+                          min="0.8"
+                          max="1.35"
+                          step="0.05"
+                          value={slide.scale}
+                          onChange={(event) => updateHeroSlideScale(index, Number(event.target.value))}
+                        />
+                      </Field>
+                      <button className="admin-ghost-button" type="button" onClick={() => removeHeroSlide(index)}>
+                        삭제
+                      </button>
+                    </div>
+                  ))}
+                  <button className="admin-ghost-button" type="button" onClick={addHeroSlide}>
+                    사진 추가
+                  </button>
+                </div>
               </InspectorGroup>
             ) : null}
 
@@ -584,6 +781,19 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                     onChange={(event) => updateBlog(selectedIndex, "image", event.target.value)}
                   />
                 </Field>
+                <Field label="이미지 업로드">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => {
+                      const file = event.currentTarget.files?.[0];
+                      if (file) {
+                        void uploadBlogImage(selectedIndex, file);
+                        event.currentTarget.value = "";
+                      }
+                    }}
+                  />
+                </Field>
               </InspectorGroup>
             ) : null}
 
@@ -660,7 +870,17 @@ function HeroPreview({
   content: HomepageContent["hero"];
   onSelect: () => void;
 }) {
-  const heroSlides = useMemo(() => [content.image, ...defaultCases.slice(0, 2).map((item) => item.image)].filter(Boolean), [content.image]);
+  const heroSlides = useMemo(
+    () => [
+      {
+        image: content.image,
+        position: content.imagePosition,
+        scale: content.imageScale
+      },
+      ...content.slides
+    ].filter((slide) => slide.image),
+    [content.image, content.imagePosition, content.imageScale, content.slides]
+  );
   const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
@@ -678,11 +898,12 @@ function HeroPreview({
         편집
       </button>
       <div className="hero-carousel" aria-hidden="true">
-        {heroSlides.map((image, index) => (
+        {heroSlides.map((slide, index) => (
           <img
-            key={image}
+            key={slide.image}
             className={index === activeSlide ? "hero-background hero-slide active" : "hero-background hero-slide"}
-            src={image}
+            src={slide.image}
+            style={{ objectPosition: slide.position, transform: `scale(${slide.scale})` }}
             alt=""
           />
         ))}
@@ -695,11 +916,15 @@ function HeroPreview({
         <div className="hero-actions">
           <span className="primary-button preview-static-button">
             <Phone size={20} />
-            전화 상담
+            {content.primaryActionLabel}
           </span>
           <span className="secondary-button preview-static-button">
             <ExternalLink size={20} />
-            카카오톡 상담
+            {content.secondaryActionLabel}
+          </span>
+          <span className="secondary-button preview-static-button">
+            <ArrowUpRight size={20} />
+            {content.tertiaryActionLabel}
           </span>
         </div>
       </div>
@@ -709,9 +934,9 @@ function HeroPreview({
             <ChevronLeft size={18} />
           </button>
           <div className="hero-carousel-dots">
-            {heroSlides.map((image, index) => (
+            {heroSlides.map((slide, index) => (
               <button
-                key={image}
+                key={`${slide.image}-${index}`}
                 type="button"
                 className={index === activeSlide ? "hero-dot active" : "hero-dot"}
                 onClick={() => setActiveSlide(index)}

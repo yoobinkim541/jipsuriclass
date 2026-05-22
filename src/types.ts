@@ -86,12 +86,25 @@ export type EditableProcessStep = {
   text: string;
 };
 
+export type HomepageHeroSlide = {
+  image: string;
+  position: string;
+  scale: number;
+};
+
 export type HomepageContent = {
+  navLabels: string[];
   hero: {
     title: string;
     description: string;
     image: string;
+    imagePosition: string;
+    imageScale: number;
     mediaNote: string;
+    primaryActionLabel: string;
+    secondaryActionLabel: string;
+    tertiaryActionLabel: string;
+    slides: HomepageHeroSlide[];
   };
   about: {
     eyebrow: string;
