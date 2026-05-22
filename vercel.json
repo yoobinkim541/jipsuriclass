@@ -20,6 +20,14 @@
       "destination": "/"
     },
     {
+      "source": "/mypage",
+      "destination": "/"
+    },
+    {
+      "source": "/mypage/:path*",
+      "destination": "/"
+    },
+    {
       "source": "/login",
       "destination": "/"
     },
