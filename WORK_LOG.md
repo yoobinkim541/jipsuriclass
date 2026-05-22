@@ -298,3 +298,21 @@ Verification:
 Follow-up:
 - To edit the homepage, log in at `/admin` with the Google account and save from the homepage editor.
 - If you want file uploads instead of image URLs, the next step is Supabase Storage.
+
+## 2026-05-22 - Mobile And Tablet Layout Pass
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+
+Implemented behavior:
+- Converted the hero into a full-screen full-bleed image section with text overlay.
+- Added tablet-specific hero width/height tuning so the landing screen does not collapse into the desktop layout.
+- Tightened mobile spacing and forced stacked CTA/login button groups for easier tapping.
+- Kept the admin/editor layout responsive so it stacks on narrower tablet widths.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Verify the live page on a phone-sized viewport and a tablet-sized viewport after the next deployment.

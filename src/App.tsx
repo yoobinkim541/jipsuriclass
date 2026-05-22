@@ -173,20 +173,16 @@ function SiteHeader({
  */
 function HeroSection({ content }: { content: { title: string; description: string; image: string; mediaNote: string } }) {
   return (
-    <section className="hero section">
+    <section className="hero hero-fullbleed">
+      <img className="hero-background" src={content.image} alt="" aria-hidden="true" />
+      <div className="hero-overlay" />
       <div className="hero-copy">
+        <span className="hero-kicker">{content.mediaNote}</span>
         <h1>{content.title}</h1>
         <p>{content.description}</p>
         <CtaButtons />
         <LoginButtons />
         <ProofList />
-      </div>
-      <div className="hero-media" aria-label="집수리 현장 이미지">
-        <img src={content.image} alt={content.mediaNote} />
-        <div className="media-note">
-          <CheckCircle2 size={18} />
-          {content.mediaNote}
-        </div>
       </div>
     </section>
   );
