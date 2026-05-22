@@ -54,7 +54,6 @@ VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 ADMIN_EMAIL=
 RESEND_API_KEY=
-CRON_SECRET=
 ```
 
 ### Domain DNS
@@ -177,7 +176,8 @@ UI 컴포넌트는 외부 API 응답 형식을 직접 알지 않도록 합니다
 3. `supabase/schema.sql` 실행
 4. `public.admin_users`에 관리자 Google 이메일 추가
 5. Supabase Auth에서 Google provider 활성화
-6. `ADMIN_EMAIL`, `RESEND_API_KEY`, `CRON_SECRET`을 Vercel 환경변수에 설정
+6. `ADMIN_EMAIL`, `RESEND_API_KEY`를 Vercel 환경변수에 설정
+7. GitHub Actions 스케줄이 5분 간격으로 `/api/notify-inquiries`를 호출합니다
 7. 관리자 페이지에서 시공사례/고정 블로그 글 관리
 8. Capacitor로 APK 패키징
 
@@ -221,8 +221,8 @@ insert into public.admin_users (email) values ('admin@example.com');
 
 ## Inquiry Alerts
 
-Vercel Cron이 5분 간격으로 `/api/notify-inquiries`를 호출합니다.
-이 기능은 `ADMIN_EMAIL`, `RESEND_API_KEY`, `CRON_SECRET`이 있어야 실제 이메일이 전송됩니다.
+GitHub Actions가 5분 간격으로 `/api/notify-inquiries`를 호출합니다.
+이 기능은 `ADMIN_EMAIL`과 `RESEND_API_KEY`가 있어야 실제 이메일이 전송됩니다.
 
 ## PWA And APK Readiness
 

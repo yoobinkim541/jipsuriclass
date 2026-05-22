@@ -19,11 +19,5 @@
       "source": "/account/:path*",
       "destination": "/"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/notify-inquiries",
-      "schedule": "*/5 * * * *"
-    }
   ]
 }

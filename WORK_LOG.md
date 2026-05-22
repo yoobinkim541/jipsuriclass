@@ -221,20 +221,20 @@ Follow-up:
 
 Changed files:
 - `.env.example`
+- `.github/workflows/inquiry-alerts.yml`
 - `README.md`
 - `api/notify-inquiries.ts`
 - `vercel.json`
 
 Implemented behavior:
-- Added a Vercel cron endpoint at `/api/notify-inquiries` that checks the last 5 minutes of new website inquiries and prepares an email digest for the admin inbox.
-- Added a cron schedule to run every 5 minutes in production.
-- Added `ADMIN_EMAIL`, `RESEND_API_KEY`, and `CRON_SECRET` documentation to the environment setup.
+- Added a cron endpoint at `/api/notify-inquiries` that checks the last 5 minutes of new website inquiries and prepares an email digest for the admin inbox.
+- Added a GitHub Actions schedule to run every 5 minutes and call the digest endpoint.
+- Added `ADMIN_EMAIL` and `RESEND_API_KEY` documentation to the environment setup.
 - Stored `ADMIN_EMAIL=yoobinkim06@gmail.com` in Vercel production and development environments.
-- Stored a production `CRON_SECRET` in Vercel for cron request verification.
 
 Verification:
 - `npm run build` passed.
-- Vercel env vars were updated successfully for `ADMIN_EMAIL` and `CRON_SECRET`.
+- Vercel env vars were updated successfully for `ADMIN_EMAIL`.
 - No email provider key is present yet, so the cron endpoint is staged and will return a missing-email-configuration response until `RESEND_API_KEY` is installed.
 
 Follow-up:

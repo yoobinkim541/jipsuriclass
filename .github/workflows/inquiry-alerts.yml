@@ -1,0 +1,13 @@
+name: Inquiry Alerts
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check new inquiries
+        run: curl -fsS https://www.jipsuriclass.kr/api/notify-inquiries

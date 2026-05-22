@@ -12,21 +12,11 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabasePublishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const resendApiKey = process.env.RESEND_API_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
-const cronSecret = process.env.CRON_SECRET;
-
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
     response.status(405).json({ error: "Method Not Allowed" });
     return;
-  }
-
-  if (cronSecret) {
-    const authHeader = request.headers.authorization;
-    if (authHeader !== `Bearer ${cronSecret}`) {
-      response.status(401).json({ error: "Unauthorized" });
-      return;
-    }
   }
 
   if (!supabaseUrl || !supabasePublishableKey) {
