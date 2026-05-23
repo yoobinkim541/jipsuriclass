@@ -1,17 +1,13 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#3B3A37" />
-      <stop offset="1" stop-color="#151515" />
-    </linearGradient>
-    <linearGradient id="ring" x1="14" y1="12" x2="50" y2="52" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F6E6CA" />
-      <stop offset="1" stop-color="#DEC6A0" />
-    </linearGradient>
-  </defs>
-  <circle cx="32" cy="32" r="30" fill="url(#bg)" />
-  <circle cx="32" cy="32" r="26" stroke="url(#ring)" stroke-width="3.5" />
-  <path d="M19 31L32 20L45 31" stroke="url(#ring)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M22 30.5V47H42V30.5" stroke="url(#ring)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-  <circle cx="32" cy="34" r="5.5" fill="#151515" stroke="url(#ring)" stroke-width="3.5" />
+  <circle cx="32" cy="32" r="28.5" stroke="#D7AE6B" stroke-width="3.5" />
+  <path d="M18 30L32 18L46 30" stroke="#10284A" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M21 29.5V46H43V29.5" stroke="#10284A" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round" />
+  <path
+    d="M13.5 20.5C13.5 16.9 16.4 14 20 14H22V19H20.7C20.1 19 19.6 19.5 19.6 20.1V31.7C19.6 38.4 25 43.8 31.7 43.8H34"
+    stroke="#10284A"
+    stroke-width="4.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="32" cy="35" r="4.8" stroke="#D7AE6B" stroke-width="3.5" />
 </svg>

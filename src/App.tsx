@@ -369,7 +369,7 @@ function SiteHeader({
     <>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
-          <img className="brand-mark" src="/icons/icon.png" alt="" aria-hidden="true" />
+          <img className="brand-mark" src="/icons/icon.svg" alt="" aria-hidden="true" />
           <span>{business.name}</span>
         </a>
         <nav className="desktop-nav" aria-label="주요 메뉴">
