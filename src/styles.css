@@ -1189,6 +1189,57 @@ textarea {
   min-height: 420px;
 }
 
+.office-map-link-card {
+  align-content: center;
+  color: inherit;
+  gap: 22px;
+  justify-items: start;
+  min-height: 420px;
+  padding: 34px;
+  text-decoration: none;
+}
+
+.office-map-link-card:hover {
+  border-color: #b8c5d7;
+  transform: translateY(-2px);
+}
+
+.office-map-link-visual {
+  align-items: center;
+  background: #eef2f7;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  color: #0f172a;
+  display: inline-flex;
+  height: 82px;
+  justify-content: center;
+  width: 82px;
+}
+
+.office-map-link-content {
+  display: grid;
+  gap: 8px;
+}
+
+.office-map-link-content strong {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.office-map-link-content p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.office-map-link-action {
+  align-items: center;
+  border-top: 1px solid #e5e7eb;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 8px;
+  padding-top: 18px;
+}
+
 .office-map-fallback {
   align-items: center;
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.96));
