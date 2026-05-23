@@ -23,18 +23,17 @@ export function NaverMapEmbed({ address, title }: NaverMapEmbedProps) {
 
   const mapSrc = useMemo(() => {
     const params = new URLSearchParams({
-      center: `${longitude},${latitude}`,
-      level: "16",
+      title,
+      address,
+      lat: String(latitude),
+      lng: String(longitude),
       w: "960",
       h: "640",
-      maptype: "basic",
-      format: "png",
-      scale: "2",
-      lang: "ko"
+      level: "16"
     });
 
-    return `https://naveropenapi.apigw.ntruss.com/map-static/v2/raster-cors?${params.toString()}`;
-  }, [latitude, longitude]);
+    return `/api/naver-static-map?${params.toString()}`;
+  }, [address, latitude, longitude, title]);
 
   return (
     <div className="office-map-shell">
