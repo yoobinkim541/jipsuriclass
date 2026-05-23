@@ -43,6 +43,9 @@ export type PortfolioPost = {
   date: string;
   link: string;
   image: string;
+  cardTitle?: string;
+  summary?: string[];
+  keywords?: string[];
 };
 
 export type NaverBlogItem = {
@@ -51,6 +54,9 @@ export type NaverBlogItem = {
   link: string;
   postdate?: string;
   image?: string;
+  cardTitle?: string;
+  summary?: string[];
+  keywords?: string[];
 };
 
 export type WorkProcessStep = {

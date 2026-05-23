@@ -901,10 +901,19 @@ textarea {
   margin: 0;
 }
 
-.blog-card p {
+.blog-card-summary {
+  display: grid;
+  gap: 6px;
+}
+
+.blog-card-summary p {
   color: var(--muted);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   line-height: 1.7;
   margin: 0;
+  overflow: hidden;
 }
 
 .blog-card-featured .blog-card-image {
@@ -918,6 +927,24 @@ textarea {
 
 .blog-card-featured h3 {
   font-size: 22px;
+}
+
+.blog-card-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.blog-keyword {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 999px;
+  color: #0f172a;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 10px;
 }
 
 @media (max-width: 1024px) {
@@ -4060,7 +4087,7 @@ textarea {
   .case-card p,
   .blog-row p,
   .process-line p,
-  .blog-card p,
+  .blog-card-summary p,
   .office-card p,
   .estimate-aside-card p,
   .admin-breakdown-item span,

@@ -472,8 +472,21 @@ function BlogSection({
                 <span className="naver-mark">N</span>
                 <time>{post.date}</time>
               </div>
-              <h3>{post.title}</h3>
-              <p>{post.description}</p>
+              <h3>{post.cardTitle ?? post.title}</h3>
+              <div className="blog-card-summary">
+                {(post.summary?.length ? post.summary : buildSummaryLines(post.description)).map((line) => (
+                  <p key={line}>{line}</p>
+                ))}
+              </div>
+              {!!post.keywords?.length && (
+                <div className="blog-card-keywords" aria-label="요약 키워드">
+                  {post.keywords.slice(0, 4).map((keyword) => (
+                    <span className="blog-keyword" key={keyword}>
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+              )}
               <span className="blog-card-link">
                 자세히 보기 <ExternalLink size={16} />
               </span>
@@ -483,6 +496,19 @@ function BlogSection({
       </div>
     </section>
   );
+}
+
+function buildSummaryLines(description: string) {
+  const cleaned = description.replace(/\s+/g, " ").trim();
+  if (!cleaned) return ["상세 내용을 확인해 주세요."];
+
+  const sentences = cleaned
+    .split(/(?<=[.!?])\s+|(?<=다)\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  if (!sentences.length) return [cleaned.slice(0, 120)];
+  return sentences.slice(0, 3).map((sentence) => sentence.slice(0, 80));
 }
 
 /** 작업 절차 영역: 상담에서 시공 확인까지의 기대 흐름을 고정합니다. */
