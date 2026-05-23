@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, Phone, Send, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Send, ShieldCheck } from "lucide-react";
 import { images } from "../assets/images";
 import { business } from "../data";
 import { InquiryService } from "../services/InquiryService";
@@ -291,10 +291,6 @@ export function EstimatePage() {
         <a className="admin-home" href="/">
           <ArrowLeft size={18} />
           {content.header.homeLinkLabel}
-        </a>
-        <a className="estimate-phone" href={business.phoneHref}>
-          <Phone size={16} />
-          {content.header.phoneLabel}
         </a>
       </header>
 

@@ -319,7 +319,7 @@ function extractImageCandidates(html: string) {
   for (const pattern of patterns) {
     let match: RegExpExecArray | null;
     while ((match = pattern.exec(html))) {
-      const url = decodeHtml(match[1]);
+      const url = upgradeNaverBlogImageUrl(decodeHtml(match[1]));
       if (!isLikelyBlogImage(url)) continue;
       candidates.add(url);
     }
@@ -329,7 +329,11 @@ function extractImageCandidates(html: string) {
 }
 
 function pickBestBlogImage(candidates: string[]) {
-  return candidates.find((url) => !isLikelyPlaceholderImage(url)) ?? candidates[0];
+  return candidates
+    .map((url) => upgradeNaverBlogImageUrl(url))
+    .filter((url): url is string => Boolean(url))
+    .sort((left, right) => scoreBlogImage(right) - scoreBlogImage(left))
+    .find((url) => !isLikelyPlaceholderImage(url));
 }
 
 function isLikelyBlogImage(url: string) {
@@ -341,6 +345,39 @@ function isLikelyBlogImage(url: string) {
 
 function isLikelyPlaceholderImage(url: string) {
   return /blog\/logo|sp_blog|static\/blog\/img|profile|icon|emoji/i.test(url);
+}
+
+function scoreBlogImage(url: string) {
+  const normalized = url.toLowerCase();
+  let score = 0;
+
+  if (normalized.includes("postfiles.pstatic.net") || normalized.includes("blogfiles.pstatic.net")) score += 40;
+  if (normalized.includes("mblogthumb-phinf.pstatic.net")) score += 20;
+  if (/type=w(966|1200|1280|1600)/i.test(normalized)) score += 30;
+  if (/type=w\d+/i.test(normalized)) score += 18;
+  if (/\.(jpg|jpeg|png|webp)(\?|$)/i.test(normalized)) score += 8;
+  if (/thumb|logo|profile|icon|emoji/i.test(normalized)) score -= 50;
+
+  return score;
+}
+
+function upgradeNaverBlogImageUrl(value: string) {
+  const image = value.trim();
+  if (!image) return "";
+
+  try {
+    const url = new URL(image.startsWith("//") ? `https:${image}` : image);
+    if (!isLikelyBlogImage(url.toString())) return url.toString();
+
+    const type = url.searchParams.get("type");
+    if (type && /^w\d*(?:_?blur)?$/i.test(type)) {
+      url.searchParams.set("type", "w966");
+    }
+
+    return url.toString();
+  } catch {
+    return image;
+  }
 }
 
 function decodeHtml(value: string) {

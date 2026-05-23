@@ -528,3 +528,208 @@ Verification:
 Follow-up:
 - Replace `business.kakaoUrl` in `src/data.ts` with the real Kakao channel URL when it is available.
 - Set the optional map and email variables in Vercel if interactive map and alert delivery are needed.
+
+## 2026-05-23 - Login Screen Redesign
+
+Changed files:
+- `src/login/LoginPage.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reworked the customer login page into a wider two-column layout so the screen feels fuller and less empty.
+- Added a dark branded explainer panel with login benefits, summary chips, and clearer visual hierarchy.
+- Upgraded the auth card styling with larger radii, stronger contrast, softer gradients, and more modern input/button treatment.
+- Kept the login logic and redirects unchanged.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the admin login page to match this new visual language, apply the same treatment there next.
+
+## 2026-05-23 - Remove Header Login Button
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the visible 로그인 button from the desktop top navigation bar.
+- Kept the mobile menu login entry and dedicated `/login` route intact.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the mobile menu login entry removed too, that can be done separately.
+
+## 2026-05-23 - Sidebar-Only Login Access
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Kept the login entry out of the top navigation on every screen size.
+- Made the menu button visible on desktop and mobile so the sidebar can be opened everywhere.
+- Kept login access inside the sidebar menu only, so users reach `/login` from that side menu list instead of the top bar.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the sidebar menu itself to become a full slide-over navigation drawer with more emphasis on account actions, that can be a separate pass.
+
+## 2026-05-23 - Estimate Intro Full-Bleed
+
+Changed files:
+- `src/estimate/EstimatePage.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the phone number from the top of the estimate intro page.
+- Made the estimate intro stage behave like a full-bleed image hero across desktop, tablet, and mobile.
+- Moved the intro copy lower on top of the image so the layout feels more cinematic and less centered.
+- Flattened the `진행하기` button by removing the heavy raised look.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the survey stage to use the same full-bleed visual treatment next, that can be done separately.
+
+## 2026-05-23 - Blog Thumbnail Quality Upgrade
+
+Changed files:
+- `api/naver-blog.ts`
+- `api/blog-image.ts`
+- `vite.config.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Re-ranked blog image candidates so the card prefers wider, higher-quality post images over weaker preview thumbnails.
+- Upgraded Naver blog image URLs that use thumbnail-style `type=` parameters to a higher-resolution variant before serving them.
+- Applied the same image URL normalization in both dev proxy and production API paths so local preview and deployed behavior match.
+- Kept the existing card crop behavior, but made the source image more suitable for the card frame.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If a specific post still ships a weak thumbnail, the next step is to replace that post’s image manually in the fallback portfolio data or admin content editor.
+
+## 2026-05-23 - Estimate Step Spacing Tightening
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reduced the height and padding of the `1/8` step badge.
+- Tightened the spacing between the step label, question text, and the overall form card so the first survey step reads more compactly.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the options grid itself compressed further, that can be tuned separately without changing the content flow.
+
+## 2026-05-23 - Contact CTA Split
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the duplicated `견적상담 페이지` button from the quick contact button row.
+- Kept quick contact limited to phone and KakaoTalk.
+- Reframed the lower card as the dedicated detailed 상담 entry point, with a short helper sentence explaining the split.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the quick contact row to become icon-only chips on mobile, that can be done as a separate polish pass.
+
+## 2026-05-23 - Page Title Brand Fix
+
+Changed files:
+- `index.html`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Updated the browser page title to `집수리클라쓰 - 클라쓰가 다른 종합집수리`.
+- Fixed the brand spelling in the HTML metadata description so it matches the rest of the site.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the same branding tone applied to Open Graph title/description meta tags next, that can be updated separately.
+
+## 2026-05-23 - App Icon Replacement
+
+Changed files:
+- `index.html`
+- `public/manifest.webmanifest`
+- `public/service-worker.js`
+- `src/App.tsx`
+- `public/icons/icon.png`
+- `public/icons/icon-192.png`
+- `public/icons/icon-512.png`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Replaced the old SVG icon references with the new modern icon artwork in PNG form.
+- Updated the browser favicon, Apple touch icon, PWA manifest icons, service worker app shell, and header brand mark to use the new icon set.
+- Kept the old SVG files in place for now, but they are no longer referenced by the app.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want, the remaining unused SVG icon files can be deleted in a cleanup pass after confirming the new PNG icons are shipping correctly.
+
+## 2026-05-23 - SEO Review
+
+Changed files:
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reviewed the current site structure for Google search visibility risks.
+- Confirmed the app is still a client-rendered Vite SPA with no `robots.txt`, `sitemap.xml`, canonical tags, or Open Graph metadata in place yet.
+
+Verification:
+- No build was run because this was a guidance-only review.
+
+Follow-up:
+- Add sitemap, robots, canonical, structured data, and stronger service/location content before expecting meaningful organic rankings.
+
+## 2026-05-23 - SEO Technical Setup
+
+Changed files:
+- `src/App.tsx`
+- `index.html`
+- `public/robots.txt`
+- `public/sitemap.xml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added per-path SEO metadata handling in `App` for title, description, canonical URL, Open Graph tags, Twitter tags, robots directives, and JSON-LD.
+- Added `HomeAndConstructionBusiness` structured data on the home page.
+- Added `WebPage` structured data on `/estimate` and `/privacy`.
+- Set private routes like `/admin`, `/account`, `/mypage`, and `/login` to `noindex,nofollow`.
+- Added `robots.txt` with the public sitemap and disallowed private routes.
+- Added a basic `sitemap.xml` for the public pages.
+- Tightened the default `index.html` title and description for search intent clarity.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Add more service/location landing pages next if you want stronger organic ranking coverage beyond the home page.

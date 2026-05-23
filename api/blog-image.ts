@@ -34,7 +34,8 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   try {
-    const upstream = await fetch(url.toString(), {
+    const upgradedUrl = upgradeNaverBlogImageUrl(url.toString());
+    const upstream = await fetch(upgradedUrl, {
       headers: {
         Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
         Referer: "https://blog.naver.com/",
@@ -64,4 +65,17 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
 function isAllowedBlogImageHost(hostname: string) {
   return ALLOWED_IMAGE_HOSTS.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
+}
+
+function upgradeNaverBlogImageUrl(value: string) {
+  try {
+    const url = new URL(value);
+    const type = url.searchParams.get("type");
+    if (type && /^w\d*(?:_?blur)?$/i.test(type)) {
+      url.searchParams.set("type", "w966");
+    }
+    return url.toString();
+  } catch {
+    return value;
+  }
 }

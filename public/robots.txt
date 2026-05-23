@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /account
+Disallow: /account/
+Disallow: /mypage
+Disallow: /mypage/
+Disallow: /login
+Disallow: /login/
+
+Sitemap: https://www.jipsuriclass.kr/sitemap.xml

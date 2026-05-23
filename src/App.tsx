@@ -24,8 +24,14 @@ import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();
+const siteUrl = "https://www.jipsuriclass.kr";
+const siteName = business.name;
+const defaultDescription = "서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 빠르게 안내합니다.";
+const defaultImage = `${siteUrl}/assets/consult-hero.png`;
 
 function App() {
+  usePageSeo(getSeoConfigForPath(window.location.pathname));
+
   if (window.location.pathname.startsWith("/admin/login")) {
     return <AdminLoginPage />;
   }
@@ -46,6 +52,156 @@ function App() {
   }
 
   return <HomePage />;
+}
+
+function usePageSeo(config: SeoConfig) {
+  useEffect(() => {
+    document.title = config.title;
+
+    setMetaTag("description", config.description);
+    setMetaTag("robots", config.noindex ? "noindex,nofollow" : "index,follow");
+    setMetaTag("theme-color", "#0f172a");
+    setMetaTag("og:type", "website", "property");
+    setMetaTag("og:site_name", siteName, "property");
+    setMetaTag("og:title", config.title, "property");
+    setMetaTag("og:description", config.description, "property");
+    setMetaTag("og:image", config.image ?? defaultImage, "property");
+    setMetaTag("og:url", `${siteUrl}${config.path}`, "property");
+    setMetaTag("twitter:card", "summary_large_image");
+    setMetaTag("twitter:title", config.title);
+    setMetaTag("twitter:description", config.description);
+    setMetaTag("twitter:image", config.image ?? defaultImage);
+    setLinkTag("canonical", `${siteUrl}${config.path}`);
+    setStructuredData(config.jsonLd);
+  }, [config]);
+}
+
+type SeoConfig = {
+  path: string;
+  title: string;
+  description: string;
+  image?: string;
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown>[];
+};
+
+function getSeoConfigForPath(pathname: string): SeoConfig {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/account") || pathname.startsWith("/mypage") || pathname.startsWith("/login")) {
+    return {
+      path: pathname,
+      title: `${siteName} | 내부 페이지`,
+      description: defaultDescription,
+      image: defaultImage,
+      noindex: true
+    };
+  }
+
+  if (pathname.startsWith("/estimate")) {
+    return {
+      path: "/estimate",
+      title: `견적상담 | ${siteName}`,
+      description: "사진과 증상으로 집수리·누수 복구·부분수리 견적을 빠르게 상담하는 페이지입니다.",
+      image: defaultImage,
+      jsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: `견적상담 | ${siteName}`,
+          url: `${siteUrl}/estimate`,
+          description: "사진과 증상으로 집수리·누수 복구·부분수리 견적을 빠르게 상담하는 페이지입니다."
+        }
+      ]
+    };
+  }
+
+  if (pathname.startsWith("/privacy")) {
+    return {
+      path: "/privacy",
+      title: `개인정보처리방침 | ${siteName}`,
+      description: "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다.",
+      image: defaultImage,
+      jsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: `개인정보처리방침 | ${siteName}`,
+          url: `${siteUrl}/privacy`,
+          description: "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다."
+        }
+      ]
+    };
+  }
+
+  return {
+    path: "/",
+    title: `${siteName} | 서울·경기 집수리·누수·부분수리`,
+    description: defaultDescription,
+    image: defaultImage,
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: siteName,
+        url: siteUrl,
+        description: defaultDescription
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "HomeAndConstructionBusiness",
+        name: siteName,
+        url: siteUrl,
+        telephone: business.phone,
+        image: defaultImage,
+        address: {
+          "@type": "PostalAddress",
+          streetAddress: business.address,
+          addressCountry: "KR"
+        },
+        areaServed: business.area,
+        openingHours: business.hours,
+        sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl],
+        description: business.introduction
+      }
+    ]
+  };
+}
+
+function setMetaTag(name: string, content: string, attribute: "name" | "property" = "name") {
+  const selector = `meta[${attribute}="${name}"]`;
+  let tag = document.head.querySelector<HTMLMetaElement>(selector);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(attribute, name);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute("content", content);
+}
+
+function setLinkTag(rel: string, href: string) {
+  let tag = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+  if (!tag) {
+    tag = document.createElement("link");
+    tag.rel = rel;
+    document.head.appendChild(tag);
+  }
+  tag.href = href;
+}
+
+function setStructuredData(jsonLd?: Record<string, unknown>[]) {
+  const existing = document.head.querySelector<HTMLScriptElement>('script[data-seo="json-ld"]');
+  if (existing) {
+    existing.remove();
+  }
+
+  if (!jsonLd?.length) {
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.type = "application/ld+json";
+  script.dataset.seo = "json-ld";
+  script.textContent = JSON.stringify(jsonLd);
+  document.head.appendChild(script);
 }
 
 function HomePage() {
@@ -138,7 +294,7 @@ function SiteHeader({
     <>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
-          <img className="brand-mark" src="/icons/icon.svg" alt="" aria-hidden="true" />
+          <img className="brand-mark" src="/icons/icon.png" alt="" aria-hidden="true" />
           <span>{business.name}</span>
         </a>
         <nav className="desktop-nav" aria-label="주요 메뉴">
@@ -148,14 +304,11 @@ function SiteHeader({
             </a>
           ))}
         </nav>
-        <a className="header-login-link" href="/login">
-          로그인
-        </a>
         <a className="header-call" href={business.phoneHref}>
           <Phone size={18} />
           {business.phone}
         </a>
-        <button className="menu-button" onClick={onOpenMenu} aria-label="메뉴 열기">
+        <button className="menu-button" onClick={onOpenMenu} aria-label="사이드바 열기">
           <Menu size={24} />
         </button>
       </header>
@@ -565,17 +718,14 @@ function ContactSection({
             <MessageCircle size={20} />
             카카오톡으로 사진 보내기
           </a>
-          <a className="secondary-button" href="/estimate">
-            <ArrowUpRight size={20} />
-            견적상담 페이지
-          </a>
         </div>
+        <p className="contact-actions-note">빠른 문의는 전화·카카오톡으로, 상세 상담은 아래 견적상담 카드에서 이어집니다.</p>
         <BusinessInfoList />
       </div>
       <div className="contact-estimate-card">
         <span className="admin-kicker">
           <ArrowUpRight size={16} />
-          견적상담
+          상세 상담
         </span>
         <h3>상세한 상담은 견적상담 페이지에서 이어집니다</h3>
         <p>사진 첨부와 단계별 질문으로 더 정확하게 상담을 받을 수 있습니다.</p>
