@@ -29,6 +29,7 @@ type EnrichedBlogItem = NaverBlogItem & {
 
 const PORTFOLIO_LIMIT = 6;
 const FALLBACK_BLOG_IMAGE = "/assets/consult-hero.png";
+const ALLOWED_IMAGE_HOSTS = ["pstatic.net", "naver.net", "naver.com"];
 
 /**
  * Production serverless endpoint for Naver Blog portfolio cards.
@@ -511,7 +512,28 @@ function pickBestBlogImage(candidates: string[]) {
 
 function normalizeImageUrl(value?: string) {
   const image = typeof value === "string" ? value.trim() : "";
-  return image || undefined;
+  if (!image) return undefined;
+
+  try {
+    const normalized = image.startsWith("//") ? `https:${image}` : image;
+    const url = new URL(normalized);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      return undefined;
+    }
+
+    if (!isAllowedBlogImageHost(url.hostname)) {
+      return undefined;
+    }
+
+    return `/api/blog-image?url=${encodeURIComponent(url.toString())}`;
+  } catch {
+    return undefined;
+  }
+}
+
+function isAllowedBlogImageHost(hostname: string) {
+  return ALLOWED_IMAGE_HOSTS.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
 }
 
 function isLikelyBlogImage(url: string) {
