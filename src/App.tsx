@@ -466,7 +466,18 @@ function BlogSection({
             rel="noreferrer"
             key={post.title}
           >
-            <img className="blog-card-image" src={post.image} alt={post.title} />
+            <img
+              className="blog-card-image"
+              src={post.image}
+              alt={post.title}
+              loading="lazy"
+              onError={(event) => {
+                const image = event.currentTarget;
+                if (image.dataset.fallbackApplied === "true") return;
+                image.dataset.fallbackApplied = "true";
+                image.src = "/assets/consult-hero.png";
+              }}
+            />
             <div className="blog-card-body">
               <div className="blog-card-meta">
                 <span className="naver-mark">N</span>

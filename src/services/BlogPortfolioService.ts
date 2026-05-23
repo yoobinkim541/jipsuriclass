@@ -44,11 +44,20 @@ export class BlogPortfolioService {
       description: this.stripHtml(item.description),
       date: this.formatPostDate(item.postdate),
       link: item.link,
-      image: item.image ?? this.fallbackPosts[index % this.fallbackPosts.length]?.image ?? this.fallbackPosts[0]?.image ?? "",
+      image:
+        this.normalizeImage(item.image) ??
+        this.fallbackPosts[index % this.fallbackPosts.length]?.image ??
+        this.fallbackPosts[0]?.image ??
+        "/assets/consult-hero.png",
       cardTitle: item.cardTitle ? this.stripHtml(item.cardTitle) : undefined,
       summary: Array.isArray(item.summary) ? item.summary.map((line) => this.stripHtml(line)).filter(Boolean) : undefined,
       keywords: Array.isArray(item.keywords) ? item.keywords.map((keyword) => this.stripHtml(keyword)).filter(Boolean) : undefined
     };
+  }
+
+  private normalizeImage(value?: string) {
+    const image = typeof value === "string" ? value.trim() : "";
+    return image || undefined;
   }
 
   private stripHtml(value: string) {
