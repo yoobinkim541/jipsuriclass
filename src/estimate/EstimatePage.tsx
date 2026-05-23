@@ -1,12 +1,14 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent, type FormEvent } from "react";
 import { ArrowLeft, ArrowRight, Phone, Send, ShieldCheck } from "lucide-react";
 import { images } from "../assets/images";
 import { business } from "../data";
 import { InquiryService } from "../services/InquiryService";
 import { MediaService } from "../services/MediaService";
+import { PhoneVerificationService } from "../services/PhoneVerificationService";
 
 const inquiryService = new InquiryService();
 const mediaService = new MediaService();
+const phoneVerificationService = new PhoneVerificationService();
 
 const spaceOptions = ["아파트", "빌라", "단독주택", "오피스텔"];
 const areaOptions = ["10~20평대", "30평대", "40평대", "50평대 이상"];
@@ -148,8 +150,17 @@ export function EstimatePage() {
   });
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<Array<{ file: File; url: string }>>([]);
+  const [attachmentDragActive, setAttachmentDragActive] = useState(false);
+  const [replaceFileIndex, setReplaceFileIndex] = useState<number | null>(null);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [postcodeLoading, setPostcodeLoading] = useState(false);
+  const [verificationInput, setVerificationInput] = useState("");
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+  const [verificationState, setVerificationState] = useState<"idle" | "sent" | "verified" | "expired">("idle");
+  const [verificationLoading, setVerificationLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const nextPreviews = files.map((file) => ({
@@ -161,6 +172,10 @@ export function EstimatePage() {
     return () => nextPreviews.forEach((item) => URL.revokeObjectURL(item.url));
   }, [files]);
 
+  useEffect(() => {
+    loadDaumPostcode().catch(() => undefined);
+  }, []);
+
   const currentStep = surveySteps[step - 1];
   const stepOneReady = Boolean(draft.spaceType);
   const stepTwoReady = Boolean(draft.areaBand);
@@ -169,12 +184,19 @@ export function EstimatePage() {
   const stepFiveReady = draft.selectedRooms.length > 0;
   const stepSixReady = Boolean(draft.budget);
   const stepSevenReady = Boolean(draft.startTiming);
+  const phoneVerified = verificationState === "verified";
   const reviewEntries = buildReviewEntries(draft);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("submitting");
     setError(null);
+
+    if (!phoneVerified) {
+      setStatus("error");
+      setError("휴대폰 인증을 먼저 완료해 주세요.");
+      return;
+    }
 
     try {
       const uploadedAttachments =
@@ -229,6 +251,10 @@ export function EstimatePage() {
         requestNote: presetIssue
       });
       setFiles([]);
+      setVerificationInput("");
+      setVerificationMessage(null);
+      setVerificationState("idle");
+      setVerificationLoading(false);
       setStep(1);
       setStage("intro");
       setStatus("success");
@@ -250,9 +276,7 @@ export function EstimatePage() {
   function toggleRoom(option: string) {
     setDraft((current) => {
       const exists = current.selectedRooms.includes(option);
-      const selectedRooms = exists
-        ? current.selectedRooms.filter((item) => item !== option)
-        : [...current.selectedRooms, option];
+      const selectedRooms = exists ? current.selectedRooms.filter((item) => item !== option) : [...current.selectedRooms, option];
 
       return {
         ...current,
@@ -260,6 +284,119 @@ export function EstimatePage() {
         otherRoomDetail: selectedRooms.includes("기타 입력") ? current.otherRoomDetail : ""
       };
     });
+  }
+
+  function handleFiles(nextFiles: FileList | File[], replaceIndex: number | null = replaceFileIndex) {
+    const incoming = Array.from(nextFiles);
+    if (!incoming.length) return;
+
+    setFiles((current) => {
+      if (replaceIndex !== null) {
+        const next = current.slice();
+        next.splice(replaceIndex, 1, incoming[0]);
+        if (incoming.length > 1) next.push(...incoming.slice(1));
+        return next;
+      }
+
+      return [...current, ...incoming];
+    });
+
+    setReplaceFileIndex(null);
+  }
+
+  function openFilePicker(index: number | null = null) {
+    setReplaceFileIndex(index);
+    fileInputRef.current?.click();
+  }
+
+  function removeFile(index: number) {
+    setFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+  }
+
+  function handleFileDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    setAttachmentDragActive(false);
+    handleFiles(event.dataTransfer.files);
+  }
+
+  async function handlePostcodeSearch() {
+    setError(null);
+    setPostcodeLoading(true);
+
+    try {
+      const postcode = await loadDaumPostcode();
+      postcode.open({
+        oncomplete: (data) => {
+          const address = data.userSelectedType === "R" ? data.roadAddress : data.jibunAddress;
+          setDraft((current) => ({
+            ...current,
+            postalCode: data.zonecode,
+            address
+          }));
+        }
+      });
+    } catch (postcodeError) {
+      setError(postcodeError instanceof Error ? postcodeError.message : "우편번호 검색을 불러오지 못했습니다.");
+    } finally {
+      setPostcodeLoading(false);
+    }
+  }
+
+  function handleSendVerificationCode() {
+    const phone = draft.phone.trim().replace(/\D/g, "");
+    if (phone.length < 9) {
+      setVerificationMessage("휴대폰번호를 먼저 입력해 주세요.");
+      setVerificationState("idle");
+      return;
+    }
+
+    setVerificationLoading(true);
+    setVerificationMessage(null);
+    phoneVerificationService
+      .sendCode(phone)
+      .then((result) => {
+        setVerificationState("sent");
+        setVerificationMessage(result.message || "인증번호를 전송했습니다.");
+      })
+      .catch((sendError) => {
+        setVerificationState("idle");
+        setVerificationMessage(sendError instanceof Error ? sendError.message : "인증번호 전송에 실패했습니다.");
+      })
+      .finally(() => setVerificationLoading(false));
+  }
+
+  function handleVerifyCode() {
+    const phone = draft.phone.trim().replace(/\D/g, "");
+    if (!phone) {
+      setVerificationMessage("휴대폰번호를 먼저 입력해 주세요.");
+      return;
+    }
+
+    if (!verificationInput.trim()) {
+      setVerificationMessage("인증번호를 입력해 주세요.");
+      return;
+    }
+
+    setVerificationLoading(true);
+    setVerificationMessage(null);
+    phoneVerificationService
+      .checkCode(phone, verificationInput.trim())
+      .then((result) => {
+        if (result.approved) {
+          setVerificationState("verified");
+          setVerificationMessage(result.message || "휴대폰 인증이 완료되었습니다.");
+          return;
+        }
+
+        setVerificationState("sent");
+        setVerificationMessage(result.message || "인증번호가 일치하지 않습니다.");
+      })
+      .catch((verifyError) => {
+        setVerificationState("expired");
+        setVerificationMessage(verifyError instanceof Error ? verifyError.message : "인증번호 확인에 실패했습니다.");
+      })
+      .finally(() => setVerificationLoading(false));
   }
 
   return (
@@ -398,95 +535,161 @@ export function EstimatePage() {
 
                 <div className="estimate-final-grid">
                   <div className="estimate-final-group">
-                  <label>
-                    이름
-                    <input
-                      required
-                      value={draft.name}
-                      onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-                      placeholder="이름 입력"
-                    />
-                  </label>
-
-                  <label>
-                    휴대폰번호
-                    <div className="estimate-inline-action">
+                    <label>
+                      이름
                       <input
                         required
-                        value={draft.phone}
-                        onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
-                        placeholder="숫자만 입력"
-                        inputMode="tel"
+                        value={draft.name}
+                        onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+                        placeholder="이름 입력"
                       />
-                      <button className="secondary-button" type="button" disabled>
-                        인증번호 전송
-                      </button>
+                    </label>
+
+                    <label>
+                      휴대폰번호
+                      <div className="estimate-inline-action">
+                        <input
+                          required
+                          value={draft.phone}
+                          onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
+                          placeholder="숫자만 입력"
+                          inputMode="tel"
+                        />
+                        <button className="secondary-button" type="button" onClick={handleSendVerificationCode} disabled={verificationLoading}>
+                          {verificationLoading && verificationState !== "verified" ? "처리 중" : verificationState === "sent" ? "재전송" : "인증번호 전송"}
+                        </button>
+                      </div>
+                      <div className="estimate-verify-row">
+                        <input
+                          value={verificationInput}
+                          onChange={(event) => setVerificationInput(event.target.value)}
+                          placeholder="인증번호 6자리 입력"
+                          inputMode="numeric"
+                        />
+                        <button className="secondary-button" type="button" onClick={handleVerifyCode} disabled={verificationLoading}>
+                          {verificationLoading ? "확인 중" : "확인"}
+                        </button>
+                      </div>
+                      {verificationMessage ? <span className="estimate-field-help">{verificationMessage}</span> : null}
+                    </label>
+
+                    <label>
+                      시공 주소
+                      <span className="estimate-field-help">인테리어가 필요한 지역의 전문가를 연결해 드릴 예정입니다.</span>
+                      <div className="estimate-postcode-row">
+                        <input
+                          value={draft.postalCode}
+                          onChange={(event) => setDraft((current) => ({ ...current, postalCode: event.target.value }))}
+                          placeholder="우편번호"
+                        />
+                        <button className="secondary-button" type="button" onClick={() => void handlePostcodeSearch()} disabled={postcodeLoading}>
+                          {postcodeLoading ? "검색 중" : "우편번호 검색"}
+                        </button>
+                      </div>
+                      <input
+                        required
+                        value={draft.address}
+                        onChange={(event) => setDraft((current) => ({ ...current, address: event.target.value }))}
+                        placeholder="주소 입력"
+                      />
+                      <input
+                        value={draft.detailAddress}
+                        onChange={(event) => setDraft((current) => ({ ...current, detailAddress: event.target.value }))}
+                        placeholder="상세 주소"
+                      />
+                    </label>
+
+                    <label>
+                      요청사항 (선택)
+                      <textarea
+                        rows={4}
+                        maxLength={300}
+                        value={draft.requestNote}
+                        onChange={(event) => setDraft((current) => ({ ...current, requestNote: event.target.value }))}
+                        placeholder="ex) 5인가족이라 짐이 많아요. 수납공간을 넉넉하게 배치하고 싶어요."
+                      />
+                      <span className="estimate-counter">({draft.requestNote.length} / 300)</span>
+                    </label>
+
+                    <label className="estimate-consent-box">
+                      <input
+                        type="checkbox"
+                        required
+                        checked={draft.consent}
+                        onChange={(event) => setDraft((current) => ({ ...current, consent: event.target.checked }))}
+                      />
+                      <span>
+                        <strong>(필수)</strong> 개인정보 제3자 제공 동의
+                        <button className="estimate-privacy-link" type="button" onClick={() => setPrivacyOpen(true)}>
+                          개인정보 보호 약관 보기
+                        </button>
+                      </span>
+                    </label>
+                  </div>
+
+                  <div className="estimate-final-group estimate-final-upload">
+                    <div
+                      className={attachmentDragActive ? "editor-upload-field active" : "editor-upload-field"}
+                      onDragEnter={() => setAttachmentDragActive(true)}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        setAttachmentDragActive(true);
+                      }}
+                      onDragLeave={() => setAttachmentDragActive(false)}
+                      onDrop={handleFileDrop}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*,.pdf,.doc,.docx,.hwp,.txt"
+                        multiple
+                        className="sr-only-file-input"
+                        onChange={(event) => {
+                          handleFiles(event.currentTarget.files ?? []);
+                          event.currentTarget.value = "";
+                        }}
+                      />
+                      <div className="estimate-upload-toolbar">
+                        <label className="estimate-upload-title">
+                          사진 / 파일 첨부
+                          <span className="estimate-field-help">드래그앤드롭 또는 파일 선택으로 추가할 수 있습니다.</span>
+                        </label>
+                        <div className="estimate-upload-actions">
+                          <button className="secondary-button" type="button" onClick={() => openFilePicker()}>
+                            파일 추가
+                          </button>
+                          <button className="secondary-button" type="button" onClick={() => setFiles([])} disabled={!files.length}>
+                            모두 삭제
+                          </button>
+                        </div>
+                      </div>
+
+                      {previews.length ? (
+                        <div className="attachment-preview-grid" aria-label="첨부 파일 미리보기">
+                          {previews.map((item, index) => (
+                            <figure className="attachment-preview" key={`${item.file.name}-${item.url}`}>
+                              {item.file.type.startsWith("image/") ? (
+                                <img src={item.url} alt={item.file.name} />
+                              ) : (
+                                <div className="attachment-preview-file">{item.file.name}</div>
+                              )}
+                              <figcaption>{item.file.name}</figcaption>
+                              <div className="attachment-preview-actions">
+                                <button type="button" className="ghost-button" onClick={() => openFilePicker(index)}>
+                                  변경
+                                </button>
+                                <button type="button" className="ghost-button" onClick={() => removeFile(index)}>
+                                  삭제
+                                </button>
+                              </div>
+                            </figure>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="estimate-field-help">아직 첨부된 파일이 없습니다.</p>
+                      )}
                     </div>
-                  </label>
-
-                  <label>
-                    시공 주소
-                    <span className="estimate-field-help">인테리어가 필요한 지역의 전문가를 연결해 드릴 예정입니다.</span>
-                    <div className="estimate-postcode-row">
-                      <input value={draft.postalCode} onChange={(event) => setDraft((current) => ({ ...current, postalCode: event.target.value }))} placeholder="우편번호" />
-                      <button className="secondary-button" type="button">
-                        우편번호 검색
-                      </button>
-                    </div>
-                    <input
-                      required
-                      value={draft.address}
-                      onChange={(event) => setDraft((current) => ({ ...current, address: event.target.value }))}
-                      placeholder="주소 입력"
-                    />
-                    <input
-                      value={draft.detailAddress}
-                      onChange={(event) => setDraft((current) => ({ ...current, detailAddress: event.target.value }))}
-                      placeholder="상세 주소"
-                    />
-                  </label>
-
-                  <label>
-                    요청사항 (선택)
-                    <textarea
-                      rows={4}
-                      maxLength={300}
-                      value={draft.requestNote}
-                      onChange={(event) => setDraft((current) => ({ ...current, requestNote: event.target.value }))}
-                      placeholder="ex) 5인가족이라 짐이 많아요. 수납공간을 넉넉하게 배치하고 싶어요."
-                    />
-                    <span className="estimate-counter">({draft.requestNote.length} / 300)</span>
-                  </label>
-
-                  <label className="estimate-consent-box">
-                    <input
-                      type="checkbox"
-                      required
-                      checked={draft.consent}
-                      onChange={(event) => setDraft((current) => ({ ...current, consent: event.target.checked }))}
-                    />
-                    <span>
-                      <strong>(필수)</strong> 개인정보 제3자 제공 동의
-                    </span>
-                  </label>
-                </div>
-
-                <div className="estimate-final-group estimate-final-upload">
-                  <label>
-                    사진 첨부
-                    <input type="file" accept="image/*" multiple onChange={(event) => setFiles(Array.from(event.currentTarget.files ?? []))} />
-                  </label>
-                  {previews.length ? (
-                    <div className="attachment-preview-grid" aria-label="첨부 사진 미리보기">
-                      {previews.map((item) => (
-                        <figure className="attachment-preview" key={`${item.file.name}-${item.url}`}>
-                          <img src={item.url} alt={item.file.name} />
-                          <figcaption>{item.file.name}</figcaption>
-                        </figure>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
+                  </div>
                 </div>
               </>
             ) : null}
@@ -523,7 +726,7 @@ export function EstimatePage() {
                   <ArrowRight size={18} />
                 </button>
               ) : (
-                <button className="primary-button" type="submit" disabled={status === "submitting" || !draft.consent}>
+                <button className="primary-button" type="submit" disabled={status === "submitting" || !draft.consent || !phoneVerified}>
                   <Send size={19} />
                   {status === "submitting" ? "저장 중" : "견적상담 보내기"}
                 </button>
@@ -533,6 +736,8 @@ export function EstimatePage() {
             {status === "success" ? <p className="form-success">문의가 저장되었습니다. 확인 후 연락드리겠습니다.</p> : null}
             {status === "error" ? <p className="form-error">{error || "문의 저장에 실패했습니다."}</p> : null}
           </form>
+
+          {privacyOpen ? <PrivacyModal onClose={() => setPrivacyOpen(false)} /> : null}
         </section>
       )}
     </main>
@@ -564,6 +769,45 @@ function ChoiceGroup({
   );
 }
 
+function PrivacyModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="estimate-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="estimate-privacy-title" onClick={onClose}>
+      <div className="estimate-modal" onClick={(event) => event.stopPropagation()}>
+        <div className="estimate-modal-header">
+          <div>
+            <span className="admin-kicker">
+              <ShieldCheck size={16} />
+              개인정보처리방침
+            </span>
+            <h3 id="estimate-privacy-title">문의와 상담에 필요한 최소 정보만 처리합니다</h3>
+          </div>
+          <button type="button" className="secondary-button" onClick={onClose}>
+            닫기
+          </button>
+        </div>
+        <div className="estimate-modal-body">
+          <section className="privacy-section">
+            <h2>수집 항목</h2>
+            <p>이름, 연락처, 지역, 문의 내용, 사진 첨부, 로그인 이메일, 문의 작성 시각과 상태 정보.</p>
+          </section>
+          <section className="privacy-section">
+            <h2>이용 목적</h2>
+            <p>견적 안내, 현장 상담, 시공 관리, 고객 계정 제공, 관리자 응대, 문의 이력 보관.</p>
+          </section>
+          <section className="privacy-section">
+            <h2>보관과 삭제</h2>
+            <p>상담과 시공 완료 후에도 분쟁 대응과 사후 관리가 필요한 기간 동안 보관할 수 있으며, 삭제 요청 시 관련 법령과 내부 보관 기준에 따라 처리합니다.</p>
+          </section>
+          <section className="privacy-section">
+            <h2>제3자 제공</h2>
+            <p>원칙적으로 외부에 제공하지 않으며, 사용자가 선택한 저장·알림 서비스는 운영 목적 범위 내에서만 사용합니다.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function buildReviewEntries(draft: EstimateState) {
   const rooms = draft.selectedRooms.length ? draft.selectedRooms.join(", ") : "-";
   const roomDetail = draft.selectedRooms.includes("기타 입력") && draft.otherRoomDetail ? draft.otherRoomDetail : "-";
@@ -579,4 +823,65 @@ function buildReviewEntries(draft: EstimateState) {
     { label: "시공 일정", value: draft.startTiming || "-" },
     { label: "요청사항", value: draft.requestNote || "-" }
   ];
+}
+
+type DaumPostcodeResponse = {
+  zonecode: string;
+  roadAddress: string;
+  jibunAddress: string;
+  userSelectedType: "R" | "J";
+};
+
+type DaumPostcodeApi = {
+  open: (options: { oncomplete: (data: DaumPostcodeResponse) => void }) => void;
+};
+
+type DaumPostcodeSdkInstance = {
+  open: () => void;
+};
+
+type DaumPostcodeConstructor = new (options: { oncomplete: (data: DaumPostcodeResponse) => void }) => DaumPostcodeSdkInstance;
+
+let daumPostcodeLoader: Promise<DaumPostcodeApi> | null = null;
+
+function loadDaumPostcode(): Promise<DaumPostcodeApi> {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("우편번호 검색은 브라우저에서만 사용할 수 있습니다."));
+  }
+
+  const existing = (window as Window & { daum?: { Postcode?: DaumPostcodeConstructor } }).daum?.Postcode;
+  if (existing) {
+    return Promise.resolve({
+      open(options: { oncomplete: (data: DaumPostcodeResponse) => void }) {
+        const instance = new existing(options);
+        instance.open();
+      }
+    });
+  }
+
+  if (!daumPostcodeLoader) {
+    daumPostcodeLoader = new Promise<DaumPostcodeApi>((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
+      script.async = true;
+      script.onload = () => {
+        const Postcode = (window as Window & { daum?: { Postcode?: DaumPostcodeConstructor } }).daum?.Postcode;
+        if (!Postcode) {
+          reject(new Error("우편번호 검색 스크립트를 불러오지 못했습니다."));
+          return;
+        }
+
+        resolve({
+          open(options: { oncomplete: (data: DaumPostcodeResponse) => void }) {
+            const instance = new Postcode(options);
+            instance.open();
+          }
+        });
+      };
+      script.onerror = () => reject(new Error("우편번호 검색 스크립트를 불러오지 못했습니다."));
+      document.head.appendChild(script);
+    });
+  }
+
+  return daumPostcodeLoader;
 }
