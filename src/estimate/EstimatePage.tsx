@@ -4,11 +4,9 @@ import { images } from "../assets/images";
 import { business } from "../data";
 import { InquiryService } from "../services/InquiryService";
 import { MediaService } from "../services/MediaService";
-import { PhoneVerificationService } from "../services/PhoneVerificationService";
 
 const inquiryService = new InquiryService();
 const mediaService = new MediaService();
-const phoneVerificationService = new PhoneVerificationService();
 
 const spaceOptions = ["아파트", "빌라", "단독주택", "오피스텔"];
 const areaOptions = ["10~20평대", "30평대", "40평대", "50평대 이상"];
@@ -154,13 +152,10 @@ export function EstimatePage() {
   const [replaceFileIndex, setReplaceFileIndex] = useState<number | null>(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [postcodeLoading, setPostcodeLoading] = useState(false);
-  const [verificationInput, setVerificationInput] = useState("");
-  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
-  const [verificationState, setVerificationState] = useState<"idle" | "sent" | "verified" | "expired">("idle");
-  const [verificationLoading, setVerificationLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const surveyFormRef = useRef<HTMLFormElement | null>(null);
 
   useEffect(() => {
     const nextPreviews = files.map((file) => ({
@@ -176,6 +171,30 @@ export function EstimatePage() {
     loadDaumPostcode().catch(() => undefined);
   }, []);
 
+  useEffect(() => {
+    surveyFormRef.current?.scrollTo({ top: 0 });
+  }, [stage, step]);
+
+  useEffect(() => {
+    const { body, documentElement } = document;
+    const prevBodyOverflow = body.style.overflow;
+    const prevHtmlOverflow = documentElement.style.overflow;
+    const prevBodyHeight = body.style.height;
+    const prevHtmlHeight = documentElement.style.height;
+
+    body.style.overflow = "hidden";
+    documentElement.style.overflow = "hidden";
+    body.style.height = "100%";
+    documentElement.style.height = "100%";
+
+    return () => {
+      body.style.overflow = prevBodyOverflow;
+      documentElement.style.overflow = prevHtmlOverflow;
+      body.style.height = prevBodyHeight;
+      documentElement.style.height = prevHtmlHeight;
+    };
+  }, []);
+
   const currentStep = surveySteps[step - 1];
   const stepOneReady = Boolean(draft.spaceType);
   const stepTwoReady = Boolean(draft.areaBand);
@@ -184,19 +203,12 @@ export function EstimatePage() {
   const stepFiveReady = draft.selectedRooms.length > 0;
   const stepSixReady = Boolean(draft.budget);
   const stepSevenReady = Boolean(draft.startTiming);
-  const phoneVerified = verificationState === "verified";
   const reviewEntries = buildReviewEntries(draft);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("submitting");
     setError(null);
-
-    if (!phoneVerified) {
-      setStatus("error");
-      setError("휴대폰 인증을 먼저 완료해 주세요.");
-      return;
-    }
 
     try {
       const uploadedAttachments =
@@ -251,10 +263,6 @@ export function EstimatePage() {
         requestNote: presetIssue
       });
       setFiles([]);
-      setVerificationInput("");
-      setVerificationMessage(null);
-      setVerificationState("idle");
-      setVerificationLoading(false);
       setStep(1);
       setStage("intro");
       setStatus("success");
@@ -343,62 +351,6 @@ export function EstimatePage() {
     }
   }
 
-  function handleSendVerificationCode() {
-    const phone = draft.phone.trim().replace(/\D/g, "");
-    if (phone.length < 9) {
-      setVerificationMessage("휴대폰번호를 먼저 입력해 주세요.");
-      setVerificationState("idle");
-      return;
-    }
-
-    setVerificationLoading(true);
-    setVerificationMessage(null);
-    phoneVerificationService
-      .sendCode(phone)
-      .then((result) => {
-        setVerificationState("sent");
-        setVerificationMessage(result.message || "인증번호를 전송했습니다.");
-      })
-      .catch((sendError) => {
-        setVerificationState("idle");
-        setVerificationMessage(sendError instanceof Error ? sendError.message : "인증번호 전송에 실패했습니다.");
-      })
-      .finally(() => setVerificationLoading(false));
-  }
-
-  function handleVerifyCode() {
-    const phone = draft.phone.trim().replace(/\D/g, "");
-    if (!phone) {
-      setVerificationMessage("휴대폰번호를 먼저 입력해 주세요.");
-      return;
-    }
-
-    if (!verificationInput.trim()) {
-      setVerificationMessage("인증번호를 입력해 주세요.");
-      return;
-    }
-
-    setVerificationLoading(true);
-    setVerificationMessage(null);
-    phoneVerificationService
-      .checkCode(phone, verificationInput.trim())
-      .then((result) => {
-        if (result.approved) {
-          setVerificationState("verified");
-          setVerificationMessage(result.message || "휴대폰 인증이 완료되었습니다.");
-          return;
-        }
-
-        setVerificationState("sent");
-        setVerificationMessage(result.message || "인증번호가 일치하지 않습니다.");
-      })
-      .catch((verifyError) => {
-        setVerificationState("expired");
-        setVerificationMessage(verifyError instanceof Error ? verifyError.message : "인증번호 확인에 실패했습니다.");
-      })
-      .finally(() => setVerificationLoading(false));
-  }
-
   return (
     <main className={`estimate-shell ${stage === "intro" ? "estimate-shell-intro" : "estimate-shell-survey"}`}>
       <header className="estimate-header">
@@ -439,7 +391,7 @@ export function EstimatePage() {
             <div className="estimate-survey-visual-overlay" />
           </aside>
 
-          <form className="estimate-panel estimate-consult-panel estimate-survey-form" onSubmit={handleSubmit}>
+          <form ref={surveyFormRef} className="estimate-panel estimate-consult-panel estimate-survey-form" onSubmit={handleSubmit}>
             <div className="estimate-progress" aria-hidden="true">
               <span style={{ width: `${(step / 8) * 100}%` }} />
             </div>
@@ -547,30 +499,19 @@ export function EstimatePage() {
 
                     <label>
                       휴대폰번호
-                      <div className="estimate-inline-action">
-                        <input
-                          required
-                          value={draft.phone}
-                          onChange={(event) => setDraft((current) => ({ ...current, phone: event.target.value }))}
-                          placeholder="숫자만 입력"
-                          inputMode="tel"
+                      <span className="estimate-field-help">숫자만 입력하면 자동으로 정리됩니다. 예: 010-1234-5678</span>
+                      <input
+                        required
+                        value={draft.phone}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            phone: formatPhoneNumber(event.target.value)
+                          }))
+                        }
+                        placeholder="010-1234-5678"
+                        inputMode="tel"
                         />
-                        <button className="secondary-button" type="button" onClick={handleSendVerificationCode} disabled={verificationLoading}>
-                          {verificationLoading && verificationState !== "verified" ? "처리 중" : verificationState === "sent" ? "재전송" : "인증번호 전송"}
-                        </button>
-                      </div>
-                      <div className="estimate-verify-row">
-                        <input
-                          value={verificationInput}
-                          onChange={(event) => setVerificationInput(event.target.value)}
-                          placeholder="인증번호 6자리 입력"
-                          inputMode="numeric"
-                        />
-                        <button className="secondary-button" type="button" onClick={handleVerifyCode} disabled={verificationLoading}>
-                          {verificationLoading ? "확인 중" : "확인"}
-                        </button>
-                      </div>
-                      {verificationMessage ? <span className="estimate-field-help">{verificationMessage}</span> : null}
                     </label>
 
                     <label>
@@ -726,7 +667,7 @@ export function EstimatePage() {
                   <ArrowRight size={18} />
                 </button>
               ) : (
-                <button className="primary-button" type="submit" disabled={status === "submitting" || !draft.consent || !phoneVerified}>
+                <button className="primary-button" type="submit" disabled={status === "submitting" || !draft.consent}>
                   <Send size={19} />
                   {status === "submitting" ? "저장 중" : "견적상담 보내기"}
                 </button>
@@ -823,6 +764,23 @@ function buildReviewEntries(draft: EstimateState) {
     { label: "시공 일정", value: draft.startTiming || "-" },
     { label: "요청사항", value: draft.requestNote || "-" }
   ];
+}
+
+function formatPhoneNumber(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (!digits) return "";
+
+  if (digits.startsWith("02")) {
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 5) return `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 2)}-${digits.slice(2, 5)}-${digits.slice(5)}`;
+    return `${digits.slice(0, 2)}-${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  if (digits.length <= 10) return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
 
 type DaumPostcodeResponse = {

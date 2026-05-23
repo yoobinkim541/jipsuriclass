@@ -2102,10 +2102,10 @@ textarea {
 
 @media (max-width: 720px) {
   .estimate-shell {
-    height: auto;
+    height: 100svh;
     min-height: 100svh;
-    overflow: auto;
-    padding: 14px 14px 22px;
+    overflow: hidden;
+    padding: 12px 12px 16px;
   }
 
   .estimate-header {
@@ -2139,17 +2139,28 @@ textarea {
 
   .estimate-survey-layout {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
+    min-height: 0;
   }
 
   .estimate-survey-visual {
-    min-height: 210px;
+    min-height: 160px;
     border-radius: 22px;
   }
 
   .estimate-survey-form {
+    height: 100%;
     max-height: none;
-    padding: 18px 16px;
+    overflow: auto;
+    padding: 14px 12px;
+  }
+
+  .estimate-panel {
+    gap: 14px;
+  }
+
+  .estimate-panel-head strong {
+    font-size: 19px;
   }
 
 .estimate-consult-head {
