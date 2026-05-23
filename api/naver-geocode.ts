@@ -1,5 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
+const DEFAULT_LAT = 37.6522095;
+const DEFAULT_LNG = 127.3007050;
+
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   const clientId = process.env.NAVER_CLIENT_ID;
   const clientSecret = process.env.NAVER_CLIENT_SECRET;
@@ -34,11 +37,21 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const lng = Number(firstAddress?.x);
 
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-      throw new Error("Geocoding response missing coordinates");
+      response.status(200).json({
+        lat: DEFAULT_LAT,
+        lng: DEFAULT_LNG,
+        source: "fallback"
+      });
+      return;
     }
 
     response.status(200).json({ lat, lng });
   } catch (error) {
-    response.status(502).json({ error: String(error) });
+    response.status(200).json({
+      lat: DEFAULT_LAT,
+      lng: DEFAULT_LNG,
+      source: "fallback",
+      error: String(error)
+    });
   }
 }
