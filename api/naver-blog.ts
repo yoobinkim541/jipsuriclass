@@ -23,28 +23,92 @@ export default async function handler(_request: VercelRequest, response: VercelR
   }
 
   try {
-    const query = encodeURIComponent(`${blogId} 집수리 누수 복구`);
-    const naverResponse = await fetch(
-      `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=6&sort=date`,
-      {
-        headers: {
-          "X-Naver-Client-Id": clientId,
-          "X-Naver-Client-Secret": clientSecret
-        }
+    const rssResponse = await fetch(`https://rss.blog.naver.com/${blogId}.xml`, {
+      headers: {
+        Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
       }
-    );
+    });
 
-    if (!naverResponse.ok) {
-      throw new Error(`Naver API returned ${naverResponse.status}`);
+    if (!rssResponse.ok) {
+      throw new Error(`Naver RSS returned ${rssResponse.status}`);
     }
 
-    const data = (await naverResponse.json()) as { items?: NaverBlogItem[] };
-    const items = Array.isArray(data.items) ? data.items.slice(0, 6) : [];
+    const rssXml = await rssResponse.text();
+    const items = parseRssItems(rssXml).slice(0, 6);
     const enrichedItems = await Promise.all(items.map(async (item) => ({ ...item, image: await resolveBlogImage(item.link) })));
     response.status(200).json({ items: enrichedItems, source: "naver" });
   } catch (error) {
-    response.status(502).json({ items: [], source: "fallback", reason: String(error) });
+    try {
+      const query = encodeURIComponent(`${blogId} 집수리 누수 복구`);
+      const naverResponse = await fetch(
+        `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=6&sort=date`,
+        {
+          headers: {
+            "X-Naver-Client-Id": clientId,
+            "X-Naver-Client-Secret": clientSecret
+          }
+        }
+      );
+
+      if (!naverResponse.ok) {
+        throw new Error(`Naver API returned ${naverResponse.status}`);
+      }
+
+      const data = (await naverResponse.json()) as { items?: NaverBlogItem[] };
+      const items = Array.isArray(data.items) ? data.items.slice(0, 6) : [];
+      const enrichedItems = await Promise.all(items.map(async (item) => ({ ...item, image: await resolveBlogImage(item.link) })));
+      response.status(200).json({ items: enrichedItems, source: "naver" });
+    } catch (fallbackError) {
+      response.status(502).json({ items: [], source: "fallback", reason: String(error ?? fallbackError) });
+    }
   }
+}
+
+function parseRssItems(xml: string): NaverBlogItem[] {
+  const items: NaverBlogItem[] = [];
+  const itemPattern = /<item>([\s\S]*?)<\/item>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = itemPattern.exec(xml))) {
+    const itemXml = match[1];
+    const title = decodeXml(extractTagValue(itemXml, "title"));
+    const description = decodeXml(extractTagValue(itemXml, "description"));
+    const link = decodeXml(extractTagValue(itemXml, "link"));
+    const pubDate = extractTagValue(itemXml, "pubDate");
+    const postdate = formatRssDate(pubDate);
+
+    if (!title || !link) continue;
+
+    items.push({ title, description, link, postdate });
+  }
+
+  return items;
+}
+
+function extractTagValue(xml: string, tag: string) {
+  const pattern = new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, "i");
+  const match = xml.match(pattern);
+  return match?.[1]?.trim() ?? "";
+}
+
+function decodeXml(value: string) {
+  return value
+    .replace(/<!\[CDATA\[/g, "")
+    .replace(/\]\]>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
+function formatRssDate(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  const year = String(parsed.getFullYear());
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
 }
 
 async function resolveBlogImage(link: string) {

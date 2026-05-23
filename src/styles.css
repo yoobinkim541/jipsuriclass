@@ -830,6 +830,7 @@ textarea {
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: dense;
 }
 
 .blog-card {
@@ -851,8 +852,12 @@ textarea {
   transform: translateY(-2px);
 }
 
+.blog-card-featured {
+  grid-column: span 2;
+}
+
 .blog-card-image {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
   display: block;
   object-fit: cover;
   width: 100%;
@@ -861,6 +866,7 @@ textarea {
 .blog-card-body {
   display: grid;
   gap: 12px;
+  flex: 1;
   padding: 18px;
 }
 
@@ -899,6 +905,25 @@ textarea {
   color: var(--muted);
   line-height: 1.7;
   margin: 0;
+}
+
+.blog-card-featured .blog-card-image {
+  aspect-ratio: 16 / 9;
+}
+
+.blog-card-featured .blog-card-body {
+  gap: 14px;
+  padding: 20px;
+}
+
+.blog-card-featured h3 {
+  font-size: 22px;
+}
+
+@media (max-width: 1024px) {
+  .blog-card-featured {
+    grid-column: span 1;
+  }
 }
 
 .blog-card-link {

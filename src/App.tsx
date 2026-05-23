@@ -458,8 +458,14 @@ function BlogSection({
         className="naver-link"
       />
       <div className="blog-card-grid">
-        {posts.map((post) => (
-          <a className="blog-card" href={post.link} target="_blank" rel="noreferrer" key={post.title}>
+        {posts.map((post, index) => (
+          <a
+            className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
+            href={post.link}
+            target="_blank"
+            rel="noreferrer"
+            key={post.title}
+          >
             <img className="blog-card-image" src={post.image} alt={post.title} />
             <div className="blog-card-body">
               <div className="blog-card-meta">
