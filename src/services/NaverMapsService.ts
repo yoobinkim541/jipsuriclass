@@ -20,7 +20,7 @@ export function isLikelyMobileDevice() {
 
 export function getNaverMapAppName() {
   if (typeof window === "undefined") {
-    return "https://www.jipsuriclass.kr";
+    return "https://jipsuriclass.kr";
   }
 
   return window.location.href.split("#")[0];
