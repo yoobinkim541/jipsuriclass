@@ -12,9 +12,11 @@ import {
 import { business } from "../data";
 import { supabase } from "../lib/supabaseClient";
 import { AuthService } from "../services/AuthService";
+import { SiteContentService, defaultAccountPageContent } from "../services/SiteContentService";
 import type { InquiryRow } from "../types";
 
 const authService = new AuthService();
+const siteContentService = new SiteContentService();
 
 type Draft = {
   name: string;
@@ -24,6 +26,7 @@ type Draft = {
 };
 
 export function AccountPage() {
+  const [content, setContent] = useState(defaultAccountPageContent);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
@@ -43,6 +46,15 @@ export function AccountPage() {
 
   useEffect(() => {
     let mounted = true;
+
+    void siteContentService
+      .loadAccountContent()
+      .then((loadedContent) => {
+        if (mounted) {
+          setContent(loadedContent);
+        }
+      })
+      .catch(() => undefined);
 
     authService
       .getSession()
@@ -208,26 +220,24 @@ export function AccountPage() {
         <div>
           <span className="admin-kicker">
             <ShieldCheck size={16} />
-            마이페이지
+            {content.hero.kicker}
           </span>
-          <h1>내 문의와 로그인 수단을 관리합니다</h1>
-          <p>
-            문의 내역을 보고, 이 계정에 이메일 비밀번호나 Google 로그인 수단을 추가할 수 있습니다.
-          </p>
+          <h1>{content.hero.title}</h1>
+          <p>{content.hero.description}</p>
           <div className="account-hero-notes" aria-label="계정 안내">
-            <span>실시간 문의 확인</span>
-            <span>계정 보안 관리</span>
-            <span>첨부 사진 포함</span>
+            {content.hero.notes.map((note) => (
+              <span key={note}>{note}</span>
+            ))}
           </div>
         </div>
         <div className="admin-login-card">
           {sessionLoading ? (
-            <p className="admin-muted">세션 확인 중</p>
+            <p className="admin-muted">{content.auth.loadingText}</p>
           ) : sessionEmail ? (
             <div className="admin-session-card admin-session-card-stack">
               <div className="account-login-head">
                 <div>
-                  <span className="account-session-label">현재 로그인</span>
+                  <span className="account-session-label">{content.auth.currentLoginLabel}</span>
                   <strong>{sessionEmail}</strong>
                 </div>
                 <button
@@ -235,16 +245,16 @@ export function AccountPage() {
                   type="button"
                   onClick={() => setAccountPanelOpen((current) => !current)}
                 >
-                  {accountPanelOpen ? "접기" : "펼치기"}
+                  {accountPanelOpen ? content.auth.collapseLabel : content.auth.expandLabel}
                 </button>
               </div>
               {accountPanelOpen ? (
                 <div className="account-identity-actions">
                   <label className="account-identity-field">
-                    <span>비밀번호 추가/변경</span>
+                    <span>{content.auth.passwordLabel}</span>
                     <input
                       autoComplete="new-password"
-                      placeholder="새 비밀번호"
+                      placeholder={content.auth.passwordPlaceholder}
                       type="password"
                       value={passwordDraft}
                       onChange={(event) => setPasswordDraft(event.target.value)}
@@ -258,7 +268,7 @@ export function AccountPage() {
                       disabled={accountActionLoading === "password"}
                     >
                       <KeyRound size={16} />
-                      {accountActionLoading === "password" ? "저장 중" : "비밀번호 저장"}
+                      {accountActionLoading === "password" ? content.auth.passwordSavingLabel : content.auth.passwordSaveLabel}
                     </button>
                     <button
                       className="admin-ghost-button"
@@ -267,24 +277,24 @@ export function AccountPage() {
                       disabled={accountActionLoading === "google"}
                     >
                       <Globe size={16} />
-                      {accountActionLoading === "google" ? "연결 중" : "Google 연결"}
+                      {accountActionLoading === "google" ? content.auth.googleConnectingLabel : content.auth.googleConnectLabel}
                     </button>
                   </div>
-                  {accountMessage ? <p className="admin-muted">{accountMessage}</p> : null}
+                  {accountMessage ? <p className="admin-muted">{accountMessage || content.auth.accountMessageEmptyText}</p> : null}
                 </div>
               ) : (
                 <p className="admin-muted account-login-collapsed-note">
-                  모바일에서는 계정 관리 영역을 접어 문의 목록이 먼저 보이도록 합니다.
+                  {content.auth.collapsedNote}
                 </p>
               )}
             </div>
           ) : (
             <>
-              <span className="account-session-label">세션 없음</span>
-              <strong>로그인이 필요합니다</strong>
-              <p>이전에 남긴 문의를 보려면 로그인하세요.</p>
+              <span className="account-session-label">{content.auth.noSessionLabel}</span>
+              <strong>{content.auth.noSessionTitle}</strong>
+              <p>{content.auth.noSessionDescription}</p>
               <a className="admin-primary-button" href="/login">
-                로그인 페이지로 이동
+                {content.auth.loginLinkLabel}
               </a>
             </>
           )}
@@ -293,19 +303,19 @@ export function AccountPage() {
 
       <section className="account-summary-grid" aria-label="마이페이지 요약">
         <article className="account-summary-card">
-          <span>총 문의</span>
+          <span>{content.summary[0]?.label ?? "총 문의"}</span>
           <strong>{totalInquiries}</strong>
-          <p>최근 100건까지 빠르게 확인합니다.</p>
+          <p>{content.summary[0]?.description ?? "최근 100건까지 빠르게 확인합니다."}</p>
         </article>
         <article className="account-summary-card">
-          <span>새 문의</span>
+          <span>{content.summary[1]?.label ?? "새 문의"}</span>
           <strong>{newInquiries}</strong>
-          <p>아직 처리 전인 문의만 따로 볼 수 있습니다.</p>
+          <p>{content.summary[1]?.description ?? "아직 처리 전인 문의만 따로 볼 수 있습니다."}</p>
         </article>
         <article className="account-summary-card">
-          <span>알림 발송</span>
+          <span>{content.summary[2]?.label ?? "알림 발송"}</span>
           <strong>{notifiedInquiries}</strong>
-          <p>관리자 알림이 전송된 항목을 보여줍니다.</p>
+          <p>{content.summary[2]?.description ?? "관리자 알림이 전송된 항목을 보여줍니다."}</p>
         </article>
       </section>
 
@@ -314,16 +324,16 @@ export function AccountPage() {
       <section className="account-list-section" aria-label="내 문의 목록">
         <div className="account-list-head">
           <div>
-            <span className="account-list-kicker">문의 관리</span>
-            <h2>내가 남긴 문의를 바로 수정할 수 있습니다</h2>
+            <span className="account-list-kicker">{content.list.kicker}</span>
+            <h2>{content.list.title}</h2>
           </div>
-          <p>상태와 첨부 파일, 메모를 한 화면에서 정리합니다.</p>
+          <p>{content.list.description}</p>
         </div>
         <div className="admin-list">
           {loading ? (
             <div className="admin-empty">
               <LoaderCircle size={18} className="spin" />
-              문의를 불러오는 중
+              {content.list.loadingText}
             </div>
           ) : ownInquiries.length ? (
             ownInquiries.map((item) => {
@@ -346,12 +356,12 @@ export function AccountPage() {
                       <span className={`status-badge status-${item.status}`}>{item.status}</span>
                     </div>
                     <p>
-                      {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
+                      {item.phone} · {item.service_area || content.list.noAreaText} · {formatDate(item.created_at)}
                     </p>
                     {isEditing ? (
                       <div className="account-edit-form">
                         <label>
-                          이름
+                          {content.list.nameLabel}
                           <input
                             value={draft.name}
                             onChange={(event) =>
@@ -363,7 +373,7 @@ export function AccountPage() {
                           />
                         </label>
                         <label>
-                          연락처
+                          {content.list.phoneLabel}
                           <input
                             value={draft.phone}
                             onChange={(event) =>
@@ -375,7 +385,7 @@ export function AccountPage() {
                           />
                         </label>
                         <label>
-                          지역
+                          {content.list.areaLabel}
                           <input
                             value={draft.service_area}
                             onChange={(event) =>
@@ -387,7 +397,7 @@ export function AccountPage() {
                           />
                         </label>
                         <label>
-                          문의 내용
+                          {content.list.messageLabel}
                           <textarea
                             rows={5}
                             value={draft.message}
@@ -405,7 +415,7 @@ export function AccountPage() {
                     )}
                     {item.intake ? (
                       <ul className="inquiry-intake-list">
-                        {formatIntakeEntries(item.intake).map((entry) => (
+                        {formatIntakeEntries(item.intake, content.intakeLabels).map((entry) => (
                           <li key={entry.label}>
                             <strong>{entry.label}</strong> {entry.value}
                           </li>
@@ -413,9 +423,13 @@ export function AccountPage() {
                       </ul>
                     ) : null}
                     <div className="account-row-meta">
-                      <span>출처 {item.source}</span>
-                      <span>첨부 {item.attachments?.length ?? 0}개</span>
-                      <span>{item.notified_at ? `알림 ${formatDate(item.notified_at)}` : "알림 미발송"}</span>
+                      <span>
+                        {content.list.sourceLabel} {item.source}
+                      </span>
+                      <span>
+                        {content.list.attachmentLabel} {item.attachments?.length ?? 0}개
+                      </span>
+                      <span>{item.notified_at ? `${content.list.notifiedLabel} ${formatDate(item.notified_at)}` : `${content.list.notifiedLabel} 미발송`}</span>
                     </div>
                     {item.attachments?.length ? (
                       <div className="inquiry-attachment-grid" aria-label="첨부 사진">
@@ -431,11 +445,11 @@ export function AccountPage() {
                   <div className="admin-row-actions">
                     <button className="admin-status-button" type="button" onClick={() => setEditingId(isEditing ? null : item.id)}>
                       <Edit2 size={14} />
-                      {isEditing ? "취소" : "수정"}
+                      {isEditing ? content.list.cancelLabel : content.list.editLabel}
                     </button>
                     {isEditing ? (
                       <button className="admin-primary-button" type="button" disabled={savingId === item.id} onClick={() => void saveInquiry(item.id)}>
-                        {savingId === item.id ? "저장 중" : "저장"}
+                        {savingId === item.id ? "저장 중" : content.list.saveLabel}
                       </button>
                     ) : null}
                   </div>
@@ -443,7 +457,7 @@ export function AccountPage() {
               );
             })
           ) : (
-            <div className="admin-empty">본인 명의의 문의가 없습니다.</div>
+            <div className="admin-empty">{content.list.emptyText}</div>
           )}
         </div>
       </section>
@@ -462,12 +476,21 @@ function formatDate(value: string) {
   }).format(date);
 }
 
-function formatIntakeEntries(intake: Record<string, unknown>) {
+function formatIntakeEntries(
+  intake: Record<string, unknown>,
+  labels: {
+    propertyType: string;
+    projectType: string;
+    address: string;
+    preferredTime: string;
+    budget: string;
+  }
+) {
   return [
-    { label: "집 환경", value: String(intake.propertyType ?? "-") },
-    { label: "공사 유형", value: String(intake.projectType ?? "-") },
-    { label: "주소", value: String(intake.address ?? "-") },
-    { label: "상담 가능 시간", value: String(intake.preferredTime ?? "-") },
-    { label: "예산", value: String(intake.budget ?? "-") }
+    { label: labels.propertyType, value: String(intake.propertyType ?? "-") },
+    { label: labels.projectType, value: String(intake.projectType ?? "-") },
+    { label: labels.address, value: String(intake.address ?? "-") },
+    { label: labels.preferredTime, value: String(intake.preferredTime ?? "-") },
+    { label: labels.budget, value: String(intake.budget ?? "-") }
   ];
 }

@@ -129,6 +129,142 @@ export type HomepageContent = {
   };
 };
 
+export type AccountPageContent = {
+  hero: {
+    kicker: string;
+    title: string;
+    description: string;
+    notes: string[];
+  };
+  auth: {
+    loadingText: string;
+    currentLoginLabel: string;
+    collapseLabel: string;
+    expandLabel: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    passwordSaveLabel: string;
+    googleConnectLabel: string;
+    passwordSavingLabel: string;
+    googleConnectingLabel: string;
+    accountMessageEmptyText: string;
+    collapsedNote: string;
+    noSessionLabel: string;
+    noSessionTitle: string;
+    noSessionDescription: string;
+    loginLinkLabel: string;
+  };
+  summary: Array<{
+    label: string;
+    description: string;
+  }>;
+  list: {
+    kicker: string;
+    title: string;
+    description: string;
+    loadingText: string;
+    emptyText: string;
+    detailToggleLabel: string;
+    editLabel: string;
+    cancelLabel: string;
+    saveLabel: string;
+    nameLabel: string;
+    phoneLabel: string;
+    areaLabel: string;
+    messageLabel: string;
+    sourceLabel: string;
+    attachmentLabel: string;
+    notifiedLabel: string;
+    noAreaText: string;
+  };
+  intakeLabels: {
+    propertyType: string;
+    projectType: string;
+    address: string;
+    preferredTime: string;
+    budget: string;
+  };
+};
+
+export type EstimateSurveyStepContent = {
+  title: string;
+  label: string;
+  question: string;
+  helper: string;
+  count: string;
+  field: "spaceType" | "areaBand" | "propertyStatus" | "reason" | "selectedRooms" | "budget" | "startTiming" | "final";
+  mode: "single" | "multi" | "final";
+  options: string[];
+};
+
+export type EstimatePageContent = {
+  otherRoomLabel: string;
+  header: {
+    homeLinkLabel: string;
+    phoneLabel: string;
+  };
+  intro: {
+    title: string;
+    description: string;
+    buttonLabel: string;
+    heroAlt: string;
+  };
+  steps: EstimateSurveyStepContent[];
+  final: {
+    reviewKicker: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    phoneLabel: string;
+    phoneHelp: string;
+    phonePlaceholder: string;
+    addressLabel: string;
+    addressHelp: string;
+    postcodePlaceholder: string;
+    postcodeButtonLabel: string;
+    addressPlaceholder: string;
+    detailAddressPlaceholder: string;
+    requestLabel: string;
+    requestPlaceholder: string;
+    requestCounterSuffix: string;
+    consentLabel: string;
+    privacyLinkLabel: string;
+    attachmentTitle: string;
+    attachmentHelp: string;
+    fileAddLabel: string;
+    fileClearLabel: string;
+    fileReplaceLabel: string;
+    fileDeleteLabel: string;
+    noAttachmentText: string;
+    backLabel: string;
+    firstLabel: string;
+    nextLabel: string;
+    submitLabel: string;
+    submittingLabel: string;
+    successMessage: string;
+    errorMessage: string;
+  };
+  privacy: {
+    kicker: string;
+    title: string;
+    closeLabel: string;
+    sections: Array<{
+      heading: string;
+      body: string;
+    }>;
+  };
+  reviewLabels: {
+    spaceType: string;
+    areaBand: string;
+    propertyStatus: string;
+    reason: string;
+    selectedRooms: string;
+    otherRoomDetail: string;
+    budget: string;
+    startTiming: string;
+    requestNote: string;
+  };
+};
+
 export type InquiryAttachment = {
   name: string;
   url: string;

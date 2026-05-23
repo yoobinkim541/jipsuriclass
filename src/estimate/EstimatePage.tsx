@@ -4,23 +4,12 @@ import { images } from "../assets/images";
 import { business } from "../data";
 import { InquiryService } from "../services/InquiryService";
 import { MediaService } from "../services/MediaService";
+import { SiteContentService, defaultEstimatePageContent } from "../services/SiteContentService";
+import type { EstimatePageContent } from "../types";
 
 const inquiryService = new InquiryService();
 const mediaService = new MediaService();
-
-const spaceOptions = ["아파트", "빌라", "단독주택", "오피스텔"];
-const areaOptions = ["10~20평대", "30평대", "40평대", "50평대 이상"];
-const propertyStatusOptions = [
-  "짐보관 후 살면서 공사예정",
-  "현재 공실",
-  "시공 시 공실 예정",
-  "신축입주",
-  "기타 (부동산 미계약 상태)"
-];
-const reasonOptions = ["집을 구매하여 리모델링 계획 중", "사는 집을 새롭게 바꾸기 위해", "매매나 임대를 위한 리모델링", "기타"];
-const roomOptions = ["키친", "바스", "수납", "마루", "중문", "도어", "창호", "필름", "벽지", "조명", "타일", "기타 입력"];
-const budgetOptions = ["5백만원 이하", "1천만원 이하", "2천만원 이하", "3천만원 이하", "4천만원 이하", "5천만원 이하", "6천만원 이하", "7천만원 이하", "1억원 이하", "아직 미정이에요"];
-const timingOptions = ["1개월 이내", "2개월 이내", "3개월 이내", "3개월 이후", "6개월 이후"];
+const siteContentService = new SiteContentService();
 
 type EstimateState = {
   spaceType: string;
@@ -58,87 +47,13 @@ const defaultDraft: EstimateState = {
   consent: false
 };
 
-const surveySteps = [
-  {
-    title: "인테리어 상담신청",
-    label: "반갑습니다. 고객님!",
-    question: "인테리어가 필요한 공간은 어디인가요?",
-    count: "1 / 8",
-    mode: "single" as const,
-    field: "spaceType" as const,
-    options: spaceOptions
-  },
-  {
-    title: "인테리어 상담신청",
-    label: "평수 선택",
-    question: "인테리어 공간의 평수를 선택해주세요.",
-    count: "2 / 8",
-    mode: "single" as const,
-    field: "areaBand" as const,
-    options: areaOptions
-  },
-  {
-    title: "인테리어 상담신청",
-    label: "집 상태",
-    question: "인테리어 할 집은 어떤 상태인가요?",
-    count: "3 / 8",
-    mode: "single" as const,
-    field: "propertyStatus" as const,
-    options: propertyStatusOptions
-  },
-  {
-    title: "인테리어 상담신청",
-    label: "상담 이유",
-    question: "인테리어를 고려하시게 된 주요 이유를 선택해주세요.",
-    count: "4 / 8",
-    mode: "single" as const,
-    field: "reason" as const,
-    options: reasonOptions
-  },
-  {
-    title: "인테리어 상담신청",
-    label: "상담 공간",
-    question: "인테리어가 필요한 공간을 모두 골라주세요.",
-    helper:
-      '특정 공간 내 상품 부분교체만 원하시는 경우 "기타 입력"으로 신청해주세요. 예시) 싱크대 수전, 아일랜드장, 양변기, 도배/마루(거실만) 등',
-    count: "5 / 8",
-    mode: "multi" as const,
-    field: "selectedRooms" as const,
-    options: roomOptions
-  },
-  {
-    title: "인테리어 상담신청",
-    label: "예산",
-    question: "인테리어 예산은 총 얼마를 생각하시나요?",
-    helper: "예산 선택 시 더 정확한 상담이 가능해요. (상담 시 변경 가능)",
-    count: "6 / 8",
-    mode: "single" as const,
-    field: "budget" as const,
-    options: budgetOptions
-  },
-  {
-    title: "인테리어 상담신청",
-    label: "시공 일정",
-    question: "인테리어가 언제 시작되길 희망하시나요?",
-    helper: "신청일 기준으로 알려주시면 일정 조율이 더 빨라집니다.",
-    count: "7 / 8",
-    mode: "single" as const,
-    field: "startTiming" as const,
-    options: timingOptions
-  },
-  {
-    title: "인테리어 상담신청",
-    label: "연락 정보",
-    question: "이름과 연락처, 주소를 입력해주세요.",
-    count: "8 / 8",
-    mode: "final" as const
-  }
-] as const;
+const stepFields = ["spaceType", "areaBand", "propertyStatus", "reason", "selectedRooms", "budget", "startTiming", undefined] as const;
 
 export function EstimatePage() {
   const query = new URLSearchParams(window.location.search);
   const presetProject = query.get("project") ?? "";
   const presetIssue = query.get("issue") ?? "";
+  const [content, setContent] = useState<EstimatePageContent>(defaultEstimatePageContent);
   const [stage, setStage] = useState<"intro" | "survey">("intro");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
   const [draft, setDraft] = useState<EstimateState>({
@@ -156,6 +71,22 @@ export function EstimatePage() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const surveyFormRef = useRef<HTMLFormElement | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    void siteContentService
+      .loadEstimateContent()
+      .then((loadedContent) => {
+        if (mounted) {
+          setContent(loadedContent);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const nextPreviews = files.map((file) => ({
@@ -195,7 +126,10 @@ export function EstimatePage() {
     };
   }, []);
 
-  const currentStep = surveySteps[step - 1];
+  const currentStep = {
+    ...(content.steps[step - 1] ?? content.steps[0]),
+    field: stepFields[step - 1]
+  };
   const stepOneReady = Boolean(draft.spaceType);
   const stepTwoReady = Boolean(draft.areaBand);
   const stepThreeReady = Boolean(draft.propertyStatus);
@@ -203,7 +137,7 @@ export function EstimatePage() {
   const stepFiveReady = draft.selectedRooms.length > 0;
   const stepSixReady = Boolean(draft.budget);
   const stepSevenReady = Boolean(draft.startTiming);
-  const reviewEntries = buildReviewEntries(draft);
+  const reviewEntries = buildReviewEntries(draft, content.reviewLabels, content.otherRoomLabel);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -217,17 +151,17 @@ export function EstimatePage() {
       const roomSummary = draft.selectedRooms.join(", ");
       const addressLine = [draft.postalCode, draft.address, draft.detailAddress].filter(Boolean).join(" ").trim();
       const message = [
-        `공간: ${draft.spaceType || "-"}`,
-        `평수: ${draft.areaBand || "-"}`,
-        `집 상태: ${draft.propertyStatus || "-"}`,
-        `상담 이유: ${draft.reason || "-"}`,
-        `상담 공간: ${roomSummary || "-"}`,
-        draft.selectedRooms.includes("기타 입력") ? `기타 입력: ${draft.otherRoomDetail || "-"}` : null,
-        `예산: ${draft.budget || "-"}`,
-        `시공 희망 시점: ${draft.startTiming || "-"}`,
-        `요청사항: ${draft.requestNote || "-"}`,
+        `${content.reviewLabels.spaceType}: ${draft.spaceType || "-"}`,
+        `${content.reviewLabels.areaBand}: ${draft.areaBand || "-"}`,
+        `${content.reviewLabels.propertyStatus}: ${draft.propertyStatus || "-"}`,
+        `${content.reviewLabels.reason}: ${draft.reason || "-"}`,
+        `${content.reviewLabels.selectedRooms}: ${roomSummary || "-"}`,
+        draft.selectedRooms.includes(content.otherRoomLabel) ? `${content.reviewLabels.otherRoomDetail}: ${draft.otherRoomDetail || "-"}` : null,
+        `${content.reviewLabels.budget}: ${draft.budget || "-"}`,
+        `${content.reviewLabels.startTiming}: ${draft.startTiming || "-"}`,
+        `${content.reviewLabels.requestNote}: ${draft.requestNote || "-"}`,
         "",
-        `개인정보 제3자 제공 동의: ${draft.consent ? "동의" : "미동의"}`
+        `${content.final.consentLabel}: ${draft.consent ? "동의" : "미동의"}`
       ]
         .filter(Boolean)
         .join("\n");
@@ -289,7 +223,7 @@ export function EstimatePage() {
       return {
         ...current,
         selectedRooms,
-        otherRoomDetail: selectedRooms.includes("기타 입력") ? current.otherRoomDetail : ""
+        otherRoomDetail: selectedRooms.includes(content.otherRoomLabel) ? current.otherRoomDetail : ""
       };
     });
   }
@@ -356,21 +290,21 @@ export function EstimatePage() {
       <header className="estimate-header">
         <a className="admin-home" href="/">
           <ArrowLeft size={18} />
-          {business.name}
+          {content.header.homeLinkLabel}
         </a>
         <a className="estimate-phone" href={business.phoneHref}>
           <Phone size={16} />
-          {business.phone}
+          {content.header.phoneLabel}
         </a>
       </header>
 
       {stage === "intro" ? (
         <section className="estimate-intro-hero" aria-labelledby="estimate-intro-title">
-          <img className="estimate-intro-image" src={images.consultHero} alt="상담을 준비하는 리모델링 안내 이미지" />
+          <img className="estimate-intro-image" src={images.consultHero} alt={content.intro.heroAlt} />
           <div className="estimate-intro-overlay" />
           <div className="estimate-intro-content">
-            <h1 id="estimate-intro-title">나에게 맞는 최고의 전문가를 만나보세요</h1>
-            <p>시작하기 전에 상담 신청지를 미리 작성해서 상담 대기 시간을 줄여보세요!</p>
+            <h1 id="estimate-intro-title">{content.intro.title}</h1>
+            <p>{content.intro.description}</p>
             <button
               className="primary-button estimate-intro-button"
               type="button"
@@ -379,7 +313,7 @@ export function EstimatePage() {
                 setStep(1);
               }}
             >
-              진행하기
+              {content.intro.buttonLabel}
               <ArrowRight size={18} />
             </button>
           </div>
@@ -403,7 +337,7 @@ export function EstimatePage() {
 
             <div className="estimate-question-block">
               <h2>{currentStep.question}</h2>
-              {"helper" in currentStep ? <p>{currentStep.helper}</p> : null}
+              {currentStep.helper ? <p>{currentStep.helper}</p> : null}
             </div>
 
             {currentStep.mode === "single" ? (
@@ -458,9 +392,9 @@ export function EstimatePage() {
                     );
                   })}
                 </div>
-                {draft.selectedRooms.includes("기타 입력") ? (
+                {draft.selectedRooms.includes(content.otherRoomLabel) ? (
                   <label className="estimate-inline-field">
-                    기타 입력
+                    {content.otherRoomLabel}
                     <input
                       value={draft.otherRoomDetail}
                       onChange={(event) => setDraft((current) => ({ ...current, otherRoomDetail: event.target.value }))}
@@ -474,7 +408,7 @@ export function EstimatePage() {
             {currentStep.mode === "final" ? (
               <>
                 <div className="estimate-review-card">
-                  <span className="admin-kicker">선택 내용 확인</span>
+                  <span className="admin-kicker">{content.final.reviewKicker}</span>
                   <div className="estimate-review-grid">
                     {reviewEntries.map((item) => (
                       <div className="estimate-review-item" key={item.label}>
@@ -488,18 +422,18 @@ export function EstimatePage() {
                 <div className="estimate-final-grid">
                   <div className="estimate-final-group">
                     <label>
-                      이름
+                      {content.final.nameLabel}
                       <input
                         required
                         value={draft.name}
                         onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-                        placeholder="이름 입력"
+                        placeholder={content.final.namePlaceholder}
                       />
                     </label>
 
                     <label>
-                      휴대폰번호
-                      <span className="estimate-field-help">숫자만 입력하면 자동으로 정리됩니다. 예: 010-1234-5678</span>
+                      {content.final.phoneLabel}
+                      <span className="estimate-field-help">{content.final.phoneHelp}</span>
                       <input
                         required
                         value={draft.phone}
@@ -509,47 +443,47 @@ export function EstimatePage() {
                             phone: formatPhoneNumber(event.target.value)
                           }))
                         }
-                        placeholder="010-1234-5678"
+                        placeholder={content.final.phonePlaceholder}
                         inputMode="tel"
-                        />
+                      />
                     </label>
 
                     <label>
-                      시공 주소
-                      <span className="estimate-field-help">인테리어가 필요한 지역의 전문가를 연결해 드릴 예정입니다.</span>
+                      {content.final.addressLabel}
+                      <span className="estimate-field-help">{content.final.addressHelp}</span>
                       <div className="estimate-postcode-row">
                         <input
                           value={draft.postalCode}
                           onChange={(event) => setDraft((current) => ({ ...current, postalCode: event.target.value }))}
-                          placeholder="우편번호"
+                          placeholder={content.final.postcodePlaceholder}
                         />
                         <button className="secondary-button" type="button" onClick={() => void handlePostcodeSearch()} disabled={postcodeLoading}>
-                          {postcodeLoading ? "검색 중" : "우편번호 검색"}
+                          {postcodeLoading ? "검색 중" : content.final.postcodeButtonLabel}
                         </button>
                       </div>
                       <input
                         required
                         value={draft.address}
                         onChange={(event) => setDraft((current) => ({ ...current, address: event.target.value }))}
-                        placeholder="주소 입력"
+                        placeholder={content.final.addressPlaceholder}
                       />
                       <input
                         value={draft.detailAddress}
                         onChange={(event) => setDraft((current) => ({ ...current, detailAddress: event.target.value }))}
-                        placeholder="상세 주소"
+                        placeholder={content.final.detailAddressPlaceholder}
                       />
                     </label>
 
                     <label>
-                      요청사항 (선택)
+                      {content.final.requestLabel}
                       <textarea
                         rows={4}
                         maxLength={300}
                         value={draft.requestNote}
                         onChange={(event) => setDraft((current) => ({ ...current, requestNote: event.target.value }))}
-                        placeholder="ex) 5인가족이라 짐이 많아요. 수납공간을 넉넉하게 배치하고 싶어요."
+                        placeholder={content.final.requestPlaceholder}
                       />
-                      <span className="estimate-counter">({draft.requestNote.length} / 300)</span>
+                      <span className="estimate-counter">({draft.requestNote.length} {content.final.requestCounterSuffix})</span>
                     </label>
 
                     <label className="estimate-consent-box">
@@ -560,9 +494,9 @@ export function EstimatePage() {
                         onChange={(event) => setDraft((current) => ({ ...current, consent: event.target.checked }))}
                       />
                       <span>
-                        <strong>(필수)</strong> 개인정보 제3자 제공 동의
+                        <strong>(필수)</strong> {content.final.consentLabel}
                         <button className="estimate-privacy-link" type="button" onClick={() => setPrivacyOpen(true)}>
-                          개인정보 보호 약관 보기
+                          {content.final.privacyLinkLabel}
                         </button>
                       </span>
                     </label>
@@ -592,15 +526,15 @@ export function EstimatePage() {
                       />
                       <div className="estimate-upload-toolbar">
                         <label className="estimate-upload-title">
-                          사진 / 파일 첨부
-                          <span className="estimate-field-help">드래그앤드롭 또는 파일 선택으로 추가할 수 있습니다.</span>
+                          {content.final.attachmentTitle}
+                          <span className="estimate-field-help">{content.final.attachmentHelp}</span>
                         </label>
                         <div className="estimate-upload-actions">
                           <button className="secondary-button" type="button" onClick={() => openFilePicker()}>
-                            파일 추가
+                            {content.final.fileAddLabel}
                           </button>
                           <button className="secondary-button" type="button" onClick={() => setFiles([])} disabled={!files.length}>
-                            모두 삭제
+                            {content.final.fileClearLabel}
                           </button>
                         </div>
                       </div>
@@ -617,17 +551,17 @@ export function EstimatePage() {
                               <figcaption>{item.file.name}</figcaption>
                               <div className="attachment-preview-actions">
                                 <button type="button" className="ghost-button" onClick={() => openFilePicker(index)}>
-                                  변경
+                                  {content.final.fileReplaceLabel}
                                 </button>
                                 <button type="button" className="ghost-button" onClick={() => removeFile(index)}>
-                                  삭제
+                                  {content.final.fileDeleteLabel}
                                 </button>
                               </div>
                             </figure>
                           ))}
                         </div>
                       ) : (
-                        <p className="estimate-field-help">아직 첨부된 파일이 없습니다.</p>
+                        <p className="estimate-field-help">{content.final.noAttachmentText}</p>
                       )}
                     </div>
                   </div>
@@ -639,12 +573,12 @@ export function EstimatePage() {
               {step > 1 ? (
                 <button className="ghost-button estimate-back" type="button" onClick={movePrev}>
                   <ArrowLeft size={16} />
-                  이전
+                  {content.final.backLabel}
                 </button>
               ) : (
                 <button className="ghost-button estimate-back" type="button" onClick={() => setStage("intro")}>
                   <ArrowLeft size={16} />
-                  처음으로
+                  {content.final.firstLabel}
                 </button>
               )}
 
@@ -663,22 +597,22 @@ export function EstimatePage() {
                     (step === 7 && !stepSevenReady)
                   }
                 >
-                  다음
+                  {content.final.nextLabel}
                   <ArrowRight size={18} />
                 </button>
               ) : (
                 <button className="primary-button" type="submit" disabled={status === "submitting" || !draft.consent}>
                   <Send size={19} />
-                  {status === "submitting" ? "저장 중" : "견적상담 보내기"}
+                  {status === "submitting" ? content.final.submittingLabel : content.final.submitLabel}
                 </button>
               )}
             </div>
 
-            {status === "success" ? <p className="form-success">문의가 저장되었습니다. 확인 후 연락드리겠습니다.</p> : null}
-            {status === "error" ? <p className="form-error">{error || "문의 저장에 실패했습니다."}</p> : null}
+            {status === "success" ? <p className="form-success">{content.final.successMessage}</p> : null}
+            {status === "error" ? <p className="form-error">{error || content.final.errorMessage}</p> : null}
           </form>
 
-          {privacyOpen ? <PrivacyModal onClose={() => setPrivacyOpen(false)} /> : null}
+          {privacyOpen ? <PrivacyModal content={content.privacy} onClose={() => setPrivacyOpen(false)} /> : null}
         </section>
       )}
     </main>
@@ -710,7 +644,13 @@ function ChoiceGroup({
   );
 }
 
-function PrivacyModal({ onClose }: { onClose: () => void }) {
+function PrivacyModal({
+  content,
+  onClose
+}: {
+  content: EstimatePageContent["privacy"];
+  onClose: () => void;
+}) {
   return (
     <div className="estimate-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="estimate-privacy-title" onClick={onClose}>
       <div className="estimate-modal" onClick={(event) => event.stopPropagation()}>
@@ -718,51 +658,41 @@ function PrivacyModal({ onClose }: { onClose: () => void }) {
           <div>
             <span className="admin-kicker">
               <ShieldCheck size={16} />
-              개인정보처리방침
+              {content.kicker}
             </span>
-            <h3 id="estimate-privacy-title">문의와 상담에 필요한 최소 정보만 처리합니다</h3>
+            <h3 id="estimate-privacy-title">{content.title}</h3>
           </div>
           <button type="button" className="secondary-button" onClick={onClose}>
-            닫기
+            {content.closeLabel}
           </button>
         </div>
         <div className="estimate-modal-body">
-          <section className="privacy-section">
-            <h2>수집 항목</h2>
-            <p>이름, 연락처, 지역, 문의 내용, 사진 첨부, 로그인 이메일, 문의 작성 시각과 상태 정보.</p>
-          </section>
-          <section className="privacy-section">
-            <h2>이용 목적</h2>
-            <p>견적 안내, 현장 상담, 시공 관리, 고객 계정 제공, 관리자 응대, 문의 이력 보관.</p>
-          </section>
-          <section className="privacy-section">
-            <h2>보관과 삭제</h2>
-            <p>상담과 시공 완료 후에도 분쟁 대응과 사후 관리가 필요한 기간 동안 보관할 수 있으며, 삭제 요청 시 관련 법령과 내부 보관 기준에 따라 처리합니다.</p>
-          </section>
-          <section className="privacy-section">
-            <h2>제3자 제공</h2>
-            <p>원칙적으로 외부에 제공하지 않으며, 사용자가 선택한 저장·알림 서비스는 운영 목적 범위 내에서만 사용합니다.</p>
-          </section>
+          {content.sections.map((section) => (
+            <section className="privacy-section" key={section.heading}>
+              <h2>{section.heading}</h2>
+              <p>{section.body}</p>
+            </section>
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-function buildReviewEntries(draft: EstimateState) {
+function buildReviewEntries(draft: EstimateState, labels: EstimatePageContent["reviewLabels"], otherRoomLabel: string) {
   const rooms = draft.selectedRooms.length ? draft.selectedRooms.join(", ") : "-";
-  const roomDetail = draft.selectedRooms.includes("기타 입력") && draft.otherRoomDetail ? draft.otherRoomDetail : "-";
+  const roomDetail = draft.selectedRooms.includes(otherRoomLabel) && draft.otherRoomDetail ? draft.otherRoomDetail : "-";
 
   return [
-    { label: "공간", value: draft.spaceType || "-" },
-    { label: "평수", value: draft.areaBand || "-" },
-    { label: "집 상태", value: draft.propertyStatus || "-" },
-    { label: "상담 이유", value: draft.reason || "-" },
-    { label: "상담 공간", value: rooms },
-    { label: "기타 입력", value: roomDetail },
-    { label: "예산", value: draft.budget || "-" },
-    { label: "시공 일정", value: draft.startTiming || "-" },
-    { label: "요청사항", value: draft.requestNote || "-" }
+    { label: labels.spaceType, value: draft.spaceType || "-" },
+    { label: labels.areaBand, value: draft.areaBand || "-" },
+    { label: labels.propertyStatus, value: draft.propertyStatus || "-" },
+    { label: labels.reason, value: draft.reason || "-" },
+    { label: labels.selectedRooms, value: rooms },
+    { label: labels.otherRoomDetail, value: roomDetail },
+    { label: labels.budget, value: draft.budget || "-" },
+    { label: labels.startTiming, value: draft.startTiming || "-" },
+    { label: labels.requestNote, value: draft.requestNote || "-" }
   ];
 }
 

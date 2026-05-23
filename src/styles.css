@@ -3100,11 +3100,20 @@ textarea {
   margin: 0 0 18px;
 }
 
+.site-content-editor {
+  display: grid;
+  gap: 18px;
+}
+
 .editor-workspace {
   display: grid;
   gap: 18px;
   grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.65fr);
   align-items: start;
+}
+
+.editor-workspace-single {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .editor-preview-panel {
@@ -3220,6 +3229,11 @@ textarea {
   top: 92px;
 }
 
+.editor-inspector-full {
+  max-height: none;
+  position: static;
+}
+
 .editor-inspector-head {
   display: grid;
   gap: 4px;
@@ -3283,6 +3297,37 @@ textarea {
 .editor-inspector-subgroup h4 {
   font-size: 14px;
   margin: 0;
+}
+
+.editor-group {
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 12px;
+  padding-top: 12px;
+}
+
+.editor-group .section-heading {
+  margin-bottom: 0;
+}
+
+.editor-group-body {
+  display: grid;
+  gap: 12px;
+}
+
+.editor-inline-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.editor-inline-card {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
 }
 
 .editor-header {

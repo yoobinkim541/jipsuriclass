@@ -18,7 +18,7 @@ import { supabase } from "../lib/supabaseClient";
 import { AuthService } from "../services/AuthService";
 import { AdminService } from "../services/AdminService";
 import type { InquiryRow, InquiryStatus } from "../types";
-import { HomepageEditor } from "./HomepageEditor";
+import { SiteContentEditor } from "./SiteContentEditor";
 
 const authService = new AuthService();
 const adminService = new AdminService();
@@ -178,8 +178,8 @@ export function AdminPage() {
   const pageMeta =
     view === "editor"
       ? {
-          kicker: "홈페이지 편집",
-          title: "페이지에 보이는 글과 사진을 바로 고칩니다",
+          kicker: "페이지 편집",
+          title: "홈페이지, 마이페이지, 상담 신청서를 바로 고칩니다",
           description: "관리자만 수정할 수 있으며, 입력한 내용은 자동으로 저장됩니다."
         }
       : {
@@ -270,7 +270,7 @@ export function AdminPage() {
       </section>
 
       {view === "editor" ? (
-        <HomepageEditor isAuthenticated={Boolean(sessionEmail)} />
+        <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} />
       ) : (
         <>
           <section className="admin-insight-grid" aria-label="문의 요약">
