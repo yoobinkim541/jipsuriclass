@@ -34,6 +34,18 @@ const sectionLabels: Record<EditorSection, string> = {
   contact: "문의"
 };
 
+const imagePositionOptions = [
+  { label: "가운데", value: "center center" },
+  { label: "위", value: "center top" },
+  { label: "아래", value: "center bottom" },
+  { label: "왼쪽", value: "left center" },
+  { label: "오른쪽", value: "right center" },
+  { label: "좌상", value: "left top" },
+  { label: "우상", value: "right top" },
+  { label: "좌하", value: "left bottom" },
+  { label: "우하", value: "right bottom" }
+] as const;
+
 export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -188,6 +200,10 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
       return { ...current, hero: { ...current.hero, slides } };
     });
     markEdited();
+  }
+
+  function updateHeroPosition(value: string) {
+    updateHero("imagePosition", value);
   }
 
   function addHeroSlide() {
@@ -531,21 +547,19 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                 <Field label="대표 이미지 URL">
                   <input value={draft.hero.image} onChange={(event) => updateHero("image", event.target.value)} />
                 </Field>
-                <Field label="대표 이미지 업로드">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => {
-                      const file = event.currentTarget.files?.[0];
-                      if (file) {
-                        void uploadHeroImage(file);
-                        event.currentTarget.value = "";
-                      }
-                    }}
-                  />
-                </Field>
+                <ImageUploadField
+                  label="대표 이미지 업로드"
+                  previewUrl={draft.hero.image}
+                  previewLabel={draft.hero.title}
+                  onFileSelect={(file) => void uploadHeroImage(file)}
+                  onClear={() => updateHero("image", "")}
+                />
                 <Field label="대표 이미지 위치">
-                  <input value={draft.hero.imagePosition} onChange={(event) => updateHero("imagePosition", event.target.value)} />
+                  <ChipPicker
+                    value={draft.hero.imagePosition}
+                    options={imagePositionOptions}
+                    onChange={updateHeroPosition}
+                  />
                 </Field>
                 <Field label={`대표 이미지 크기 (${draft.hero.imageScale.toFixed(2)})`}>
                   <input
@@ -586,21 +600,19 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                       <Field label="사진 URL">
                         <input value={slide.image} onChange={(event) => updateHeroSlide(index, "image", event.target.value)} />
                       </Field>
-                      <Field label="사진 업로드">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(event) => {
-                            const file = event.currentTarget.files?.[0];
-                            if (file) {
-                              void uploadHeroSlideImage(index, file);
-                              event.currentTarget.value = "";
-                            }
-                          }}
-                        />
-                      </Field>
+                      <ImageUploadField
+                        label="사진 업로드"
+                        previewUrl={slide.image}
+                        previewLabel={`추가 사진 ${index + 1}`}
+                        onFileSelect={(file) => void uploadHeroSlideImage(index, file)}
+                        onClear={() => updateHeroSlide(index, "image", "")}
+                      />
                       <Field label="위치">
-                        <input value={slide.position} onChange={(event) => updateHeroSlide(index, "position", event.target.value)} />
+                        <ChipPicker
+                          value={slide.position}
+                          options={imagePositionOptions}
+                          onChange={(value) => updateHeroSlide(index, "position", value)}
+                        />
                       </Field>
                       <Field label={`크기 (${slide.scale.toFixed(2)})`}>
                         <input
@@ -715,19 +727,13 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                     onChange={(event) => updateCase(selectedIndex, "image", event.target.value)}
                   />
                 </Field>
-                <Field label="이미지 업로드">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => {
-                      const file = event.currentTarget.files?.[0];
-                      if (file) {
-                        void uploadCaseImage(selectedIndex, file);
-                      }
-                      event.currentTarget.value = "";
-                    }}
-                  />
-                </Field>
+                <ImageUploadField
+                  label="이미지 업로드"
+                  previewUrl={draft.cases[selectedIndex]?.image ?? ""}
+                  previewLabel={draft.cases[selectedIndex]?.title ?? `사례 ${selectedIndex + 1}`}
+                  onFileSelect={(file) => void uploadCaseImage(selectedIndex, file)}
+                  onClear={() => updateCase(selectedIndex, "image", "")}
+                />
                 <Field label="블로그 링크">
                   <input
                     value={draft.cases[selectedIndex]?.link ?? ""}
@@ -781,19 +787,13 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
                     onChange={(event) => updateBlog(selectedIndex, "image", event.target.value)}
                   />
                 </Field>
-                <Field label="이미지 업로드">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(event) => {
-                      const file = event.currentTarget.files?.[0];
-                      if (file) {
-                        void uploadBlogImage(selectedIndex, file);
-                        event.currentTarget.value = "";
-                      }
-                    }}
-                  />
-                </Field>
+                <ImageUploadField
+                  label="이미지 업로드"
+                  previewUrl={draft.blog[selectedIndex]?.image ?? ""}
+                  previewLabel={draft.blog[selectedIndex]?.title ?? `블로그 ${selectedIndex + 1}`}
+                  onFileSelect={(file) => void uploadBlogImage(selectedIndex, file)}
+                  onClear={() => updateBlog(selectedIndex, "image", "")}
+                />
               </InspectorGroup>
             ) : null}
 
@@ -1257,6 +1257,114 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span>{label}</span>
       {children}
     </label>
+  );
+}
+
+function ImageUploadField({
+  label,
+  previewUrl,
+  previewLabel,
+  onFileSelect,
+  onClear
+}: {
+  label: string;
+  previewUrl: string;
+  previewLabel: string;
+  onFileSelect: (file: File) => void;
+  onClear?: () => void;
+}) {
+  const [dragActive, setDragActive] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  return (
+    <div
+      className={dragActive ? "editor-upload-field active" : "editor-upload-field"}
+      onDragEnter={(event) => {
+        event.preventDefault();
+        setDragActive(true);
+      }}
+      onDragOver={(event) => {
+        event.preventDefault();
+        setDragActive(true);
+      }}
+      onDragLeave={(event) => {
+        event.preventDefault();
+        setDragActive(false);
+      }}
+      onDrop={(event) => {
+        event.preventDefault();
+        setDragActive(false);
+        const file = event.dataTransfer.files?.[0];
+        if (file) {
+          onFileSelect(file);
+        }
+      }}
+    >
+      <div className="editor-field editor-upload-trigger">
+        <span>{label}</span>
+        <span className="editor-upload-hint">파일 선택 또는 드래그앤드롭</span>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={(event) => {
+            const file = event.currentTarget.files?.[0];
+            if (file) {
+              onFileSelect(file);
+              event.currentTarget.value = "";
+            }
+          }}
+        />
+      </div>
+      {previewUrl ? (
+        <figure className="editor-image-preview">
+          <img src={previewUrl} alt={previewLabel} />
+          <figcaption>{previewLabel}</figcaption>
+          <div className="editor-image-actions">
+            <button className="editor-chip" type="button" onClick={() => inputRef.current?.click()}>
+              교체
+            </button>
+            <button
+              className="editor-chip"
+              type="button"
+              onClick={() => {
+                onClear?.();
+                if (inputRef.current) {
+                  inputRef.current.value = "";
+                }
+              }}
+            >
+              삭제
+            </button>
+          </div>
+        </figure>
+      ) : null}
+    </div>
+  );
+}
+
+function ChipPicker({
+  value,
+  options,
+  onChange
+}: {
+  value: string;
+  options: ReadonlyArray<{ label: string; value: string }>;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="editor-chip-picker" role="group" aria-label="이미지 위치 선택">
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          className={value === option.value ? "editor-chip active" : "editor-chip"}
+          onClick={() => onChange(option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
