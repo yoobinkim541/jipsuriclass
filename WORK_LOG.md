@@ -965,3 +965,54 @@ Verification:
 
 Follow-up:
 - If you want the phone button even closer to the right edge, the next step is a slightly tighter tablet header padding adjustment.
+
+## 2026-05-23 - Mobile Estimate Home Link Alignment
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Nudged the mobile estimate intro header slightly farther left so the `집수리클라쓰` back/home link sits closer to the screen edge.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If you want it even tighter, the left inset can be reduced another few pixels without affecting the desktop layout.
+
+## 2026-05-23 - Mobile Estimate Intro Full View
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Expanded the mobile estimate intro hero to fill the visible viewport more aggressively so the landing screen does not leave a large blank area below the image.
+- Tightened the mobile intro text block and button width so the copy reads as a proper hero rather than a short band at the top.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If the device-specific browser chrome still creates a gap, the next refinement is a per-device safe-area adjustment and a slightly smaller header inset.
+
+## 2026-05-23 - Transparent Favicon Refresh
+
+Changed files:
+- `public/icons/icon.svg`
+- `index.html`
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Replaced the browser tab favicon with a transparent SVG version so the icon no longer carries a visible background box.
+- Increased the visual weight of the mark so it reads better at small favicon sizes.
+- Switched the header brand mark to the same SVG and removed the rounded image-box styling around it.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If the favicon still feels too subtle in a specific browser tab size, the next step is to simplify the mark further for 16px rendering.

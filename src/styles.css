@@ -79,9 +79,10 @@ textarea {
 }
 
 .brand-mark {
-  border-radius: 8px;
+  border-radius: 0;
   height: 40px;
-  object-fit: cover;
+  object-fit: contain;
+  background: transparent;
   width: 40px;
 }
 
@@ -2730,33 +2731,38 @@ textarea {
   }
 
   .estimate-intro-hero {
-    min-height: 100%;
+    min-height: calc(100dvh - 24px);
     border-radius: 0;
   }
 
   .estimate-shell-intro .estimate-header {
-    left: 12px;
-    right: 12px;
+    left: 10px;
+    right: 10px;
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: flex-start;
     top: 12px;
   }
 
   .estimate-intro-content {
     justify-content: flex-end;
-    padding: 88px 18px 56px;
-    gap: 12px;
+    padding: 76px 16px 28px;
+    gap: 10px;
   }
 
   .estimate-intro-content h1 {
-    font-size: 2rem;
+    font-size: clamp(1.75rem, 8vw, 2.2rem);
+    max-width: 11ch;
   }
 
   .estimate-intro-content p {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+    max-width: 24rem;
   }
 
   .estimate-intro-button {
     min-height: 48px;
-    width: 100%;
+    width: min(100%, 260px);
     justify-content: center;
   }
 
