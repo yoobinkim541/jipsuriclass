@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { LoaderCircle, PencilLine, Save, RotateCcw } from "lucide-react";
+import { ClipboardList, Home, LoaderCircle, PencilLine, RotateCcw, Save, UserRound } from "lucide-react";
 import { HomepageEditor } from "./HomepageEditor";
 import { SiteContentService, defaultAccountPageContent, defaultEstimatePageContent } from "../services/SiteContentService";
 import type { AccountPageContent, EstimatePageContent } from "../types";
@@ -12,19 +12,32 @@ type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [page, setPage] = useState<EditorPage>("homepage");
+  const pageTabs = [
+    { key: "homepage" as const, icon: Home, title: "홈페이지", caption: "메인 섹션과 사진" },
+    { key: "account" as const, icon: UserRound, title: "마이페이지", caption: "계정과 문의 내역" },
+    { key: "estimate" as const, icon: ClipboardList, title: "견적상담", caption: "신청서와 약관" }
+  ];
 
   return (
     <section className="site-content-editor">
-      <div className="editor-section-nav" aria-label="페이지 편집 이동">
-        <button className={page === "homepage" ? "editor-section-chip active" : "editor-section-chip"} type="button" onClick={() => setPage("homepage")}>
-          홈페이지
-        </button>
-        <button className={page === "account" ? "editor-section-chip active" : "editor-section-chip"} type="button" onClick={() => setPage("account")}>
-          마이페이지
-        </button>
-        <button className={page === "estimate" ? "editor-section-chip active" : "editor-section-chip"} type="button" onClick={() => setPage("estimate")}>
-          견적상담
-        </button>
+      <div className="editor-page-tabs" aria-label="페이지 편집 이동">
+        {pageTabs.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              className={page === item.key ? "editor-page-tab active" : "editor-page-tab"}
+              key={item.key}
+              type="button"
+              onClick={() => setPage(item.key)}
+            >
+              <Icon size={18} />
+              <span>
+                <strong>{item.title}</strong>
+                <em>{item.caption}</em>
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {page === "homepage" ? <HomepageEditor isAuthenticated={isAuthenticated} /> : null}
@@ -233,9 +246,13 @@ function AccountContentEditor({ isAuthenticated }: { isAuthenticated: boolean })
             <InspectorGroup title="로그인 카드">
               {Object.entries(draft.auth).map(([key, value]) =>
                 key === "loadingText" || key === "currentLoginLabel" || key === "collapseLabel" || key === "expandLabel" || key === "passwordLabel" || key === "passwordPlaceholder" || key === "passwordSaveLabel" || key === "googleConnectLabel" || key === "passwordSavingLabel" || key === "googleConnectingLabel" || key === "accountMessageEmptyText" || key === "collapsedNote" || key === "noSessionLabel" || key === "noSessionTitle" || key === "noSessionDescription" || key === "loginLinkLabel" ? (
-                  <Field key={key} label={labelForAccountAuth(key as keyof AccountPageContent["auth"])}>
-                    <input value={String(value)} onChange={(event) => updateAuth(key as keyof AccountPageContent["auth"], event.target.value)} />
-                  </Field>
+                  <EditableTextField
+                    key={key}
+                    label={labelForAccountAuth(key as keyof AccountPageContent["auth"])}
+                    value={String(value)}
+                    multiline={isLongEditorField(key, String(value))}
+                    onChange={(nextValue) => updateAuth(key as keyof AccountPageContent["auth"], nextValue)}
+                  />
                 ) : null
               )}
             </InspectorGroup>
@@ -255,9 +272,13 @@ function AccountContentEditor({ isAuthenticated }: { isAuthenticated: boolean })
 
             <InspectorGroup title="문의 목록">
               {Object.entries(draft.list).map(([key, value]) => (
-                <Field key={key} label={labelForAccountList(key as keyof AccountPageContent["list"])}>
-                  <input value={String(value)} onChange={(event) => updateList(key as keyof AccountPageContent["list"], event.target.value)} />
-                </Field>
+                <EditableTextField
+                  key={key}
+                  label={labelForAccountList(key as keyof AccountPageContent["list"])}
+                  value={String(value)}
+                  multiline={isLongEditorField(key, String(value))}
+                  onChange={(nextValue) => updateList(key as keyof AccountPageContent["list"], nextValue)}
+                />
               ))}
             </InspectorGroup>
 
@@ -525,15 +546,17 @@ function EstimateContentEditor({ isAuthenticated }: { isAuthenticated: boolean }
             </InspectorGroup>
 
             <InspectorGroup title="단계별 문구">
-              <div className="editor-inline-toolbar">
+              <div className="editor-step-list">
                 {draft.steps.map((step, index) => (
                   <button
                     key={`${step.label}-${index}`}
                     type="button"
-                    className={selectedStep === index ? "editor-section-chip active" : "editor-section-chip"}
+                    className={selectedStep === index ? "editor-step-tab active" : "editor-step-tab"}
                     onClick={() => setSelectedStep(index)}
                   >
-                    {index + 1}. {step.label}
+                    <span>{step.count}</span>
+                    <strong>{step.label}</strong>
+                    <em>{step.mode === "final" ? "입력" : step.mode === "multi" ? "복수 선택" : "단일 선택"}</em>
                   </button>
                 ))}
               </div>
@@ -567,9 +590,13 @@ function EstimateContentEditor({ isAuthenticated }: { isAuthenticated: boolean }
 
             <InspectorGroup title="마무리 입력">
               {Object.entries(draft.final).map(([key, value]) => (
-                <Field key={key} label={labelForEstimateFinal(key as keyof EstimatePageContent["final"])}>
-                  <input value={String(value)} onChange={(event) => updateFinal(key as keyof EstimatePageContent["final"], event.target.value)} />
-                </Field>
+                <EditableTextField
+                  key={key}
+                  label={labelForEstimateFinal(key as keyof EstimatePageContent["final"])}
+                  value={String(value)}
+                  multiline={isLongEditorField(key, String(value))}
+                  onChange={(nextValue) => updateFinal(key as keyof EstimatePageContent["final"], nextValue)}
+                />
               ))}
             </InspectorGroup>
 
@@ -612,6 +639,28 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
+function EditableTextField({
+  label,
+  value,
+  multiline,
+  onChange
+}: {
+  label: string;
+  value: string;
+  multiline: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field label={label}>
+      {multiline ? (
+        <textarea rows={3} value={value} onChange={(event) => onChange(event.target.value)} />
+      ) : (
+        <input value={value} onChange={(event) => onChange(event.target.value)} />
+      )}
+    </Field>
+  );
+}
+
 function InspectorGroup({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="editor-group">
@@ -620,6 +669,17 @@ function InspectorGroup({ title, children }: { title: string; children: ReactNod
       </div>
       <div className="editor-group-body">{children}</div>
     </section>
+  );
+}
+
+function isLongEditorField(key: string, value: string) {
+  return (
+    value.length > 42 ||
+    key.toLowerCase().includes("description") ||
+    key.toLowerCase().includes("help") ||
+    key.toLowerCase().includes("message") ||
+    key.toLowerCase().includes("placeholder") ||
+    key.toLowerCase().includes("note")
   );
 }
 
