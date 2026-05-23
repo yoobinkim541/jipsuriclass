@@ -23,24 +23,24 @@ export function NaverMapEmbed({ address, title }: NaverMapEmbedProps) {
 
   const mapSrc = useMemo(() => {
     const params = new URLSearchParams({
-      title,
-      address,
-      lat: String(latitude),
-      lng: String(longitude),
+      center: `${longitude},${latitude}`,
+      level: "16",
       w: "960",
       h: "640",
-      level: "16"
+      maptype: "basic",
+      format: "png",
+      scale: "2",
+      lang: "ko"
     });
-    return `/api/naver-static-map?${params.toString()}`;
-  }, [address, latitude, longitude, title]);
 
-  const mapLink = business.mapUrl;
+    return `https://naveropenapi.apigw.ntruss.com/map-static/v2/raster-cors?${params.toString()}`;
+  }, [latitude, longitude]);
 
   return (
     <div className="office-map-shell">
       <div className="office-map office-map-canvas">
         {!hasError ? (
-          <a href={mapLink} target="_blank" rel="noreferrer" aria-label={`${title} 네이버 지도 열기`}>
+          <a href={business.mapUrl} target="_blank" rel="noreferrer" aria-label={`${title} 네이버 지도 열기`}>
             <img
               className="office-map-image"
               src={mapSrc}
