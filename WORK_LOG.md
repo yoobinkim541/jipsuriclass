@@ -733,3 +733,93 @@ Verification:
 
 Follow-up:
 - Add more service/location landing pages next if you want stronger organic ranking coverage beyond the home page.
+
+## 2026-05-23 - Brand And External Channel Consistency
+
+Changed files:
+- `src/App.tsx`
+- `src/data.ts`
+- `src/components/OfficeSection.tsx`
+- `public/manifest.webmanifest`
+- `index.html`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Standardized the public-facing brand title to `집수리클라쓰` in the manifest and HTML metadata.
+- Reworded the home-page SEO title so the brand and service intent stay consistent.
+- Updated the strength copy to mention search visibility across Naver, Kakao, and Google.
+- Added an "외부 채널" block to the location section with direct links to Naver Blog, Naver Map, and KakaoTalk.
+- Added a note to keep the Google Business Profile name, phone number, and address aligned with the site.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you give me the real Google Business Profile URL and Kakao channel URL, I can wire those into the site instead of leaving the Google profile as a text note.
+
+## 2026-05-23 - Static Open Graph Preview Setup
+
+Changed files:
+- `index.html`
+- `src/App.tsx`
+- `public/og-image.png`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added static Open Graph and Twitter metadata to the HTML shell so KakaoTalk, Instagram, and other link preview crawlers can read the page without waiting for client-side JavaScript.
+- Switched the default OG image to a dedicated landscape banner asset stored in `public/og-image.png`.
+- Aligned the runtime SEO updater with the same OG image and brand title so SPA navigation and browser shares stay consistent.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want route-specific OG previews for `/estimate` or `/privacy` in external crawlers, the next step would be server-rendered HTML or per-route prerendering.
+
+## 2026-05-23 - Estimate Full-Height Fix
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Switched the estimate shell height from `100svh` to `100dvh` so the intro screen fills the visible viewport more reliably on mobile browsers and in-app browsers.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If the bottom edge still shows a gap on a specific device, the next step is to tune the intro hero image crop separately from the viewport height unit.
+
+## 2026-05-23 - Estimate Step Header Compression
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Switched the estimate step header from a stacked block to a horizontal row so the `1/8` badge and step label sit tighter together.
+- Reduced the vertical spacing above and below the question block so the content anchors closer to the card's top-left corner.
+- Kept the mobile layout aligned to the top while preserving scrollable survey content.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If you want the step label even smaller or the card content to start higher still, that can be tuned further without changing the form flow.
+
+## 2026-05-23 - Consent Label Spacing Fix
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added spacing inside the consent label so the checkbox text and the privacy policy link no longer read as a single cramped block.
+- Kept the existing wording and interaction intact.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If the consent area still feels tight on mobile, the next adjustment would be a slightly larger vertical gap inside the consent card.

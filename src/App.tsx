@@ -27,7 +27,7 @@ const siteContentService = new SiteContentService();
 const siteUrl = "https://www.jipsuriclass.kr";
 const siteName = business.name;
 const defaultDescription = "서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 빠르게 안내합니다.";
-const defaultImage = `${siteUrl}/assets/consult-hero.png`;
+const defaultImage = `${siteUrl}/og-image.png`;
 
 function App() {
   usePageSeo(getSeoConfigForPath(window.location.pathname));
@@ -61,16 +61,19 @@ function usePageSeo(config: SeoConfig) {
     setMetaTag("description", config.description);
     setMetaTag("robots", config.noindex ? "noindex,nofollow" : "index,follow");
     setMetaTag("theme-color", "#0f172a");
+    setMetaTag("og:locale", "ko_KR", "property");
     setMetaTag("og:type", "website", "property");
     setMetaTag("og:site_name", siteName, "property");
     setMetaTag("og:title", config.title, "property");
     setMetaTag("og:description", config.description, "property");
     setMetaTag("og:image", config.image ?? defaultImage, "property");
+    setMetaTag("og:image:alt", "집수리클라쓰 OG 배너", "property");
     setMetaTag("og:url", `${siteUrl}${config.path}`, "property");
     setMetaTag("twitter:card", "summary_large_image");
     setMetaTag("twitter:title", config.title);
     setMetaTag("twitter:description", config.description);
     setMetaTag("twitter:image", config.image ?? defaultImage);
+    setMetaTag("twitter:image:alt", "집수리클라쓰 OG 배너");
     setLinkTag("canonical", `${siteUrl}${config.path}`);
     setStructuredData(config.jsonLd);
   }, [config]);
