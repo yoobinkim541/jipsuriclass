@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ClipboardList, Home, LoaderCircle, PencilLine, RotateCcw, Save, UserRound } from "lucide-react";
+import { ClipboardList, Home, LayoutGrid, LoaderCircle, PencilLine, RotateCcw, Save, UserRound } from "lucide-react";
 import { HomepageEditor } from "./HomepageEditor";
+import { LandingPagesEditor } from "./LandingPagesEditor";
 import { SiteContentService, defaultAccountPageContent, defaultEstimatePageContent } from "../services/SiteContentService";
 import type { AccountPageContent, EstimatePageContent } from "../types";
 
 const siteContentService = new SiteContentService();
 const AUTOSAVE_DELAY = 1200;
 
-type EditorPage = "homepage" | "account" | "estimate";
+type EditorPage = "homepage" | "landing" | "account" | "estimate";
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
   const [page, setPage] = useState<EditorPage>("homepage");
   const pageTabs = [
     { key: "homepage" as const, icon: Home, title: "홈페이지", caption: "메인 섹션과 사진" },
+    { key: "landing" as const, icon: LayoutGrid, title: "랜딩페이지", caption: "서비스·지역 페이지" },
     { key: "account" as const, icon: UserRound, title: "마이페이지", caption: "계정과 문의 내역" },
     { key: "estimate" as const, icon: ClipboardList, title: "견적상담", caption: "신청서와 약관" }
   ];
@@ -41,6 +43,7 @@ export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolea
       </div>
 
       {page === "homepage" ? <HomepageEditor isAuthenticated={isAuthenticated} /> : null}
+      {page === "landing" ? <LandingPagesEditor isAuthenticated={isAuthenticated} /> : null}
       {page === "account" ? <AccountContentEditor isAuthenticated={isAuthenticated} /> : null}
       {page === "estimate" ? <EstimateContentEditor isAuthenticated={isAuthenticated} /> : null}
     </section>

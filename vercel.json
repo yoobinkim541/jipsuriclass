@@ -36,7 +36,31 @@
       "destination": "/"
     },
     {
+      "source": "/diagnosis",
+      "destination": "/"
+    },
+    {
+      "source": "/diagnosis/:path*",
+      "destination": "/"
+    },
+    {
       "source": "/estimate",
+      "destination": "/"
+    },
+    {
+      "source": "/service",
+      "destination": "/"
+    },
+    {
+      "source": "/service/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/area",
+      "destination": "/"
+    },
+    {
+      "source": "/area/:path*",
       "destination": "/"
     }
   ]

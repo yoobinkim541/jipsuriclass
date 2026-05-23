@@ -112,17 +112,40 @@ export function EstimatePage() {
     const prevHtmlOverflow = documentElement.style.overflow;
     const prevBodyHeight = body.style.height;
     const prevHtmlHeight = documentElement.style.height;
+    const prevBodyPosition = body.style.position;
+    const prevBodyTop = body.style.top;
+    const prevBodyWidth = body.style.width;
+    const prevBodyLeft = body.style.left;
+    const prevBodyRight = body.style.right;
+    const prevBodyOverscrollBehavior = body.style.overscrollBehavior;
+    const prevHtmlOverscrollBehavior = documentElement.style.overscrollBehavior;
+    const scrollY = window.scrollY;
 
     body.style.overflow = "hidden";
     documentElement.style.overflow = "hidden";
     body.style.height = "100%";
     documentElement.style.height = "100%";
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.overscrollBehavior = "none";
+    documentElement.style.overscrollBehavior = "none";
 
     return () => {
       body.style.overflow = prevBodyOverflow;
       documentElement.style.overflow = prevHtmlOverflow;
       body.style.height = prevBodyHeight;
       documentElement.style.height = prevHtmlHeight;
+      body.style.position = prevBodyPosition;
+      body.style.top = prevBodyTop;
+      body.style.width = prevBodyWidth;
+      body.style.left = prevBodyLeft;
+      body.style.right = prevBodyRight;
+      body.style.overscrollBehavior = prevBodyOverscrollBehavior;
+      documentElement.style.overscrollBehavior = prevHtmlOverscrollBehavior;
+      window.scrollTo(0, scrollY);
     };
   }, []);
 

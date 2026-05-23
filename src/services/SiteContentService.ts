@@ -1,5 +1,6 @@
 import { business, cases as defaultCases, navItems, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
 import { images } from "../assets/images";
+import { defaultLandingPageContent, getLandingPageDefaultContent, landingPageDefinitions, mergeLandingPageContent, type LandingPageContent } from "../landingPages";
 import { supabase } from "../lib/supabaseClient";
 import type { AccountPageContent, EstimatePageContent, EstimateSurveyStepContent, HomepageContent } from "../types";
 
@@ -11,8 +12,15 @@ type SiteContentRow = {
 const CONTENT_IDS = {
   homepage: "homepage",
   account: "account",
-  estimate: "estimate"
+  estimate: "estimate",
+  landingPages: "landing-pages"
 } as const;
+
+export type LandingPagesContent = Record<string, LandingPageContent>;
+
+export const defaultLandingPagesContent: LandingPagesContent = Object.fromEntries(
+  landingPageDefinitions.map((page) => [page.path, getLandingPageDefaultContent(page.path) ?? defaultLandingPageContent[page.path]])
+);
 
 export const defaultHomepageContent: HomepageContent = {
   navLabels: navItems.map((item) => item.label),
@@ -321,6 +329,19 @@ export class SiteContentService {
 
   async saveEstimateContent(content: EstimatePageContent) {
     await this.saveContent(CONTENT_IDS.estimate, content, isEstimatePageContent);
+  }
+
+  async loadLandingPagesContent(): Promise<LandingPagesContent> {
+    return this.loadContent(
+      CONTENT_IDS.landingPages,
+      defaultLandingPagesContent,
+      mergeLandingPagesContent,
+      isLandingPagesContent
+    );
+  }
+
+  async saveLandingPagesContent(content: LandingPagesContent) {
+    await this.saveContent(CONTENT_IDS.landingPages, content, isLandingPagesContent);
   }
 
   private async loadContent<T>(
@@ -758,5 +779,47 @@ function isEstimatePageContent(value: unknown): value is EstimatePageContent {
     isString(value.reviewLabels.budget) &&
     isString(value.reviewLabels.startTiming) &&
     isString(value.reviewLabels.requestNote)
+  );
+}
+
+function isLandingPageContent(value: unknown): value is LandingPageContent {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isString(value.title) &&
+    isString(value.description) &&
+    Array.isArray(value.searchTerms) &&
+    value.searchTerms.every((item) => typeof item === "string") &&
+    isString(value.heroTitle) &&
+    isString(value.heroDescription) &&
+    Array.isArray(value.highlights) &&
+    value.highlights.every((item) => typeof item === "string") &&
+    isString(value.pointsTitle) &&
+    Array.isArray(value.points) &&
+    value.points.every((item) => typeof item === "string") &&
+    Array.isArray(value.faq) &&
+    value.faq.every((item) => isRecord(item) && isString(item.question) && isString(item.answer)) &&
+    Array.isArray(value.relatedLinks) &&
+    value.relatedLinks.every((item) => isRecord(item) && isString(item.label) && isString(item.href))
+  );
+}
+
+function isLandingPagesContent(value: unknown): value is LandingPagesContent {
+  return (
+    isRecord(value) &&
+    landingPageDefinitions.every((page) => isLandingPageContent((value as Record<string, unknown>)[page.path]))
+  );
+}
+
+function mergeLandingPagesContent(base: LandingPagesContent, override: unknown): LandingPagesContent {
+  if (!override || typeof override !== "object") {
+    return base;
+  }
+
+  const input = override as Partial<Record<string, Partial<LandingPageContent>>>;
+  return Object.fromEntries(
+    landingPageDefinitions.map((page) => [page.path, mergeLandingPageContent(page, input[page.path] ?? null)])
   );
 }

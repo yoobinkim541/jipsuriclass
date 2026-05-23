@@ -757,6 +757,116 @@ Verification:
 Follow-up:
 - If you give me the real Google Business Profile URL and Kakao channel URL, I can wire those into the site instead of leaving the Google profile as a text note.
 
+## 2026-05-23 - Service And Area Landing Pages
+
+Changed files:
+- `src/App.tsx`
+- `src/landingPages.ts`
+- `src/styles.css`
+- `public/sitemap.xml`
+- `vercel.json`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added dedicated landing pages for `누수 수리`, `욕실 수리`, `도배`, and `문수리`.
+- Added dedicated landing pages for `남양주`, `구리`, `하남`, `서울`, and `경기`.
+- Added a shared SEO-friendly landing-page template with unique descriptions, highlights, FAQs, related links, and structured data.
+- Added an internal-link section on the homepage so the new service and area pages are discoverable from the main page.
+- Added Vercel rewrites for `/service/*` and `/area/*` so these routes resolve correctly in production.
+- Added the new page URLs to `sitemap.xml`.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want stronger coverage, the next step is to expand each page with one or two real case photos and more local wording.
+
+## 2026-05-23 - Keyword-Filtered Landing Content
+
+Changed files:
+- `src/App.tsx`
+- `src/landingPages.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added keyword lists to each service and area landing page definition.
+- Loaded Naver blog portfolio posts on each landing page and filtered them by page-specific keywords.
+- Displayed filtered results in separate `블로그 레퍼런스` and `포트폴리오` sections.
+- Kept the latest Naver posts first when matching terms like `누수`, `남양주`, `구리`, and `하남`.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the results to be even tighter, the next step is to add more keyword-specific Naver post titles and summaries in the source blog data.
+
+## 2026-05-23 - Representative Case Photos
+
+Changed files:
+- `src/assets/images.ts`
+- `public/assets/cases/bathroom-leak.png`
+- `public/assets/cases/kitchen-repair.png`
+- `public/assets/cases/wall-repair.png`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Generated and inserted new photorealistic case images for bathroom leak repair, kitchen sink drain repair, and wall wallpaper repair.
+- Replaced the previous external stock image references with local project assets for the representative case cards.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want, the next step is to add short captions or before/after labels so each case image explains itself better on mobile.
+
+## 2026-05-23 - Editable Landing Pages
+
+Changed files:
+- `src/App.tsx`
+- `src/admin/SiteContentEditor.tsx`
+- `src/admin/LandingPagesEditor.tsx`
+- `src/landingPages.ts`
+- `src/services/SiteContentService.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a dedicated admin editor tab for service and area landing pages.
+- Stored landing-page content in Supabase as a single `landing-pages` payload keyed by route.
+- Let the public landing pages load the saved admin overrides on page load and merge them with the default definitions.
+- Kept SEO titles and structured data aligned with the edited landing-page content.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want, the next pass can add a live preview panel for each landing page in the admin editor so edits are easier to judge visually.
+
+## 2026-05-23 - Diagnosis Q&A Page
+
+Changed files:
+- `src/App.tsx`
+- `src/data.ts`
+- `src/diagnosis/DiagnosisPage.tsx`
+- `src/diagnosis/diagnosisData.ts`
+- `src/styles.css`
+- `public/sitemap.xml`
+- `vercel.json`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a dedicated `/diagnosis` self-check page with clickable symptom cards and an answer panel.
+- Added entries for common issues like stiff doors, leaks, wallpaper lifting, tile cracks, mold, and drain trouble.
+- Routed homepage symptom chips to the diagnosis page instead of sending them directly to the estimate form.
+- Added a `자기진단` item to the main navigation.
+- Added FAQ structured data and sitemap/rewrite support for the new route.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want this page editable from the admin next, I can wire its questions and answers into the same site content editor model as the other pages.
+
 ## 2026-05-23 - Static Open Graph Preview Setup
 
 Changed files:
@@ -823,3 +933,35 @@ Verification:
 
 Follow-up:
 - If the consent area still feels tight on mobile, the next adjustment would be a slightly larger vertical gap inside the consent card.
+
+## 2026-05-23 - Estimate Background Scroll Lock
+
+Changed files:
+- `src/estimate/EstimatePage.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Locked the estimate page body in place while the page is open so mobile browsers do not scroll the background behind the survey.
+- Kept scrolling limited to the survey card itself, with touch scrolling and overscroll behavior contained inside that card.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If a specific mobile browser still leaks background scroll, the next step is to inspect that browser's overscroll behavior and adjust the fixed-body lock further.
+
+## 2026-05-23 - Tablet Header Call Alignment
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Shifted the header call button further to the right only in the tablet breakpoint range so the top bar reads cleaner on medium screens.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If you want the phone button even closer to the right edge, the next step is a slightly tighter tablet header padding adjustment.
