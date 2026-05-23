@@ -509,3 +509,22 @@ Verification:
 
 Follow-up:
 - If the Naver Maps API permissions are corrected, the dynamic map will continue to recover without UI changes.
+
+## 2026-05-23 - Operational Config Cleanup
+
+Changed files:
+- `.env.example`
+- `README.md`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Documented all runtime environment variables referenced by the app, including optional Gemini blog summaries, interactive Naver map settings, Supabase, and email alert configuration.
+- Marked the interactive office map variables as optional and documented the static Naver map fallback.
+- Added a note that `src/data.ts` still uses a placeholder Kakao channel URL and should be replaced with the real channel when available.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Replace `business.kakaoUrl` in `src/data.ts` with the real Kakao channel URL when it is available.
+- Set the optional map and email variables in Vercel if interactive map and alert delivery are needed.

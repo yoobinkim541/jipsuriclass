@@ -50,11 +50,24 @@ Add these in Vercel Project Settings -> Environment Variables:
 NAVER_CLIENT_ID=
 NAVER_CLIENT_SECRET=
 NAVER_BLOG_ID=it77khy
+GEMINI_API_KEY=
+GEMINI_BLOG_SUMMARY_MODEL=gemini-2.5-flash-lite
+VITE_NAVER_MAP_CLIENT_ID=
+VITE_NAVER_MAP_LAT=
+VITE_NAVER_MAP_LNG=
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
 ADMIN_EMAIL=
 RESEND_API_KEY=
 ```
+
+Notes:
+
+- `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` are required for blog and map APIs.
+- `GEMINI_API_KEY` is optional. If it is missing, blog summary cards fall back to the base Naver content.
+- `VITE_NAVER_MAP_CLIENT_ID`, `VITE_NAVER_MAP_LAT`, and `VITE_NAVER_MAP_LNG` improve the interactive office map. If they are missing, the static Naver map embed still stays available.
+- `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are required for inquiry storage and account/admin flows.
+- `ADMIN_EMAIL` / `RESEND_API_KEY` are only needed if you want email alerts to actually send.
 
 ### Domain DNS
 
@@ -189,11 +202,20 @@ UI 컴포넌트는 외부 API 응답 형식을 직접 알지 않도록 합니다
 NAVER_CLIENT_ID=
 NAVER_CLIENT_SECRET=
 NAVER_BLOG_ID=it77khy
+GEMINI_API_KEY=
+GEMINI_BLOG_SUMMARY_MODEL=gemini-2.5-flash-lite
+VITE_NAVER_MAP_CLIENT_ID=
+VITE_NAVER_MAP_LAT=
+VITE_NAVER_MAP_LNG=
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
+ADMIN_EMAIL=
+RESEND_API_KEY=
 ```
 
 `.env.local`에 넣고 dev 서버를 재시작하세요.
+
+카카오톡 채널 URL은 `src/data.ts`의 `business.kakaoUrl`을 실제 채널 주소로 교체하세요. 현재는 placeholder 값이 들어 있습니다.
 
 ## Admin Login
 
