@@ -1312,56 +1312,133 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
   const [activeStep, setActiveStep] = useState(0);
   const activeData = process[activeStep];
   const activeContent = steps[activeStep];
+  const processSignals = [
+    {
+      label: "사진 우선",
+      text: "방문 전에 범위를 먼저 좁혀 불필요한 동선을 줄입니다.",
+      icon: MessageCircle
+    },
+    {
+      label: "대표 직접 확인",
+      text: "대표가 현장을 직접 보고 필요한 작업만 추립니다.",
+      icon: User
+    },
+    {
+      label: "투명 안내",
+      text: "작업 범위, 비용, 일정은 한 번에 정리해서 안내합니다.",
+      icon: Phone
+    }
+  ];
+  const gallerySteps = [
+    activeStep,
+    (activeStep + 1) % process.length,
+    (activeStep + 2) % process.length
+  ].map((stepIndex) => ({
+    title: steps[stepIndex]?.title ?? process[stepIndex].title,
+    text: steps[stepIndex]?.text ?? process[stepIndex].text,
+    image: steps[stepIndex]?.image ?? process[stepIndex].image
+  }));
 
   return (
     <section className="process" id="process" aria-labelledby="process-title">
-      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(32px,5vw,64px) clamp(18px,5vw,64px) clamp(16px,2vw,24px)" }}>
-        <h2 id="process-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>작업 절차</h2>
-        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
-      </div>
-      <div className="process__track">
-        {process.map((step, index) => (
-          <React.Fragment key={step.title}>
-            <button
-              className={`process__step${activeStep === index ? " active" : ""}`}
-              onClick={() => setActiveStep(index)}
-              aria-current={activeStep === index ? "true" : undefined}
-            >
-              <span className="step-num">0{index + 1}</span>
-              <step.icon size={22} />
-              <h3>{steps[index]?.title ?? step.title}</h3>
-            </button>
-            {activeStep === index && (
-              <div className="process__inline-detail">
-                <div className="process__illustration">
-                  {steps[index]?.image
-                    ? <img src={steps[index].image} alt={steps[index].title} className="process__step-photo" />
-                    : processIllustrations[index]}
-                </div>
-                <div className="process__inline-text">
-                  <h3>{steps[index]?.title ?? step.title}</h3>
-                  <p>{steps[index]?.text ?? step.text}</p>
-                </div>
-              </div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-      {activeData && (
-        <div className="process__detail">
-          <div className="process__detail-card">
-            <div className="process__illustration">
-              {activeContent?.image
-                ? <img src={activeContent.image} alt={activeContent.title} className="process__step-photo" />
-                : processIllustrations[activeStep]}
-            </div>
-            <div>
-              <h3>{activeContent?.title ?? activeData.title}</h3>
-              <p>{activeContent?.text ?? activeData.text}</p>
-            </div>
+      <div className="process__shell">
+        <div className="process__intro">
+          <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(32px,5vw,64px) clamp(18px,5vw,64px) 0" }}>
+            <h2 id="process-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>작업 절차</h2>
+            <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
+          </div>
+          <div className="process__signal-grid">
+            {processSignals.map((signal) => {
+              const SignalIcon = signal.icon;
+
+              return (
+                <article key={signal.label} className="process__signal-card">
+                  <div className="process__signal-icon" aria-hidden="true">
+                    <SignalIcon size={20} />
+                  </div>
+                  <div>
+                    <h3>{signal.label}</h3>
+                    <p>{signal.text}</p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
-      )}
+
+        <div className="process__content">
+          <div className="process__track">
+            {process.map((step, index) => (
+              <React.Fragment key={step.title}>
+                <button
+                  className={`process__step${activeStep === index ? " active" : ""}`}
+                  onClick={() => setActiveStep(index)}
+                  aria-current={activeStep === index ? "true" : undefined}
+                >
+                  <span className="step-num">0{index + 1}</span>
+                  <step.icon size={22} />
+                  <h3>{steps[index]?.title ?? step.title}</h3>
+                </button>
+                {activeStep === index && (
+                  <div className="process__inline-detail">
+                    <div className="process__illustration">
+                      {steps[index]?.image
+                        ? <img src={steps[index].image} alt={steps[index].title} className="process__step-photo" />
+                        : processIllustrations[index]}
+                    </div>
+                    <div className="process__inline-text">
+                      <h3>{steps[index]?.title ?? step.title}</h3>
+                      <p>{steps[index]?.text ?? step.text}</p>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+
+          {activeData && (
+            <div className="process__detail">
+              <div className="process__detail-card">
+                <div className="process__detail-media">
+                  <div className="process__detail-gallery">
+                    <div className="process__detail-gallery-main">
+                      {gallerySteps[0].image
+                        ? <img src={gallerySteps[0].image} alt={gallerySteps[0].title} className="process__step-photo" />
+                        : processIllustrations[activeStep]}
+                    </div>
+                    <div className="process__detail-gallery-stack">
+                      {gallerySteps.slice(1).map((item, index) => (
+                        <div className="process__detail-gallery-thumb" key={`${item.title}-${index}`}>
+                          {item.image
+                            ? <img src={item.image} alt={item.title} className="process__step-photo" />
+                            : processIllustrations[(activeStep + index + 1) % processIllustrations.length]}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="process__detail-copy">
+                  <div className="process__detail-kicker">0{activeStep + 1} / 05</div>
+                  <h3>{activeContent?.title ?? activeData.title}</h3>
+                  <p>{activeContent?.text ?? activeData.text}</p>
+                  <div className="process__detail-points">
+                    {processSignals.map((signal) => {
+                      const SignalIcon = signal.icon;
+
+                      return (
+                        <div className="process__detail-point" key={signal.label}>
+                          <SignalIcon size={16} />
+                          <span>{signal.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

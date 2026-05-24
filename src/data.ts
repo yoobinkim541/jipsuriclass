@@ -203,9 +203,9 @@ export const pinnedPosts: PortfolioPost[] = [
 ];
 
 export const process: WorkProcessStep[] = [
-  { title: "사진 상담", text: "증상과 현장 사진을 먼저 확인합니다.", icon: Hammer },
-  { title: "증상 확인", text: "누수, 파손, 오염 등 원인을 좁힙니다.", icon: ShieldCheck },
-  { title: "현장 방문", text: "필요 시 방문해 범위와 자재를 확인합니다.", icon: Home },
-  { title: "견적 안내", text: "작업 범위와 비용을 투명하게 안내합니다.", icon: Ruler },
-  { title: "시공·확인", text: "마감 상태와 재발 가능성을 함께 점검합니다.", icon: Bolt }
+  { title: "사진 상담", text: "증상과 현장 사진을 먼저 확인합니다.", icon: Hammer, image: images.process.consultation },
+  { title: "증상 확인", text: "누수, 파손, 오염 등 원인을 좁힙니다.", icon: ShieldCheck, image: images.process.leakCheck },
+  { title: "현장 방문", text: "필요 시 방문해 범위와 자재를 확인합니다.", icon: Home, image: images.process.plumbing },
+  { title: "견적 안내", text: "작업 범위와 비용을 투명하게 안내합니다.", icon: Ruler, image: images.process.wallRepair },
+  { title: "시공·확인", text: "마감 상태와 재발 가능성을 함께 점검합니다.", icon: Bolt, image: images.process.completion }
 ];
