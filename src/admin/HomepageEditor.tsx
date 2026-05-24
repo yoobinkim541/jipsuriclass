@@ -2,10 +2,9 @@ import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateActio
 import {
   ArrowUpRight,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   ExternalLink,
   LoaderCircle,
+  MessageCircle,
   PencilLine,
   Phone,
   RotateCcw,
@@ -473,10 +472,10 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
           <div className="editor-preview-panel">
             <div className="editor-preview-frame">
               <PreviewSectionLabel label="히어로" active={selectedSection === "hero"} onClick={() => setSelectedSection("hero")} />
-              <HeroPreview content={draft.hero} onSelect={() => setSelectedSection("hero")} />
+              <HeroPreview content={draft.hero} cases={draft.cases} onSelect={() => setSelectedSection("hero")} />
 
               <PreviewSectionLabel label="소개" active={selectedSection === "about"} onClick={() => setSelectedSection("about")} />
-              <AboutPreview content={draft.about} onSelect={() => setSelectedSection("about")} />
+              <AboutPreview content={draft.about} cases={draft.cases} onSelect={() => setSelectedSection("about")} />
 
               <PreviewSectionLabel label="서비스" active={selectedSection === "services"} onClick={() => setSelectedSection("services")} />
               <ServicesPreview
@@ -537,109 +536,37 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
 
             {selectedSection === "hero" ? (
               <InspectorGroup title="히어로">
-                <Field label="상단 설명">
-                  <input value={draft.hero.mediaNote} onChange={(event) => updateHero("mediaNote", event.target.value)} />
-                </Field>
-                <Field label="제목">
-                  <input value={draft.hero.title} onChange={(event) => updateHero("title", event.target.value)} />
-                </Field>
-                <Field label="설명">
+                <div className="editor-inline-note">히어로 이미지(오른쪽 카드 덱)는 아래 <strong>사례</strong> 섹션의 이미지에서 자동으로 가져옵니다.</div>
+                <Field label="설명 (lede 텍스트)">
                   <textarea rows={5} value={draft.hero.description} onChange={(event) => updateHero("description", event.target.value)} />
                 </Field>
-                <Field label="대표 이미지 URL">
-                  <input value={draft.hero.image} onChange={(event) => updateHero("image", event.target.value)} />
-                </Field>
-                <ImageUploadField
-                  label="대표 이미지 업로드"
-                  previewUrl={draft.hero.image}
-                  previewLabel={draft.hero.title}
-                  onFileSelect={(file) => void uploadHeroImage(file)}
-                  onClear={() => updateHero("image", "")}
-                />
-                <Field label="대표 이미지 위치">
-                  <ChipPicker
-                    value={draft.hero.imagePosition}
-                    options={imagePositionOptions}
-                    onChange={updateHeroPosition}
-                  />
-                </Field>
-                <Field label={`대표 이미지 크기 (${draft.hero.imageScale.toFixed(2)})`}>
-                  <input
-                    type="range"
-                    min="0.8"
-                    max="1.35"
-                    step="0.05"
-                    value={draft.hero.imageScale}
-                    onChange={(event) => updateHero("imageScale", Number(event.target.value))}
-                  />
-                </Field>
-                <Field label="기본 버튼 1">
+                <Field label="버튼 1 (전화 상담)">
                   <input value={draft.hero.primaryActionLabel} onChange={(event) => updateHero("primaryActionLabel", event.target.value)} />
                 </Field>
-                <Field label="기본 버튼 2">
+                <Field label="버튼 2 (카카오톡)">
                   <input value={draft.hero.secondaryActionLabel} onChange={(event) => updateHero("secondaryActionLabel", event.target.value)} />
                 </Field>
-                <Field label="기본 버튼 3">
+                <Field label="버튼 3 (견적상담)">
                   <input value={draft.hero.tertiaryActionLabel} onChange={(event) => updateHero("tertiaryActionLabel", event.target.value)} />
                 </Field>
-                <div className="editor-inline-note">네비게이션은 현재 이동 경로를 유지하고, 아래 텍스트만 바꿉니다.</div>
-                {navItems.map((item, index) => (
-                  <div key={item.href}>
-                    <Field label={`메뉴 ${index + 1}`}>
+                <div className="editor-inspector-subgroup">
+                  <h4>메뉴 이름</h4>
+                  <p className="editor-inline-note">이동 경로는 그대로 유지되고 표시 텍스트만 바뀝니다.</p>
+                  {navItems.map((item, index) => (
+                    <Field key={item.href} label={item.label}>
                       <input
                         value={draft.navLabels[index] ?? item.label}
                         onChange={(event) => updateNavLabel(index, event.target.value)}
                       />
                     </Field>
-                  </div>
-                ))}
-                <div className="editor-inspector-subgroup">
-                  <h4>캐러셀 사진</h4>
-                  <p className="editor-inline-note">대표 이미지를 포함해 총 {1 + draft.hero.slides.length}장을 보여줍니다.</p>
-                  {draft.hero.slides.map((slide, index) => (
-                    <div className="preview-item-card" key={`${slide.image || "slide"}-${index}`}>
-                      <strong>추가 사진 {index + 1}</strong>
-                      <Field label="사진 URL">
-                        <input value={slide.image} onChange={(event) => updateHeroSlide(index, "image", event.target.value)} />
-                      </Field>
-                      <ImageUploadField
-                        label="사진 업로드"
-                        previewUrl={slide.image}
-                        previewLabel={`추가 사진 ${index + 1}`}
-                        onFileSelect={(file) => void uploadHeroSlideImage(index, file)}
-                        onClear={() => updateHeroSlide(index, "image", "")}
-                      />
-                      <Field label="위치">
-                        <ChipPicker
-                          value={slide.position}
-                          options={imagePositionOptions}
-                          onChange={(value) => updateHeroSlide(index, "position", value)}
-                        />
-                      </Field>
-                      <Field label={`크기 (${slide.scale.toFixed(2)})`}>
-                        <input
-                          type="range"
-                          min="0.8"
-                          max="1.35"
-                          step="0.05"
-                          value={slide.scale}
-                          onChange={(event) => updateHeroSlideScale(index, Number(event.target.value))}
-                        />
-                      </Field>
-                      <button className="admin-ghost-button" type="button" onClick={() => removeHeroSlide(index)}>
-                        삭제
-                      </button>
-                    </div>
                   ))}
-                  <button className="admin-ghost-button" type="button" onClick={addHeroSlide}>
-                    사진 추가
-                  </button>
                 </div>
               </InspectorGroup>
             ) : null}
 
             {selectedSection === "about" ? (
               <InspectorGroup title="소개">
+                <div className="editor-inline-note">오른쪽 사진은 <strong>사례</strong> 섹션의 첫 3개 이미지를 사용합니다. 클릭하면 메인 사진이 바뀝니다.</div>
                 <Field label="배지">
                   <input value={draft.about.eyebrow} onChange={(event) => updateAbout("eyebrow", event.target.value)} />
                 </Field>
@@ -649,7 +576,7 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
                 <Field label="설명">
                   <textarea rows={7} value={draft.about.description} onChange={(event) => updateAbout("description", event.target.value)} />
                 </Field>
-                <Field label="강점 항목">
+                <Field label="강점 항목 (줄 바꿈으로 구분)">
                   <textarea rows={4} value={strengthsText} onChange={(event) => updateStrengths(event.target.value)} />
                 </Field>
               </InspectorGroup>
@@ -867,101 +794,79 @@ function PreviewSectionLabel({
 
 function HeroPreview({
   content,
+  cases,
   onSelect
 }: {
   content: HomepageContent["hero"];
+  cases: HomepageContent["cases"];
   onSelect: () => void;
 }) {
-  const heroSlides = useMemo(
-    () => [
-      {
-        image: content.image,
-        position: content.imagePosition,
-        scale: content.imageScale
-      },
-      ...content.slides
-    ].filter((slide) => slide.image),
-    [content.image, content.imagePosition, content.imageScale, content.slides]
-  );
-  const [activeSlide, setActiveSlide] = useState(0);
-
-  useEffect(() => {
-    if (heroSlides.length < 2) return;
-    const timer = window.setInterval(() => {
-      setActiveSlide((current) => (current + 1) % heroSlides.length);
-    }, 6000);
-
-    return () => window.clearInterval(timer);
-  }, [heroSlides.length]);
+  const caseImages = useMemo(() => cases.filter((c) => c.image).slice(0, 3), [cases]);
 
   return (
-    <section className="hero hero-fullbleed editor-preview-section" aria-label="히어로 미리보기">
+    <section className="hero editor-preview-section" aria-label="히어로 미리보기" style={{ padding: "clamp(24px,4vw,48px) clamp(18px,5vw,64px)" }}>
       <button className="preview-edit-trigger" type="button" onClick={onSelect}>
         편집
       </button>
-      <div className="hero-carousel" aria-hidden="true">
-        {heroSlides.map((slide, index) => (
-          <img
-            key={slide.image}
-            className={index === activeSlide ? "hero-background hero-slide active" : "hero-background hero-slide"}
-            src={slide.image}
-            style={{ objectPosition: slide.position, transform: `scale(${slide.scale})` }}
-            alt=""
-          />
-        ))}
-      </div>
-      <div className="hero-overlay" />
-      <div className="hero-copy">
-        <span className="hero-kicker">{content.mediaNote}</span>
-        <h1>{content.title}</h1>
-        <p>{content.description}</p>
-        <div className="hero-actions">
-          <span className="primary-button preview-static-button">
-            <Phone size={20} />
-            {content.primaryActionLabel}
-          </span>
-          <span className="secondary-button preview-static-button">
-            <ExternalLink size={20} />
-            {content.secondaryActionLabel}
-          </span>
-          <span className="secondary-button preview-static-button">
-            <ArrowUpRight size={20} />
-            {content.tertiaryActionLabel}
-          </span>
-        </div>
-      </div>
-      {heroSlides.length > 1 ? (
-        <div className="hero-carousel-controls" aria-label="히어로 이미지 전환">
-          <button type="button" onClick={() => setActiveSlide((current) => (current - 1 + heroSlides.length) % heroSlides.length)}>
-            <ChevronLeft size={18} />
-          </button>
-          <div className="hero-carousel-dots">
-            {heroSlides.map((slide, index) => (
-              <button
-                key={`${slide.image}-${index}`}
-                type="button"
-                className={index === activeSlide ? "hero-dot active" : "hero-dot"}
-                onClick={() => setActiveSlide(index)}
-                aria-label={`슬라이드 ${index + 1}`}
-              />
-            ))}
+      <div className="hero__grid">
+        <div>
+          <h1 className="hero__title" style={{ fontSize: "clamp(28px,3.5vw,52px)" }}>
+            집의 모든 불편을
+            <br />
+            <span className="hero__rotator"><em>한 통의 전화</em></span>으로 끝냅니다.
+          </h1>
+          <p className="hero__lede">{content.description || "설명 텍스트를 입력하세요."}</p>
+          <div className="hero__cta" style={{ marginBottom: 0 }}>
+            <span className="primary-button preview-static-button">
+              <Phone size={18} />
+              {content.primaryActionLabel || "전화 상담"}
+            </span>
+            <span className="secondary-button preview-static-button">
+              <MessageCircle size={18} />
+              {content.secondaryActionLabel || "카카오톡"}
+            </span>
+            <span className="secondary-button preview-static-button">
+              <ArrowUpRight size={18} />
+              {content.tertiaryActionLabel || "견적상담"}
+            </span>
           </div>
-          <button type="button" onClick={() => setActiveSlide((current) => (current + 1) % heroSlides.length)}>
-            <ChevronRight size={18} />
-          </button>
         </div>
-      ) : null}
+        {caseImages.length > 0 && (
+          <div className="hero__deck">
+            {caseImages[0] && (
+              <div className="hero__card hero__card--main">
+                <img src={caseImages[0].image} alt={caseImages[0].title} />
+                <div className="hero__card-tag">{caseImages[0].area}</div>
+              </div>
+            )}
+            {caseImages[1] && (
+              <div className="hero__card hero__card--b">
+                <img src={caseImages[1].image} alt={caseImages[1].title} />
+              </div>
+            )}
+            {caseImages[2] && (
+              <div className="hero__card hero__card--c">
+                <img src={caseImages[2].image} alt={caseImages[2].title} />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </section>
   );
 }
 
 function AboutPreview({
   content,
+  cases,
   onSelect
 }: {
   content: HomepageContent["about"];
+  cases: HomepageContent["cases"];
   onSelect: () => void;
 }) {
+  const caseImages = useMemo(() => cases.filter((c) => c.image).slice(0, 3), [cases]);
+
   return (
     <section className="about section editor-preview-section" aria-labelledby="about-preview-title">
       <button className="preview-edit-trigger" type="button" onClick={onSelect}>
@@ -971,15 +876,41 @@ function AboutPreview({
         <span>{content.eyebrow}</span>
         <h2 id="about-preview-title">{content.title}</h2>
         <p>{content.description}</p>
+        <ul className="about-strengths">
+          {content.strengths.map((item) => (
+            <li key={item}>
+              <CheckCircle2 size={20} />
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
-      <ul className="about-strengths">
-        {content.strengths.map((item) => (
-          <li key={item}>
-            <CheckCircle2 size={20} />
-            {item}
-          </li>
-        ))}
-      </ul>
+      <div className="about-visual" aria-label="현장 사진 요약">
+        {caseImages[0] && (
+          <figure className="about-visual__hero">
+            <img src={caseImages[0].image} alt={caseImages[0].title} loading="lazy" />
+            <figcaption>
+              <strong>{caseImages[0].area}</strong>
+              <span>{caseImages[0].title}</span>
+            </figcaption>
+          </figure>
+        )}
+        <div className="about-visual__stack">
+          {caseImages.slice(1, 3).map((item) => (
+            <figure className="about-visual__tile" key={item.title}>
+              <img src={item.image} alt={item.title} loading="lazy" />
+              <figcaption>
+                <strong>{item.area}</strong>
+                <span>{item.title}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <div className="about-visual__note">
+          <strong>현장 사진 우선 상담</strong>
+          <span>사례 섹션 이미지를 변경하면 이 사진도 함께 바뀝니다.</span>
+        </div>
+      </div>
     </section>
   );
 }
@@ -994,25 +925,27 @@ function ServicesPreview({
   onSelect: (index: number) => void;
 }) {
   return (
-    <section className="services section editor-preview-section" aria-labelledby="services-preview-title">
+    <section className="services editor-preview-section" aria-labelledby="services-preview-title">
       <button className="preview-edit-trigger" type="button" onClick={() => onSelect(0)}>
         편집
       </button>
-      <div className="section-heading">
-        <h2 id="services-preview-title">생활 집수리 서비스</h2>
-        <p>큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.</p>
+      <div className="sec-head" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(32px,5vw,56px) clamp(18px,5vw,64px) clamp(16px,2vw,24px)" }}>
+        <h2 id="services-preview-title" style={{ fontWeight: 800, fontSize: "clamp(22px,3vw,36px)", letterSpacing: "-0.03em", margin: "0 0 8px" }}>생활 집수리 서비스</h2>
+        <p style={{ color: "var(--ink-2,#2a3a55)", margin: 0 }}>큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.</p>
       </div>
-      <div className="service-grid">
+      <div className="bento">
         {defaultServices.map((service, index) => {
           const item = services[index] ?? { title: service.title, text: service.text };
           const active = index === activeIndex;
           return (
             <button
-              className={active ? "service-card preview-card active" : "service-card preview-card"}
-              key={item.title}
+              className={active ? "bento__card preview-card active" : "bento__card preview-card"}
+              key={`${item.title}-${index}`}
               type="button"
               onClick={() => onSelect(index)}
+              style={{ textAlign: "left" }}
             >
+              <span className="bento__num">{String(index + 1).padStart(2, "0")}</span>
               <service.icon size={26} />
               <h3>{item.title}</h3>
               <p>{item.text}</p>
@@ -1034,34 +967,36 @@ function CasesPreview({
   onSelect: (index: number) => void;
 }) {
   return (
-    <section className="cases section editor-preview-section" aria-labelledby="cases-preview-title">
+    <section className="cases editor-preview-section" aria-labelledby="cases-preview-title">
       <button className="preview-edit-trigger" type="button" onClick={() => onSelect(0)}>
         편집
       </button>
-      <div className="section-heading row-heading">
-        <div>
-          <h2 id="cases-preview-title">대표 현장사례</h2>
-          <p>실제 사진이 준비되면 이 영역에 바로 교체할 수 있습니다.</p>
-        </div>
+      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(32px,5vw,56px) clamp(18px,5vw,64px) clamp(16px,2vw,24px)" }}>
+        <h2 id="cases-preview-title" style={{ fontWeight: 800, fontSize: "clamp(22px,3vw,36px)", letterSpacing: "-0.03em", margin: "0 0 6px" }}>대표 현장사례</h2>
+        <p style={{ color: "var(--ink-2,#2a3a55)", margin: 0 }}>실제 현장 사진과 작업 내용을 확인하세요.</p>
       </div>
-      <div className="case-grid">
+      <div className="cases__rail" style={{ paddingBottom: 24 }}>
         {cases.map((item, index) => (
           <button
-            className={index === activeIndex ? "case-card preview-card active" : "case-card preview-card"}
-            key={item.title}
+            className={index === activeIndex ? "cases__card preview-card active" : "cases__card preview-card"}
+            key={`${item.title}-${index}`}
             type="button"
             onClick={() => onSelect(index)}
+            style={{ flex: "0 0 min(72vw, 340px)" }}
           >
-            <img src={item.image} alt={item.title} />
-            <div>
-              <span>{item.area}</span>
+            <div className="cases__media">
+              <img src={item.image} alt={item.title} />
+            </div>
+            <div className="cases__body">
               <h3>{item.title}</h3>
-              <p>
-                <strong>문제</strong> {item.problem}
-              </p>
-              <p>
-                <strong>해결</strong> {item.solution}
-              </p>
+              <dl className="row">
+                <dt>문제</dt>
+                <dd>{item.problem}</dd>
+              </dl>
+              <dl className="row">
+                <dt>해결</dt>
+                <dd>{item.solution}</dd>
+              </dl>
             </div>
           </button>
         ))}
@@ -1080,11 +1015,11 @@ function BlogPreview({
   onSelect: (index: number) => void;
 }) {
   return (
-    <section className="blog section editor-preview-section" aria-labelledby="blog-preview-title">
+    <section className="blog editor-preview-section" aria-labelledby="blog-preview-title">
       <button className="preview-edit-trigger" type="button" onClick={() => onSelect(0)}>
         편집
       </button>
-      <div className="section-heading row-heading">
+      <div className="section-heading row-heading" style={{ padding: "clamp(24px,4vw,48px) clamp(18px,5vw,64px) clamp(12px,2vw,20px)", maxWidth: "none", margin: 0 }}>
         <div>
           <h2 id="blog-preview-title">네이버 블로그 포트폴리오</h2>
           <p>관리자 지정 포스트를 바로 교체할 수 있습니다.</p>
@@ -1093,7 +1028,7 @@ function BlogPreview({
           N 블로그 <ExternalLink size={17} />
         </a>
       </div>
-      <div className="blog-card-grid">
+      <div className="blog-card-grid" style={{ padding: "0 clamp(18px,5vw,64px) clamp(24px,3vw,40px)", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
         {posts.map((post, index) => (
           <button
             className={index === activeIndex ? "blog-card preview-card active" : "blog-card preview-card"}
@@ -1106,6 +1041,7 @@ function BlogPreview({
               src={post.image}
               alt={post.title}
               loading="lazy"
+              style={{ aspectRatio: "16/8" }}
               onError={(event) => {
                 const image = event.currentTarget;
                 if (image.dataset.fallbackApplied === "true") return;
@@ -1113,15 +1049,14 @@ function BlogPreview({
                 image.src = "/assets/consult-hero.png";
               }}
             />
-            <div className="blog-card-body">
+            <div className="blog-card-body" style={{ padding: 12 }}>
               <div className="blog-card-meta">
-                <span className="naver-mark">N</span>
+                <span className="naver-mark" style={{ width: 28, height: 28, fontSize: 14 }}>N</span>
                 <time>{post.date}</time>
               </div>
-              <h3>{post.title}</h3>
-              <p>{post.description}</p>
-              <span className="blog-card-link">
-                자세히 보기 <ExternalLink size={16} />
+              <h3 style={{ fontSize: 14 }}>{post.title}</h3>
+              <span className="blog-card-link" style={{ fontSize: 12 }}>
+                자세히 보기 <ExternalLink size={12} />
               </span>
             </div>
           </button>
@@ -1140,33 +1075,44 @@ function ProcessPreview({
   activeIndex: number;
   onSelect: (index: number) => void;
 }) {
+  const activeStep = steps[activeIndex] ?? defaultProcess[activeIndex];
+
   return (
-    <section className="process section editor-preview-section" aria-labelledby="process-preview-title">
+    <section className="process editor-preview-section" aria-labelledby="process-preview-title">
       <button className="preview-edit-trigger" type="button" onClick={() => onSelect(0)}>
         편집
       </button>
-      <div className="section-heading">
-        <h2 id="process-preview-title">작업 절차</h2>
-        <p>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
+      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(24px,4vw,48px) clamp(18px,5vw,64px) clamp(12px,2vw,20px)" }}>
+        <h2 id="process-preview-title" style={{ fontWeight: 800, fontSize: "clamp(22px,3vw,36px)", letterSpacing: "-0.03em", margin: "0 0 6px" }}>작업 절차</h2>
+        <p style={{ color: "var(--ink-2,#2a3a55)", margin: 0 }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
       </div>
-      <div className="process-line">
+      <div className="process__track">
         {defaultProcess.map((baseStep, index) => {
           const step = steps[index] ?? { title: baseStep.title, text: baseStep.text };
           return (
-          <button
-            className={index === activeIndex ? "preview-step-card active" : "preview-step-card"}
-            key={step.title}
-            type="button"
-            onClick={() => onSelect(index)}
-          >
-            <span>{index + 1}</span>
-            <baseStep.icon size={24} />
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
-          </button>
+            <button
+              className={index === activeIndex ? "process__step active" : "process__step"}
+              key={`${step.title}-${index}`}
+              type="button"
+              onClick={() => onSelect(index)}
+            >
+              <span className="step-num">0{index + 1}</span>
+              <baseStep.icon size={22} />
+              <h3>{step.title}</h3>
+            </button>
           );
         })}
       </div>
+      {activeStep && (
+        <div className="process__detail">
+          <div className="process__detail-card">
+            <div>
+              <h3>{activeStep.title}</h3>
+              <p>{activeStep.text}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
