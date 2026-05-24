@@ -432,6 +432,7 @@ function HeroSection({
   const rotatorWords = ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문"];
   const [rotatorIndex, setRotatorIndex] = useState(0);
   const [rotatorKey, setRotatorKey] = useState(0);
+  const [mainCardIndex, setMainCardIndex] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -445,6 +446,19 @@ function HeroSection({
     () => editableCases.filter((c) => c.image).slice(0, 3),
     [editableCases]
   );
+
+  const cardSlots = useMemo(() => {
+    if (caseImages.length === 0) return [];
+    const nonMain = caseImages
+      .map((img, i) => ({ img, i }))
+      .filter(({ i }) => i !== mainCardIndex);
+    const slots: Array<{ img: (typeof caseImages)[number]; role: "main" | "b" | "c"; imgIndex: number }> = [
+      { img: caseImages[mainCardIndex], role: "main", imgIndex: mainCardIndex }
+    ];
+    if (nonMain[0]) slots.push({ img: nonMain[0].img, role: "b", imgIndex: nonMain[0].i });
+    if (nonMain[1]) slots.push({ img: nonMain[1].img, role: "c", imgIndex: nonMain[1].i });
+    return slots;
+  }, [caseImages, mainCardIndex]);
 
   const proofs: [string, string][] = [
     ["상담 방식", "사진 기반 사전 확인"],
@@ -492,25 +506,31 @@ function HeroSection({
           </dl>
         </div>
 
-        {/* Right column: card deck */}
-        {caseImages.length > 0 ? (
+        {/* Right column: card deck — click smaller cards to promote to main */}
+        {cardSlots.length > 0 ? (
           <div className="hero__deck">
-            {caseImages[0] && (
-              <div className="hero__card hero__card--main">
-                <img src={caseImages[0].image} alt={caseImages[0].title} />
-                <div className="hero__card-tag">{caseImages[0].area}</div>
-              </div>
-            )}
-            {caseImages[1] && (
-              <div className="hero__card hero__card--b">
-                <img src={caseImages[1].image} alt={caseImages[1].title} />
-              </div>
-            )}
-            {caseImages[2] && (
-              <div className="hero__card hero__card--c">
-                <img src={caseImages[2].image} alt={caseImages[2].title} />
-              </div>
-            )}
+            {cardSlots.map(({ img, role, imgIndex }) => {
+              const isMain = role === "main";
+              return (
+                <div
+                  key={img.title}
+                  className={`hero__card hero__card--${role}${isMain ? "" : " hero__card--clickable"}`}
+                  onClick={isMain ? undefined : () => setMainCardIndex(imgIndex)}
+                  role={isMain ? undefined : "button"}
+                  tabIndex={isMain ? undefined : 0}
+                  aria-label={isMain ? undefined : `${img.area} 크게 보기`}
+                  onKeyDown={isMain ? undefined : (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setMainCardIndex(imgIndex);
+                    }
+                  }}
+                >
+                  <img src={img.image} alt={img.title} />
+                  {isMain && <div className="hero__card-tag">{img.area}</div>}
+                </div>
+              );
+            })}
             <div className="hero__chip hero__chip--running">
               <span className="pulse" />
               <strong>{caseImages.length}건</strong> 대표사례

@@ -267,7 +267,7 @@ textarea {
   }
 
   main.home-page .hero {
-    padding: clamp(48px, 4.5vw, 96px) clamp(32px, 2vw, 84px);
+    padding: clamp(48px, 4.5vw, 96px) clamp(32px, 2vw, 84px) 0;
   }
 
   main.home-page .hero__grid {
@@ -1007,6 +1007,7 @@ textarea {
   /* ── Hero: trust band를 섹션 하단에 고정 ── */
   main.home-page .hero {
     justify-content: space-between;
+    padding-bottom: 0;
   }
 
   main.home-page .hero__grid {
@@ -1295,7 +1296,13 @@ textarea {
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 8px 18px rgba(8,22,40,.06), 0 22px 60px rgba(8,22,40,.08);
-  transition: transform 480ms cubic-bezier(.16,1,.3,1), box-shadow 240ms;
+  transition:
+    top 500ms cubic-bezier(.16,1,.3,1),
+    left 500ms cubic-bezier(.16,1,.3,1),
+    width 500ms cubic-bezier(.16,1,.3,1),
+    height 500ms cubic-bezier(.16,1,.3,1),
+    transform 500ms cubic-bezier(.16,1,.3,1),
+    box-shadow 300ms;
   background: #ffffff;
 }
 
@@ -1321,12 +1328,19 @@ textarea {
   backdrop-filter: blur(6px);
 }
 
-.hero__card--main { inset: 5% 6% 18% 18%; z-index: 3; transform: rotate(-3deg); }
-.hero__card--b    { inset: 22% 0% 38% 0%; z-index: 2; transform: rotate(4deg) scale(.7); right: auto; width: 42%; left: 0; }
-.hero__card--c    { inset: 55% 12% 5% 30%; z-index: 1; transform: rotate(-6deg) scale(.75); }
+/* Card positions use top/left/width/height so they can all be CSS-transitioned on swap */
+.hero__card--main { top: 5%;  left: 18%; width: 76%; height: 77%; z-index: 3; transform: rotate(-3deg); }
+.hero__card--b    { top: 22%; left: 0;   width: 42%; height: 40%; z-index: 2; transform: rotate(4deg) scale(.7); }
+.hero__card--c    { top: 55%; left: 30%; width: 58%; height: 40%; z-index: 1; transform: rotate(-6deg) scale(.75); }
 .hero__deck:hover .hero__card--main { transform: rotate(-2deg) translateY(-6px); }
 .hero__deck:hover .hero__card--b    { transform: rotate(2deg) scale(.72) translate(-8px, -4px); }
 .hero__deck:hover .hero__card--c    { transform: rotate(-4deg) scale(.78) translate(6px, 4px); }
+
+.hero__card--clickable { cursor: pointer; }
+.hero__card--clickable:hover {
+  box-shadow: 0 16px 40px rgba(8,22,40,.22), 0 32px 80px rgba(8,22,40,.16);
+  z-index: 5;
+}
 
 .hero__chip {
   position: absolute;
