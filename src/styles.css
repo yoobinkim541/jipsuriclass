@@ -6691,6 +6691,7 @@ textarea {
     top: auto;
   }
 
+  .editor-workspace,
   .editor-workspace-with-preview {
     grid-template-columns: 1fr;
   }
