@@ -63,6 +63,7 @@ export type WorkProcessStep = {
   title: string;
   text: string;
   icon: LucideIcon;
+  image?: string;
 };
 
 export type EditableServiceCard = {

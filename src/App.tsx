@@ -1308,7 +1308,7 @@ const processIllustrations = [
 ];
 
 /** 작업 절차 영역: 클릭 가능한 스텝 트랙 + 상세 패널 */
-function ProcessSection({ steps }: { steps: { title: string; text: string }[] }) {
+function ProcessSection({ steps }: { steps: { title: string; text: string; image?: string }[] }) {
   const [activeStep, setActiveStep] = useState(0);
   const activeData = process[activeStep];
   const activeContent = steps[activeStep];
