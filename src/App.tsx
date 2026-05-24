@@ -209,7 +209,7 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
 
   return {
     path: "/",
-    title: `${siteName} | 서울·경기 집수리·누수·부분수리`,
+    title: `${siteName} - 클라스가 다른 종합 집수리 | 서울·경기 집수리·누수·부분수리`,
     description: defaultDescription,
     image: defaultImage,
     jsonLd: [
