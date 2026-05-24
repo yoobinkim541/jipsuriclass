@@ -66,7 +66,7 @@ export const defaultHomepageContent: HomepageContent = {
   process: defaultProcess.map((item) => ({
     title: item.title,
     text: item.text,
-    image: ""
+    image: item.image
   })),
   contact: {
     title: "사진을 보내주시면 작업 가능 여부부터 확인합니다",
@@ -524,7 +524,7 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
         area: typeof item.area === "string" ? item.area : base.cases[index]?.area ?? "",
         problem: typeof item.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
         solution: typeof item.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
-        image: typeof item.image === "string" ? item.image : base.cases[index]?.image ?? "",
+        image: typeof item.image === "string" && item.image.trim() ? item.image : base.cases[index]?.image ?? "",
         link: typeof item.link === "string" ? item.link : base.cases[index]?.link ?? ""
       }),
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null
@@ -537,7 +537,7 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
         description: typeof item.description === "string" ? item.description : base.blog[index]?.description ?? "",
         date: typeof item.date === "string" ? item.date : base.blog[index]?.date ?? "",
         link: typeof item.link === "string" ? item.link : base.blog[index]?.link ?? "",
-        image: typeof item.image === "string" ? item.image : base.blog[index]?.image ?? ""
+        image: typeof item.image === "string" && item.image.trim() ? item.image : base.blog[index]?.image ?? ""
       }),
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null
     ),
@@ -547,7 +547,7 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
       (item, index) => ({
         title: typeof item.title === "string" ? item.title : base.process[index]?.title ?? "",
         text: typeof item.text === "string" ? item.text : base.process[index]?.text ?? "",
-        image: typeof item.image === "string" ? item.image : base.process[index]?.image ?? ""
+        image: typeof item.image === "string" && item.image.trim() ? item.image : base.process[index]?.image ?? ""
       }),
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null
     ),

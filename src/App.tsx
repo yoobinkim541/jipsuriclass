@@ -1265,7 +1265,7 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                   <div className="process__inline-detail">
                     <div className="process__illustration">
                       <img
-                        src={steps[index]?.image ?? processIllustrations[index]}
+                        src={steps[index]?.image || processIllustrations[index]}
                         alt={steps[index]?.title ?? step.title}
                         className="process__step-photo"
                       />
@@ -1286,7 +1286,7 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                 <div className="process__detail-media">
                   <div className="process__detail-gallery-main">
                     <img
-                      src={steps[activeStep]?.image ?? processIllustrations[activeStep]}
+                      src={steps[activeStep]?.image || processIllustrations[activeStep]}
                       alt={activeContent?.title ?? activeData.title}
                       className="process__step-photo"
                     />
@@ -1614,11 +1614,11 @@ function BlogShowcase({
 }
 
 function filterLandingPosts(posts: PortfolioPost[], page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
-  const terms = page.searchTerms.map((term) => term.toLowerCase());
+  const terms = buildLandingSearchTerms(page);
   const ranked = posts
     .map((post) => ({
       post,
-      score: scoreLandingPost(post, terms)
+      score: scoreLandingPost(post, terms, page.pageType)
     }))
     .filter((entry) => entry.score > 0)
     .sort((left, right) => right.score - left.score || compareLandingPostDate(right.post.date, left.post.date))
@@ -1633,7 +1633,18 @@ function filterLandingPosts(posts: PortfolioPost[], page: NonNullable<ReturnType
     .slice(0, 6);
 }
 
-function scoreLandingPost(post: PortfolioPost, terms: string[]) {
+function buildLandingSearchTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
+  const extraTerms = page.pageType === "Service"
+    ? [page.serviceType, page.title]
+    : [page.areaLabel, page.title];
+
+  return [...page.searchTerms, ...extraTerms]
+    .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
+    .map((term) => term.toLowerCase())
+    .filter((term, index, array) => array.indexOf(term) === index);
+}
+
+function scoreLandingPost(post: PortfolioPost, terms: string[], pageType: "Service" | "Place") {
   const title = normalizeSearchText(post.cardTitle ?? post.title);
   const description = normalizeSearchText(post.description);
   const summary = normalizeSearchText((post.summary ?? []).join(" "));
@@ -1661,7 +1672,19 @@ function scoreLandingPost(post: PortfolioPost, terms: string[]) {
     score += term.length >= 3 ? 2 : 1;
   }
 
-  score += Math.min(10, Math.floor(parseLandingPostDate(post.date) / 30));
+  if (pageType === "Service") {
+    score += title.length ? 4 : 0;
+    score += keywords ? 2 : 0;
+    score += summary ? 1 : 0;
+  } else {
+    score += description ? 4 : 0;
+    score += summary ? 3 : 0;
+  }
+
+  const parsedDate = parseLandingPostDate(post.date);
+  if (parsedDate) {
+    score += pageType === "Place" ? 6 : 4;
+  }
   return score;
 }
 
