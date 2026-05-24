@@ -6831,9 +6831,16 @@ textarea {
   }
 
   .hero__cta {
+    flex-direction: column;
+    align-items: stretch;
     margin-bottom: 0;
     margin-top: auto;
     padding-top: 18px;
+  }
+
+  .hero__cta a,
+  .hero__cta button {
+    justify-content: center;
   }
 
   .brand {
