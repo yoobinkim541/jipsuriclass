@@ -981,6 +981,22 @@ Verification:
 Follow-up:
 - If you want it even tighter, the left inset can be reduced another few pixels without affecting the desktop layout.
 
+# 2026-05-24 - Remove White Icon Backgrounds
+
+Changed files:
+- `public/service-worker.js`
+- `public/manifest.webmanifest`
+
+Implemented behavior:
+- Switched the app shell cache to the SVG icon set so the service worker no longer serves the older PNG icon assets.
+- Changed the manifest icon type to SVG and matched the manifest background color to the site background instead of white.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- If Safari still shows the old icon, the next step is to clear the installed service worker/cache on that device.
+
 # 2026-05-24 - Icon Rollback to Previous Version
 
 Changed files:
