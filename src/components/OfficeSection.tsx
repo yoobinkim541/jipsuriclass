@@ -7,9 +7,6 @@ export function BusinessInfoList() {
     <ul className="business-list">
       <li>영업지역: {business.area}</li>
       <li>상담시간: {business.hours}</li>
-      <li>{business.registrationNumber}</li>
-      <li>{business.owner}</li>
-      <li>{business.address}</li>
     </ul>
   );
 }

@@ -316,8 +316,7 @@ function HomePage() {
       />
       <main className="home-page" id="top">
         <HeroSection content={homeContent.hero} cases={homeContent.cases} />
-        <TrustBandSection />
-        <AboutSection content={homeContent.about} />
+        <AboutSection content={homeContent.about} cases={homeContent.cases} />
         <SymptomsSection symptoms={homeContent.symptoms ?? symptoms} />
         <ServicesSection services={homeContent.services} />
         <SpecialtiesSection />
@@ -536,54 +535,80 @@ function HeroSection({
           </div>
         ) : null}
       </div>
-    </section>
-  );
-}
-
-function TrustBandSection() {
-  const items = [
-    { num: "7", label: "국가공인 7 자격", sub: "대표 직접 보유 · 직접 시공" },
-    { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
-    { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
-  ];
-
-  return (
-    <section className="trust" aria-label="신뢰 지표">
-      <div className="trust__inner">
-        {items.map((item) => (
-          <div className="trust__item" key={item.label}>
-            <span className="trust__num">{item.num}</span>
-            <div className="trust__label">
-              <strong>{item.label}</strong>
-              <span>{item.sub}</span>
+      <div className="trust trust--embedded" aria-label="신뢰 지표">
+        <div className="trust__inner">
+          {[
+            { num: "7", label: "국가공인 7 자격", sub: "대표 직접 보유 · 직접 시공" },
+            { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
+            { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
+          ].map((item) => (
+            <div className="trust__item" key={item.label}>
+              <span className="trust__num">{item.num}</span>
+              <div className="trust__label">
+                <strong>{item.label}</strong>
+                <span>{item.sub}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
 function AboutSection({
-  content
+  content,
+  cases
 }: {
   content: { eyebrow: string; title: string; description: string; strengths: string[] };
+  cases: HomepageContent["cases"];
 }) {
+  const featuredImages = useMemo(
+    () => cases.filter((item) => item.image).slice(0, 3),
+    [cases]
+  );
+
   return (
     <section className="about section" id="about" aria-labelledby="about-title">
       <div className="about-copy">
         <span>{content.eyebrow}</span>
         <h2 id="about-title">{content.title}</h2>
         <p>{content.description}</p>
+        <ul className="about-strengths">
+          {content.strengths.map((item) => (
+            <li key={item}>
+              <CheckCircle2 size={20} />
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
-      <ul className="about-strengths">
-        {content.strengths.map((item) => (
-          <li key={item}>
-            <CheckCircle2 size={20} />
-            {item}
-          </li>
-        ))}
-      </ul>
+      <div className="about-visual" aria-label="현장 사진 요약">
+        {featuredImages[0] && (
+          <figure className="about-visual__hero">
+            <img src={featuredImages[0].image} alt={featuredImages[0].title} loading="lazy" />
+            <figcaption>
+              <strong>{featuredImages[0].area}</strong>
+              <span>{featuredImages[0].title}</span>
+            </figcaption>
+          </figure>
+        )}
+        <div className="about-visual__stack">
+          {featuredImages.slice(1, 3).map((item, index) => (
+            <figure className={`about-visual__tile about-visual__tile--${index + 1}`} key={item.title}>
+              <img src={item.image} alt={item.title} loading="lazy" />
+              <figcaption>
+                <strong>{item.area}</strong>
+                <span>{item.title}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        <div className="about-visual__note">
+          <strong>현장 사진 우선 상담</strong>
+          <span>사진을 먼저 보내주시면 불필요한 공사 없이 필요한 작업만 골라드립니다.</span>
+        </div>
+      </div>
     </section>
   );
 }

@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
-import { ArrowUpRight, CheckCircle2, MessageCircle, Phone } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, ChevronLeft, MessageCircle, Phone } from "lucide-react";
 import { business } from "../data";
-import { BusinessInfoList } from "../components/OfficeSection";
 import { diagnosisTopics, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
 
 export function DiagnosisPage() {
@@ -56,7 +55,6 @@ export function DiagnosisPage() {
                 <li>원인 후보 확인</li>
                 <li>자가 점검 후 상담 연결</li>
               </ul>
-              <BusinessInfoList />
             </aside>
           </div>
         </section>
@@ -134,6 +132,21 @@ export function DiagnosisPage() {
           </article>
         </section>
       </main>
+      <button
+        className="diagnosis-back-float"
+        type="button"
+        onClick={() => {
+          if (window.history.length > 1) {
+            window.history.back();
+            return;
+          }
+          window.location.href = "/";
+        }}
+        aria-label="이전 페이지로 돌아가기"
+      >
+        <ChevronLeft size={18} />
+        이전 페이지
+      </button>
     </>
   );
 }
