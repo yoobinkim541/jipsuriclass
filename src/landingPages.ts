@@ -361,6 +361,158 @@ const servicePages: LandingPageDefinition[] = [
     ],
     pageType: "Service",
     serviceType: "타일"
+  },
+  {
+    path: "/service/plumbing",
+    categoryLabel: "서비스",
+    title: "종합 설비 | 집수리클라쓰",
+    description: "누수탐지, 상하수도, 막힘 해결, 해빙 작업처럼 생활 설비 전반의 점검과 보수를 안내합니다.",
+    searchTerms: ["종합설비", "설비", "누수탐지", "상하수도", "막힘", "해빙"],
+    heroTitle: "설비 문제는 원인과 현장을 함께 봐야 정확합니다",
+    heroDescription:
+      "보이는 증상만 따라가기보다 배관, 배수, 막힘, 온수, 동결 여부를 함께 확인하면 필요한 작업만 더 정확하게 안내할 수 있습니다.",
+    highlights: ["누수탐지·배관 점검", "막힘·해빙·상하수도", "생활 설비 전반 상담"],
+    pointsTitle: "종합 설비 상담에서 자주 보는 것",
+    points: [
+      "물이 새거나 막히는 위치와 실제 원인이 다른 경우가 많아 사진과 현장 확인을 함께 봅니다.",
+      "배관, 배수, 온수, 해빙, 부속 교체를 따로 나누어 필요한 작업만 안내합니다.",
+      "급한 증상은 임시조치와 복구 계획을 분리해 설명합니다."
+    ],
+    faq: [
+      {
+        question: "누수탐지도 가능한가요?",
+        answer: "가능합니다. 물이 보이는 위치와 원인 위치가 다를 수 있어 현장 확인과 함께 범위를 봅니다."
+      },
+      {
+        question: "막힘만 해결해도 되나요?",
+        answer: "상황에 따라 가능합니다. 막힘 원인과 반복 여부를 확인한 뒤 필요한 범위만 처리합니다."
+      },
+      {
+        question: "동파나 해빙 작업도 하나요?",
+        answer: "네. 급한 경우 임시조치와 해빙 작업, 이후 복구 범위를 나누어 안내합니다."
+      }
+    ],
+    relatedLinks: [
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "방수·타일", href: "/service/waterproofing-tile" }
+    ],
+    pageType: "Service",
+    serviceType: "종합 설비"
+  },
+  {
+    path: "/service/waterproofing-tile",
+    categoryLabel: "서비스",
+    title: "방수·타일 | 집수리클라쓰",
+    description: "옥상 방수, 욕실·주방 타일 시공, 줄눈과 파손 부위 보수까지 함께 보는 상담 페이지입니다.",
+    searchTerms: ["방수", "타일", "방수보수", "타일시공", "줄눈", "실리콘"],
+    heroTitle: "방수와 타일은 따로보다 함께 봐야 더 정확합니다",
+    heroDescription:
+      "겉면의 타일 문제처럼 보여도 방수층이나 실리콘 손상이 함께 있을 수 있어, 사진 기반으로 범위를 먼저 확인한 뒤 필요한 작업만 안내합니다.",
+    highlights: ["욕실·주방 타일 보수", "옥상·베란다 방수 확인", "줄눈·실리콘 마감 점검"],
+    pointsTitle: "방수·타일 상담에서 자주 보는 것",
+    points: [
+      "타일 파손은 같은 제품 여부와 주변 마감 상태를 함께 봐야 교체 범위를 판단할 수 있습니다.",
+      "방수 흔적이 있으면 표면만 보는 대신 하부 상태와 누수 방향을 같이 확인합니다.",
+      "줄눈과 실리콘은 작은 틈이라도 재발 가능성이 있어 함께 점검하는 편이 좋습니다."
+    ],
+    faq: [
+      {
+        question: "타일 몇 장만 교체할 수 있나요?",
+        answer: "가능합니다. 같은 제품 수급과 주변 마감 상태를 먼저 확인한 뒤 부분 교체 여부를 안내합니다."
+      },
+      {
+        question: "방수와 타일을 같이 해야 하나요?",
+        answer: "상황에 따라 함께 진행하는 것이 좋을 때가 많습니다. 누수 원인이 있으면 방수부터 보아야 합니다."
+      },
+      {
+        question: "줄눈만 다시 해도 되나요?",
+        answer: "가능한 경우가 많지만, 하부 방수와 타일 상태에 따라 범위를 같이 판단하는 것이 안전합니다."
+      }
+    ],
+    relatedLinks: [
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "종합 설비", href: "/service/plumbing" }
+    ],
+    pageType: "Service",
+    serviceType: "방수·타일"
+  },
+  {
+    path: "/service/wallpaper-floor",
+    categoryLabel: "서비스",
+    title: "도배·바닥 | 집수리클라쓰",
+    description: "도배, 장판, 바닥 마감, 들뜸과 오염 복구처럼 실내 마감 전반을 한 번에 상담합니다.",
+    searchTerms: ["도배", "바닥", "장판", "도배바닥", "부분도배", "원상복구"],
+    heroTitle: "벽과 바닥의 마감은 함께 보면 더 깔끔하게 맞습니다",
+    heroDescription:
+      "도배와 바닥은 각각도 중요하지만, 색감과 마감선이 맞아야 공간이 정돈됩니다. 사진으로 상태를 보내주시면 필요한 범위를 먼저 안내합니다.",
+    highlights: ["부분·전체 도배", "장판·바닥 마감", "오염·들뜸 복구"],
+    pointsTitle: "도배·바닥 상담에서 자주 보는 것",
+    points: [
+      "벽지와 바닥 색상이 함께 어울려야 해서 시공 순서와 범위를 같이 봅니다.",
+      "누수 흔적이 있으면 바닥보다 바탕면 건조와 복구가 먼저일 수 있습니다.",
+      "퇴거 전 원상복구처럼 일정이 촉박한 경우 우선순위부터 정리합니다."
+    ],
+    faq: [
+      {
+        question: "도배만 하고 바닥은 나중에 해도 되나요?",
+        answer: "가능하지만, 전체 분위기와 마감선이 맞는지 같이 보는 편이 더 깔끔합니다."
+      },
+      {
+        question: "장판 교체도 가능한가요?",
+        answer: "가능합니다. 현재 바닥 상태와 면적에 따라 부분 교체 또는 전체 교체를 안내합니다."
+      },
+      {
+        question: "원상복구도 상담 가능한가요?",
+        answer: "네. 퇴거 전 필요한 범위만 먼저 정리하는 방식으로 상담할 수 있습니다."
+      }
+    ],
+    relatedLinks: [
+      { label: "도장·페인트", href: "/service/paint" },
+      { label: "목공", href: "/service/carpentry" },
+      { label: "방수·타일", href: "/service/waterproofing-tile" }
+    ],
+    pageType: "Service",
+    serviceType: "도배·바닥"
+  },
+  {
+    path: "/service/film",
+    categoryLabel: "서비스",
+    title: "인테리어 필름 | 집수리클라쓰",
+    description: "문, 몰딩, 가구, 싱크대 표면 필름 시공과 리폼을 사진 기반으로 안내합니다.",
+    searchTerms: ["인테리어필름", "필름", "싱크대필름", "문필름", "가구리폼"],
+    heroTitle: "필름 시공은 표면만이 아니라 마감선까지 봐야 합니다",
+    heroDescription:
+      "문짝, 몰딩, 가구, 싱크대 표면의 상태를 먼저 확인하고 재질과 색감을 맞춰야 더 자연스럽게 마감됩니다.",
+    highlights: ["문·몰딩·가구 필름", "싱크대·수납 리폼", "부분 교체·보수 상담"],
+    pointsTitle: "인테리어 필름 상담에서 자주 보는 것",
+    points: [
+      "표면 손상과 들뜸이 있으면 기초면 정리와 자재 선택이 중요합니다.",
+      "색상과 광택 차이가 크게 나면 주변 마감과 함께 조합을 봐야 합니다.",
+      "문, 몰딩, 싱크대처럼 맞닿는 면은 연결선이 자연스러운지 같이 확인합니다."
+    ],
+    faq: [
+      {
+        question: "문 한 장만 필름 시공도 가능한가요?",
+        answer: "가능합니다. 부분 시공도 가능하지만 주변 색상과 마감선을 같이 확인하는 편이 좋습니다."
+      },
+      {
+        question: "싱크대 리폼도 가능한가요?",
+        answer: "네. 표면 상태와 수납 구조를 보고 필름 시공 또는 부분 교체로 안내할 수 있습니다."
+      },
+      {
+        question: "기존 필름 위에도 시공할 수 있나요?",
+        answer: "상태가 좋으면 가능하지만, 들뜸이나 손상이 있으면 먼저 제거와 보수가 필요합니다."
+      }
+    ],
+    relatedLinks: [
+      { label: "목공", href: "/service/carpentry" },
+      { label: "도장·페인트", href: "/service/paint" },
+      { label: "도배·바닥", href: "/service/wallpaper-floor" }
+    ],
+    pageType: "Service",
+    serviceType: "인테리어 필름"
   }
 ];
 

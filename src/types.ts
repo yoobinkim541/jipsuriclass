@@ -26,6 +26,7 @@ export type ServiceCategory = {
   title: string;
   icon: LucideIcon;
   text: string;
+  href: string;
 };
 
 export type ConstructionCase = {

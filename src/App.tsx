@@ -676,12 +676,15 @@ function ServicesSection({
         {services.map((service, index) => {
           const item = editableServices[index] ?? { title: service.title, text: service.text };
           return (
-            <article className="bento__card" key={item.title}>
+            <a className="bento__card bento__card--link" href={service.href} key={item.title}>
               <span className="bento__num">{String(index + 1).padStart(2, "0")}</span>
               <service.icon size={28} />
               <h3>{item.title}</h3>
               <p>{item.text}</p>
-            </article>
+              <span className="bento__link-label">
+                {index === 0 ? "견적상담으로 이동" : "랜딩페이지로 이동"}
+              </span>
+            </a>
           );
         })}
       </div>
@@ -1432,7 +1435,7 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
     };
   }, [landingSearchKey]);
 
-  const matchedPosts = useMemo(() => filterLandingPosts(landingPosts, content), [content, landingPosts]);
+  const matchedPosts = useMemo(() => filterLandingPosts(landingPosts, content, landingSearchTerms), [content, landingPosts, landingSearchTerms]);
   const referencePosts = matchedPosts.slice(0, 3);
   const portfolioPosts = matchedPosts.slice(3, 6).length ? matchedPosts.slice(3, 6) : matchedPosts.slice(0, 3);
 
@@ -1615,8 +1618,11 @@ function BlogShowcase({
   );
 }
 
-function filterLandingPosts(posts: PortfolioPost[], page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
-  const terms = buildLandingSearchTerms(page);
+function filterLandingPosts(
+  posts: PortfolioPost[],
+  page: NonNullable<ReturnType<typeof getLandingPageDefinition>>,
+  terms: string[]
+) {
   const ranked = posts
     .map((post) => ({
       post,
