@@ -322,6 +322,30 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
     }
   }
 
+  async function uploadProcessImage(index: number, file: File) {
+    setSaving(true);
+    setError(null);
+    setSaveNote("작업 절차 이미지를 업로드 중입니다.");
+    setSaveState("saving");
+
+    try {
+      const uploaded = await mediaService.uploadHomepageImage(file);
+      setDraft((current) => {
+        const proc = current.process.slice();
+        proc[index] = { ...(proc[index] ?? { title: "", text: "", image: "" }), image: uploaded.url };
+        return { ...current, process: proc };
+      });
+      markEdited();
+      setSaveNote("작업 절차 이미지를 업로드했습니다.");
+    } catch (uploadError) {
+      setSaveState("error");
+      setError(uploadError instanceof Error ? uploadError.message : "이미지를 업로드하지 못했습니다.");
+      setSaveNote("이미지 업로드에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function uploadBlogImage(index: number, file: File) {
     setSaving(true);
     setError(null);
@@ -536,7 +560,21 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
 
             {selectedSection === "hero" ? (
               <InspectorGroup title="히어로">
-                <div className="editor-inline-note">히어로 이미지(오른쪽 카드 덱)는 아래 <strong>사례</strong> 섹션의 이미지에서 자동으로 가져옵니다.</div>
+                <div className="editor-inspector-subgroup">
+                  <h4>카드 이미지</h4>
+                  <p className="editor-inline-note">히어로 카드 덱과 소개 섹션에 함께 표시됩니다.</p>
+                  {[0, 1, 2].map((idx) => (
+                    <div key={idx} style={{ marginBottom: 8 }}>
+                      <ImageUploadField
+                        label={`카드 ${idx + 1}${draft.cases[idx]?.area ? ` — ${draft.cases[idx].area}` : ""}`}
+                        previewUrl={draft.cases[idx]?.image ?? ""}
+                        previewLabel={draft.cases[idx]?.title ?? `사례 ${idx + 1}`}
+                        onFileSelect={(file) => void uploadCaseImage(idx, file)}
+                        onClear={() => updateCase(idx, "image", "")}
+                      />
+                    </div>
+                  ))}
+                </div>
                 <Field label="설명 (lede 텍스트)">
                   <textarea rows={5} value={draft.hero.description} onChange={(event) => updateHero("description", event.target.value)} />
                 </Field>
@@ -566,7 +604,21 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
 
             {selectedSection === "about" ? (
               <InspectorGroup title="소개">
-                <div className="editor-inline-note">오른쪽 사진은 <strong>사례</strong> 섹션의 첫 3개 이미지를 사용합니다. 클릭하면 메인 사진이 바뀝니다.</div>
+                <div className="editor-inspector-subgroup">
+                  <h4>섹션 이미지</h4>
+                  <p className="editor-inline-note">히어로 카드 덱과 소개 섹션에 함께 표시됩니다.</p>
+                  {[0, 1, 2].map((idx) => (
+                    <div key={idx} style={{ marginBottom: 8 }}>
+                      <ImageUploadField
+                        label={`이미지 ${idx + 1}${draft.cases[idx]?.area ? ` — ${draft.cases[idx].area}` : ""}`}
+                        previewUrl={draft.cases[idx]?.image ?? ""}
+                        previewLabel={draft.cases[idx]?.title ?? `사례 ${idx + 1}`}
+                        onFileSelect={(file) => void uploadCaseImage(idx, file)}
+                        onClear={() => updateCase(idx, "image", "")}
+                      />
+                    </div>
+                  ))}
+                </div>
                 <Field label="배지">
                   <input value={draft.about.eyebrow} onChange={(event) => updateAbout("eyebrow", event.target.value)} />
                 </Field>
@@ -752,6 +804,20 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
                     onChange={(event) => updateProcess(selectedIndex, "text", event.target.value)}
                   />
                 </Field>
+                <ImageUploadField
+                  label="단계 이미지"
+                  previewUrl={draft.process[selectedIndex]?.image ?? ""}
+                  previewLabel={draft.process[selectedIndex]?.title ?? `절차 ${selectedIndex + 1}`}
+                  onFileSelect={(file) => void uploadProcessImage(selectedIndex, file)}
+                  onClear={() => {
+                    setDraft((current) => {
+                      const proc = current.process.slice();
+                      proc[selectedIndex] = { ...(proc[selectedIndex] ?? { title: "", text: "" }), image: "" };
+                      return { ...current, process: proc };
+                    });
+                    markEdited();
+                  }}
+                />
               </InspectorGroup>
             ) : null}
 

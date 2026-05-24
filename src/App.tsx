@@ -1334,7 +1334,9 @@ function ProcessSection({ steps }: { steps: { title: string; text: string }[] })
             {activeStep === index && (
               <div className="process__inline-detail">
                 <div className="process__illustration">
-                  {processIllustrations[index]}
+                  {steps[index]?.image
+                    ? <img src={steps[index].image} alt={steps[index].title} className="process__step-photo" />
+                    : processIllustrations[index]}
                 </div>
                 <div className="process__inline-text">
                   <h3>{steps[index]?.title ?? step.title}</h3>
@@ -1349,7 +1351,9 @@ function ProcessSection({ steps }: { steps: { title: string; text: string }[] })
         <div className="process__detail">
           <div className="process__detail-card">
             <div className="process__illustration">
-              {processIllustrations[activeStep]}
+              {activeContent?.image
+                ? <img src={activeContent.image} alt={activeContent.title} className="process__step-photo" />
+                : processIllustrations[activeStep]}
             </div>
             <div>
               <h3>{activeContent?.title ?? activeData.title}</h3>

@@ -90,6 +90,7 @@ export type EditableBlogPost = {
 export type EditableProcessStep = {
   title: string;
   text: string;
+  image?: string;
 };
 
 export type HomepageHeroSlide = {

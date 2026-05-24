@@ -1134,6 +1134,12 @@ textarea {
     height: 100%;
   }
 
+  main.home-page .process__step-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
   main.home-page .process__detail-card h3 {
     font-size: 24px;
   }
@@ -6941,9 +6947,11 @@ textarea {
     justify-content: center;
   }
 
-  .process__inline-detail .process__illustration svg {
+  .process__inline-detail .process__illustration svg,
+  .process__inline-detail .process__illustration .process__step-photo {
     width: 100%;
     height: 100%;
+    object-fit: cover;
   }
 
   .process__inline-text h3 {

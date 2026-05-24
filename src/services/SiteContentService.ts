@@ -65,7 +65,8 @@ export const defaultHomepageContent: HomepageContent = {
   })),
   process: defaultProcess.map((item) => ({
     title: item.title,
-    text: item.text
+    text: item.text,
+    image: ""
   })),
   contact: {
     title: "사진을 보내주시면 작업 가능 여부부터 확인합니다",
@@ -545,7 +546,8 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
       base.process,
       (item, index) => ({
         title: typeof item.title === "string" ? item.title : base.process[index]?.title ?? "",
-        text: typeof item.text === "string" ? item.text : base.process[index]?.text ?? ""
+        text: typeof item.text === "string" ? item.text : base.process[index]?.text ?? "",
+        image: typeof item.image === "string" ? item.image : base.process[index]?.image ?? ""
       }),
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null
     ),
