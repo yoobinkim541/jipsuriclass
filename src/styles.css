@@ -6816,7 +6816,7 @@ textarea {
   }
 
   .hero__title {
-    font-size: clamp(52px, 13vw, 72px);
+    font-size: clamp(62px, 16vw, 88px);
     line-height: 1.0;
     margin-bottom: 28px;
   }
