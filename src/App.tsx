@@ -828,7 +828,7 @@ function CasesSection({
   );
 }
 
-/** 네이버 블로그 자동 연동 영역: API 실패 시 관리자 지정 포스트가 표시됩니다. */
+/** 네이버 블로그 포트폴리오 영역 */
 function BlogSection({
   posts,
   source

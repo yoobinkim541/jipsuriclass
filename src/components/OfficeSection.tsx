@@ -38,26 +38,6 @@ export function OfficeSection() {
           </div>
           <BusinessInfoList />
         </div>
-        <div className="office-card">
-          <span className="office-label">외부 채널</span>
-          <h3>같은 상호로 외부 프로필을 통일하면 검색 신호가 더 분명해집니다</h3>
-          <p>네이버, 카카오, 구글에서 같은 이름·전화번호·주소를 유지하세요.</p>
-          <div className="office-actions">
-            <a className="secondary-button" href={business.naverBlogUrl} target="_blank" rel="noreferrer">
-              네이버 블로그
-            </a>
-            <a className="secondary-button" href={business.mapUrl} target="_blank" rel="noreferrer">
-              네이버 지도
-            </a>
-            <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
-              카카오톡 채널
-            </a>
-          </div>
-          <ul className="business-list">
-            <li>구글 비즈니스 프로필: 같은 상호·전화번호·주소로 유지</li>
-            <li>외부 리뷰와 사례 사진은 블로그와 지도 프로필에 함께 축적</li>
-          </ul>
-        </div>
         <NaverMapEmbed address={business.address} title={business.name} />
       </div>
     </section>
