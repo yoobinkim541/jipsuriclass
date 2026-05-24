@@ -314,7 +314,7 @@ function HomePage() {
         onOpenMenu={() => setMenuOpen(true)}
         onCloseMenu={() => setMenuOpen(false)}
       />
-      <main id="top">
+      <main className="home-page" id="top">
         <HeroSection content={homeContent.hero} cases={homeContent.cases} />
         <TrustBandSection />
         <AboutSection content={homeContent.about} />
@@ -323,8 +323,8 @@ function HomePage() {
         <SpecialtiesSection />
         <CasesSection cases={homeContent.cases} />
         <ProcessSection steps={homeContent.process} />
-        <OfficeSection />
         <BlogSection posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />
+        <OfficeSection />
         <ContactSection content={homeContent.contact} />
       </main>
       {!contentReady ? <div className="content-loading">페이지 내용을 불러오는 중</div> : null}
@@ -363,6 +363,7 @@ function SiteHeader({
       label
     };
   });
+  const desktopMenuItems = menuItems.filter((item) => item.href.startsWith("#"));
 
   const [scrollPct, setScrollPct] = useState(0);
   const [scrolled, setScrolled] = useState(false);
@@ -391,7 +392,7 @@ function SiteHeader({
             </span>
           </a>
           <nav className="nav__links" aria-label="주요 메뉴">
-            {menuItems.map((item) => (
+            {desktopMenuItems.map((item) => (
               <a href={item.href} key={item.href}>
                 {item.label}
               </a>
@@ -722,6 +723,14 @@ function SpecialtiesSection() {
           />
         </div>
       </div>
+      <div className="specs__jump-actions">
+        <a className="specs__jump-button primary" href="/diagnosis">
+          자가진단 바로가기
+        </a>
+        <a className="specs__jump-button secondary" href="/estimate">
+          견적상담 바로가기
+        </a>
+      </div>
       <div className="specs__grid">
         {filteredItems.map((item) => (
           <button
@@ -805,20 +814,29 @@ function CasesSection({
   const railRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const scrollFrameRef = useRef<number | null>(null);
+  const activeIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
+    activeIndexRef.current = activeIndex;
+  }, [activeIndex]);
+
+  function scrollToIndex(nextIndex: number, behavior: ScrollBehavior = "smooth") {
     const rail = railRef.current;
-    const card = cardRefs.current[activeIndex];
+    const card = cardRefs.current[nextIndex];
     if (!rail || !card) return;
 
     const nextLeft = Math.max(0, card.offsetLeft - rail.clientWidth / 2 + card.offsetWidth / 2);
 
     rail.scrollTo({
       left: nextLeft,
-      behavior: "smooth",
+      behavior,
     });
-  }, [activeIndex]);
+  }
+
+  useEffect(() => {
+    scrollToIndex(0, "auto");
+  }, [editableCases.length]);
 
   useEffect(() => {
     if (typeof window === "undefined" || editableCases.length <= 1) return;
@@ -826,12 +844,29 @@ function CasesSection({
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReducedMotion) return;
 
+    const stopEvents: Array<keyof HTMLElementEventMap> = ["pointerdown", "touchstart", "wheel", "mousedown", "keydown"];
+    let stopped = false;
     const timerId = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % editableCases.length);
+      if (stopped) return;
+      scrollToIndex((activeIndexRef.current + 1) % editableCases.length);
     }, 4200);
+
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      window.clearInterval(timerId);
+    };
+
+    const rail = railRef.current;
+    stopEvents.forEach((eventName) => {
+      rail?.addEventListener(eventName, stop, { passive: true });
+    });
 
     return () => {
       window.clearInterval(timerId);
+      stopEvents.forEach((eventName) => {
+        rail?.removeEventListener(eventName, stop);
+      });
     };
   }, [editableCases.length]);
 
@@ -861,6 +896,7 @@ function CasesSection({
       }
     });
 
+    activeIndexRef.current = nearestIndex;
     setActiveIndex((current) => (current === nearestIndex ? current : nearestIndex));
   }
 
@@ -874,7 +910,9 @@ function CasesSection({
   function goToIndex(nextIndex: number) {
     if (!editableCases.length) return;
     const normalized = (nextIndex + editableCases.length) % editableCases.length;
+    activeIndexRef.current = normalized;
     setActiveIndex(normalized);
+    scrollToIndex(normalized);
   }
 
   return (
