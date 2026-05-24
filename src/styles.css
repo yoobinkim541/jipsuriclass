@@ -975,6 +975,23 @@ textarea {
     overflow-y: auto;
   }
 
+  /* ── Hero: trust band를 섹션 하단에 고정 ── */
+  main.home-page .hero {
+    justify-content: space-between;
+  }
+
+  main.home-page .hero__grid {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  main.home-page .trust--embedded {
+    flex-shrink: 0;
+    margin-top: clamp(10px, 1.2vh, 18px);
+    margin-bottom: 0;
+  }
+
   /* ── Hero eyebrow ── */
   main.home-page .hero__eyebrow {
     display: inline-flex;
@@ -1091,12 +1108,18 @@ textarea {
   /* ── Specs ── */
   main.home-page .specs__grid {
     grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-    gap: 10px;
+    gap: 14px;
   }
 
   main.home-page .specs__item {
-    padding: 14px 16px;
+    padding: 16px 18px;
     font-size: 14px;
+  }
+
+  main.home-page .specs__jump-button {
+    min-height: 56px;
+    padding: 0 36px;
+    font-size: 17px;
   }
 }
 
@@ -1768,22 +1791,22 @@ textarea {
 
 .specs__jump-actions {
   max-width: var(--max, 1320px);
-  margin: 0 auto 14px;
-  padding: 0 clamp(18px, 5vw, 64px);
+  margin: clamp(20px, 2.5vw, 36px) auto 0;
+  padding: 0 clamp(18px, 5vw, 64px) clamp(20px, 2.5vw, 36px);
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 
 .specs__jump-button {
-  min-height: 42px;
-  padding: 0 16px;
+  min-height: 52px;
+  padding: 0 28px;
   border-radius: 999px;
   border: 1px solid var(--hair, #e6dfd0);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.01em;
   text-decoration: none;
@@ -1810,9 +1833,9 @@ textarea {
 .specs__grid {
   max-width: var(--max, 1320px);
   margin: 0 auto;
-  padding: 0 clamp(18px, 5vw, 64px) clamp(48px, 6vw, 80px);
+  padding: 0 clamp(18px, 5vw, 64px);
   display: grid;
-  gap: 8px;
+  gap: 12px;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
 }
 

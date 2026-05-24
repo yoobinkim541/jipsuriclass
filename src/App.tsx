@@ -748,14 +748,6 @@ function SpecialtiesSection() {
           />
         </div>
       </div>
-      <div className="specs__jump-actions">
-        <a className="specs__jump-button primary" href="/diagnosis">
-          자가진단 바로가기
-        </a>
-        <a className="specs__jump-button secondary" href="/estimate">
-          견적상담 바로가기
-        </a>
-      </div>
       <div className="specs__grid">
         {filteredItems.map((item) => (
           <button
@@ -786,6 +778,14 @@ function SpecialtiesSection() {
           </div>
         </div>
       )}
+      <div className="specs__jump-actions">
+        <a className="specs__jump-button primary" href="/diagnosis">
+          자가진단 바로가기
+        </a>
+        <a className="specs__jump-button secondary" href="/estimate">
+          견적상담 바로가기
+        </a>
+      </div>
     </section>
   );
 }
