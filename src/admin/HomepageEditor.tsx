@@ -46,7 +46,7 @@ const imagePositionOptions = [
   { label: "우하", value: "right bottom" }
 ] as const;
 
-export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
+export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthenticated: boolean; isActive?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +70,8 @@ export function HomepageEditor({ isAuthenticated }: { isAuthenticated: boolean }
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
+
+  useEditorSaveShortcut(() => void persistDraft("manual"), isAuthenticated && !loading && isActive);
 
   useEffect(() => {
     let mounted = true;
@@ -1399,4 +1401,20 @@ function formatEditorTime(value: string) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(new Date(value));
+}
+
+function useEditorSaveShortcut(onSave: () => void, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        onSave();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [enabled, onSave]);
 }

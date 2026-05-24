@@ -347,10 +347,20 @@ function SiteHeader({
   onOpenMenu: () => void;
   onCloseMenu: () => void;
 }) {
-  const menuItems = navItems.map((item, index) => ({
-    ...item,
-    label: navLabels[index] ?? item.label
-  }));
+  const seenLabels = new Set<string>();
+  const navLabelFallbacks: Partial<Record<(typeof navItems)[number]["href"], string>> = {
+    "#contact": "문의하기"
+  };
+  const menuItems = navItems.map((item, index) => {
+    const candidateLabel = navLabels[index] ?? item.label;
+    const fallbackLabel = navLabelFallbacks[item.href] ?? item.label;
+    const label = seenLabels.has(candidateLabel) || candidateLabel === "문의" && item.href === "#contact" ? fallbackLabel : candidateLabel;
+    seenLabels.add(label);
+    return {
+      ...item,
+      label
+    };
+  });
 
   const [scrollPct, setScrollPct] = useState(0);
   const [scrolled, setScrolled] = useState(false);

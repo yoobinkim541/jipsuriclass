@@ -62,6 +62,75 @@ $$;
 revoke all on function private.is_admin_user() from public;
 grant execute on function private.is_admin_user() to authenticated;
 
+create table if not exists public.site_content (
+  id text primary key,
+  payload jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+comment on table public.site_content is '관리자 편집기에서 사용하는 홈페이지/랜딩/계정/견적 콘텐츠';
+alter table public.site_content enable row level security;
+grant select on public.site_content to anon, authenticated;
+grant insert, update, delete on public.site_content to authenticated;
+
+create or replace function public.set_site_content_updated_at()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists set_site_content_updated_at on public.site_content;
+create trigger set_site_content_updated_at
+before update on public.site_content
+for each row
+execute function public.set_site_content_updated_at();
+
+drop policy if exists "Anyone can read site content" on public.site_content;
+create policy "Anyone can read site content"
+  on public.site_content
+  for select
+  to anon, authenticated
+  using (id in ('homepage', 'account', 'estimate', 'landing-pages'));
+
+drop policy if exists "Admins can insert site content" on public.site_content;
+create policy "Admins can insert site content"
+  on public.site_content
+  for insert
+  to authenticated
+  with check (
+    id in ('homepage', 'account', 'estimate', 'landing-pages')
+    and private.is_admin_user()
+  );
+
+drop policy if exists "Admins can update site content" on public.site_content;
+create policy "Admins can update site content"
+  on public.site_content
+  for update
+  to authenticated
+  using (
+    id in ('homepage', 'account', 'estimate', 'landing-pages')
+    and private.is_admin_user()
+  )
+  with check (
+    id in ('homepage', 'account', 'estimate', 'landing-pages')
+    and private.is_admin_user()
+  );
+
+drop policy if exists "Admins can delete site content" on public.site_content;
+create policy "Admins can delete site content"
+  on public.site_content
+  for delete
+  to authenticated
+  using (
+    id in ('homepage', 'account', 'estimate', 'landing-pages')
+    and private.is_admin_user()
+  );
+
 -- 방문자는 문의를 새로 남길 수만 있습니다. 조회/수정/삭제는 관리자 기능을 만들 때 별도 정책으로 추가합니다.
 drop policy if exists "Anyone can create website inquiries" on public.inquiries;
 create policy "Anyone can create website inquiries"

@@ -121,17 +121,31 @@ export function EstimatePage() {
     const prevHtmlOverscrollBehavior = documentElement.style.overscrollBehavior;
     const scrollY = window.scrollY;
 
-    body.style.overflow = "hidden";
-    documentElement.style.overflow = "hidden";
-    body.style.height = "100%";
-    documentElement.style.height = "100%";
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = "100%";
-    body.style.overscrollBehavior = "none";
-    documentElement.style.overscrollBehavior = "none";
+    if (stage === "intro") {
+      body.style.overflow = "hidden";
+      documentElement.style.overflow = "hidden";
+      body.style.height = "100%";
+      documentElement.style.height = "100%";
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      body.style.overscrollBehavior = "none";
+      documentElement.style.overscrollBehavior = "none";
+    } else {
+      body.style.overflow = prevBodyOverflow;
+      documentElement.style.overflow = prevHtmlOverflow;
+      body.style.height = prevBodyHeight;
+      documentElement.style.height = prevHtmlHeight;
+      body.style.position = prevBodyPosition;
+      body.style.top = prevBodyTop;
+      body.style.width = prevBodyWidth;
+      body.style.left = prevBodyLeft;
+      body.style.right = prevBodyRight;
+      body.style.overscrollBehavior = prevBodyOverscrollBehavior;
+      documentElement.style.overscrollBehavior = prevHtmlOverscrollBehavior;
+    }
 
     return () => {
       body.style.overflow = prevBodyOverflow;
@@ -147,7 +161,7 @@ export function EstimatePage() {
       documentElement.style.overscrollBehavior = prevHtmlOverscrollBehavior;
       window.scrollTo(0, scrollY);
     };
-  }, []);
+  }, [stage]);
 
   const currentStep = {
     ...(content.steps[step - 1] ?? content.steps[0]),

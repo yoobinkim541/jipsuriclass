@@ -10,7 +10,7 @@ type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 const defaultPagePath = landingPageDefinitions[0]?.path ?? "/service/leak";
 
-export function LandingPagesEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
+export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAuthenticated: boolean; isActive?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +27,8 @@ export function LandingPagesEditor({ isAuthenticated }: { isAuthenticated: boole
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
+
+  useEditorSaveShortcut(() => void persistDraft("manual"), isAuthenticated && !loading && isActive);
 
   useEffect(() => {
     let mounted = true;
@@ -131,6 +133,7 @@ export function LandingPagesEditor({ isAuthenticated }: { isAuthenticated: boole
     setError(null);
   }
 
+  const selectedDefinition = landingPageDefinitions.find((page) => page.path === selectedPath) ?? landingPageDefinitions[0];
   const selectedPage = draft[selectedPath] ?? defaultLandingPagesContent[selectedPath] ?? defaultLandingPagesContent[defaultPagePath];
 
   return (
@@ -172,7 +175,80 @@ export function LandingPagesEditor({ isAuthenticated }: { isAuthenticated: boole
           편집 내용을 불러오는 중
         </div>
       ) : (
-        <div className="editor-workspace editor-workspace-single">
+        <div className="editor-workspace editor-workspace-with-preview">
+          <aside className="editor-preview-panel" aria-label="랜딩페이지 실시간 미리보기">
+            <div className="editor-preview-head">
+              <span className="editor-preview-kicker">실시간 미리보기</span>
+              <strong>{selectedDefinition?.title.replace(" | 집수리클라쓰", "") ?? selectedPage.title}</strong>
+              <p>
+                {selectedDefinition?.categoryLabel ?? "랜딩"} · {selectedPath}
+              </p>
+            </div>
+
+            <div className="editor-preview-card">
+              <div className="editor-preview-chip-row">
+                <span>{selectedDefinition?.categoryLabel ?? "랜딩"}</span>
+                <span>{selectedDefinition?.pageType === "Service" ? "서비스" : "지역"}</span>
+                {selectedPage.searchTerms.slice(0, 3).map((term) => (
+                  <span key={term}>{term}</span>
+                ))}
+              </div>
+              <strong>{selectedPage.title}</strong>
+              <p>{selectedPage.description}</p>
+            </div>
+
+            <section className="landing-preview-block">
+              <h4>히어로</h4>
+              <div className="editor-preview-card editor-preview-card-soft">
+                <strong>{selectedPage.heroTitle}</strong>
+                <p>{selectedPage.heroDescription}</p>
+                <ul className="landing-preview-list">
+                  {selectedPage.highlights.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+
+            <section className="landing-preview-block">
+              <h4>{selectedPage.pointsTitle}</h4>
+              <div className="editor-preview-card">
+                <ol className="landing-preview-point-list">
+                  {selectedPage.points.map((point, index) => (
+                    <li key={point}>
+                      <span>{index + 1}</span>
+                      <p>{point}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </section>
+
+            <section className="landing-preview-block">
+              <h4>FAQ</h4>
+              <div className="landing-preview-faq-grid">
+                {selectedPage.faq.map((item) => (
+                  <article className="landing-preview-faq-card" key={item.question}>
+                    <strong>{item.question}</strong>
+                    <p>{item.answer}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="landing-preview-block">
+              <h4>연결 페이지</h4>
+              <div className="landing-preview-link-grid">
+                {selectedPage.relatedLinks.map((item) => (
+                  <article className="landing-preview-link-card" key={item.label}>
+                    <strong>{item.label}</strong>
+                    <p>{item.href}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </aside>
+
           <aside className="editor-inspector editor-inspector-full">
             <section className="editor-group">
               <div className="section-heading">
@@ -406,4 +482,20 @@ function formatEditorTime(value: string) {
     hour: "2-digit",
     minute: "2-digit"
   }).format(date);
+}
+
+function useEditorSaveShortcut(onSave: () => void, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        onSave();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [enabled, onSave]);
 }

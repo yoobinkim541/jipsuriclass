@@ -19,6 +19,28 @@ export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolea
     { key: "account" as const, icon: UserRound, title: "마이페이지", caption: "계정과 문의 내역" },
     { key: "estimate" as const, icon: ClipboardList, title: "견적상담", caption: "신청서와 약관" }
   ];
+  const pageMeta: Record<EditorPage, { title: string; description: string; badge: string }> = {
+    homepage: {
+      title: "홈페이지는 히어로, 카드, 사진 순서대로 바로 고칩니다",
+      description: "대표 문구와 사진 배치를 바꾸면 바로 메인 화면에서 확인할 수 있습니다.",
+      badge: "메인 화면 편집"
+    },
+    landing: {
+      title: "랜딩페이지는 서비스와 지역별 문구를 분리해 수정합니다",
+      description: "서비스 카드, 지역 설명, 연결 문구를 한 번에 정리할 수 있습니다.",
+      badge: "확장 페이지 편집"
+    },
+    account: {
+      title: "마이페이지는 로그인 안내와 문의 카드 문구를 바로 바꿉니다",
+      description: "계정 안내, 요약 카드, 문의 목록의 텍스트를 실제 화면 기준으로 맞춥니다.",
+      badge: "계정 화면 편집"
+    },
+    estimate: {
+      title: "견적상담은 선택지와 제출 폼을 실제 입력 흐름대로 다룹니다",
+      description: "단계별 질문, 약관, 첨부 안내를 수정하면 작성 화면에 바로 반영됩니다.",
+      badge: "상담 신청서 편집"
+    }
+  };
 
   return (
     <section className="site-content-editor">
@@ -42,15 +64,43 @@ export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolea
         })}
       </div>
 
-      {page === "homepage" ? <HomepageEditor isAuthenticated={isAuthenticated} /> : null}
-      {page === "landing" ? <LandingPagesEditor isAuthenticated={isAuthenticated} /> : null}
-      {page === "account" ? <AccountContentEditor isAuthenticated={isAuthenticated} /> : null}
-      {page === "estimate" ? <EstimateContentEditor isAuthenticated={isAuthenticated} /> : null}
+      <div className="editor-page-summary" aria-live="polite">
+        <div>
+          <span className="admin-kicker">
+            <PencilLine size={16} />
+            {pageMeta[page].badge}
+          </span>
+          <h2>{pageMeta[page].title}</h2>
+          <p>{pageMeta[page].description}</p>
+        </div>
+        <div className="editor-shortcuts">
+          <span>자동 저장</span>
+          <kbd>Ctrl</kbd>
+          <kbd>S</kbd>
+          <span>즉시 저장</span>
+          <span>모바일·태블릿 지원</span>
+        </div>
+      </div>
+
+      <div className="editor-page-panels">
+        <section className="editor-page-panel" hidden={page !== "homepage"}>
+          <HomepageEditor isAuthenticated={isAuthenticated} isActive={page === "homepage"} />
+        </section>
+        <section className="editor-page-panel" hidden={page !== "landing"}>
+          <LandingPagesEditor isAuthenticated={isAuthenticated} isActive={page === "landing"} />
+        </section>
+        <section className="editor-page-panel" hidden={page !== "account"}>
+          <AccountContentEditor isAuthenticated={isAuthenticated} isActive={page === "account"} />
+        </section>
+        <section className="editor-page-panel" hidden={page !== "estimate"}>
+          <EstimateContentEditor isAuthenticated={isAuthenticated} isActive={page === "estimate"} />
+        </section>
+      </div>
     </section>
   );
 }
 
-function AccountContentEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
+function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: boolean; isActive: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +116,8 @@ function AccountContentEditor({ isAuthenticated }: { isAuthenticated: boolean })
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
+
+  useEditorSaveShortcut(() => void persistDraft("manual"), isAuthenticated && !loading && isActive);
 
   useEffect(() => {
     let mounted = true;
@@ -229,7 +281,7 @@ function AccountContentEditor({ isAuthenticated }: { isAuthenticated: boolean })
           편집 내용을 불러오는 중
         </div>
       ) : (
-        <div className="editor-workspace editor-workspace-single">
+        <div className="editor-workspace editor-workspace-single editor-workspace-with-preview">
           <aside className="editor-inspector editor-inspector-full">
             <InspectorGroup title="상단 소개">
               <Field label="배지">
@@ -293,13 +345,47 @@ function AccountContentEditor({ isAuthenticated }: { isAuthenticated: boolean })
               ))}
             </InspectorGroup>
           </aside>
+
+          <aside className="editor-preview-panel" aria-label="마이페이지 실시간 미리보기">
+            <div className="editor-preview-head">
+              <span className="editor-preview-kicker">실시간 미리보기</span>
+              <strong>{draft.hero.title}</strong>
+              <p>{draft.hero.description}</p>
+            </div>
+            <div className="editor-preview-card">
+              <div className="editor-preview-chip-row">
+                <span>{draft.hero.kicker}</span>
+                {draft.hero.notes.slice(0, 3).map((note) => (
+                  <span key={note}>{note}</span>
+                ))}
+              </div>
+              <div className="editor-preview-stat-grid">
+                {draft.summary.map((item) => (
+                  <article key={item.label} className="editor-preview-stat">
+                    <strong>{item.label || "제목"}</strong>
+                    <p>{item.description || "설명이 여기에 표시됩니다."}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="editor-preview-card editor-preview-card-soft">
+              <span className="editor-preview-muted">{draft.list.kicker}</span>
+              <strong>{draft.list.title}</strong>
+              <p>{draft.list.description}</p>
+              <div className="editor-preview-labels">
+                <span>{draft.list.detailToggleLabel}</span>
+                <span>{draft.list.editLabel}</span>
+                <span>{draft.list.saveLabel}</span>
+              </div>
+            </div>
+          </aside>
         </div>
       )}
     </section>
   );
 }
 
-function EstimateContentEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
+function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated: boolean; isActive: boolean }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -316,6 +402,8 @@ function EstimateContentEditor({ isAuthenticated }: { isAuthenticated: boolean }
   useEffect(() => {
     draftRef.current = draft;
   }, [draft]);
+
+  useEditorSaveShortcut(() => void persistDraft("manual"), isAuthenticated && !loading && isActive);
 
   useEffect(() => {
     let mounted = true;
@@ -522,7 +610,7 @@ function EstimateContentEditor({ isAuthenticated }: { isAuthenticated: boolean }
           편집 내용을 불러오는 중
         </div>
       ) : (
-        <div className="editor-workspace editor-workspace-single">
+        <div className="editor-workspace editor-workspace-single editor-workspace-with-preview">
           <aside className="editor-inspector editor-inspector-full">
             <InspectorGroup title="상단">
               <Field label="홈 링크 라벨">
@@ -627,6 +715,40 @@ function EstimateContentEditor({ isAuthenticated }: { isAuthenticated: boolean }
               </Field>
             </InspectorGroup>
           </aside>
+
+          <aside className="editor-preview-panel" aria-label="견적상담 실시간 미리보기">
+            <div className="editor-preview-head">
+              <span className="editor-preview-kicker">실시간 미리보기</span>
+              <strong>{draft.intro.title}</strong>
+              <p>{draft.intro.description}</p>
+            </div>
+            <div className="editor-preview-card">
+              <div className="editor-preview-chip-row">
+                <span>{draft.header.homeLinkLabel}</span>
+                <span>{draft.header.phoneLabel}</span>
+                <span>{draft.final.reviewKicker}</span>
+              </div>
+              <div className="editor-preview-step-grid">
+                {draft.steps.map((step, index) => (
+                  <article key={`${step.label}-${index}`} className={selectedStep === index ? "editor-preview-step active" : "editor-preview-step"}>
+                    <span>{step.count}</span>
+                    <strong>{step.label}</strong>
+                    <p>{step.question}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <div className="editor-preview-card editor-preview-card-soft">
+              <span className="editor-preview-muted">{draft.final.reviewKicker}</span>
+              <strong>{draft.final.submitLabel}</strong>
+              <p>{draft.final.successMessage}</p>
+              <div className="editor-preview-labels">
+                <span>{draft.final.fileAddLabel}</span>
+                <span>{draft.final.fileReplaceLabel}</span>
+                <span>{draft.final.fileDeleteLabel}</span>
+              </div>
+            </div>
+          </aside>
         </div>
       )}
     </section>
@@ -673,6 +795,22 @@ function InspectorGroup({ title, children }: { title: string; children: ReactNod
       <div className="editor-group-body">{children}</div>
     </section>
   );
+}
+
+function useEditorSaveShortcut(onSave: () => void, enabled: boolean) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        onSave();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [enabled, onSave]);
 }
 
 function isLongEditorField(key: string, value: string) {
