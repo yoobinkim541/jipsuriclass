@@ -86,7 +86,7 @@ export const navItems: NavItem[] = [
   { label: "오시는길", href: "#location" },
   { label: "자가진단", href: "/diagnosis" },
   { label: "견적상담", href: "/estimate" },
-  { label: "문의하기", href: "#contact" }
+  { label: "문의", href: "#contact" }
 ];
 
 /**

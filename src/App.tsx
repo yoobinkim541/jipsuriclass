@@ -351,7 +351,7 @@ function SiteHeader({
 }) {
   const seenLabels = new Set<string>();
   const navLabelFallbacks: Partial<Record<(typeof navItems)[number]["href"], string>> = {
-    "#contact": "문의하기"
+    "#contact": "문의"
   };
   const menuItems = navItems.map((item, index) => {
     const candidateLabel = navLabels[index] ?? item.label;
