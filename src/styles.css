@@ -577,6 +577,7 @@ textarea {
   top: 0;
   width: min(82vw, 340px);
   z-index: 30;
+  overflow-y: auto;
 }
 
 .mobile-menu button {
