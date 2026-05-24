@@ -805,8 +805,6 @@ function CasesSection({
   const railRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const scrollFrameRef = useRef<number | null>(null);
-  const pauseTimerRef = useRef<number | null>(null);
-  const isPausedRef = useRef(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -829,7 +827,6 @@ function CasesSection({
     if (prefersReducedMotion) return;
 
     const timerId = window.setInterval(() => {
-      if (isPausedRef.current) return;
       setActiveIndex((current) => (current + 1) % editableCases.length);
     }, 4200);
 
@@ -843,21 +840,8 @@ function CasesSection({
       if (scrollFrameRef.current !== null) {
         window.cancelAnimationFrame(scrollFrameRef.current);
       }
-      if (pauseTimerRef.current !== null) {
-        window.clearTimeout(pauseTimerRef.current);
-      }
     };
   }, []);
-
-  function pauseCarousel() {
-    isPausedRef.current = true;
-    if (pauseTimerRef.current !== null) {
-      window.clearTimeout(pauseTimerRef.current);
-    }
-    pauseTimerRef.current = window.setTimeout(() => {
-      isPausedRef.current = false;
-    }, 5500);
-  }
 
   function syncActiveFromScroll() {
     const rail = railRef.current;
@@ -889,7 +873,6 @@ function CasesSection({
 
   function goToIndex(nextIndex: number) {
     if (!editableCases.length) return;
-    pauseCarousel();
     const normalized = (nextIndex + editableCases.length) % editableCases.length;
     setActiveIndex(normalized);
   }
@@ -910,10 +893,6 @@ function CasesSection({
           className="cases__rail"
           ref={railRef}
           onScroll={handleScroll}
-          onPointerDown={pauseCarousel}
-          onTouchStart={pauseCarousel}
-          onMouseEnter={pauseCarousel}
-          onFocusCapture={pauseCarousel}
         >
           {editableCases.map((item, index) => (
             <a
