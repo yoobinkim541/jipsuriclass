@@ -542,7 +542,7 @@ function HeroSection({
 
 function TrustBandSection() {
   const items = [
-    { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
+    { num: "7", label: "국가공인 7 자격", sub: "대표 직접 보유 · 직접 시공" },
     { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
     { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
   ];
