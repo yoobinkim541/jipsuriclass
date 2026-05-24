@@ -16,9 +16,18 @@ export class BlogPortfolioService {
     private readonly maxPosts = 6
   ) {}
 
-  async loadPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+  async loadPortfolioPosts(terms: string[] = []): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+    return this.loadPortfolioPostsInternal(terms);
+  }
+
+  private async loadPortfolioPostsInternal(terms?: string[]): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
     try {
-      const response = await fetch(this.endpoint);
+      const url = new URL(this.endpoint, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+      if (Array.isArray(terms) && terms.length) {
+        url.searchParams.set("terms", terms.join(","));
+      }
+
+      const response = await fetch(url.toString());
       if (!response.ok) throw new Error("Naver blog endpoint unavailable");
 
       const data = (await response.json()) as NaverBlogResponse;

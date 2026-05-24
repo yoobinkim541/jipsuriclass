@@ -1414,10 +1414,12 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   const [landingPosts, setLandingPosts] = useState<PortfolioPost[]>([]);
   const [landingSource, setLandingSource] = useState<"loading" | "naver" | "fallback">("loading");
 
+  const landingSearchKey = content.searchTerms.join("|");
+
   useEffect(() => {
     let mounted = true;
 
-    blogPortfolioService.loadPortfolioPosts().then(({ posts, source }) => {
+    blogPortfolioService.loadPortfolioPosts(content.searchTerms).then(({ posts, source }) => {
       if (!mounted) return;
       setLandingPosts(posts);
       setLandingSource(source);
@@ -1426,7 +1428,7 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [landingSearchKey]);
 
   const matchedPosts = useMemo(() => filterLandingPosts(landingPosts, content), [content, landingPosts]);
   const referencePosts = matchedPosts.slice(0, 3);
@@ -1613,27 +1615,75 @@ function BlogShowcase({
 
 function filterLandingPosts(posts: PortfolioPost[], page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
   const terms = page.searchTerms.map((term) => term.toLowerCase());
-  const matched = posts.filter((post) => {
-    const haystack = [
-      post.title,
-      post.cardTitle,
-      post.description,
-      post.date,
-      ...(post.summary ?? []),
-      ...(post.keywords ?? [])
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
+  const ranked = posts
+    .map((post) => ({
+      post,
+      score: scoreLandingPost(post, terms)
+    }))
+    .filter((entry) => entry.score > 0)
+    .sort((left, right) => right.score - left.score || compareLandingPostDate(right.post.date, left.post.date))
+    .map((entry) => entry.post);
 
-    return terms.some((term) => haystack.includes(term));
-  });
-
-  if (matched.length) {
-    return matched.slice(0, 6);
+  if (ranked.length) {
+    return ranked.slice(0, 6);
   }
 
-  return posts.slice(0, 6);
+  return [...posts]
+    .sort((left, right) => compareLandingPostDate(right.date, left.date))
+    .slice(0, 6);
+}
+
+function scoreLandingPost(post: PortfolioPost, terms: string[]) {
+  const title = normalizeSearchText(post.cardTitle ?? post.title);
+  const description = normalizeSearchText(post.description);
+  const summary = normalizeSearchText((post.summary ?? []).join(" "));
+  const keywords = normalizeSearchText((post.keywords ?? []).join(" "));
+  const haystack = `${title} ${description} ${summary} ${keywords}`;
+
+  if (!terms.length || !terms.some((term) => haystack.includes(term))) {
+    return 0;
+  }
+
+  let score = 0;
+  for (const term of terms) {
+    if (!term) continue;
+    const titleHit = title.includes(term);
+    const descriptionHit = description.includes(term);
+    const summaryHit = summary.includes(term);
+    const keywordsHit = keywords.includes(term);
+
+    if (!titleHit && !descriptionHit && !summaryHit && !keywordsHit) continue;
+
+    if (titleHit) score += 8;
+    if (keywordsHit) score += 6;
+    if (descriptionHit) score += 4;
+    if (summaryHit) score += 5;
+    score += term.length >= 3 ? 2 : 1;
+  }
+
+  score += Math.min(10, Math.floor(parseLandingPostDate(post.date) / 30));
+  return score;
+}
+
+function normalizeSearchText(value: string) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function compareLandingPostDate(left: string, right: string) {
+  return parseLandingPostDate(left) - parseLandingPostDate(right);
+}
+
+function parseLandingPostDate(value: string) {
+  const cleaned = String(value ?? "").replace(/[^\d]/g, "");
+  if (cleaned.length < 8) return 0;
+  const year = Number.parseInt(cleaned.slice(0, 4), 10);
+  const month = Number.parseInt(cleaned.slice(4, 6), 10) - 1;
+  const day = Number.parseInt(cleaned.slice(6, 8), 10);
+  const timestamp = new Date(year, month, day).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
 }
 
 function MobileQuickCta() {

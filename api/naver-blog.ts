@@ -28,6 +28,7 @@ type EnrichedBlogItem = NaverBlogItem & {
 };
 
 const PORTFOLIO_LIMIT = 6;
+const SEARCH_DISPLAY = 12;
 const FALLBACK_BLOG_IMAGE = "/assets/consult-hero.png";
 const ALLOWED_IMAGE_HOSTS = ["pstatic.net", "naver.net", "naver.com"];
 
@@ -39,6 +40,7 @@ export default async function handler(_request: VercelRequest, response: VercelR
   const clientId = process.env.NAVER_CLIENT_ID;
   const clientSecret = process.env.NAVER_CLIENT_SECRET;
   const blogId = process.env.NAVER_BLOG_ID || "it77khy";
+  const terms = parseTerms(_request.query.terms);
 
   if (!clientId || !clientSecret) {
     response.status(503).json({ items: [], source: "fallback", reason: "missing_naver_credentials" });
@@ -46,48 +48,39 @@ export default async function handler(_request: VercelRequest, response: VercelR
   }
 
   try {
-    const items = await loadLatestBlogItems(blogId, clientId, clientSecret);
+    const items = await loadLatestBlogItems(blogId, clientId, clientSecret, terms);
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });
   }
 }
 
-async function loadLatestBlogItems(blogId: string, clientId: string, clientSecret: string) {
-  try {
-    const rssResponse = await fetch(`https://rss.blog.naver.com/${blogId}.xml`, {
-      headers: {
-        Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
-      }
-    });
+async function loadLatestBlogItems(blogId: string, clientId: string, clientSecret: string, terms: string[]) {
+  const rssItems = await fetchRssItems(blogId);
+  const combinedCandidates = new Map<string, RankedBlogCandidate>();
 
-    if (!rssResponse.ok) {
-      throw new Error(`Naver RSS returned ${rssResponse.status}`);
-    }
-
-    const rssXml = await rssResponse.text();
-    const items = parseRssItems(rssXml).slice(0, PORTFOLIO_LIMIT);
-    return await enrichItemsWithSummary(items, blogId);
-  } catch {
-    const query = encodeURIComponent(`${blogId} 집수리 누수 복구`);
-    const naverResponse = await fetch(
-      `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=${PORTFOLIO_LIMIT}&sort=date`,
-      {
-        headers: {
-          "X-Naver-Client-Id": clientId,
-          "X-Naver-Client-Secret": clientSecret
-        }
-      }
-    );
-
-    if (!naverResponse.ok) {
-      throw new Error(`Naver API returned ${naverResponse.status}`);
-    }
-
-    const data = (await naverResponse.json()) as { items?: NaverBlogItem[] };
-    const items = Array.isArray(data.items) ? data.items.slice(0, PORTFOLIO_LIMIT) : [];
-    return await enrichItemsWithSummary(items, blogId);
+  for (const item of rssItems) {
+    addRankedCandidate(combinedCandidates, item, "rss");
   }
+
+  if (terms.length) {
+    const searchItems = await fetchSearchItems(clientId, clientSecret, terms);
+    for (const item of searchItems.date) {
+      addRankedCandidate(combinedCandidates, item, "search-date");
+    }
+    for (const item of searchItems.sim) {
+      addRankedCandidate(combinedCandidates, item, "search-sim");
+    }
+  } else if (!combinedCandidates.size) {
+    const fallbackItems = await fetchSearchItems(clientId, clientSecret, ["집수리", "누수", "복구"]);
+    for (const item of fallbackItems.date) {
+      addRankedCandidate(combinedCandidates, item, "search-date");
+    }
+  }
+
+  const ordered = rankCandidates(Array.from(combinedCandidates.values()), terms).slice(0, PORTFOLIO_LIMIT);
+  const items = ordered.length ? ordered.map((entry) => entry.item) : rssItems.slice(0, PORTFOLIO_LIMIT);
+  return await enrichItemsWithSummary(items, blogId);
 }
 
 function parseRssItems(xml: string): NaverBlogItem[] {
@@ -111,6 +104,171 @@ function parseRssItems(xml: string): NaverBlogItem[] {
   }
 
   return items;
+}
+
+type RankedBlogCandidate = {
+  item: NaverBlogItem;
+  sources: Set<"rss" | "search-date" | "search-sim">;
+};
+
+function parseTerms(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value.join(",") : value ?? "";
+  return raw
+    .split(/[,\s]+/)
+    .map((term) => term.trim())
+    .filter(Boolean)
+    .slice(0, 8);
+}
+
+async function fetchRssItems(blogId: string) {
+  try {
+    const rssResponse = await fetch(`https://rss.blog.naver.com/${blogId}.xml`, {
+      headers: {
+        Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+      }
+    });
+
+    if (!rssResponse.ok) {
+      throw new Error(`Naver RSS returned ${rssResponse.status}`);
+    }
+
+    return parseRssItems(await rssResponse.text()).slice(0, SEARCH_DISPLAY);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchSearchItems(clientId: string, clientSecret: string, terms: string[]) {
+  const query = encodeURIComponent(terms.join(" ").trim());
+  if (!query) {
+    return { date: [] as NaverBlogItem[], sim: [] as NaverBlogItem[] };
+  }
+
+  const [dateResult, simResult] = await Promise.allSettled([
+    fetchSearchBlog(query, clientId, clientSecret, "date"),
+    fetchSearchBlog(query, clientId, clientSecret, "sim")
+  ]);
+
+  return {
+    date: dateResult.status === "fulfilled" ? dateResult.value : [],
+    sim: simResult.status === "fulfilled" ? simResult.value : []
+  };
+}
+
+async function fetchSearchBlog(query: string, clientId: string, clientSecret: string, sort: "date" | "sim") {
+  const naverResponse = await fetch(
+    `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=${SEARCH_DISPLAY}&sort=${sort}`,
+    {
+      headers: {
+        "X-Naver-Client-Id": clientId,
+        "X-Naver-Client-Secret": clientSecret
+      }
+    }
+  );
+
+  if (!naverResponse.ok) {
+    throw new Error(`Naver API returned ${naverResponse.status}`);
+  }
+
+  const data = (await naverResponse.json()) as { items?: NaverBlogItem[] };
+  return Array.isArray(data.items) ? data.items.slice(0, SEARCH_DISPLAY) : [];
+}
+
+function addRankedCandidate(
+  map: Map<string, RankedBlogCandidate>,
+  item: NaverBlogItem,
+  source: "rss" | "search-date" | "search-sim"
+) {
+  const key = item.link.trim();
+  if (!key) return;
+
+  const existing = map.get(key);
+  if (existing) {
+    existing.item = mergeCandidateItem(existing.item, item);
+    existing.sources.add(source);
+    return;
+  }
+
+  map.set(key, {
+    item: { ...item },
+    sources: new Set([source])
+  });
+}
+
+function mergeCandidateItem(existing: NaverBlogItem, incoming: NaverBlogItem) {
+  return {
+    ...incoming,
+    title: incoming.title || existing.title,
+    description: incoming.description || existing.description,
+    postdate: incoming.postdate || existing.postdate,
+    image: incoming.image || existing.image,
+    cardTitle: incoming.cardTitle || existing.cardTitle,
+    summary: incoming.summary?.length ? incoming.summary : existing.summary,
+    keywords: incoming.keywords?.length ? incoming.keywords : existing.keywords
+  };
+}
+
+function rankCandidates(candidates: RankedBlogCandidate[], terms: string[]) {
+  const scored = candidates.map((candidate) => ({
+    candidate,
+    score: scoreCandidate(candidate.item, candidate.sources, terms)
+  }));
+
+  const matched = terms.length ? scored.filter((entry) => entry.score > 0) : scored;
+  const source = matched.length ? matched : scored;
+
+  return source
+    .sort((left, right) => {
+      const scoreDiff = right.score - left.score;
+      if (scoreDiff) return scoreDiff;
+
+      const sourceDiff = getSourcePriority(right.candidate.sources) - getSourcePriority(left.candidate.sources);
+      if (sourceDiff) return sourceDiff;
+
+      return parseDateValue(right.candidate.item.postdate) - parseDateValue(left.candidate.item.postdate);
+    })
+    .map((entry) => entry.candidate);
+}
+
+function scoreCandidate(item: NaverBlogItem, sources: Set<"rss" | "search-date" | "search-sim">, terms: string[]) {
+  const title = sanitizeText(item.title).toLowerCase();
+  const description = sanitizeText(item.description).toLowerCase();
+  const combined = `${title} ${description}`;
+
+  if (!terms.length) {
+    return getSourcePriority(sources) * 1000 + parseDateValue(item.postdate) / 1_000_000;
+  }
+
+  let score = 0;
+  for (const term of terms) {
+    const normalized = term.toLowerCase();
+    if (!normalized) continue;
+
+    const titleHit = title.includes(normalized);
+    const descriptionHit = description.includes(normalized);
+
+    if (!titleHit && !descriptionHit) continue;
+
+    if (titleHit) score += 14;
+    if (descriptionHit) score += 8;
+    if (combined.includes(normalized)) score += 4;
+  }
+
+  score += getSourcePriority(sources) * 6;
+  return score;
+}
+
+function getSourcePriority(sources: Set<"rss" | "search-date" | "search-sim">) {
+  if (sources.has("search-sim")) return 3;
+  if (sources.has("search-date")) return 2;
+  if (sources.has("rss")) return 1;
+  return 0;
+}
+
+function parseDateValue(value?: string) {
+  if (!value || value.length !== 8) return 0;
+  const parsed = Number.parseInt(value, 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
 }
 
 function extractTagValue(xml: string, tag: string) {
