@@ -15,7 +15,7 @@ export function DiagnosisPage() {
     <>
       <header className="site-header diagnosis-header">
         <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
-          <img className="brand-mark" src="/icons/icon.png" alt="" aria-hidden="true" />
+          <img className="brand-mark" src="/icons/icon.svg" alt="" aria-hidden="true" />
           <span>{business.name}</span>
         </a>
         <a className="header-call" href={business.phoneHref}>
@@ -137,4 +137,3 @@ export function DiagnosisPage() {
     </>
   );
 }
-

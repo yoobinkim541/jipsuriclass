@@ -981,6 +981,23 @@ Verification:
 Follow-up:
 - If you want it even tighter, the left inset can be reduced another few pixels without affecting the desktop layout.
 
+# 2026-05-24 - Icon Rollback to Previous Version
+
+Changed files:
+- `public/icons/icon.svg`
+- `public/icons/icon-192.svg`
+- `public/icons/icon-512.svg`
+- `index.html`
+- `public/manifest.webmanifest`
+- `src/diagnosis/DiagnosisPage.tsx`
+
+Implemented behavior:
+- Restored the previous darker house-mark icon artwork in the public icon SVGs.
+- Pointed the app header, diagnosis page, document favicon references, and manifest icons back to the restored icon set.
+
+Verification:
+- `npm run build` passed.
+
 ## 2026-05-23 - Mobile Estimate Intro Full View
 
 Changed files:
