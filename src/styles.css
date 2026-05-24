@@ -7305,6 +7305,7 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .editor-workspace,
   .editor-workspace-with-preview {
     grid-template-columns: 1fr;
   }
@@ -7551,10 +7552,21 @@ textarea {
 
   .proof-list,
   .estimate-summary,
-  .editor-section-nav,
   .admin-insight-grid-secondary,
   .admin-chart-section,
   .admin-breakdown-section {
+    display: none;
+  }
+
+  .editor-section-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+
+  .editor-section-nav::-webkit-scrollbar {
     display: none;
   }
 
