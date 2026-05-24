@@ -149,49 +149,42 @@ grant insert on public.inquiries to anon;
 grant insert on public.inquiries to authenticated;
 grant select, update on public.inquiries to authenticated;
 
-drop policy if exists "Logged in users can create their inquiries" on public.inquiries;
-create policy "Logged in users can create their inquiries"
+drop policy if exists "Authenticated users can create website inquiries" on public.inquiries;
+create policy "Authenticated users can create website inquiries"
   on public.inquiries
   for insert
   to authenticated
   with check (
     source = 'website'
     and status = 'new'
-    and user_id = auth.uid()
     and length(trim(name)) between 1 and 80
     and length(trim(phone)) between 7 and 30
     and length(trim(message)) between 1 and 2000
   );
 
-drop policy if exists "Admins can read inquiries" on public.inquiries;
-create policy "Admins can read inquiries"
+drop policy if exists "Authenticated users can read own or admin inquiries" on public.inquiries;
+create policy "Authenticated users can read own or admin inquiries"
   on public.inquiries
   for select
   to authenticated
-  using (private.is_admin_user());
+  using (
+    (select private.is_admin_user())
+    or user_id = auth.uid()
+  );
 
-drop policy if exists "Customers can read own inquiries" on public.inquiries;
-create policy "Customers can read own inquiries"
-  on public.inquiries
-  for select
-  to authenticated
-  using (user_id = auth.uid());
-
-drop policy if exists "Admins can update inquiries" on public.inquiries;
-create policy "Admins can update inquiries"
+drop policy if exists "Authenticated users can update own or admin inquiries" on public.inquiries;
+create policy "Authenticated users can update own or admin inquiries"
   on public.inquiries
   for update
   to authenticated
-  using (private.is_admin_user())
-  with check (private.is_admin_user());
-
-drop policy if exists "Customers can update own inquiries" on public.inquiries;
-create policy "Customers can update own inquiries"
-  on public.inquiries
-  for update
-  to authenticated
-  using (user_id = auth.uid())
-  with check (user_id = auth.uid());
+  using (
+    (select private.is_admin_user())
+    or user_id = auth.uid()
+  )
+  with check (
+    (select private.is_admin_user())
+    or user_id = auth.uid()
+  );
 
 create index if not exists inquiries_created_at_idx on public.inquiries (created_at desc);
 create index if not exists inquiries_notified_at_idx on public.inquiries (notified_at desc);
