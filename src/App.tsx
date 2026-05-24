@@ -470,10 +470,6 @@ function HeroSection({
       <div className="hero__grid">
         {/* Left column */}
         <div>
-          <span className="hero__eyebrow">
-            <span className="dot" style={{ width: 6, height: 6, borderRadius: "50%", background: "#2f7a4d", display: "inline-block" }} />
-            서울·경기 종합 집수리
-          </span>
           <h1 className="hero__title">
             집의 모든 불편을
             <br />
