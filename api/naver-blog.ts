@@ -56,13 +56,7 @@ export default async function handler(_request: VercelRequest, response: VercelR
 }
 
 async function loadLatestBlogItems(blogId: string, clientId: string, clientSecret: string, terms: string[]) {
-  const rssItems = await fetchRssItems(blogId);
   const combinedCandidates = new Map<string, RankedBlogCandidate>();
-
-  for (const item of rssItems) {
-    addRankedCandidate(combinedCandidates, item, "rss");
-  }
-
   if (terms.length) {
     const searchItems = await fetchSearchItems(clientId, clientSecret, terms);
     for (const item of searchItems.date) {
@@ -71,15 +65,15 @@ async function loadLatestBlogItems(blogId: string, clientId: string, clientSecre
     for (const item of searchItems.sim) {
       addRankedCandidate(combinedCandidates, item, "search-sim");
     }
-  } else if (!combinedCandidates.size) {
-    const fallbackItems = await fetchSearchItems(clientId, clientSecret, ["집수리", "누수", "복구"]);
-    for (const item of fallbackItems.date) {
-      addRankedCandidate(combinedCandidates, item, "search-date");
+  } else {
+    const rssItems = await fetchRssItems(blogId);
+    for (const item of rssItems) {
+      addRankedCandidate(combinedCandidates, item, "rss");
     }
   }
 
   const ordered = rankCandidates(Array.from(combinedCandidates.values()), terms).slice(0, PORTFOLIO_LIMIT);
-  const items = ordered.length ? ordered.map((entry) => entry.item) : rssItems.slice(0, PORTFOLIO_LIMIT);
+  const items = ordered.length ? ordered.map((entry) => entry.item) : [];
   return await enrichItemsWithSummary(items, blogId);
 }
 

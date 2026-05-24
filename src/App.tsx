@@ -372,7 +372,7 @@ function SiteHeader({
         </div>
         <div className="nav__inner">
           <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
-            <img className="brand__mark" src="/icons/icon.svg" alt="" aria-hidden="true" />
+            <img className="brand__mark" src="/icons/brand-icon.png" alt="" aria-hidden="true" />
             <span className="brand__name">
               집수리<em>클라쓰</em>
             </span>
@@ -1415,12 +1415,13 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   const [landingSource, setLandingSource] = useState<"loading" | "naver" | "fallback">("loading");
 
   const landingSearchTerms = buildLandingSearchTerms(content);
-  const landingSearchKey = landingSearchTerms.join("|");
+  const landingQueryTerms = buildLandingQueryTerms(content);
+  const landingSearchKey = landingQueryTerms.join("|");
 
   useEffect(() => {
     let mounted = true;
 
-    blogPortfolioService.loadPortfolioPosts(landingSearchTerms).then(({ posts, source }) => {
+    blogPortfolioService.loadPortfolioPosts(landingQueryTerms).then(({ posts, source }) => {
       if (!mounted) return;
       setLandingPosts(posts);
       setLandingSource(source);
@@ -1636,10 +1637,23 @@ function filterLandingPosts(posts: PortfolioPost[], page: NonNullable<ReturnType
 
 function buildLandingSearchTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
   const extraTerms = page.pageType === "Service"
-    ? [page.serviceType, page.title]
-    : [page.areaLabel, page.title];
+    ? [page.serviceType, page.serviceType, page.title]
+    : [page.areaLabel, page.areaLabel, page.title];
 
-  return [...page.searchTerms, ...extraTerms]
+  const relatedTerms = page.pageType === "Service" ? (page.relatedLinks?.map((link) => link.label) ?? []) : [];
+
+  return [...page.searchTerms, ...extraTerms, ...relatedTerms]
+    .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
+    .map((term) => term.toLowerCase())
+    .filter((term, index, array) => array.indexOf(term) === index);
+}
+
+function buildLandingQueryTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
+  const coreTerms = page.pageType === "Service"
+    ? [page.serviceType, ...page.searchTerms]
+    : [page.areaLabel, ...page.searchTerms];
+
+  return coreTerms
     .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
     .map((term) => term.toLowerCase())
     .filter((term, index, array) => array.indexOf(term) === index);
@@ -1679,21 +1693,21 @@ function scoreLandingPost(
 
   const primaryTerm = normalizeSearchText(page.pageType === "Service" ? page.serviceType ?? page.title : page.areaLabel ?? page.title);
   if (primaryTerm && haystack.includes(primaryTerm)) {
-    score += page.pageType === "Service" ? 18 : 14;
+    score += page.pageType === "Service" ? 24 : 20;
   }
 
   if (page.pageType === "Service") {
-    score += title.length ? 4 : 0;
-    score += keywords ? 2 : 0;
-    score += summary ? 1 : 0;
+    score += title.length ? 6 : 0;
+    score += keywords ? 3 : 0;
+    score += summary ? 2 : 0;
   } else {
-    score += description ? 4 : 0;
-    score += summary ? 3 : 0;
+    score += description ? 6 : 0;
+    score += summary ? 4 : 0;
   }
 
   const parsedDate = parseLandingPostDate(post.date);
   if (parsedDate) {
-    score += page.pageType === "Place" ? 6 : 4;
+    score += page.pageType === "Place" ? 8 : 5;
   }
   return score;
 }

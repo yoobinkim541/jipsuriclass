@@ -32,7 +32,9 @@ export class BlogPortfolioService {
 
       const data = (await response.json()) as NaverBlogResponse;
       const naverItems = Array.isArray(data.items) ? data.items.slice(0, this.maxPosts) : [];
-      if (!naverItems.length) return this.fallbackResult();
+      if (!naverItems.length) {
+        return Array.isArray(terms) && terms.length ? { source: "fallback" as const, posts: [] } : this.fallbackResult();
+      }
 
       return {
         source: "naver",
