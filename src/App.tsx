@@ -1414,12 +1414,13 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   const [landingPosts, setLandingPosts] = useState<PortfolioPost[]>([]);
   const [landingSource, setLandingSource] = useState<"loading" | "naver" | "fallback">("loading");
 
-  const landingSearchKey = content.searchTerms.join("|");
+  const landingSearchTerms = buildLandingSearchTerms(content);
+  const landingSearchKey = landingSearchTerms.join("|");
 
   useEffect(() => {
     let mounted = true;
 
-    blogPortfolioService.loadPortfolioPosts(content.searchTerms).then(({ posts, source }) => {
+    blogPortfolioService.loadPortfolioPosts(landingSearchTerms).then(({ posts, source }) => {
       if (!mounted) return;
       setLandingPosts(posts);
       setLandingSource(source);
@@ -1618,7 +1619,7 @@ function filterLandingPosts(posts: PortfolioPost[], page: NonNullable<ReturnType
   const ranked = posts
     .map((post) => ({
       post,
-      score: scoreLandingPost(post, terms, page.pageType)
+      score: scoreLandingPost(post, terms, page)
     }))
     .filter((entry) => entry.score > 0)
     .sort((left, right) => right.score - left.score || compareLandingPostDate(right.post.date, left.post.date))
@@ -1644,7 +1645,11 @@ function buildLandingSearchTerms(page: NonNullable<ReturnType<typeof getLandingP
     .filter((term, index, array) => array.indexOf(term) === index);
 }
 
-function scoreLandingPost(post: PortfolioPost, terms: string[], pageType: "Service" | "Place") {
+function scoreLandingPost(
+  post: PortfolioPost,
+  terms: string[],
+  page: NonNullable<ReturnType<typeof getLandingPageDefinition>>
+) {
   const title = normalizeSearchText(post.cardTitle ?? post.title);
   const description = normalizeSearchText(post.description);
   const summary = normalizeSearchText((post.summary ?? []).join(" "));
@@ -1672,7 +1677,12 @@ function scoreLandingPost(post: PortfolioPost, terms: string[], pageType: "Servi
     score += term.length >= 3 ? 2 : 1;
   }
 
-  if (pageType === "Service") {
+  const primaryTerm = normalizeSearchText(page.pageType === "Service" ? page.serviceType ?? page.title : page.areaLabel ?? page.title);
+  if (primaryTerm && haystack.includes(primaryTerm)) {
+    score += page.pageType === "Service" ? 18 : 14;
+  }
+
+  if (page.pageType === "Service") {
     score += title.length ? 4 : 0;
     score += keywords ? 2 : 0;
     score += summary ? 1 : 0;
@@ -1683,7 +1693,7 @@ function scoreLandingPost(post: PortfolioPost, terms: string[], pageType: "Servi
 
   const parsedDate = parseLandingPostDate(post.date);
   if (parsedDate) {
-    score += pageType === "Place" ? 6 : 4;
+    score += page.pageType === "Place" ? 6 : 4;
   }
   return score;
 }
