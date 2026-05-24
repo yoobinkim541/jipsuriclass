@@ -1365,7 +1365,10 @@ textarea {
 }
 
 @media (max-width: 1023px) {
-  .hero__deck { aspect-ratio: 4/3; max-width: 560px; margin: 0 auto; }
+  .hero__deck,
+  .hero__chip--running {
+    display: none;
+  }
 }
 
 /* ===== Old fullbleed hero kept for fallback ===== */
@@ -6813,8 +6816,8 @@ textarea {
   }
 
   .hero__title {
-    font-size: clamp(40px, 11vw, 54px);
-    line-height: 1.02;
+    font-size: clamp(52px, 13vw, 72px);
+    line-height: 1.0;
     margin-bottom: 16px;
   }
 
