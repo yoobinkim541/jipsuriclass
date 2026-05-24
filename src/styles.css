@@ -6818,7 +6818,7 @@ textarea {
   .hero__title {
     font-size: clamp(52px, 13vw, 72px);
     line-height: 1.0;
-    margin-bottom: 16px;
+    margin-bottom: 28px;
   }
 
   .hero__deck,
