@@ -1433,6 +1433,7 @@ textarea {
   padding: 8px clamp(18px, 5vw, 64px) 20px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
+  scroll-padding-inline: clamp(18px, 5vw, 64px);
   scrollbar-width: thin;
   scrollbar-color: var(--hair, #e6dfd0) transparent;
 }
@@ -6179,7 +6180,6 @@ textarea {
   .service-grid,
   .process-line,
   .case-grid,
-  .blog-card-grid,
   .admin-insight-grid,
   .admin-breakdown-grid,
   .estimate-choice-grid {
@@ -6656,6 +6656,49 @@ textarea {
   .hero-login-actions,
   .contact-login-actions {
     gap: 6px;
+  }
+
+  .cases__rail {
+    gap: 12px;
+    padding: 6px 16px 18px;
+    scroll-padding-inline: 16px;
+  }
+
+  .cases__card {
+    flex-basis: min(86vw, 380px);
+    scroll-snap-align: center;
+  }
+
+  .cases__body {
+    padding: 16px;
+  }
+
+  .cases__body h3 {
+    font-size: 18px;
+  }
+
+  .blog-card-carousel-mobile {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 6px 16px 18px;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .blog-card-carousel-mobile::-webkit-scrollbar {
+    display: none;
+  }
+
+  .blog-card-carousel-mobile > .blog-card {
+    flex: 0 0 min(86vw, 380px);
+    scroll-snap-align: center;
+  }
+
+  .blog-card-carousel-mobile > .blog-card.blog-card-featured {
+    flex-basis: min(88vw, 400px);
   }
 
   .hero-copy {

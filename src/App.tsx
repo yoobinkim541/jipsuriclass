@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -800,6 +800,10 @@ function CasesSection({
 }: {
   cases: { title: string; area: string; problem: string; solution: string; image: string; link: string }[];
 }) {
+  const railRef = useRef<HTMLDivElement | null>(null);
+
+  useAutoCarousel(railRef, { enabled: true });
+
   return (
     <section className="cases" id="cases" aria-labelledby="cases-title">
       <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(20px,2.5vw,32px)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
@@ -811,7 +815,7 @@ function CasesSection({
           전체 사례 보기 <ExternalLink size={14} />
         </a>
       </div>
-      <div className="cases__rail">
+      <div className="cases__rail" ref={railRef}>
         {editableCases.map((item) => (
           <a className="cases__card" href={item.link} target="_blank" rel="noreferrer" key={item.title}>
             <div className="cases__media">
@@ -846,6 +850,10 @@ function BlogSection({
   posts: PortfolioPost[];
   source: "loading" | "naver" | "fallback";
 }) {
+  const railRef = useRef<HTMLDivElement | null>(null);
+
+  useAutoCarousel(railRef, { enabled: true });
+
   const description =
     source === "naver"
       ? "최근 현장 시공 사례를 블로그에서 가져옵니다."
@@ -861,7 +869,7 @@ function BlogSection({
         href={business.naverBlogUrl}
         className="naver-link"
       />
-      <div className="blog-card-grid">
+      <div className="blog-card-grid blog-card-carousel-mobile" ref={railRef}>
         {posts.map((post, index) => (
           <a
             className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
@@ -1202,7 +1210,7 @@ function BlogShowcase({
     <div className="landing-blog-showcase">
       <h3>{label}</h3>
       {posts.length ? (
-        <div className="blog-card-grid landing-blog-grid">
+        <div className="blog-card-grid landing-blog-grid blog-card-carousel-mobile">
           {posts.map((post, index) => (
             <a
               className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
@@ -1295,6 +1303,62 @@ function MobileQuickCta() {
       </a>
     </div>
   );
+}
+
+function useAutoCarousel(
+  ref: RefObject<HTMLElement | null>,
+  { enabled }: { enabled: boolean }
+) {
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return;
+
+    const container = ref.current;
+    if (!container) return;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+    if (prefersReducedMotion || !isMobile) return;
+
+    const overflow = container.scrollWidth > container.clientWidth + 8;
+    if (!overflow) return;
+
+    let stopped = false;
+    let timerId = window.setInterval(() => {
+      if (stopped) return;
+
+      const firstCard = container.firstElementChild as HTMLElement | null;
+      if (!firstCard) return;
+
+      const cardWidth = firstCard.getBoundingClientRect().width;
+      const gapValue = window.getComputedStyle(container).columnGap || window.getComputedStyle(container).gap || "0";
+      const gap = Number.parseFloat(gapValue) || 0;
+      const step = Math.max(220, cardWidth + gap);
+      const atEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 12;
+
+      container.scrollTo({
+        left: atEnd ? 0 : container.scrollLeft + step,
+        behavior: "smooth"
+      });
+    }, 3400);
+
+    const stop = () => {
+      if (stopped) return;
+      stopped = true;
+      window.clearInterval(timerId);
+    };
+
+    const events: Array<keyof HTMLElementEventMap> = ["pointerdown", "touchstart", "wheel", "keydown", "mousedown"];
+    events.forEach((eventName) => {
+      container.addEventListener(eventName, stop, { passive: true });
+    });
+
+    return () => {
+      window.clearInterval(timerId);
+      events.forEach((eventName) => {
+        container.removeEventListener(eventName, stop);
+      });
+    };
+  }, [enabled, ref]);
 }
 
 export default App;
