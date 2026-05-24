@@ -1614,7 +1614,7 @@ textarea {
 }
 
 .trust--embedded {
-  margin: clamp(26px, 4vw, 48px) calc(-1 * clamp(18px, 5vw, 64px)) 0;
+  margin: clamp(16px, 3vw, 32px) calc(-1 * clamp(18px, 5vw, 64px)) 0;
   max-width: none;
   border-radius: 0;
   overflow: hidden;
@@ -6812,7 +6812,6 @@ textarea {
   .hero__grid > div:first-child {
     display: flex;
     flex-direction: column;
-    min-height: calc(100svh - 190px);
   }
 
   .hero__title {
