@@ -721,7 +721,7 @@ function SpecialtiesSection() {
 
   return (
     <section className="specialties" id="specialties" aria-labelledby="specialties-title">
-      <div className="sec-head" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(20px,2.5vw,30px)" }}>
+      <div className="sec-head" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(28px,4vw,52px) clamp(18px,5vw,64px) clamp(16px,2vw,24px)", textAlign: "center" }}>
         <h2 id="specialties-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>가능 작업</h2>
         <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>집 안팎에서 필요한 수리, 설비, 마감, 리모델링 작업을 폭넓게 상담합니다.</p>
       </div>
@@ -1109,6 +1109,122 @@ function buildSummaryLines(description: string) {
   return sentences.slice(0, 3).map((sentence) => sentence.slice(0, 80));
 }
 
+const processIllustrations = [
+  /* 01 사진 상담 */
+  <svg key="p1" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="320" height="200" rx="20" fill="#eef4fb"/>
+    <rect x="96" y="22" width="88" height="148" rx="14" fill="#fff" stroke="#c8d6e8" strokeWidth="1.5"/>
+    <rect x="104" y="42" width="72" height="80" rx="6" fill="#dce8f5"/>
+    <path d="M140 52L168 72H112Z" fill="#10284a"/>
+    <rect x="116" y="72" width="48" height="36" fill="#10284a"/>
+    <rect x="132" y="84" width="16" height="24" rx="3" fill="#fff"/>
+    <rect x="128" y="72" width="14" height="14" rx="2" fill="#d7ae6b"/>
+    <circle cx="140" cy="156" r="10" fill="#10284a"/>
+    <circle cx="140" cy="156" r="6" fill="#fff"/>
+    <circle cx="140" cy="156" r="3" fill="#10284a"/>
+    <rect x="190" y="34" width="96" height="70" rx="14" fill="#10284a"/>
+    <polygon points="194,104 186,120 214,104" fill="#10284a"/>
+    <text x="238" y="55" fontFamily="system-ui,sans-serif" fontSize="11" fontWeight="700" fill="#d7ae6b" textAnchor="middle">사진 상담</text>
+    <rect x="198" y="63" width="76" height="3" rx="1.5" fill="rgba(255,255,255,0.6)"/>
+    <rect x="198" y="73" width="58" height="3" rx="1.5" fill="rgba(255,255,255,0.35)"/>
+    <rect x="198" y="83" width="68" height="3" rx="1.5" fill="rgba(255,255,255,0.5)"/>
+    <rect x="20" y="64" width="62" height="28" rx="14" fill="#d7ae6b"/>
+    <text x="51" y="83" fontFamily="system-ui,sans-serif" fontSize="13" fontWeight="800" fill="#10284a" textAnchor="middle">01</text>
+    <circle cx="40" cy="30" r="4" fill="#d7ae6b" fillOpacity="0.5"/>
+    <circle cx="284" cy="168" r="5" fill="#d7ae6b" fillOpacity="0.3"/>
+  </svg>,
+  /* 02 증상 확인 */
+  <svg key="p2" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="320" height="200" rx="20" fill="#edf5f1"/>
+    <rect x="52" y="38" width="160" height="120" rx="8" fill="#fff" stroke="#c8d6e8" strokeWidth="1.5"/>
+    <rect x="52" y="38" width="160" height="26" rx="8" fill="#dce8f5"/>
+    <path d="M144 78L156 96L149 110L162 132" stroke="#94a0b8" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M114 88L126 104L120 118" stroke="#b0bac8" strokeWidth="1.5" strokeLinecap="round"/>
+    <ellipse cx="156" cy="100" rx="5" ry="7" fill="#6ba3c8" fillOpacity="0.7"/>
+    <ellipse cx="122" cy="118" rx="4" ry="5.5" fill="#6ba3c8" fillOpacity="0.5"/>
+    <ellipse cx="148" cy="136" rx="3.5" ry="5" fill="#6ba3c8" fillOpacity="0.35"/>
+    <circle cx="228" cy="90" r="42" fill="rgba(16,40,74,0.06)"/>
+    <circle cx="222" cy="84" r="30" fill="none" stroke="#10284a" strokeWidth="4"/>
+    <circle cx="222" cy="84" r="21" fill="rgba(255,255,255,0.55)"/>
+    <line x1="245" y1="107" x2="262" y2="126" stroke="#10284a" strokeWidth="6" strokeLinecap="round"/>
+    <circle cx="222" cy="76" r="6" fill="#d7ae6b"/>
+    <path d="M222 82 L222 94" stroke="#d7ae6b" strokeWidth="3" strokeLinecap="round"/>
+    <rect x="20" y="64" width="62" height="28" rx="14" fill="#d7ae6b"/>
+    <text x="51" y="83" fontFamily="system-ui,sans-serif" fontSize="13" fontWeight="800" fill="#10284a" textAnchor="middle">02</text>
+    <circle cx="280" cy="44" r="4" fill="#d7ae6b" fillOpacity="0.4"/>
+    <circle cx="46" cy="176" r="5" fill="#10284a" fillOpacity="0.08"/>
+  </svg>,
+  /* 03 현장 방문 */
+  <svg key="p3" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="320" height="200" rx="20" fill="#fef5ee"/>
+    <rect x="68" y="92" width="136" height="92" fill="#fff" stroke="#c8d6e8" strokeWidth="1.5"/>
+    <path d="M52 96L136 32L220 96Z" fill="#10284a"/>
+    <rect x="80" y="108" width="36" height="28" rx="4" fill="#dce8f5"/>
+    <line x1="98" y1="108" x2="98" y2="136" stroke="#c8d6e8" strokeWidth="1"/>
+    <line x1="80" y1="122" x2="116" y2="122" stroke="#c8d6e8" strokeWidth="1"/>
+    <rect x="156" y="108" width="36" height="28" rx="4" fill="#dce8f5"/>
+    <line x1="174" y1="108" x2="174" y2="136" stroke="#c8d6e8" strokeWidth="1"/>
+    <line x1="156" y1="122" x2="192" y2="122" stroke="#c8d6e8" strokeWidth="1"/>
+    <rect x="114" y="142" width="44" height="42" rx="4" fill="#10284a" fillOpacity="0.12"/>
+    <rect x="118" y="146" width="36" height="38" rx="3" fill="#10284a" fillOpacity="0.1"/>
+    <circle cx="140" cy="167" r="3" fill="#d7ae6b"/>
+    <path d="M252 36C244 36 238 42 238 50C238 62 252 78 252 78C252 78 266 62 266 50C266 42 260 36 252 36Z" fill="#d7ae6b"/>
+    <circle cx="252" cy="50" r="7" fill="#fff"/>
+    <circle cx="242" cy="30" r="16" fill="#d7ae6b" fillOpacity="0.15"/>
+    <rect x="20" y="64" width="62" height="28" rx="14" fill="#10284a"/>
+    <text x="51" y="83" fontFamily="system-ui,sans-serif" fontSize="13" fontWeight="800" fill="#fff" textAnchor="middle">03</text>
+    <circle cx="288" cy="162" r="4" fill="#d7ae6b" fillOpacity="0.4"/>
+  </svg>,
+  /* 04 견적 안내 */
+  <svg key="p4" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="320" height="200" rx="20" fill="#f2eeff"/>
+    <rect x="88" y="22" width="140" height="172" rx="12" fill="#fff" stroke="#c8d6e8" strokeWidth="1.5"/>
+    <rect x="88" y="22" width="140" height="44" rx="12" fill="#10284a"/>
+    <rect x="88" y="54" width="140" height="12" fill="#10284a"/>
+    <text x="158" y="48" fontFamily="system-ui,sans-serif" fontSize="11" fontWeight="700" fill="#d7ae6b" textAnchor="middle">견적서</text>
+    <rect x="104" y="80" width="50" height="3" rx="1.5" fill="#dce8f5"/>
+    <rect x="190" y="80" width="22" height="3" rx="1.5" fill="#10284a" fillOpacity="0.5"/>
+    <rect x="104" y="93" width="42" height="3" rx="1.5" fill="#dce8f5"/>
+    <rect x="190" y="93" width="22" height="3" rx="1.5" fill="#10284a" fillOpacity="0.5"/>
+    <rect x="104" y="106" width="56" height="3" rx="1.5" fill="#dce8f5"/>
+    <rect x="190" y="106" width="22" height="3" rx="1.5" fill="#10284a" fillOpacity="0.5"/>
+    <rect x="104" y="119" width="46" height="3" rx="1.5" fill="#dce8f5"/>
+    <rect x="190" y="119" width="22" height="3" rx="1.5" fill="#10284a" fillOpacity="0.5"/>
+    <line x1="104" y1="135" x2="216" y2="135" stroke="#e6dfd0" strokeWidth="1.5"/>
+    <text x="108" y="155" fontFamily="system-ui,sans-serif" fontSize="11" fill="#5b6781">합계</text>
+    <text x="212" y="155" fontFamily="system-ui,sans-serif" fontSize="13" fontWeight="800" fill="#10284a" textAnchor="end">투명 견적</text>
+    <rect x="196" y="164" width="78" height="26" rx="13" fill="#d7ae6b"/>
+    <text x="235" y="182" fontFamily="system-ui,sans-serif" fontSize="12" fontWeight="700" fill="#10284a" textAnchor="middle">숨김없음</text>
+    <rect x="20" y="64" width="62" height="28" rx="14" fill="#d7ae6b"/>
+    <text x="51" y="83" fontFamily="system-ui,sans-serif" fontSize="13" fontWeight="800" fill="#10284a" textAnchor="middle">04</text>
+    <circle cx="40" cy="30" r="4" fill="#d7ae6b" fillOpacity="0.5"/>
+    <circle cx="274" cy="42" r="3" fill="#10284a" fillOpacity="0.12"/>
+  </svg>,
+  /* 05 시공·확인 */
+  <svg key="p5" viewBox="0 0 320 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect width="320" height="200" rx="20" fill="#eef4fb"/>
+    <rect x="46" y="76" width="196" height="110" rx="8" fill="#fff" stroke="#c8d6e8" strokeWidth="1.5"/>
+    <rect x="46" y="76" width="196" height="8" fill="#10284a" fillOpacity="0.07"/>
+    <g transform="rotate(-18 96 128)">
+      <rect x="86" y="88" width="14" height="64" rx="5" fill="#94a0b8"/>
+      <rect x="74" y="82" width="38" height="20" rx="6" fill="#10284a"/>
+    </g>
+    <g transform="rotate(18 180 128)">
+      <rect x="173" y="88" width="14" height="64" rx="5" fill="#94a0b8"/>
+      <path d="M166 80C166 72 192 72 192 80C192 86 188 90 180 90C172 90 166 86 166 80Z" fill="#10284a"/>
+      <path d="M166 158C166 166 192 166 192 158C192 152 188 148 180 148C172 148 166 152 166 158Z" fill="#10284a"/>
+    </g>
+    <circle cx="230" cy="76" r="46" fill="rgba(215,174,107,0.12)"/>
+    <circle cx="226" cy="70" r="32" fill="#10284a"/>
+    <path d="M212 70L222 82L242 58" stroke="#d7ae6b" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round"/>
+    <text x="226" y="114" fontFamily="system-ui,sans-serif" fontSize="10" fill="#5b6781" textAnchor="middle">작업 완료</text>
+    <rect x="20" y="64" width="62" height="28" rx="14" fill="#d7ae6b"/>
+    <text x="51" y="83" fontFamily="system-ui,sans-serif" fontSize="13" fontWeight="800" fill="#10284a" textAnchor="middle">05</text>
+    <circle cx="286" cy="44" r="4" fill="#d7ae6b" fillOpacity="0.4"/>
+    <circle cx="48" cy="182" r="5" fill="#10284a" fillOpacity="0.07"/>
+  </svg>
+];
+
 /** 작업 절차 영역: 클릭 가능한 스텝 트랙 + 상세 패널 */
 function ProcessSection({ steps }: { steps: { title: string; text: string }[] }) {
   const [activeStep, setActiveStep] = useState(0);
@@ -1117,9 +1233,9 @@ function ProcessSection({ steps }: { steps: { title: string; text: string }[] })
 
   return (
     <section className="process" id="process" aria-labelledby="process-title">
-      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(20px,2.5vw,32px)" }}>
+      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(32px,5vw,64px) clamp(18px,5vw,64px) clamp(16px,2vw,24px)" }}>
         <h2 id="process-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>작업 절차</h2>
-        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: "0 0 32px" }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
+        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
       </div>
       <div className="process__track">
         {process.map((step, index) => (
@@ -1138,6 +1254,9 @@ function ProcessSection({ steps }: { steps: { title: string; text: string }[] })
       {activeData && (
         <div className="process__detail">
           <div className="process__detail-card">
+            <div className="process__illustration">
+              {processIllustrations[activeStep]}
+            </div>
             <div>
               <h3>{activeContent?.title ?? activeData.title}</h3>
               <p>{activeContent?.text ?? activeData.text}</p>

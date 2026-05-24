@@ -302,7 +302,7 @@ textarea {
   }
 
   main.home-page .blog-card-grid {
-    gap: 22px;
+    gap: 12px;
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
@@ -310,12 +310,35 @@ textarea {
     grid-column: span 2;
   }
 
+  main.home-page .blog-card-image {
+    aspect-ratio: 16 / 8;
+  }
+
+  main.home-page .blog-card-featured .blog-card-image {
+    aspect-ratio: 16 / 7;
+  }
+
   main.home-page .blog-card-body {
-    padding: 22px;
+    padding: 14px;
+    gap: 8px;
   }
 
   main.home-page .blog-card h3 {
-    font-size: 21px;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  main.home-page .blog-card-featured h3 {
+    font-size: 17px;
+  }
+
+  main.home-page .blog-card-summary p {
+    font-size: 13px;
+    -webkit-line-clamp: 1;
+  }
+
+  main.home-page .blog-card time {
+    font-size: 12px;
   }
 
   main.home-page .office-grid {
@@ -345,7 +368,7 @@ textarea {
   }
 
   main.home-page .cases__card {
-    flex-basis: min(64vw, 980px);
+    flex-basis: min(48vw, 540px);
   }
 
   main.home-page .cases__body {
@@ -392,7 +415,7 @@ textarea {
   }
 
   main.home-page .cases__card {
-    flex-basis: min(58vw, 1080px);
+    flex-basis: min(44vw, 580px);
   }
 }
 
@@ -983,7 +1006,7 @@ textarea {
   main.home-page .hero__grid {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    align-content: center;
   }
 
   main.home-page .trust--embedded {
@@ -1080,6 +1103,25 @@ textarea {
 
   main.home-page .process__detail-card {
     padding: clamp(22px, 2.5vw, 36px);
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: clamp(24px, 3vw, 48px);
+    align-items: center;
+  }
+
+  main.home-page .process__illustration {
+    border-radius: 14px;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    background: var(--cream-2, #f1ece1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  main.home-page .process__illustration svg {
+    width: 100%;
+    height: 100%;
   }
 
   main.home-page .process__detail-card h3 {
@@ -1093,7 +1135,7 @@ textarea {
 
   /* ── Cases ── */
   main.home-page .cases__card {
-    flex-basis: min(78vw, 820px);
+    flex-basis: min(52vw, 500px);
   }
 
   /* ── Section headings ── */
