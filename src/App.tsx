@@ -2,12 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   ExternalLink,
   Menu,
   MessageCircle,
   Phone,
+  User,
   X
 } from "lucide-react";
 import { business, cases, navItems, pinnedPosts, process, services, symptoms } from "./data";
@@ -305,18 +304,6 @@ function HomePage() {
     };
   }, []);
 
-  const heroSlides = useMemo(
-    () => [
-      {
-        image: homeContent.hero.image,
-        position: homeContent.hero.imagePosition,
-        scale: homeContent.hero.imageScale
-      },
-      ...homeContent.hero.slides
-    ],
-    [homeContent.hero]
-  );
-
   return (
     <>
       <SiteHeader
@@ -326,17 +313,17 @@ function HomePage() {
         onCloseMenu={() => setMenuOpen(false)}
       />
       <main id="top">
-        <HeroSection content={homeContent.hero} slides={heroSlides} />
+        <HeroSection content={homeContent.hero} cases={homeContent.cases} />
+        <TrustBandSection />
         <AboutSection content={homeContent.about} />
-        <SymptomsSection symptoms={homeContent.symptoms} />
+        <SymptomsSection symptoms={homeContent.symptoms ?? symptoms} />
         <ServicesSection services={homeContent.services} />
         <SpecialtiesSection />
-        <SearchLandingSection />
         <CasesSection cases={homeContent.cases} />
-        <BlogSection posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />
         <ProcessSection steps={homeContent.process} />
-        <ContactSection content={homeContent.contact} />
         <OfficeSection />
+        <BlogSection posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />
+        <ContactSection content={homeContent.contact} />
       </main>
       {!contentReady ? <div className="content-loading">페이지 내용을 불러오는 중</div> : null}
       <SiteFooter />
@@ -365,27 +352,52 @@ function SiteHeader({
     label: navLabels[index] ?? item.label
   }));
 
+  const [scrollPct, setScrollPct] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const max = document.body.scrollHeight - window.innerHeight;
+      setScrollPct(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <>
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
-          <img className="brand-mark" src="/icons/icon.svg" alt="" aria-hidden="true" />
-          <span>{business.name}</span>
-        </a>
-        <nav className="desktop-nav" aria-label="주요 메뉴">
-          {menuItems.map((item) => (
-            <a href={item.href} key={item.href}>
-              {item.label}
+      <header className="nav" data-elevated={menuOpen || scrolled ? "true" : "false"}>
+        <div className="nav__progress">
+          <span className="nav__progress-bar" style={{ width: `${scrollPct}%` }} />
+        </div>
+        <div className="nav__inner">
+          <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
+            <img className="brand__mark" src="/icons/icon.svg" alt="" aria-hidden="true" />
+            <span className="brand__name">
+              집수리<em>클라쓰</em>
+            </span>
+          </a>
+          <nav className="nav__links" aria-label="주요 메뉴">
+            {menuItems.map((item) => (
+              <a href={item.href} key={item.href}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <div className="nav__actions">
+            <a className="nav__login" href="/login" aria-label="마이페이지">
+              <User size={17} />
+              <span>마이페이지</span>
             </a>
-          ))}
-        </nav>
-        <a className="header-call" href={business.phoneHref}>
-          <Phone size={18} />
-          {business.phone}
-        </a>
-        <button className="menu-button" onClick={onOpenMenu} aria-label="사이드바 열기">
-          <Menu size={24} />
-        </button>
+            <a className="nav__phone" href={business.phoneHref}>
+              {business.phone}
+            </a>
+            <button className="nav__menu" onClick={onOpenMenu} aria-label="사이드바 열기">
+              <Menu size={22} />
+            </button>
+          </div>
+        </div>
       </header>
 
       {menuOpen && (
@@ -409,112 +421,133 @@ function SiteHeader({
 
 /**
  * 첫 화면 전환 영역
- * 브랜드 포지션, 즉시 상담 CTA, 신뢰 포인트를 한 화면에 배치합니다.
+ * 두 컬럼 그리드: 왼쪽 카피+CTA, 오른쪽 케이스 이미지 카드 덱
  */
 function HeroSection({
   content,
-  slides
+  cases: editableCases
 }: {
   content: HomepageContent["hero"];
-  slides: HomepageContent["hero"]["slides"];
+  cases: HomepageContent["cases"];
 }) {
-  const heroSlides = useMemo(() => slides.filter((slide) => slide.image).slice(0, 3), [slides]);
-  const [activeSlide, setActiveSlide] = useState(0);
+  const rotatorWords = ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문"];
+  const [rotatorIndex, setRotatorIndex] = useState(0);
+  const [rotatorKey, setRotatorKey] = useState(0);
 
   useEffect(() => {
-    if (heroSlides.length < 2) return;
-
     const timer = window.setInterval(() => {
-      setActiveSlide((current) => (current + 1) % heroSlides.length);
-    }, 6000);
-
+      setRotatorIndex((i) => (i + 1) % rotatorWords.length);
+      setRotatorKey((k) => k + 1);
+    }, 2400);
     return () => window.clearInterval(timer);
-  }, [heroSlides.length]);
+  }, []);
+
+  const caseImages = useMemo(
+    () => editableCases.filter((c) => c.image).slice(0, 3),
+    [editableCases]
+  );
+
+  const proofs: [string, string][] = [
+    ["상담 방식", "사진 기반 사전 확인"],
+    ["작업 범위", "부분수리부터 복구까지"],
+    ["현장 기록", "네이버 블로그 사례 연동"]
+  ];
 
   return (
-    <section className="hero hero-fullbleed">
-      <div className="hero-carousel" aria-hidden="true">
-        {heroSlides.map((slide, index) => (
-          <img
-            key={slide.image}
-            className={index === activeSlide ? "hero-background hero-slide active" : "hero-background hero-slide"}
-            src={slide.image}
-            style={{ objectPosition: slide.position, transform: `scale(${slide.scale})` }}
-            alt=""
-          />
-        ))}
-      </div>
-      <div className="hero-overlay" />
-      <div className="hero-copy">
-        <span className="hero-kicker">{content.mediaNote}</span>
-        <h1>{content.title}</h1>
-        <p>{content.description}</p>
-        <CtaButtons content={content} />
-        <ProofList />
-      </div>
-      {heroSlides.length > 1 ? (
-        <div className="hero-carousel-controls" aria-label="히어로 이미지 전환">
-          <button type="button" onClick={() => setActiveSlide((current) => (current - 1 + heroSlides.length) % heroSlides.length)}>
-            <ChevronLeft size={18} />
-          </button>
-          <div className="hero-carousel-dots">
-            {heroSlides.map((slide, index) => (
-              <button
-                key={`${slide.image}-${index}`}
-                type="button"
-                className={index === activeSlide ? "hero-dot active" : "hero-dot"}
-                onClick={() => setActiveSlide(index)}
-                aria-label={`슬라이드 ${index + 1}`}
-              />
-            ))}
+    <section className="hero" id="hero">
+      <div className="hero__grid">
+        {/* Left column */}
+        <div>
+          <span className="hero__eyebrow">
+            <span className="dot" style={{ width: 6, height: 6, borderRadius: "50%", background: "#2f7a4d", display: "inline-block" }} />
+            서울·경기 종합 집수리
+          </span>
+          <h1 className="hero__title">
+            집의 모든 불편을
+            <br />
+            <span className="hero__rotator">
+              <em key={rotatorKey}>{rotatorWords[rotatorIndex]}</em>
+            </span>
+            으로 끝냅니다.
+          </h1>
+          <p className="hero__lede">
+            {content.description || "물 새는 천장부터 들뜬 벽지까지. 큰 공사 권하지 않고 딱 필요한 만큼만, 7개 국가공인 건축자격을 가진 대표가 직접 손봅니다."}
+          </p>
+          <div className="hero__cta">
+            <a className="primary-button" href={business.phoneHref}>
+              <Phone size={18} />
+              {content.primaryActionLabel || "전화 상담"}
+            </a>
+            <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
+              <MessageCircle size={18} />
+              {content.secondaryActionLabel || "카카오톡"}
+            </a>
+            <a className="secondary-button" href="/estimate">
+              <ArrowUpRight size={18} />
+              {content.tertiaryActionLabel || "견적상담"}
+            </a>
           </div>
-          <button type="button" onClick={() => setActiveSlide((current) => (current + 1) % heroSlides.length)}>
-            <ChevronRight size={18} />
-          </button>
+          <dl className="hero__proof">
+            {proofs.map(([dt, dd]) => (
+              <div key={dt}>
+                <dt>{dt}</dt>
+                <dd>{dd}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
-      ) : null}
+
+        {/* Right column: card deck */}
+        {caseImages.length > 0 ? (
+          <div className="hero__deck">
+            {caseImages[0] && (
+              <div className="hero__card hero__card--main">
+                <img src={caseImages[0].image} alt={caseImages[0].title} />
+                <div className="hero__card-tag">{caseImages[0].area}</div>
+              </div>
+            )}
+            {caseImages[1] && (
+              <div className="hero__card hero__card--b">
+                <img src={caseImages[1].image} alt={caseImages[1].title} />
+              </div>
+            )}
+            {caseImages[2] && (
+              <div className="hero__card hero__card--c">
+                <img src={caseImages[2].image} alt={caseImages[2].title} />
+              </div>
+            )}
+            <div className="hero__chip hero__chip--running">
+              <span className="pulse" />
+              <strong>{caseImages.length}건</strong> 대표사례
+            </div>
+          </div>
+        ) : null}
+      </div>
     </section>
   );
 }
 
-function CtaButtons({ content }: { content: HomepageContent["hero"] }) {
-  return (
-    <div className="hero-actions">
-      <a className="primary-button" href={business.phoneHref}>
-        <Phone size={20} />
-        {content.primaryActionLabel}
-      </a>
-      <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
-        <MessageCircle size={20} />
-        {content.secondaryActionLabel}
-      </a>
-      <a className="secondary-button" href="/estimate">
-        <ArrowUpRight size={20} />
-        {content.tertiaryActionLabel}
-      </a>
-    </div>
-  );
-}
-
-function ProofList() {
-  const proofs = useMemo(
-    () => [
-      ["상담 방식", "사진 기반 사전 확인"],
-      ["작업 범위", "부분수리부터 복구까지"],
-      ["현장 기록", "네이버 블로그 사례 연동"]
-    ],
-    []
-  );
+function TrustBandSection() {
+  const items = [
+    { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
+    { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
+    { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
+  ];
 
   return (
-    <dl className="proof-list">
-      {proofs.map(([label, value]) => (
-        <div key={label}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
+    <section className="trust" aria-label="신뢰 지표">
+      <div className="trust__inner">
+        {items.map((item) => (
+          <div className="trust__item" key={item.label}>
+            <span className="trust__num">{item.num}</span>
+            <div className="trust__label">
+              <strong>{item.label}</strong>
+              <span>{item.sub}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -566,25 +599,25 @@ function SymptomsSection({ symptoms }: { symptoms: string[] }) {
   );
 }
 
-/** 서비스 카드 영역: 새 공종 추가 시 data.ts의 services 배열만 수정하면 됩니다. */
+/** 서비스 카드 영역: 벤토 그리드 — 첫 카드가 2열 차지 */
 function ServicesSection({
   services: editableServices
 }: {
   services: { title: string; text: string }[];
 }) {
   return (
-    <section className="services section" id="services" aria-labelledby="services-title">
-      <SectionHeading
-        id="services-title"
-        title="생활 집수리 서비스"
-        description="큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다."
-      />
-      <div className="service-grid">
+    <section className="services" id="services" aria-labelledby="services-title">
+      <div className="sec-head" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(24px,3vw,36px)" }}>
+        <h2 id="services-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>생활 집수리 서비스</h2>
+        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.</p>
+      </div>
+      <div className="bento">
         {services.map((service, index) => {
           const item = editableServices[index] ?? { title: service.title, text: service.text };
           return (
-            <article className="service-card" key={item.title}>
-              <service.icon size={26} />
+            <article className="bento__card" key={item.title}>
+              <span className="bento__num">{String(index + 1).padStart(2, "0")}</span>
+              <service.icon size={28} />
               <h3>{item.title}</h3>
               <p>{item.text}</p>
             </article>
@@ -596,20 +629,117 @@ function ServicesSection({
 }
 
 function SpecialtiesSection() {
+  const categories = [
+    { key: "all", label: "전체" },
+    { key: "utility", label: "설비·배관" },
+    { key: "finish", label: "마감" },
+    { key: "wood", label: "문·창·목공" },
+    { key: "remodel", label: "욕실·주방·리모델링" },
+    { key: "extra", label: "기타" }
+  ];
+
+  // Map each specialty to a category
+  const itemCatMap: Record<string, string> = {
+    "수도 배관": "utility", "전기 배선": "utility", "온수기 설치/수리": "utility",
+    "환풍기": "utility", "주방후드": "utility", "조명": "utility",
+    "도배": "finish", "바닥재": "finish", "페인트": "finish", "필름": "finish",
+    "타일": "finish", "줄눈": "finish", "실리콘 시공": "finish", "탄성코트 시공": "finish",
+    "인테리어 필름": "finish",
+    "문 설치/수리": "wood", "중문": "wood", "창문/샷시": "wood", "방충망": "wood",
+    "방범창": "wood", "방풍시공": "wood", "열쇠/도어락": "wood", "가구 조립": "wood", "단열시공": "wood",
+    "욕실 리모델링": "remodel", "주방 리모델링": "remodel", "싱크대 교체": "remodel",
+    "붙박이장": "remodel", "냉장고장 설치": "remodel", "옥상 방수": "remodel",
+    "집 전체 리모델링": "remodel",
+    "커튼/블라인드": "extra", "전동 빨래건조대": "extra"
+  };
+
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const filteredItems = useMemo(() => {
+    return business.specialties.filter((item) => {
+      const catMatch = activeCategory === "all" || itemCatMap[item] === activeCategory;
+      const searchMatch = !searchQuery || item.toLowerCase().includes(searchQuery.toLowerCase());
+      return catMatch && searchMatch;
+    });
+  }, [activeCategory, searchQuery]);
+
+  const toggleSelected = (item: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(item)) {
+        next.delete(item);
+      } else {
+        next.add(item);
+      }
+      return next;
+    });
+  };
+
+  const ctaHref = selected.size > 0
+    ? `/estimate?works=${encodeURIComponent([...selected].join(","))}`
+    : "/estimate";
+
   return (
-    <section className="specialties section" id="specialties" aria-labelledby="specialties-title">
-      <SectionHeading
-        id="specialties-title"
-        title="가능 작업"
-        description="집 안팎에서 필요한 수리, 설비, 마감, 리모델링 작업을 폭넓게 상담합니다."
-      />
-      <div className="specialty-list">
-        {business.specialties.map((item) => (
-          <a href="#contact" key={item}>
+    <section className="specialties" id="specialties" aria-labelledby="specialties-title">
+      <div className="sec-head" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(20px,2.5vw,30px)" }}>
+        <h2 id="specialties-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>가능 작업</h2>
+        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>집 안팎에서 필요한 수리, 설비, 마감, 리모델링 작업을 폭넓게 상담합니다.</p>
+      </div>
+      <div className="specs__controls">
+        <div className="specs__filters">
+          {categories.map((cat) => (
+            <button
+              key={cat.key}
+              className={`specs__filter${activeCategory === cat.key ? " active" : ""}`}
+              onClick={() => setActiveCategory(cat.key)}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+        <div className="specs__search">
+          <ArrowUpRight size={16} style={{ color: "var(--ink-3,#5b6781)" }} />
+          <input
+            type="search"
+            placeholder="작업 검색..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="작업 검색"
+          />
+        </div>
+      </div>
+      <div className="specs__grid">
+        {filteredItems.map((item) => (
+          <button
+            key={item}
+            className={`specs__item${selected.has(item) ? " selected" : ""}`}
+            onClick={() => toggleSelected(item)}
+            aria-pressed={selected.has(item)}
+          >
             {item}
-          </a>
+          </button>
         ))}
       </div>
+      {selected.size > 0 && (
+        <div className="specs__cta">
+          <div className="specs__cta-inner">
+            <span>
+              <strong>{selected.size}개</strong> 작업 선택됨: {[...selected].slice(0, 3).join(", ")}{selected.size > 3 ? ` 외 ${selected.size - 3}개` : ""}
+            </span>
+            <a className="primary-button" href={ctaHref} style={{ minHeight: 42, padding: "0 18px", fontSize: 14 }}>
+              이 작업으로 견적 받기 <ArrowUpRight size={16} />
+            </a>
+            <button
+              onClick={() => setSelected(new Set())}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--ink-3,#5b6781)", padding: "0 8px" }}
+            >
+              초기화
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -621,8 +751,8 @@ function SearchLandingSection() {
     <section className="landing-links section" id="landing-pages" aria-labelledby="landing-pages-title">
       <SectionHeading
         id="landing-pages-title"
-        title="검색용 페이지"
-        description="누수, 욕실수리, 도배, 문수리와 지역 검색어를 따로 볼 수 있게 나눴습니다."
+        title="서비스·지역별 안내"
+        description="서비스 유형과 지역별로 정리한 상담 안내 페이지입니다."
       />
       <div className="landing-link-groups">
         <div className="landing-link-group">
@@ -654,37 +784,42 @@ function SearchLandingSection() {
   );
 }
 
-/** 수동 대표 사례 영역: 실제 사진이 들어오면 data.ts의 cases.image만 교체합니다. */
+/** 수동 대표 사례 영역: 가로 스크롤 레일 */
 function CasesSection({
   cases: editableCases
 }: {
   cases: { title: string; area: string; problem: string; solution: string; image: string; link: string }[];
 }) {
   return (
-    <section className="cases section" id="cases" aria-labelledby="cases-title">
-      <RowHeading
-        id="cases-title"
-        title="대표 현장사례"
-        description="실제 사진이 준비되면 이 영역에 바로 교체할 수 있습니다."
-        linkLabel="전체 사례 보기"
-        href={business.naverBlogUrl}
-      />
-      <div className="case-grid">
+    <section className="cases" id="cases" aria-labelledby="cases-title">
+      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(20px,2.5vw,32px)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h2 id="cases-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>대표 현장사례</h2>
+          <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>실제 현장 사진과 작업 내용을 확인하세요.</p>
+        </div>
+        <a href={business.naverBlogUrl} target="_blank" rel="noreferrer" style={{ fontSize: 14, fontWeight: 600, color: "var(--navy-700,#10284a)", display: "inline-flex", alignItems: "center", gap: 6, borderBottom: "1px solid var(--ink,#0b1a30)", paddingBottom: 2 }}>
+          전체 사례 보기 <ExternalLink size={14} />
+        </a>
+      </div>
+      <div className="cases__rail">
         {editableCases.map((item) => (
-          <a className="case-card case-link" href={item.link} target="_blank" rel="noreferrer" key={item.title}>
-            <img src={item.image} alt={item.title} />
-            <div>
-              <span>{item.area}</span>
+          <a className="cases__card" href={item.link} target="_blank" rel="noreferrer" key={item.title}>
+            <div className="cases__media">
+              <img src={item.image} alt={item.title} />
+            </div>
+            <div className="cases__body">
               <h3>{item.title}</h3>
-              <p>
-                <strong>문제</strong> {item.problem}
-              </p>
-              <p>
-                <strong>해결</strong> {item.solution}
-              </p>
-              <span className="case-card-link">
-                블로그 보기 <ExternalLink size={16} />
-              </span>
+              <dl className="row">
+                <dt>문제</dt>
+                <dd>{item.problem}</dd>
+              </dl>
+              <dl className="row">
+                <dt>해결</dt>
+                <dd>{item.solution}</dd>
+              </dl>
+              <div className="more">
+                블로그 보기 <ExternalLink size={14} />
+              </div>
             </div>
           </a>
         ))}
@@ -703,8 +838,8 @@ function BlogSection({
 }) {
   const description =
     source === "naver"
-      ? "네이버 블로그 최신 현장 글을 자동으로 가져와 사진 카드로 보여줍니다."
-      : "API 키가 없거나 연결되지 않으면 관리자 지정 포트폴리오 카드로 대신 보여줍니다.";
+      ? "최근 현장 시공 사례를 블로그에서 가져옵니다."
+      : "대표 시공 포트폴리오입니다.";
 
   return (
     <section className="blog section" id="blog" aria-labelledby="blog-title">
@@ -781,25 +916,42 @@ function buildSummaryLines(description: string) {
   return sentences.slice(0, 3).map((sentence) => sentence.slice(0, 80));
 }
 
-/** 작업 절차 영역: 상담에서 시공 확인까지의 기대 흐름을 고정합니다. */
+/** 작업 절차 영역: 클릭 가능한 스텝 트랙 + 상세 패널 */
 function ProcessSection({ steps }: { steps: { title: string; text: string }[] }) {
+  const [activeStep, setActiveStep] = useState(0);
+  const activeData = process[activeStep];
+  const activeContent = steps[activeStep];
+
   return (
-    <section className="process section" id="process" aria-labelledby="process-title">
-      <SectionHeading
-        id="process-title"
-        title="작업 절차"
-        description="불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다."
-      />
-      <div className="process-line">
+    <section className="process" id="process" aria-labelledby="process-title">
+      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(20px,2.5vw,32px)" }}>
+        <h2 id="process-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>작업 절차</h2>
+        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: "0 0 32px" }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
+      </div>
+      <div className="process__track">
         {process.map((step, index) => (
-          <article key={step.title}>
-            <span>{index + 1}</span>
-            <step.icon size={24} />
+          <button
+            key={step.title}
+            className={`process__step${activeStep === index ? " active" : ""}`}
+            onClick={() => setActiveStep(index)}
+            aria-current={activeStep === index ? "true" : undefined}
+          >
+            <span className="step-num">0{index + 1}</span>
+            <step.icon size={22} />
             <h3>{steps[index]?.title ?? step.title}</h3>
-            <p>{steps[index]?.text ?? step.text}</p>
-          </article>
+          </button>
         ))}
       </div>
+      {activeData && (
+        <div className="process__detail">
+          <div className="process__detail-card">
+            <div>
+              <h3>{activeContent?.title ?? activeData.title}</h3>
+              <p>{activeContent?.text ?? activeData.text}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -975,12 +1127,8 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
         <section className="landing-section section" aria-labelledby="landing-blog-title">
           <SectionHeading
             id="landing-blog-title"
-            title={`${content.searchTerms[0]} 최신 블로그 레퍼런스`}
-            description={
-              landingSource === "naver"
-                ? `네이버에서 ${content.searchTerms.join(", ")} 키워드가 들어간 최신 게시물을 추려서 보여줍니다.`
-                : "연결이 없을 때는 관리자 지정 포트폴리오를 대신 보여줍니다."
-            }
+            title={`${content.searchTerms[0]} 사례 & 블로그`}
+            description={`${content.searchTerms[0]} 관련 시공 사례와 블로그 게시물을 모았습니다.`}
           />
           <BlogShowcase
             label="블로그 레퍼런스"
@@ -998,7 +1146,7 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
           <SectionHeading
             id="landing-faq-title"
             title="자주 묻는 질문"
-            description="검색에서 자주 들어오는 질문을 짧고 분명하게 정리합니다."
+            description="자주 묻는 질문을 짧고 분명하게 정리했습니다."
           />
           <div className="landing-faq-list">
             {content.faq.map((item) => (
@@ -1013,8 +1161,8 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
         <section className="landing-section section" aria-labelledby="landing-related-title">
           <SectionHeading
             id="landing-related-title"
-            title="연결된 페이지"
-            description="서비스와 지역 페이지를 서로 연결해 검색 신호를 이어줍니다."
+            title="함께 보면 좋은 페이지"
+            description="관련 서비스나 인근 지역 상담 페이지로 바로 이동할 수 있습니다."
           />
           <div className="landing-related-links">
             {content.relatedLinks.map((link) => (

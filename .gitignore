@@ -7,3 +7,4 @@ vite.out.log
 vite.err.log
 
 .vercel
+.env*

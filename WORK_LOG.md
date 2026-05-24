@@ -1049,3 +1049,30 @@ Verification:
 
 Follow-up:
 - If the favicon still feels too subtle in a specific browser tab size, the next step is to simplify the mark further for 16px rendering.
+
+## 2026-05-24 - Homepage Design Handoff: Navy/Gold/Cream Redesign
+
+Changed files:
+- `src/styles.css`
+- `src/App.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added new design system CSS tokens at top of styles.css: `--navy-700`, `--navy-800`, `--gold-500`, `--cream`, `--cream-2`, `--ink`, `--ink-2`, `--ink-3`, `--ink-4`, `--hair`, `--f-display`, `--f-sans`, `--f-mono`, `--max`.
+- Updated `:root` `background` and `color` to use cream/navy scheme.
+- Replaced `.site-header` with new `.nav` component: sticky, cream background, scroll progress bar (navy→gold gradient), elevated state with blur.
+- Replaced fullbleed carousel hero with two-column grid hero: left column has eyebrow, rotating keyword title (cycles every 2.4s), lede, CTA buttons, proof DL; right column shows case image card deck with 3 stacked/rotated cards and a running chip counter.
+- Added `TrustBandSection`: dark navy band with 3 trust metrics (7 국가공인 자격, 31 가능 작업, 13시간 운영시간) in gold numbers.
+- Updated `ServicesSection` to bento grid: first card spans 2×2 on desktop with dark navy gradient background.
+- Updated `SpecialtiesSection` with category filter buttons (전체/설비·배관/마감/문·창·목공/욕실·주방·리모델링/기타), search input, and multi-select chips that show a CTA link to `/estimate?works=...`.
+- Updated `CasesSection` to horizontal scroll rail with case cards showing media, title, problem/solution DL, and blog link.
+- Updated `ProcessSection` to clickable step track: each step button highlights as active (dark navy), clicking reveals a detail card below.
+- Updated `HomePage()` to: SiteHeader → HeroSection → TrustBandSection → ServicesSection → SpecialtiesSection → CasesSection → ProcessSection → BlogSection → ContactSection → SiteFooter → MobileQuickCta. (Removed AboutSection, SymptomsSection, SearchLandingSection, OfficeSection from homepage — components remain in file.)
+- All other page components (LandingPage, AdminPage, EstimatePage, etc.) unchanged.
+
+Verification:
+- `npm run build` passed (tsc + vite, no errors, 383 kB JS / 83 kB CSS).
+
+Follow-up:
+- Deploy to Vercel to verify visual output in browser.
+- Consider replacing placeholder case images with real job-site photos for the hero card deck.

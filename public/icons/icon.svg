@@ -1,17 +1,58 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="bg" x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#3B3A37" />
-      <stop offset="1" stop-color="#151515" />
-    </linearGradient>
-    <linearGradient id="ring" x1="14" y1="12" x2="50" y2="52" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F6E6CA" />
-      <stop offset="1" stop-color="#DEC6A0" />
-    </linearGradient>
-  </defs>
-  <circle cx="32" cy="32" r="30" fill="url(#bg)" />
-  <circle cx="32" cy="32" r="26" stroke="url(#ring)" stroke-width="3.5" />
-  <path d="M19 31L32 20L45 31" stroke="url(#ring)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-  <path d="M22 30.5V47H42V30.5" stroke="url(#ring)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
-  <circle cx="32" cy="34" r="5.5" fill="#151515" stroke="url(#ring)" stroke-width="3.5" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Gold outer ring -->
+  <circle cx="100" cy="100" r="88" stroke="#c9a432" stroke-width="4.5"/>
+
+  <!-- HOUSE (dark navy outline) -->
+  <polyline points="57,93 103,47 150,93"
+    stroke="#10284a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M57 93 V153 H150 V93"
+    stroke="#10284a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- 2x2 Window grid (solid squares) -->
+  <rect x="87" y="104" width="12" height="11" rx="1.5" fill="#10284a"/>
+  <rect x="102" y="104" width="12" height="11" rx="1.5" fill="#10284a"/>
+  <rect x="87" y="118" width="12" height="11" rx="1.5" fill="#10284a"/>
+  <rect x="102" y="118" width="12" height="11" rx="1.5" fill="#10284a"/>
+
+  <!-- STETHOSCOPE (dark navy) -->
+  <!-- Left earpiece arm: Y-junction at ~(44,66) going up-left with curl at tip -->
+  <path d="M44 66 Q36 59 28 49 Q23 42 27 36 Q32 31 38 40"
+    stroke="#10284a" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <!-- Right earpiece arm: going up-right with curl at tip -->
+  <path d="M44 66 Q52 57 57 46 Q62 38 57 33 Q51 28 46 38"
+    stroke="#10284a" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <!-- Main tube: from junction, down and around to bell inside house -->
+  <path d="M44 66 C39 87 37 110 40 132 C43 154 57 167 79 172 C90 175 99 168 99 157"
+    stroke="#10284a" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <!-- Stethoscope bell (chest piece / diaphragm) -->
+  <circle cx="99" cy="150" r="7" stroke="#10284a" stroke-width="5.5" fill="none"/>
+
+  <!-- RIGHT WRENCH (head at/outside circle, upper-right) -->
+  <!-- Handle going diagonally up-right -->
+  <line x1="154" y1="90" x2="174" y2="63"
+    stroke="#10284a" stroke-width="7" stroke-linecap="round"/>
+  <!-- Open-end wrench head: two jaws + connecting arc -->
+  <line x1="171" y1="66" x2="186" y2="56"
+    stroke="#10284a" stroke-width="6.5" stroke-linecap="round"/>
+  <line x1="175" y1="74" x2="190" y2="65"
+    stroke="#10284a" stroke-width="6.5" stroke-linecap="round"/>
+  <path d="M186 56 Q195 61 190 65"
+    stroke="#10284a" stroke-width="6" stroke-linecap="round" fill="none"/>
+
+  <!-- CROSSED TOOLS (bottom, within circle) -->
+  <!-- Tool A — screwdriver: handle lower-left (gold stripes), tip upper-right -->
+  <line x1="72" y1="185" x2="136" y2="164"
+    stroke="#10284a" stroke-width="7" stroke-linecap="round"/>
+  <!-- Gold grip stripes on screwdriver handle -->
+  <line x1="78" y1="181" x2="86" y2="179" stroke="#c9a432" stroke-width="4" stroke-linecap="round"/>
+  <line x1="88" y1="177" x2="96" y2="175" stroke="#c9a432" stroke-width="4" stroke-linecap="round"/>
+  <line x1="98" y1="173" x2="106" y2="171" stroke="#c9a432" stroke-width="4" stroke-linecap="round"/>
+  <!-- Screwdriver flat-head tip (wedge) -->
+  <polygon points="133,163 147,158 150,168 136,173" fill="#10284a"/>
+
+  <!-- Tool B — wrench: handle lower-right, open-end head upper area -->
+  <line x1="110" y1="190" x2="163" y2="168"
+    stroke="#10284a" stroke-width="7" stroke-linecap="round"/>
+  <!-- Open-end wrench head at upper-right end -->
+  <path d="M160 171 C164 162 175 161 181 169 C187 178 182 190 173 192 C163 194 157 186 159 177"
+    stroke="#10284a" stroke-width="5.5" stroke-linecap="round" fill="none"/>
 </svg>

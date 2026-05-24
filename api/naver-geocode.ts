@@ -4,8 +4,8 @@ const DEFAULT_LAT = 37.6522095;
 const DEFAULT_LNG = 127.3007050;
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
-  const clientId = process.env.NAVER_CLIENT_ID;
-  const clientSecret = process.env.NAVER_CLIENT_SECRET;
+  const clientId = process.env.NAVER_GEOCODE_CLIENT_ID || process.env.NAVER_CLIENT_ID;
+  const clientSecret = process.env.NAVER_GEOCODE_CLIENT_SECRET || process.env.NAVER_CLIENT_SECRET;
   const address = String(request.query.address || "").trim();
 
   if (!clientId || !clientSecret) {
