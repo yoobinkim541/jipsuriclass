@@ -2232,6 +2232,14 @@ textarea {
   color: var(--gold-500, #d7ae6b);
 }
 
+.process__inline-detail {
+  display: none;
+}
+
+.blog-carousel-controls {
+  display: none;
+}
+
 .process__detail {
   max-width: var(--max, 1320px);
   margin: 16px auto 0;
@@ -2820,6 +2828,50 @@ textarea {
   letter-spacing: 0.12em;
   margin-bottom: 6px;
   text-transform: uppercase;
+}
+
+@keyframes heroSwapIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.about-visual__hero {
+  animation: heroSwapIn 0.42s cubic-bezier(.16,1,.3,1) both;
+}
+
+.about-visual__tile--clickable {
+  cursor: pointer;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.about-visual__tile--clickable:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 12px 32px rgba(8, 22, 40, 0.16);
+  border-color: var(--navy-700, #10284a);
+}
+
+.about-visual__tile--clickable::before {
+  background: rgba(16, 40, 74, 0.55);
+  border-radius: 8px;
+  color: #ffffff;
+  content: "크게 보기";
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  padding: 6px 10px;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 200ms ease;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.about-visual__tile--clickable:hover::before {
+  opacity: 1;
 }
 
 .about-visual__hero figcaption span,
@@ -6841,6 +6893,61 @@ textarea {
   .hero__cta a,
   .hero__cta button {
     justify-content: center;
+  }
+
+  .blog-carousel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 0 16px 16px;
+  }
+
+  .process__inline-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: #fdfbf6;
+    border: 1px solid var(--hair, #e6dfd0);
+    border-radius: 16px;
+    padding: 18px;
+    animation: fadeUp .35s cubic-bezier(.16,1,.3,1) both;
+    margin-top: -4px;
+  }
+
+  .process__inline-detail .process__illustration {
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: var(--cream-2, #f1ece1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .process__inline-detail .process__illustration svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .process__inline-text h3 {
+    font-family: var(--f-display, sans-serif);
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0 0 8px;
+    color: var(--ink, #0b1a30);
+  }
+
+  .process__inline-text p {
+    color: var(--ink-2, #2a3a55);
+    line-height: 1.7;
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .process__detail {
+    display: none;
   }
 
   .brand {

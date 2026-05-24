@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import React, { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -348,20 +348,7 @@ function SiteHeader({
   onOpenMenu: () => void;
   onCloseMenu: () => void;
 }) {
-  const seenLabels = new Set<string>();
-  const navLabelFallbacks: Partial<Record<(typeof navItems)[number]["href"], string>> = {
-    "#contact": "문의"
-  };
-  const menuItems = navItems.map((item, index) => {
-    const candidateLabel = navLabels[index] ?? item.label;
-    const fallbackLabel = navLabelFallbacks[item.href] ?? item.label;
-    const label = seenLabels.has(candidateLabel) || candidateLabel === "문의" && item.href === "#contact" ? fallbackLabel : candidateLabel;
-    seenLabels.add(label);
-    return {
-      ...item,
-      label
-    };
-  });
+  const menuItems = navItems;
   const desktopMenuItems = menuItems.filter((item) => item.href.startsWith("#"));
 
   const [scrollPct, setScrollPct] = useState(0);
@@ -559,10 +546,22 @@ function AboutSection({
   content: { eyebrow: string; title: string; description: string; strengths: string[] };
   cases: HomepageContent["cases"];
 }) {
-  const featuredImages = useMemo(
+  const allImages = useMemo(
     () => cases.filter((item) => item.image).slice(0, 3),
     [cases]
   );
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [heroKey, setHeroKey] = useState(0);
+
+  const heroItem = allImages[featuredIndex];
+  const tileItems = allImages.filter((_, i) => i !== featuredIndex);
+
+  function handleTileClick(item: typeof allImages[0]) {
+    const newIndex = allImages.indexOf(item);
+    if (newIndex === featuredIndex) return;
+    setFeaturedIndex(newIndex);
+    setHeroKey((k) => k + 1);
+  }
 
   return (
     <section className="about section" id="about" aria-labelledby="about-title">
@@ -580,18 +579,26 @@ function AboutSection({
         </ul>
       </div>
       <div className="about-visual" aria-label="현장 사진 요약">
-        {featuredImages[0] && (
-          <figure className="about-visual__hero">
-            <img src={featuredImages[0].image} alt={featuredImages[0].title} loading="lazy" />
+        {heroItem && (
+          <figure className="about-visual__hero" key={`hero-${heroKey}`}>
+            <img src={heroItem.image} alt={heroItem.title} loading="lazy" />
             <figcaption>
-              <strong>{featuredImages[0].area}</strong>
-              <span>{featuredImages[0].title}</span>
+              <strong>{heroItem.area}</strong>
+              <span>{heroItem.title}</span>
             </figcaption>
           </figure>
         )}
         <div className="about-visual__stack">
-          {featuredImages.slice(1, 3).map((item, index) => (
-            <figure className={`about-visual__tile about-visual__tile--${index + 1}`} key={item.title}>
+          {tileItems.map((item) => (
+            <figure
+              className="about-visual__tile about-visual__tile--clickable"
+              key={item.title}
+              onClick={() => handleTileClick(item)}
+              role="button"
+              tabIndex={0}
+              aria-label={`${item.title} 크게 보기`}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleTileClick(item); }}
+            >
               <img src={item.image} alt={item.title} loading="lazy" />
               <figcaption>
                 <strong>{item.area}</strong>
@@ -1021,6 +1028,9 @@ function BlogSection({
   source: "loading" | "naver" | "fallback";
 }) {
   const railRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollFrameRef = useRef<number | null>(null);
 
   useAutoCarousel(railRef, { enabled: true });
 
@@ -1029,6 +1039,41 @@ function BlogSection({
       ? "최근 현장 시공 사례를 블로그에서 가져옵니다."
       : "대표 시공 포트폴리오입니다.";
   const displayPosts = posts.slice(0, 5);
+
+  function scrollToIndex(index: number) {
+    const rail = railRef.current;
+    const card = cardRefs.current[index];
+    if (!rail || !card) return;
+    const railRect = rail.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    rail.scrollBy({ left: cardRect.left - railRect.left - (railRect.width - cardRect.width) / 2, behavior: "smooth" });
+  }
+
+  function syncActiveFromScroll() {
+    const rail = railRef.current;
+    if (!rail) return;
+    const railCenter = rail.scrollLeft + rail.offsetWidth / 2;
+    let nearest = 0;
+    let nearestDist = Infinity;
+    cardRefs.current.forEach((card, index) => {
+      if (!card) return;
+      const center = card.offsetLeft + card.offsetWidth / 2;
+      const dist = Math.abs(center - railCenter);
+      if (dist < nearestDist) { nearestDist = dist; nearest = index; }
+    });
+    setActiveIndex(nearest);
+  }
+
+  function handleScroll() {
+    if (scrollFrameRef.current !== null) window.cancelAnimationFrame(scrollFrameRef.current);
+    scrollFrameRef.current = window.requestAnimationFrame(syncActiveFromScroll);
+  }
+
+  function goToIndex(next: number) {
+    const normalized = (next + displayPosts.length) % displayPosts.length;
+    setActiveIndex(normalized);
+    scrollToIndex(normalized);
+  }
 
   return (
     <section className="blog section" id="blog" aria-labelledby="blog-title">
@@ -1040,7 +1085,7 @@ function BlogSection({
         href={business.naverBlogUrl}
         className="naver-link"
       />
-      <div className="blog-card-grid blog-card-carousel-mobile" ref={railRef}>
+      <div className="blog-card-grid blog-card-carousel-mobile" ref={railRef} onScroll={handleScroll}>
         {displayPosts.map((post, index) => (
           <a
             className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
@@ -1048,6 +1093,7 @@ function BlogSection({
             target="_blank"
             rel="noreferrer"
             key={post.title}
+            ref={(el) => { cardRefs.current[index] = el; }}
           >
             <img
               className="blog-card-image"
@@ -1087,6 +1133,26 @@ function BlogSection({
             </div>
           </a>
         ))}
+      </div>
+      <div className="blog-carousel-controls" aria-label="블로그 포트폴리오 캐러셀 컨트롤">
+        <button className="cases__carousel-button" type="button" onClick={() => goToIndex(activeIndex - 1)} aria-label="이전 글">
+          <ChevronLeft size={16} />
+        </button>
+        <div className="cases__carousel-dots" aria-label="현재 위치">
+          {displayPosts.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              className={index === activeIndex ? "cases__dot active" : "cases__dot"}
+              onClick={() => goToIndex(index)}
+              aria-label={`${index + 1}번째 글로 이동`}
+              aria-pressed={index === activeIndex}
+            />
+          ))}
+        </div>
+        <button className="cases__carousel-button" type="button" onClick={() => goToIndex(activeIndex + 1)} aria-label="다음 글">
+          <ChevronRight size={16} />
+        </button>
       </div>
     </section>
   );
@@ -1235,16 +1301,28 @@ function ProcessSection({ steps }: { steps: { title: string; text: string }[] })
       </div>
       <div className="process__track">
         {process.map((step, index) => (
-          <button
-            key={step.title}
-            className={`process__step${activeStep === index ? " active" : ""}`}
-            onClick={() => setActiveStep(index)}
-            aria-current={activeStep === index ? "true" : undefined}
-          >
-            <span className="step-num">0{index + 1}</span>
-            <step.icon size={22} />
-            <h3>{steps[index]?.title ?? step.title}</h3>
-          </button>
+          <React.Fragment key={step.title}>
+            <button
+              className={`process__step${activeStep === index ? " active" : ""}`}
+              onClick={() => setActiveStep(index)}
+              aria-current={activeStep === index ? "true" : undefined}
+            >
+              <span className="step-num">0{index + 1}</span>
+              <step.icon size={22} />
+              <h3>{steps[index]?.title ?? step.title}</h3>
+            </button>
+            {activeStep === index && (
+              <div className="process__inline-detail">
+                <div className="process__illustration">
+                  {processIllustrations[index]}
+                </div>
+                <div className="process__inline-text">
+                  <h3>{steps[index]?.title ?? step.title}</h3>
+                  <p>{steps[index]?.text ?? step.text}</p>
+                </div>
+              </div>
+            )}
+          </React.Fragment>
         ))}
       </div>
       {activeData && (
