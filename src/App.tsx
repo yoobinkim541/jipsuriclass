@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ArrowUpRight,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
   Menu,
   MessageCircle,
@@ -801,8 +803,96 @@ function CasesSection({
   cases: { title: string; area: string; problem: string; solution: string; image: string; link: string }[];
 }) {
   const railRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+  const scrollFrameRef = useRef<number | null>(null);
+  const pauseTimerRef = useRef<number | null>(null);
+  const isPausedRef = useRef(false);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  useAutoCarousel(railRef, { enabled: true });
+  useEffect(() => {
+    const rail = railRef.current;
+    const card = cardRefs.current[activeIndex];
+    if (!rail || !card) return;
+
+    const nextLeft = Math.max(0, card.offsetLeft - rail.clientWidth / 2 + card.offsetWidth / 2);
+
+    rail.scrollTo({
+      left: nextLeft,
+      behavior: "smooth",
+    });
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || editableCases.length <= 1) return;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return;
+
+    const timerId = window.setInterval(() => {
+      if (isPausedRef.current) return;
+      setActiveIndex((current) => (current + 1) % editableCases.length);
+    }, 4200);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [editableCases.length]);
+
+  useEffect(() => {
+    return () => {
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+      }
+      if (pauseTimerRef.current !== null) {
+        window.clearTimeout(pauseTimerRef.current);
+      }
+    };
+  }, []);
+
+  function pauseCarousel() {
+    isPausedRef.current = true;
+    if (pauseTimerRef.current !== null) {
+      window.clearTimeout(pauseTimerRef.current);
+    }
+    pauseTimerRef.current = window.setTimeout(() => {
+      isPausedRef.current = false;
+    }, 5500);
+  }
+
+  function syncActiveFromScroll() {
+    const rail = railRef.current;
+    if (!rail) return;
+
+    const railCenter = rail.scrollLeft + rail.clientWidth / 2;
+    let nearestIndex = 0;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+
+    cardRefs.current.forEach((card, index) => {
+      if (!card) return;
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const distance = Math.abs(cardCenter - railCenter);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestIndex = index;
+      }
+    });
+
+    setActiveIndex((current) => (current === nearestIndex ? current : nearestIndex));
+  }
+
+  function handleScroll() {
+    if (scrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(scrollFrameRef.current);
+    }
+    scrollFrameRef.current = window.requestAnimationFrame(syncActiveFromScroll);
+  }
+
+  function goToIndex(nextIndex: number) {
+    if (!editableCases.length) return;
+    pauseCarousel();
+    const normalized = (nextIndex + editableCases.length) % editableCases.length;
+    setActiveIndex(normalized);
+  }
 
   return (
     <section className="cases" id="cases" aria-labelledby="cases-title">
@@ -815,28 +905,70 @@ function CasesSection({
           전체 사례 보기 <ExternalLink size={14} />
         </a>
       </div>
-      <div className="cases__rail" ref={railRef}>
-        {editableCases.map((item) => (
-          <a className="cases__card" href={item.link} target="_blank" rel="noreferrer" key={item.title}>
-            <div className="cases__media">
-              <img src={item.image} alt={item.title} />
-            </div>
-            <div className="cases__body">
-              <h3>{item.title}</h3>
-              <dl className="row">
-                <dt>문제</dt>
-                <dd>{item.problem}</dd>
-              </dl>
-              <dl className="row">
-                <dt>해결</dt>
-                <dd>{item.solution}</dd>
-              </dl>
-              <div className="more">
-                블로그 보기 <ExternalLink size={14} />
+      <div className="cases__carousel">
+        <div
+          className="cases__rail"
+          ref={railRef}
+          onScroll={handleScroll}
+          onPointerDown={pauseCarousel}
+          onTouchStart={pauseCarousel}
+          onMouseEnter={pauseCarousel}
+          onFocusCapture={pauseCarousel}
+        >
+          {editableCases.map((item, index) => (
+            <a
+              className={index === activeIndex ? "cases__card is-active" : "cases__card"}
+              href={item.link}
+              target="_blank"
+              rel="noreferrer"
+              key={item.title}
+              ref={(element) => {
+                cardRefs.current[index] = element;
+              }}
+              aria-current={index === activeIndex ? "true" : undefined}
+            >
+              <div className="cases__media">
+                <img src={item.image} alt={item.title} />
               </div>
+              <div className="cases__body">
+                <h3>{item.title}</h3>
+                <dl className="row">
+                  <dt>문제</dt>
+                  <dd>{item.problem}</dd>
+                </dl>
+                <dl className="row">
+                  <dt>해결</dt>
+                  <dd>{item.solution}</dd>
+                </dl>
+                <div className="more">
+                  블로그 보기 <ExternalLink size={14} />
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+        {editableCases.length > 1 ? (
+          <div className="cases__carousel-controls" aria-label="대표 현장사례 캐러셀 컨트롤">
+            <button className="cases__carousel-button" type="button" onClick={() => goToIndex(activeIndex - 1)} aria-label="이전 사례">
+              <ChevronLeft size={16} />
+            </button>
+            <div className="cases__carousel-dots" aria-label="현재 사례 위치">
+              {editableCases.map((item, index) => (
+                <button
+                  key={`${item.title}-${index}`}
+                  type="button"
+                  className={index === activeIndex ? "cases__dot active" : "cases__dot"}
+                  onClick={() => goToIndex(index)}
+                  aria-label={`${index + 1}번째 사례로 이동`}
+                  aria-pressed={index === activeIndex}
+                />
+              ))}
             </div>
-          </a>
-        ))}
+            <button className="cases__carousel-button" type="button" onClick={() => goToIndex(activeIndex + 1)} aria-label="다음 사례">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        ) : null}
       </div>
     </section>
   );
@@ -858,6 +990,7 @@ function BlogSection({
     source === "naver"
       ? "최근 현장 시공 사례를 블로그에서 가져옵니다."
       : "대표 시공 포트폴리오입니다.";
+  const displayPosts = posts.slice(0, 5);
 
   return (
     <section className="blog section" id="blog" aria-labelledby="blog-title">
@@ -870,7 +1003,7 @@ function BlogSection({
         className="naver-link"
       />
       <div className="blog-card-grid blog-card-carousel-mobile" ref={railRef}>
-        {posts.map((post, index) => (
+        {displayPosts.map((post, index) => (
           <a
             className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
             href={post.link}
@@ -1206,12 +1339,14 @@ function BlogShowcase({
   posts: PortfolioPost[];
   emptyText: string;
 }) {
+  const displayPosts = posts.slice(0, 5);
+
   return (
     <div className="landing-blog-showcase">
       <h3>{label}</h3>
-      {posts.length ? (
+      {displayPosts.length ? (
         <div className="blog-card-grid landing-blog-grid blog-card-carousel-mobile">
-          {posts.map((post, index) => (
+          {displayPosts.map((post, index) => (
             <a
               className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
               href={post.link}

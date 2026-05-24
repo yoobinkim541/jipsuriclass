@@ -1427,6 +1427,10 @@ textarea {
 }
 
 /* ===== Cases rail ===== */
+.cases__carousel {
+  max-width: 100%;
+}
+
 .cases__rail {
   display: flex;
   gap: 16px;
@@ -1436,14 +1440,15 @@ textarea {
   scroll-padding-inline: clamp(18px, 5vw, 64px);
   scrollbar-width: thin;
   scrollbar-color: var(--hair, #e6dfd0) transparent;
+  scroll-behavior: smooth;
 }
 
 .cases__rail::-webkit-scrollbar { height: 8px; }
 .cases__rail::-webkit-scrollbar-thumb { background: var(--hair, #e6dfd0); border-radius: 4px; }
 
 .cases__card {
-  flex: 0 0 min(82vw, 400px);
-  scroll-snap-align: start;
+  flex: 0 0 min(86vw, 840px);
+  scroll-snap-align: center;
   background: #ffffff;
   border: 1px solid var(--hair, #e6dfd0);
   border-radius: 20px;
@@ -1453,6 +1458,12 @@ textarea {
   transition: transform 240ms, box-shadow 240ms;
   text-decoration: none;
   color: inherit;
+}
+
+.cases__card.is-active {
+  border-color: rgba(16, 40, 74, 0.28);
+  box-shadow: 0 10px 24px rgba(8, 22, 40, 0.1), 0 26px 70px rgba(8, 22, 40, 0.12);
+  transform: translateY(-2px);
 }
 
 .cases__card:hover {
@@ -1524,6 +1535,56 @@ textarea {
   justify-content: space-between;
   align-items: center;
   border-top: 1px dashed var(--hair, #e6dfd0);
+}
+
+.cases__carousel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 6px clamp(18px, 5vw, 64px) 0;
+}
+
+.cases__carousel-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--hair, #e6dfd0);
+  background: #fff;
+  color: var(--ink, #0b1a30);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(8, 22, 40, 0.08);
+}
+
+.cases__carousel-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(16, 40, 74, 0.28);
+}
+
+.cases__carousel-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+}
+
+.cases__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(16, 40, 74, 0.18);
+  padding: 0;
+}
+
+.cases__dot.active {
+  width: 28px;
+  background: var(--navy-700, #10284a);
 }
 
 /* ===== Process track ===== */
@@ -3453,13 +3514,18 @@ textarea {
 
 .sr-only-file-input {
   border: 0;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   height: 1px;
-  margin: -1px;
+  margin: 0;
+  opacity: 0;
   overflow: hidden;
   padding: 0;
   position: absolute;
+  inset: 0 auto auto 0;
+  pointer-events: none;
   width: 1px;
+  max-width: 1px;
+  max-height: 1px;
 }
 
 .attachment-preview-grid {

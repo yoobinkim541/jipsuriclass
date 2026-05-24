@@ -56,7 +56,7 @@ export const defaultHomepageContent: HomepageContent = {
     image: item.image,
     link: item.link
   })),
-  blog: pinnedPosts.slice(0, 3).map((post) => ({
+  blog: pinnedPosts.slice(0, 5).map((post) => ({
     title: post.title,
     description: post.description,
     date: post.date,

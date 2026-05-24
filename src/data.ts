@@ -85,8 +85,8 @@ export const navItems: NavItem[] = [
   { label: "작업절차", href: "#process" },
   { label: "오시는길", href: "#location" },
   { label: "자기진단", href: "/diagnosis" },
-  { label: "견적상담", href: "/estimate" },
-  { label: "문의", href: "#contact" }
+  { label: "자가진단", href: "/estimate" },
+  { label: "견적상담", href: "#contact" }
 ];
 
 /**
@@ -141,6 +141,22 @@ export const cases: ConstructionCase[] = [
     solution: "기초면 정리, 부분 도배, 마감 라인 보정",
     link: business.naverBlogUrl,
     image: images.cases.wallRepair
+  },
+  {
+    title: "베란다 방수 보수",
+    area: "아파트 베란다",
+    problem: "비 온 뒤 바닥면에 남는 누수 자국",
+    solution: "방수층 점검, 취약 구간 보수, 재마감",
+    link: business.naverBlogUrl,
+    image: images.cases.bathroomLeak
+  },
+  {
+    title: "창가 실리콘 재시공",
+    area: "주택 창가",
+    problem: "창틀 주변 미세 누수와 실리콘 노후",
+    solution: "기존 실리콘 제거, 주변면 정리, 재시공",
+    link: business.naverBlogUrl,
+    image: images.cases.kitchenRepair
   }
 ];
 
@@ -162,6 +178,27 @@ export const pinnedPosts: PortfolioPost[] = [
     date: "대표 사례",
     link: business.naverBlogUrl,
     image: cases[2].image
+  },
+  {
+    title: "베란다 누수 흔적 정리와 방수 보수",
+    description: "비가 올 때마다 반복되던 자국을 확인하고 방수 보수로 정리한 사례입니다.",
+    date: "대표 사례",
+    link: business.naverBlogUrl,
+    image: cases[3].image
+  },
+  {
+    title: "창가 실리콘 노후 구간 재시공",
+    description: "창틀 주변 미세한 스며듦을 잡기 위해 실리콘 라인을 다시 정리했습니다.",
+    date: "대표 사례",
+    link: business.naverBlogUrl,
+    image: cases[4].image
+  },
+  {
+    title: "주방 배수 보수와 하부장 건조 작업",
+    description: "냄새와 습기가 반복되던 배수 부위를 점검해 필요한 부속만 교체했습니다.",
+    date: "대표 사례",
+    link: business.naverBlogUrl,
+    image: cases[1].image
   }
 ];
 
