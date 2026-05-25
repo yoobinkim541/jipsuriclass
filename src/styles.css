@@ -2640,6 +2640,34 @@ textarea {
   position: absolute;
 }
 
+.landing-price-quick {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.landing-price-quick__label {
+  color: var(--ink-3, #5b6781);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.landing-price-quick__grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.landing-price-quick__grid .secondary-button {
+  width: 100%;
+  min-height: 44px;
+  justify-content: center;
+  padding-inline: 12px;
+  font-size: 14px;
+}
+
 .landing-section {
   border-bottom: 1px solid var(--hair, #e6dfd0);
   max-width: var(--max, 1320px);
@@ -8183,13 +8211,14 @@ textarea {
 }
 
 @media (max-width: 768px) {
-  .landing-hero-grid,
-  .landing-point-grid,
-  .landing-link-grid,
-  .diagnosis-hero-grid,
-  .diagnosis-topic-grid,
-  .diagnosis-answer-grid {
-    grid-template-columns: 1fr;
+.landing-hero-grid,
+.landing-point-grid,
+.landing-price-quick__grid,
+.landing-link-grid,
+.diagnosis-hero-grid,
+.diagnosis-topic-grid,
+.diagnosis-answer-grid {
+  grid-template-columns: 1fr;
   }
 
   .landing-hero-panel,

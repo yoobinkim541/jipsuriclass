@@ -1,5 +1,45 @@
 # Work Log
 
+## 2026-05-25 - 방수·타일 가격표 통합
+
+Changed files: `src/App.tsx`, `src/waterproofingTilePriceData.ts`, `src/landingPages.ts`, `src/styles.css`, `public/sitemap.xml`
+
+Implemented behavior:
+- Added a new integrated `/service/waterproofing-tile/price` page that combines 방수 and 타일 pricing into one calculator flow.
+- Kept the existing table pattern from the electric pricing page, with all material/product costs shown as `별도`.
+- Added landing-page quick links for 방수·타일 that deep-link into the price page with preselected estimate items.
+- Updated the waterproofing·tile landing page to point to the new integrated price page.
+- Added the new route to the sitemap and kept the old service-specific price pages available.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want the old `/service/waterproofing/price` and `/service/tile/price` URLs retired later, they can be redirected in a separate cleanup pass.
+
+# 2026-05-25 - 방수·타일 가격표 페이지 추가
+
+Changed files:
+- `src/App.tsx`
+- `src/waterproofingTilePriceData.ts`
+- `public/sitemap.xml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 방수, 타일, 방수·타일 서비스에 각각 가격표 페이지를 연결했습니다.
+- 가격표는 전기 페이지와 같은 표/체크박스/모의견적 계산기 형식을 유지했습니다.
+- 제품, 부속자재는 별도 표시로 처리하고, 출장비와 시공비 중심으로만 항목을 노출했습니다.
+- 랜딩 페이지 상단 버튼에서 각 서비스 가격표로 바로 이동할 수 있게 했습니다.
+- `/service/waterproofing/price`, `/service/tile/price`, `/service/waterproofing-tile/price` 를 sitemap에 추가했습니다.
+
+Verification:
+- `npm run build` passed.
+- `Invoke-WebRequest`로 `/service/waterproofing/price`, `/service/tile/price`, `/service/waterproofing` 200 응답 확인.
+- Playwright 브라우저 자동화는 임시 디렉터리 권한 문제로 실행하지 못했습니다.
+
+Follow-up:
+- 실제 브라우저에서 가격표 표 길이와 모바일 카드 간격을 한 번만 확인하면 됩니다.
+
 ## 2026-05-25 - Copy & UX Fix Pass
 
 Changed files: `src/App.tsx`, `src/landingPages.ts`, `src/styles.css`
@@ -1112,3 +1152,26 @@ Verification:
 Follow-up:
 - Deploy to Vercel to verify visual output in browser.
 - Consider replacing placeholder case images with real job-site photos for the hero card deck.
+
+## 2026-05-25 - Waterproofing/Tile Price Pages
+
+Changed files:
+- `src/App.tsx`
+- `src/waterproofingTilePriceData.ts`
+- `src/styles.css`
+- `public/sitemap.xml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a combined `/service/waterproofing-tile/price` page that reuses the existing price-table pattern and computes a mock estimate from selected labor items.
+- Wired the combined landing page CTA and quick estimate chips to the combined price page.
+- Marked product and accessory material costs as separate in the pricing data.
+- Added the combined landing page and price page URLs to `sitemap.xml`.
+
+Verification:
+- `npm run build` passed.
+- Browser verification completed with Playwright on desktop and mobile viewports.
+- Verified landing-page CTA rendering, price-page rendering, and calculator updates after row selection.
+
+Follow-up:
+- None.
