@@ -228,16 +228,10 @@ export function EstimatePage() {
         }
       });
 
-      setDraft({
-        ...defaultDraft,
-        selectedRooms: presetProject ? [presetProject] : [],
-        requestNote: presetIssue
-      });
-      setFiles([]);
-      setStep(1);
-      setStage("intro");
       setStatus("success");
-      window.setTimeout(() => setStatus("idle"), 4200);
+      window.setTimeout(() => {
+        window.location.href = "/";
+      }, 2400);
     } catch (submitError) {
       setStatus("error");
       setError(submitError instanceof Error ? submitError.message : "견적 문의를 저장하지 못했습니다.");
