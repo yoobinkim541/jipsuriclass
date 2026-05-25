@@ -2891,19 +2891,31 @@ textarea {
   color: #fff;
 }
 
+.diagnosis-cat-card.active .diagnosis-cat-icon,
+.diagnosis-cat-card.active .diagnosis-cat-label {
+  color: #fff;
+}
+
 .diagnosis-cat-icon {
   font-size: 20px;
   line-height: 1;
+  display: block;
 }
 
 .diagnosis-cat-label {
   font-size: 15px;
   font-weight: 600;
+  color: var(--navy);
+  display: block;
 }
 
 .diagnosis-cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 15px;
   font-weight: 700;
+  color: var(--navy);
 }
 
 .diagnosis-topic-grid {
