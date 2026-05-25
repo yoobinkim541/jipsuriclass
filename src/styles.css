@@ -4152,6 +4152,7 @@ textarea {
 .estimate-survey-layout {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  grid-template-rows: 1fr;
   gap: 18px;
   min-height: 0;
   overscroll-behavior: none;
@@ -4737,11 +4738,12 @@ textarea {
     min-height: 100dvh;
     overflow: visible;
     padding: 12px 12px 16px;
+    grid-template-rows: auto auto;
   }
 
   .estimate-shell-survey {
     min-height: 100dvh;
-    overflow: auto;
+    overflow: visible;
     padding-bottom: 20px;
   }
 
@@ -4796,6 +4798,7 @@ textarea {
 
   .estimate-survey-layout {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
     gap: 10px;
     min-height: 0;
   }
