@@ -28,7 +28,7 @@ type EnrichedBlogItem = NaverBlogItem & {
 };
 
 const PORTFOLIO_LIMIT = 6;
-const SEARCH_DISPLAY = 12;
+const RSS_FETCH_LIMIT = 30;
 const FALLBACK_BLOG_IMAGE = "/assets/consult-hero.png";
 const ALLOWED_IMAGE_HOSTS = ["pstatic.net", "naver.net", "naver.com"];
 
@@ -42,6 +42,7 @@ export default async function handler(_request: VercelRequest, response: VercelR
 
   try {
     const items = await loadLatestBlogItems(blogId, terms);
+    response.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=86400");
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });
@@ -55,7 +56,8 @@ async function loadLatestBlogItems(blogId: string, terms: string[]) {
     sources: new Set<"rss" | "search-date" | "search-sim">(["rss"])
   }));
   const ordered = rankCandidates(candidates, terms).slice(0, PORTFOLIO_LIMIT);
-  return await enrichItemsWithSummary(ordered.map((entry) => entry.item), blogId);
+  const items = ordered.map((entry) => entry.item);
+  return await enrichItemsWithSummary(items, blogId);
 }
 
 function parseRssItems(xml: string): NaverBlogItem[] {
@@ -107,7 +109,7 @@ async function fetchRssItems(blogId: string) {
       throw new Error(`Naver RSS returned ${rssResponse.status}`);
     }
 
-    return parseRssItems(await rssResponse.text()).slice(0, SEARCH_DISPLAY);
+    return parseRssItems(await rssResponse.text()).slice(0, RSS_FETCH_LIMIT);
   } catch {
     return [];
   }
@@ -154,17 +156,14 @@ function rankCandidates(candidates: RankedBlogCandidate[], terms: string[]) {
     score: scoreCandidate(candidate.item, candidate.sources, terms)
   }));
 
-  const matched = terms.length ? scored.filter((entry) => entry.score > 0) : scored;
-  const source = matched.length ? matched : scored;
+  // When search terms are provided, only return posts that actually match.
+  // Never fall back to unrelated posts — returning empty is better than wrong content.
+  const pool = terms.length ? scored.filter((entry) => entry.score > 0) : scored;
 
-  return source
+  return pool
     .sort((left, right) => {
       const scoreDiff = right.score - left.score;
       if (scoreDiff) return scoreDiff;
-
-      const sourceDiff = getSourcePriority(right.candidate.sources) - getSourcePriority(left.candidate.sources);
-      if (sourceDiff) return sourceDiff;
-
       return parseDateValue(right.candidate.item.postdate) - parseDateValue(left.candidate.item.postdate);
     })
     .map((entry) => entry.candidate);

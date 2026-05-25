@@ -5,7 +5,7 @@ function naverBlogApi(): Plugin {
   return {
     name: "naver-blog-api",
     configureServer(server) {
-      server.middlewares.use("/api/naver-blog", async (_req, res) => {
+      server.middlewares.use("/api/naver-blog", async (req, res) => {
         const env = loadEnv(server.config.mode, process.cwd(), "");
         const blogId = env.NAVER_BLOG_ID || "it77khy";
 
@@ -19,9 +19,20 @@ function naverBlogApi(): Plugin {
           }
 
           const xml = await rssResponse.text();
-          const rssItems = parseRssItems(xml).slice(0, 12);
+          const termsRaw = new URL(req.url || "", "http://localhost").searchParams.get("terms") || "";
+          const terms = termsRaw.split(/[,\s]+/).map((t) => t.trim().toLowerCase()).filter(Boolean);
+          const allItems = parseRssItems(xml).slice(0, 30);
+
+          // When terms are provided, only return posts that match — never fall back to unrelated posts
+          const scored = allItems.map((item) => ({
+            item,
+            score: scoreRssItem(item, terms)
+          }));
+          const pool = terms.length ? scored.filter((e) => e.score > 0) : scored;
+          const ranked = pool.sort((a, b) => b.score - a.score).map((e) => e.item).slice(0, 6);
+
           const enrichedItems = await Promise.all(
-            rssItems.slice(0, 6).map(async (item) => ({
+            ranked.map(async (item) => ({
               ...item,
               image: item.image ?? (await resolveBlogImage(item.link)) ?? undefined
             }))
@@ -81,6 +92,18 @@ function formatRssDate(value: string) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return undefined;
   return `${parsed.getFullYear()}${String(parsed.getMonth() + 1).padStart(2, "0")}${String(parsed.getDate()).padStart(2, "0")}`;
+}
+
+function scoreRssItem(item: { title: string; description: string }, terms: string[]) {
+  if (!terms.length) return 1;
+  const haystack = `${item.title} ${item.description}`.toLowerCase();
+  let score = 0;
+  for (const term of terms) {
+    if (item.title.toLowerCase().includes(term)) score += 14;
+    if (item.description.toLowerCase().includes(term)) score += 8;
+    if (haystack.includes(term)) score += 4;
+  }
+  return score;
 }
 
 function extractRssImage(itemXml: string, descHtml: string) {

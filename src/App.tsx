@@ -1437,9 +1437,10 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
     };
   }, [landingSearchKey]);
 
-  const matchedPosts = useMemo(() => filterLandingPosts(landingPosts, content, landingSearchTerms), [content, landingPosts, landingSearchTerms]);
-  const referencePosts = matchedPosts.slice(0, 3);
-  const portfolioPosts = matchedPosts.slice(3, 6).length ? matchedPosts.slice(3, 6) : matchedPosts.slice(0, 3);
+  // Reference: dynamically matched blog posts (only shown when they actually match keywords)
+  const referencePosts = useMemo(() => filterLandingPosts(landingPosts, content, landingSearchTerms), [content, landingPosts, landingSearchTerms]);
+  // Portfolio: fixed curated posts managed via admin editor — never changes automatically
+  const portfolioPosts = pinnedPosts.slice(0, 5);
 
   return (
     <>
@@ -1647,21 +1648,13 @@ function filterLandingPosts(
   page: NonNullable<ReturnType<typeof getLandingPageDefinition>>,
   terms: string[]
 ) {
-  const ranked = posts
-    .map((post) => ({
-      post,
-      score: scoreLandingPost(post, terms, page)
-    }))
+  // Only return posts that actually match the search terms.
+  // Showing unrelated recent posts is worse than showing nothing.
+  return posts
+    .map((post) => ({ post, score: scoreLandingPost(post, terms, page) }))
     .filter((entry) => entry.score > 0)
     .sort((left, right) => right.score - left.score || compareLandingPostDate(right.post.date, left.post.date))
-    .map((entry) => entry.post);
-
-  if (ranked.length) {
-    return ranked.slice(0, 6);
-  }
-
-  return [...posts]
-    .sort((left, right) => compareLandingPostDate(right.date, left.date))
+    .map((entry) => entry.post)
     .slice(0, 6);
 }
 

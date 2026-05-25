@@ -4,10 +4,18 @@ type NaverBlogResponse = {
   items?: NaverBlogItem[];
 };
 
+type CacheEntry = {
+  posts: PortfolioPost[];
+  timestamp: number;
+};
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 /**
  * 네이버 블로그 연동의 단일 진입점입니다.
  * API 응답 정제, 실패 fallback, 표시용 날짜 포맷을 이 클래스 안에 묶어
  * UI 컴포넌트가 외부 데이터 형식에 직접 의존하지 않도록 합니다.
+ * 24시간 localStorage 캐시로 매일 1회 자동 갱신됩니다.
  */
 export class BlogPortfolioService {
   constructor(
@@ -17,10 +25,20 @@ export class BlogPortfolioService {
   ) {}
 
   async loadPortfolioPosts(terms: string[] = []): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
-    return this.loadPortfolioPostsInternal(terms);
+    const cacheKey = this.buildCacheKey(terms);
+    const cached = this.readCache(cacheKey);
+    if (cached) {
+      return { posts: cached, source: "naver" };
+    }
+
+    const result = await this.fetchFromApi(terms);
+    if (result.source === "naver" && result.posts.length) {
+      this.writeCache(cacheKey, result.posts);
+    }
+    return result;
   }
 
-  private async loadPortfolioPostsInternal(terms?: string[]): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+  private async fetchFromApi(terms?: string[]): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
     try {
       const url = new URL(this.endpoint, typeof window !== "undefined" ? window.location.origin : "http://localhost");
       if (Array.isArray(terms) && terms.length) {
@@ -33,7 +51,7 @@ export class BlogPortfolioService {
       const data = (await response.json()) as NaverBlogResponse;
       const naverItems = Array.isArray(data.items) ? data.items.slice(0, this.maxPosts) : [];
       if (!naverItems.length) {
-        return Array.isArray(terms) && terms.length ? { source: "fallback" as const, posts: [] } : this.fallbackResult();
+        return this.fallbackResult();
       }
 
       return {
@@ -42,6 +60,34 @@ export class BlogPortfolioService {
       };
     } catch {
       return this.fallbackResult();
+    }
+  }
+
+  private buildCacheKey(terms: string[]) {
+    return `blog-cache:${terms.slice().sort().join(",")}`;
+  }
+
+  private readCache(key: string): PortfolioPost[] | null {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const entry = JSON.parse(raw) as CacheEntry;
+      if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      return entry.posts;
+    } catch {
+      return null;
+    }
+  }
+
+  private writeCache(key: string, posts: PortfolioPost[]) {
+    try {
+      const entry: CacheEntry = { posts, timestamp: Date.now() };
+      localStorage.setItem(key, JSON.stringify(entry));
+    } catch {
+      // Ignore storage errors (quota exceeded, private mode, etc.)
     }
   }
 
