@@ -289,6 +289,8 @@ function HomePage() {
   useEffect(() => {
     const hash = window.location.hash;
     if (!hash) return;
+    const isReload = (performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined)?.type === "reload";
+    if (isReload) return;
     const id = hash.slice(1);
     const timer = setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
