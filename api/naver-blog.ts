@@ -37,44 +37,25 @@ const ALLOWED_IMAGE_HOSTS = ["pstatic.net", "naver.net", "naver.com"];
  * Keeps NAVER_CLIENT_SECRET off the browser and returns the same shape as the local Vite dev proxy.
  */
 export default async function handler(_request: VercelRequest, response: VercelResponse) {
-  const clientId = process.env.NAVER_CLIENT_ID;
-  const clientSecret = process.env.NAVER_CLIENT_SECRET;
   const blogId = process.env.NAVER_BLOG_ID || "it77khy";
   const terms = parseTerms(_request.query.terms);
 
-  if (!clientId || !clientSecret) {
-    response.status(503).json({ items: [], source: "fallback", reason: "missing_naver_credentials" });
-    return;
-  }
-
   try {
-    const items = await loadLatestBlogItems(blogId, clientId, clientSecret, terms);
+    const items = await loadLatestBlogItems(blogId, terms);
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });
   }
 }
 
-async function loadLatestBlogItems(blogId: string, clientId: string, clientSecret: string, terms: string[]) {
-  const combinedCandidates = new Map<string, RankedBlogCandidate>();
-  if (terms.length) {
-    const searchItems = await fetchSearchItems(clientId, clientSecret, terms);
-    for (const item of searchItems.date) {
-      addRankedCandidate(combinedCandidates, item, "search-date");
-    }
-    for (const item of searchItems.sim) {
-      addRankedCandidate(combinedCandidates, item, "search-sim");
-    }
-  } else {
-    const rssItems = await fetchRssItems(blogId);
-    for (const item of rssItems) {
-      addRankedCandidate(combinedCandidates, item, "rss");
-    }
-  }
-
-  const ordered = rankCandidates(Array.from(combinedCandidates.values()), terms).slice(0, PORTFOLIO_LIMIT);
-  const items = ordered.length ? ordered.map((entry) => entry.item) : [];
-  return await enrichItemsWithSummary(items, blogId);
+async function loadLatestBlogItems(blogId: string, terms: string[]) {
+  const rssItems = await fetchRssItems(blogId);
+  const candidates: RankedBlogCandidate[] = rssItems.map((item) => ({
+    item,
+    sources: new Set<"rss" | "search-date" | "search-sim">(["rss"])
+  }));
+  const ordered = rankCandidates(candidates, terms).slice(0, PORTFOLIO_LIMIT);
+  return await enrichItemsWithSummary(ordered.map((entry) => entry.item), blogId);
 }
 
 function parseRssItems(xml: string): NaverBlogItem[] {
@@ -132,41 +113,6 @@ async function fetchRssItems(blogId: string) {
   }
 }
 
-async function fetchSearchItems(clientId: string, clientSecret: string, terms: string[]) {
-  const query = encodeURIComponent(terms.join(" ").trim());
-  if (!query) {
-    return { date: [] as NaverBlogItem[], sim: [] as NaverBlogItem[] };
-  }
-
-  const [dateResult, simResult] = await Promise.allSettled([
-    fetchSearchBlog(query, clientId, clientSecret, "date"),
-    fetchSearchBlog(query, clientId, clientSecret, "sim")
-  ]);
-
-  return {
-    date: dateResult.status === "fulfilled" ? dateResult.value : [],
-    sim: simResult.status === "fulfilled" ? simResult.value : []
-  };
-}
-
-async function fetchSearchBlog(query: string, clientId: string, clientSecret: string, sort: "date" | "sim") {
-  const naverResponse = await fetch(
-    `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=${SEARCH_DISPLAY}&sort=${sort}`,
-    {
-      headers: {
-        "X-Naver-Client-Id": clientId,
-        "X-Naver-Client-Secret": clientSecret
-      }
-    }
-  );
-
-  if (!naverResponse.ok) {
-    throw new Error(`Naver API returned ${naverResponse.status}`);
-  }
-
-  const data = (await naverResponse.json()) as { items?: NaverBlogItem[] };
-  return Array.isArray(data.items) ? data.items.slice(0, SEARCH_DISPLAY) : [];
-}
 
 function addRankedCandidate(
   map: Map<string, RankedBlogCandidate>,
@@ -253,8 +199,6 @@ function scoreCandidate(item: NaverBlogItem, sources: Set<"rss" | "search-date" 
 }
 
 function getSourcePriority(sources: Set<"rss" | "search-date" | "search-sim">) {
-  if (sources.has("search-sim")) return 3;
-  if (sources.has("search-date")) return 2;
   if (sources.has("rss")) return 1;
   return 0;
 }

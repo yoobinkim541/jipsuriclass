@@ -5,48 +5,25 @@ function naverBlogApi(): Plugin {
   return {
     name: "naver-blog-api",
     configureServer(server) {
-      server.middlewares.use("/api/naver-blog", async (req, res) => {
+      server.middlewares.use("/api/naver-blog", async (_req, res) => {
         const env = loadEnv(server.config.mode, process.cwd(), "");
-        const clientId = env.NAVER_CLIENT_ID;
-        const clientSecret = env.NAVER_CLIENT_SECRET;
         const blogId = env.NAVER_BLOG_ID || "it77khy";
-        const query = encodeURIComponent(`${blogId} 집수리 누수 복구`);
-
-        if (!clientId || !clientSecret) {
-          res.statusCode = 503;
-          res.setHeader("Content-Type", "application/json; charset=utf-8");
-          res.end(JSON.stringify({ items: [], source: "fallback", reason: "missing_naver_credentials" }));
-          return;
-        }
 
         try {
-          const response = await fetch(
-            `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=20&sort=date`,
-            {
-              headers: {
-                "X-Naver-Client-Id": clientId,
-                "X-Naver-Client-Secret": clientSecret
-              }
-            }
-          );
+          const rssResponse = await fetch(`https://rss.blog.naver.com/${blogId}.xml`, {
+            headers: { Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8" }
+          });
 
-          if (!response.ok) {
-            throw new Error(`Naver API returned ${response.status}`);
+          if (!rssResponse.ok) {
+            throw new Error(`Naver RSS returned ${rssResponse.status}`);
           }
 
-          const data = await response.json();
-          // Only show posts from 집수리클라쓰's own blog — filter out other blogs
-          const allItems = Array.isArray(data.items) ? data.items : [];
-          const ownItems = allItems.filter(
-            (item: { link?: string; bloggerlink?: string }) =>
-              (typeof item.link === "string" && item.link.includes(`/${blogId}/`)) ||
-              (typeof item.bloggerlink === "string" && item.bloggerlink.includes(blogId))
-          );
-          const items = (ownItems.length > 0 ? ownItems : allItems).slice(0, 6);
+          const xml = await rssResponse.text();
+          const rssItems = parseRssItems(xml).slice(0, 12);
           const enrichedItems = await Promise.all(
-            items.map(async (item: { link: string }) => ({
+            rssItems.slice(0, 6).map(async (item) => ({
               ...item,
-              image: await resolveBlogImage(item.link)
+              image: item.image ?? (await resolveBlogImage(item.link)) ?? undefined
             }))
           );
           res.setHeader("Content-Type", "application/json; charset=utf-8");
@@ -59,6 +36,69 @@ function naverBlogApi(): Plugin {
       });
     }
   };
+}
+
+function parseRssItems(xml: string) {
+  type RssItem = { title: string; description: string; link: string; postdate?: string; image?: string };
+  const items: RssItem[] = [];
+  const itemPattern = /<item>([\s\S]*?)<\/item>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = itemPattern.exec(xml))) {
+    const itemXml = match[1];
+    const title = decodeXml(extractTagValue(itemXml, "title"));
+    const descHtml = decodeXml(extractTagValue(itemXml, "description"));
+    const description = stripHtml(descHtml);
+    const link = decodeXml(extractTagValue(itemXml, "link"));
+    const pubDate = extractTagValue(itemXml, "pubDate");
+    const postdate = formatRssDate(pubDate);
+    const image = extractRssImage(itemXml, descHtml);
+    if (!title || !link) continue;
+    items.push({ title, description, link, postdate, image });
+  }
+
+  return items;
+}
+
+function extractTagValue(xml: string, tag: string) {
+  const pattern = new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, "i");
+  return xml.match(pattern)?.[1]?.trim() ?? "";
+}
+
+function decodeXml(value: string) {
+  return value
+    .replace(/<!\[CDATA\[/g, "").replace(/\]\]>/g, "")
+    .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+}
+
+function stripHtml(value: string) {
+  return value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function formatRssDate(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  return `${parsed.getFullYear()}${String(parsed.getMonth() + 1).padStart(2, "0")}${String(parsed.getDate()).padStart(2, "0")}`;
+}
+
+function extractRssImage(itemXml: string, descHtml: string) {
+  const thumbMatch = itemXml.match(/<media:thumbnail\b[^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (thumbMatch?.[1]) return pickBestBlogImage([thumbMatch[1]]);
+  const encMatch = itemXml.match(/<enclosure\b[^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (encMatch?.[1]) return pickBestBlogImage([encMatch[1]]);
+  const imgPattern = /<img[^>]+(?:data-lazy-src|data-src|src)=["']([^"']+)["']/gi;
+  const candidates: string[] = [];
+  let m: RegExpExecArray | null;
+  for (const src of [descHtml, itemXml]) {
+    const pat = new RegExp(imgPattern.source, "gi");
+    while ((m = pat.exec(src))) {
+      const url = upgradeNaverBlogImageUrl(m[1]);
+      if (isLikelyBlogImage(url)) candidates.push(url);
+    }
+  }
+  return pickBestBlogImage(candidates);
 }
 
 function inquiryApi(): Plugin {

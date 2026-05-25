@@ -341,12 +341,14 @@ function SiteHeader({
   menuOpen,
   navLabels,
   onOpenMenu,
-  onCloseMenu
+  onCloseMenu,
+  brandHref = "#top"
 }: {
   menuOpen: boolean;
   navLabels: string[];
   onOpenMenu: () => void;
   onCloseMenu: () => void;
+  brandHref?: string;
 }) {
   const menuItems = navItems;
   const desktopMenuItems = menuItems.filter((item) => item.href.startsWith("#"));
@@ -371,7 +373,7 @@ function SiteHeader({
           <span className="nav__progress-bar" style={{ width: `${scrollPct}%` }} />
         </div>
         <div className="nav__inner">
-          <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
+          <a className="brand" href={brandHref} aria-label="집수리클라쓰 홈">
             <img className="brand__mark" src="/icons/brand-icon.png" alt="" aria-hidden="true" />
             <span className="brand__name">
               집수리<em>클라쓰</em>
@@ -1446,6 +1448,7 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
         navLabels={defaultHomepageContent.navLabels}
         onOpenMenu={() => setMenuOpen(true)}
         onCloseMenu={() => setMenuOpen(false)}
+        brandHref="/"
       />
       <LandingBackButton />
       <main className="landing-page" id="top">
