@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowUpRight, CheckCircle2, ChevronLeft, MessageCircle, Phone } from "lucide-react";
 import { business } from "../data";
 import { symptomCategories, type SymptomCategory } from "../data";
@@ -21,12 +21,26 @@ export function DiagnosisPage() {
   const [selectedCategory, setSelectedCategory] = useState<SymptomCategory>(initialCategory ?? symptomCategories[0]);
   const [selectedTopic, setSelectedTopic] = useState<DiagnosisTopic>(initialTopic);
   const answerRef = useRef<HTMLElement>(null);
+  const symptomListRef = useRef<HTMLElement>(null);
 
   function scrollToAnswer() {
     setTimeout(() => {
       answerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 60);
   }
+
+  // 메인 페이지에서 직접 진입 시 자동 스크롤
+  useEffect(() => {
+    if (query.get("issue") || query.get("topic")) {
+      // 증상 직접 선택 → 답변까지
+      scrollToAnswer();
+    } else if (query.get("category")) {
+      // 카테고리 선택 → 증상 목록으로
+      setTimeout(() => {
+        symptomListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    }
+  }, []);
 
   function pickCategory(cat: SymptomCategory) {
     setSelectedCategory(cat);
@@ -113,7 +127,7 @@ export function DiagnosisPage() {
         </section>
 
         {/* 2단: 세부 증상 */}
-        <section className="diagnosis-section section" aria-labelledby="diagnosis-list-title">
+        <section ref={symptomListRef} className="diagnosis-section section" aria-labelledby="diagnosis-list-title">
           <div className="section-heading">
             <h2 id="diagnosis-list-title">어떤 증상인가요?</h2>
             <p>가장 비슷한 증상을 클릭하세요.</p>
