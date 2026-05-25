@@ -2093,9 +2093,18 @@ function ElectricPricePage() {
                     ))}
                   </ul>
                   <div className="price-calc__divider" />
+                  <div className="price-calc__subtotal-row">
+                    <span>인건비 소계</span>
+                    <span>{total.toLocaleString()}원</span>
+                  </div>
+                  <div className="price-calc__subtotal-row">
+                    <span>부가세 (10%)</span>
+                    <span>{Math.round(total * 0.1).toLocaleString()}원</span>
+                  </div>
+                  <div className="price-calc__divider" />
                   <div className="price-calc__total-row">
-                    <span>인건비 합계</span>
-                    <span className="price-calc__total">{total.toLocaleString()}원~</span>
+                    <span>합계 (VAT 포함)</span>
+                    <span className="price-calc__total">{Math.round(total * 1.1).toLocaleString()}원~</span>
                   </div>
                   <p className="price-calc__disclaimer">
                     자재비·출장비는 별도이며, 실제 견적은 현장 확인 후 달라질 수 있습니다.

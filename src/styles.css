@@ -8445,6 +8445,14 @@ textarea {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.price-calc__subtotal-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
 .price-calc__total-row {
   display: flex;
   justify-content: space-between;
