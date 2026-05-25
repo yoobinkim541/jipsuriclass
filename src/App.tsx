@@ -294,6 +294,7 @@ function HomePage() {
     const id = hash.slice(1);
     const timer = setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      history.replaceState(null, "", window.location.pathname);
     }, 120);
     return () => clearTimeout(timer);
   }, []);
