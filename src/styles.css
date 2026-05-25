@@ -6939,15 +6939,26 @@ textarea {
   }
 
   .editor-workspace-with-preview > .editor-inspector-full {
-    max-height: calc(100svh - 180px);
+    max-height: none;
+    order: 1;
     position: static;
     top: auto;
   }
 
   .editor-workspace-with-preview > .editor-preview-panel {
-    max-height: calc(100svh - 180px);
+    max-height: 60vh;
+    order: 2;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: static;
     top: auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .editor-preview-panel * {
+    max-width: 100%;
+    word-break: break-word;
   }
 
   .editor-workspace,
@@ -7651,15 +7662,26 @@ textarea {
   }
 
   .editor-workspace-with-preview > .editor-inspector-full {
-    max-height: calc(100svh - 160px);
+    max-height: none;
+    order: 1;
     position: static;
     top: auto;
   }
 
   .editor-workspace-with-preview > .editor-preview-panel {
-    max-height: calc(100svh - 160px);
+    max-height: 60vh;
+    order: 2;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: static;
     top: auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .editor-preview-panel * {
+    max-width: 100%;
+    word-break: break-word;
   }
 
   .editor-grid {

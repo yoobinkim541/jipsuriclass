@@ -1314,7 +1314,9 @@ function ImageUploadField({
       }}
       onDragLeave={(event) => {
         event.preventDefault();
-        setDragActive(false);
+        if (!event.currentTarget.contains(event.relatedTarget as Node)) {
+          setDragActive(false);
+        }
       }}
       onDrop={(event) => {
         event.preventDefault();
