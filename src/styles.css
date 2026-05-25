@@ -5012,6 +5012,10 @@ textarea {
   color: var(--ink-3, #5b6781);
   font-size: 14px;
   font-weight: 700;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-ghost-button,
@@ -5645,7 +5649,32 @@ textarea {
 .admin-status-button {
   background: var(--cream-2, #f1ece1);
   color: var(--ink-2, #2a3a55);
-  min-width: 110px;
+  min-width: 64px;
+}
+
+.admin-export-button {
+  height: 30px;
+  font-size: 12px;
+  padding: 0 10px;
+}
+
+.admin-toast {
+  align-items: center;
+  background: var(--navy-700, #10284a);
+  border-radius: 10px;
+  bottom: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  display: flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 8px;
+  left: 50%;
+  padding: 12px 20px;
+  position: fixed;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 9999;
 }
 
 .admin-detail-toggle {
@@ -6785,6 +6814,13 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .admin-row-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
   .hero {
     min-height: auto;
   }
@@ -6963,6 +6999,10 @@ textarea {
   .editor-preview-panel * {
     max-width: 100%;
     word-break: break-word;
+  }
+
+  .editor-preview-frame {
+    zoom: 0.65;
   }
 
   .editor-workspace:not(.editor-workspace-with-preview) > .editor-inspector {
@@ -7418,10 +7458,13 @@ textarea {
   .service-grid,
   .process-line,
   .case-grid,
-  .admin-insight-grid,
   .admin-breakdown-grid,
   .estimate-choice-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .inquiry-chart {
@@ -7519,6 +7562,12 @@ textarea {
     justify-content: center;
   }
 
+  .editor-actions .admin-ghost-button {
+    width: auto;
+    height: 40px;
+    padding: 0 14px;
+  }
+
   .admin-home {
     word-break: keep-all;
   }
@@ -7555,12 +7604,15 @@ textarea {
   }
 
   .admin-row-actions {
-    align-items: stretch;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
   }
 
   .admin-status-button {
     min-width: 0;
-    width: 100%;
+    width: auto;
   }
 
   .account-login-head {
@@ -7699,6 +7751,10 @@ textarea {
   .editor-preview-panel * {
     max-width: 100%;
     word-break: break-word;
+  }
+
+  .editor-preview-frame {
+    zoom: 0.5;
   }
 
   .editor-workspace:not(.editor-workspace-with-preview) > .editor-inspector {

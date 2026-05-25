@@ -2,10 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
-  CalendarRange,
   Clock3,
   Copy,
-  LayoutDashboard,
+  Download,
   LoaderCircle,
   LogOut,
   RefreshCcw,
@@ -136,13 +135,48 @@ export function AdminPage() {
   async function handleCopy(text: string, label: string) {
     try {
       await navigator.clipboard.writeText(text);
-      setCopyFeedback(`${label}를 복사했습니다.`);
-      window.setTimeout(() => setCopyFeedback((current) => (current === `${label}를 복사했습니다.` ? null : current)), 1800);
+      setCopyFeedback(`${label} 복사됨`);
     } catch {
-      setCopyFeedback("복사에 실패했습니다.");
-      window.setTimeout(() => setCopyFeedback((current) => (current === "복사에 실패했습니다." ? null : current)), 1800);
+      setCopyFeedback("복사 실패");
+    } finally {
+      window.setTimeout(() => setCopyFeedback(null), 1800);
     }
   }
+
+  function handleExport() {
+    const header = ["이름", "연락처", "지역", "상태", "문의 내용", "접수 경로", "접수일시", "고객 이메일"];
+    const rows = visibleInquiries.map((item) => [
+      item.name,
+      item.phone,
+      item.service_area ?? "",
+      statusLabel(item.status),
+      item.message ?? "",
+      item.source ?? "",
+      formatDate(item.created_at),
+      item.user_email ?? ""
+    ]);
+
+    const csvContent = [header, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `inquiries_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  useEffect(() => {
+    if (!expandedInquiryId) return;
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setExpandedInquiryId(null);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [expandedInquiryId]);
 
   const analytics = useMemo(() => buildAnalytics(inquiries), [inquiries]);
   const intakeStats = useMemo(() => buildIntakeStats(inquiries), [inquiries]);
@@ -239,38 +273,36 @@ export function AdminPage() {
         </div>
       </section>
 
-      <nav className="admin-subnav" aria-label="관리자 페이지">
-        <a className={view === "editor" ? "admin-subnav-link active" : "admin-subnav-link"} href="/admin/editor">
-          <LayoutDashboard size={16} />
-          홈페이지 편집
-        </a>
-        <a className={view === "inquiries" ? "admin-subnav-link active" : "admin-subnav-link"} href="/admin/inquiries">
-          <CalendarRange size={16} />
-          문의 내역
-        </a>
-      </nav>
-
-      <section className="admin-mobile-overview" aria-label="모바일 문의 요약">
-        <div className="admin-mobile-metric">
-          <span>전체 문의</span>
-          <strong>{analytics.total}</strong>
-        </div>
-        <div className="admin-mobile-metric">
-          <span>새 문의</span>
-          <strong>{analytics.byStatus.new}</strong>
-        </div>
-        <div className="admin-mobile-metric">
-          <span>처리중</span>
-          <strong>{analytics.byStatus.contacted}</strong>
-        </div>
-        <div className="admin-mobile-metric">
-          <span>새로고침</span>
-          <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
-        </div>
-      </section>
+      {view === "inquiries" && (
+        <section className="admin-mobile-overview" aria-label="모바일 문의 요약">
+          <div className="admin-mobile-metric">
+            <span>전체 문의</span>
+            <strong>{analytics.total}</strong>
+          </div>
+          <div className="admin-mobile-metric">
+            <span>새 문의</span>
+            <strong>{analytics.byStatus.new}</strong>
+          </div>
+          <div className="admin-mobile-metric">
+            <span>처리중</span>
+            <strong>{analytics.byStatus.contacted}</strong>
+          </div>
+          <div className="admin-mobile-metric">
+            <span>새로고침</span>
+            <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
+          </div>
+        </section>
+      )}
 
       {view === "editor" ? (
-        <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} />
+        sessionLoading ? (
+          <div className="admin-empty">
+            <LoaderCircle size={18} className="spin" />
+            세션 확인 중
+          </div>
+        ) : (
+          <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} />
+        )
       ) : (
         <>
           <section className="admin-insight-grid" aria-label="문의 요약">
@@ -371,7 +403,7 @@ export function AdminPage() {
                   type="button"
                   onClick={() => setStatusFilter(status)}
                 >
-                  {status === "all" ? "전체" : status}
+                  {statusLabel(status)}
                 </button>
               ))}
             </div>
@@ -395,14 +427,19 @@ export function AdminPage() {
               <span className="admin-count">{visibleInquiries.length}건</span>
               <span className="admin-sync">
                 <Clock3 size={14} />
-                {lastRefreshedAt ? `마지막 새로고침 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
+                {lastRefreshedAt ? `마지막 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
               </span>
+              {visibleInquiries.length > 0 && (
+                <button className="admin-ghost-button admin-export-button" type="button" onClick={handleExport} aria-label="CSV 내보내기">
+                  <Download size={14} />
+                  <span className="admin-btn-label">내보내기</span>
+                </button>
+              )}
             </div>
           </section>
 
           {authError ? <p className="admin-banner">{authError}</p> : null}
           {error ? <p className="admin-error">{error}</p> : null}
-          {copyFeedback ? <p className="admin-banner">{copyFeedback}</p> : null}
 
           <section className="admin-list" aria-label="문의 목록">
             {inquiriesLoading ? (
@@ -468,23 +505,27 @@ export function AdminPage() {
                       >
                         {isExpanded ? "접기" : "상세"}
                       </button>
-                      {(["new", "contacted", "done", "spam"] as InquiryStatus[]).map((status) => (
-                        <button
-                          key={status}
-                          className="admin-status-button"
-                          type="button"
-                          disabled={actionId === item.id || item.status === status}
-                          onClick={() => void handleStatusChange(item.id, status)}
-                        >
-                          {status}
-                        </button>
-                      ))}
-                      <a className="admin-link" href={business.phoneHref}>
-                        연락 <ArrowUpRight size={14} />
-                      </a>
+                      {(["new", "contacted", "done", "spam"] as InquiryStatus[])
+                        .filter((status) => status !== item.status)
+                        .map((status) => (
+                          <button
+                            key={status}
+                            className="admin-status-button"
+                            type="button"
+                            disabled={actionId === item.id}
+                            onClick={() => void handleStatusChange(item.id, status)}
+                          >
+                            {actionId === item.id ? <LoaderCircle size={12} className="spin" /> : statusLabel(status)}
+                          </button>
+                        ))}
                       <button className="admin-link admin-copy-button" type="button" onClick={() => void handleCopy(item.phone, "연락처")}>
-                        복사 <Copy size={14} />
+                        <Copy size={14} />
+                        복사
                       </button>
+                      <a className="admin-link" href={`tel:${item.phone}`}>
+                        <ArrowUpRight size={14} />
+                        전화
+                      </a>
                     </div>
                   </article>
                 );
@@ -495,6 +536,7 @@ export function AdminPage() {
           </section>
         </>
       )}
+      {copyFeedback ? <div className="admin-toast" role="status">{copyFeedback}</div> : null}
     </main>
   );
 }
@@ -687,6 +729,17 @@ function InquiryChart({
       ))}
     </div>
   );
+}
+
+function statusLabel(status: InquiryStatus | "all") {
+  const map: Record<InquiryStatus | "all", string> = {
+    all: "전체",
+    new: "신규",
+    contacted: "연락",
+    done: "완료",
+    spam: "스팸"
+  };
+  return map[status];
 }
 
 function formatDate(value: string) {
