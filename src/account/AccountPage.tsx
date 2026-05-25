@@ -203,14 +203,14 @@ export function AccountPage() {
         </a>
         <div className="admin-actions">
           {sessionEmail ? <span className="admin-email">{sessionEmail}</span> : null}
-          <button className="admin-ghost-button" onClick={() => void loadInquiries()} type="button">
+          <button className="admin-ghost-button" onClick={() => void loadInquiries()} type="button" aria-label="새로고침">
             <RefreshCcw size={16} />
-            새로고침
+            <span className="admin-btn-label">새로고침</span>
           </button>
           {sessionEmail ? (
-            <button className="admin-ghost-button" onClick={() => void handleSignOut()} type="button">
+            <button className="admin-ghost-button" onClick={() => void handleSignOut()} type="button" aria-label="로그아웃">
               <LogOut size={16} />
-              로그아웃
+              <span className="admin-btn-label">로그아웃</span>
             </button>
           ) : null}
         </div>

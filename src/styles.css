@@ -7228,9 +7228,35 @@ textarea {
 
   .admin-mobile-overview {
     display: grid;
-    gap: 10px;
+    gap: 8px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin: 0 0 12px;
+  }
+
+  .admin-mobile-metric {
+    background: #ffffff;
+    border: 1px solid var(--hair, #e6dfd0);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .admin-mobile-metric span {
+    color: var(--ink-3, #5b6781);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .admin-mobile-metric strong {
+    color: var(--ink, #0b1a30);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
   }
 
   .editor-page-tabs {
@@ -7434,8 +7460,22 @@ textarea {
     gap: 6px;
   }
 
-  .admin-home,
   .admin-email {
+    display: none;
+  }
+
+  .admin-btn-label {
+    display: none;
+  }
+
+  .admin-ghost-button {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .admin-home {
     word-break: keep-all;
   }
 
