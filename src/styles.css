@@ -6965,6 +6965,19 @@ textarea {
     word-break: break-word;
   }
 
+  .editor-workspace:not(.editor-workspace-with-preview) > .editor-inspector {
+    order: 1;
+  }
+
+  .editor-workspace:not(.editor-workspace-with-preview) > .editor-preview-panel {
+    max-height: 60vh;
+    order: 2;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .editor-workspace,
   .editor-workspace-with-preview {
     grid-template-columns: 1fr;
@@ -7686,6 +7699,19 @@ textarea {
   .editor-preview-panel * {
     max-width: 100%;
     word-break: break-word;
+  }
+
+  .editor-workspace:not(.editor-workspace-with-preview) > .editor-inspector {
+    order: 1;
+  }
+
+  .editor-workspace:not(.editor-workspace-with-preview) > .editor-preview-panel {
+    max-height: 60vh;
+    order: 2;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .editor-grid {
