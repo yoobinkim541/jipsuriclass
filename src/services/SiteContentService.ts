@@ -524,7 +524,7 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
         area: typeof item.area === "string" ? item.area : base.cases[index]?.area ?? "",
         problem: typeof item.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
         solution: typeof item.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
-        image: typeof item.image === "string" && item.image.trim() ? item.image : base.cases[index]?.image ?? "",
+        image: base.cases[index]?.image ?? "",
         link: typeof item.link === "string" ? item.link : base.cases[index]?.link ?? ""
       }),
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null

@@ -198,7 +198,7 @@ export const cases: ConstructionCase[] = [
     problem: "주방 실리콘 변색·경화·갈라짐, 욕실 벽면 도배지로 인한 곰팡이 및 접착 불량 우려",
     solution: "주방은 낡은 실리콘 완전 제거 후 곰팡이 방지 코킹 재시공, 욕실은 도배지 전면 철거 후 하부와 자연스럽게 이어지도록 정밀 타일 시공",
     link: "https://blog.naver.com/it77khy/224246606297",
-    image: "https://postfiles.pstatic.net/MjAyNjA0MDdfMjQ4/MDAxNzc1NTI5NzA3MTk2.8IORqbGhhjQJuPMbOlvm6vKF8Cxjm4JStTQ9MTenAfwg.yg_XlMzpLqa_XwDu95nP7pbN80YQLjkB9oaOnYoV4uQg.JPEG/900%EF%BC%BF20260326%EF%BC%BF105635.jpg?type=w3840"
+    image: "/assets/cases/case1-silicone-tile.jpg"
   },
   {
     title: "단열공사",
@@ -206,7 +206,7 @@ export const cases: ConstructionCase[] = [
     problem: "안방·작은방의 심한 냉기와 결로 우려. 단열재 이음부 틈새와 창호 주변 빈 공간으로 외벽 온도 4~12℃까지 저하",
     solution: "뉴골드폭스보드 22T 단열재를 빈틈없이 밀착 시공하고 천장 단열폼 보강·걸레받이 재시공으로 외벽 온도 14~16℃ 이상 회복",
     link: "https://blog.naver.com/it77khy/224212491748",
-    image: "https://postfiles.pstatic.net/MjAyNjAzMDdfMjQx/MDAxNzcyODcyNTgzMjI3.EsQBAOyslS-fd9Bsw-1fe0DGur21BhHN7_r8dnizGPMg.DWbcZnM5mHa5Vds8ZGbkvGd-kBt0DcdZmHoTZc2Bp0Ug.JPEG/900%EF%BC%BF2026%EF%BC%8D02%EF%BC%8D26%EF%BC%8D12%EF%BC%8D31%EF%BC%8D28%EF%BC%8Dccd14.jpg?type=w3840"
+    image: "/assets/cases/case2-insulation.jpg"
   },
   {
     title: "거실 LED등 및 스위치 교체",
@@ -214,7 +214,7 @@ export const cases: ConstructionCase[] = [
     problem: "노후 조명과 스위치로 실내가 어둡고 안전이 우려되는 상황",
     solution: "리모컨 제어·색 변환이 가능한 LED 조명과 스위치로 교체하여 밝기와 안전성 확보",
     link: "https://blog.naver.com/it77khy/224244962003",
-    image: "https://postfiles.pstatic.net/MjAyNjA0MDdfNDQg/MDAxNzc1NTI5Mzg0MjY4.gizuJ90AcGx1xPc1gFhrQIYO7nAFxczh2EJjpxRiJ0wg.Qmw7kZR97BkSjivdQl35JsipdpWEfSwxo6ZbfU-WGdgg.JPEG/900%EF%BC%BF20260331%EF%BC%BF150954.jpg?type=w3840"
+    image: "/assets/cases/case3-led.jpg"
   },
   {
     title: "주방 싱크볼 교체",
@@ -222,7 +222,7 @@ export const cases: ConstructionCase[] = [
     problem: "기존 싱크볼에 누적된 물때·스크래치로 위생 불량 상태",
     solution: "관리가 쉽고 위생적인 백조 사각 싱크볼(엠보 코팅)로 교체, 수평 조절 및 실리콘 마감까지 정밀 시공",
     link: "https://blog.naver.com/it77khy/224237946902",
-    image: "https://postfiles.pstatic.net/MjAyNjAzMzBfNDYg/MDAxNzc0ODY4MTgzNzQw.XugDfj43w-1qgTBKUE_3CCmEu29E6jjWhodj34Qz_Usg.LPI2It6i3PhrrSwgdXUR4sCjFMnItgCeuM2ZxLxPH3kg.JPEG/900%EF%BC%BF20260325%EF%BC%BF163954.jpg?type=w3840"
+    image: "/assets/cases/case4-sink.jpg"
   },
   {
     title: "누수 피해 복구",
@@ -230,7 +230,7 @@ export const cases: ConstructionCase[] = [
     problem: "누수로 인한 베란다 천장 얼룩과 도장 들뜸, 습기·곰팡이 확산 우려",
     solution: "손상된 석고보드 교체 후 결로 방지 탄성코트 시공으로 마감 복구",
     link: "https://blog.naver.com/it77khy/224246265335",
-    image: "https://postfiles.pstatic.net/MjAyNjA0MDdfMTY2/MDAxNzc1NTI5NTk5MDg2.7os7DsD1SEKe2MYjK6AIDXLfH8p6pMn-JxukLTT6ungg.VddlPjWPfLTHdMwmJ-sIUNdZ2vSISoV6WsKT9e2jPgwg.JPEG/900%EF%BC%BF1774499486445.jpg?type=w3840"
+    image: "/assets/cases/case5-leak.jpg"
   },
 ];
 
