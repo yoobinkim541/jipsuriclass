@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ArrowUpRight, CheckCircle2, ChevronLeft, MessageCircle, Phone } from "lucide-react";
 import { business } from "../data";
 import { symptomCategories, type SymptomCategory } from "../data";
@@ -20,6 +20,13 @@ export function DiagnosisPage() {
 
   const [selectedCategory, setSelectedCategory] = useState<SymptomCategory>(initialCategory ?? symptomCategories[0]);
   const [selectedTopic, setSelectedTopic] = useState<DiagnosisTopic>(initialTopic);
+  const answerRef = useRef<HTMLElement>(null);
+
+  function scrollToAnswer() {
+    setTimeout(() => {
+      answerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+  }
 
   function pickCategory(cat: SymptomCategory) {
     setSelectedCategory(cat);
@@ -29,7 +36,10 @@ export function DiagnosisPage() {
 
   function pickTopic(id: string) {
     const topic = getDiagnosisTopicById(id);
-    if (topic) setSelectedTopic(topic);
+    if (topic) {
+      setSelectedTopic(topic);
+      scrollToAnswer();
+    }
   }
 
   return (
@@ -129,7 +139,7 @@ export function DiagnosisPage() {
         </section>
 
         {/* 답변 */}
-        <section className="diagnosis-section section" aria-labelledby="diagnosis-answer-title">
+        <section ref={answerRef} className="diagnosis-section section" aria-labelledby="diagnosis-answer-title">
           <div className="section-heading">
             <h2 id="diagnosis-answer-title">답변</h2>
             <p>선택한 증상에 따라 바로 확인해야 할 포인트를 정리합니다.</p>
