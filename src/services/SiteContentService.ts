@@ -518,33 +518,21 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
           (value): value is Record<string, unknown> => typeof value === "object" && value !== null
         )
       : base.services,
-    cases: Array.isArray(input.cases) && input.cases.length === base.cases.length
+    cases: base.cases,
+    blog: Array.isArray(input.blog) && input.blog.length === base.blog.length
       ? mergeTextArray(
-          input.cases,
-          base.cases,
+          input.blog,
+          base.blog,
           (item, index) => ({
-            title: typeof item.title === "string" ? item.title : base.cases[index]?.title ?? "",
-            area: typeof item.area === "string" ? item.area : base.cases[index]?.area ?? "",
-            problem: typeof item.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
-            solution: typeof item.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
-            image: base.cases[index]?.image ?? "",
-            link: typeof item.link === "string" ? item.link : base.cases[index]?.link ?? ""
+            title: typeof item.title === "string" ? item.title : base.blog[index]?.title ?? "",
+            description: typeof item.description === "string" ? item.description : base.blog[index]?.description ?? "",
+            date: typeof item.date === "string" ? item.date : base.blog[index]?.date ?? "",
+            link: typeof item.link === "string" ? item.link : base.blog[index]?.link ?? "",
+            image: base.blog[index]?.image ?? ""
           }),
           (value): value is Record<string, unknown> => typeof value === "object" && value !== null
         )
-      : base.cases,
-    blog: mergeTextArray(
-      input.blog,
-      base.blog,
-      (item, index) => ({
-        title: typeof item.title === "string" ? item.title : base.blog[index]?.title ?? "",
-        description: typeof item.description === "string" ? item.description : base.blog[index]?.description ?? "",
-        date: typeof item.date === "string" ? item.date : base.blog[index]?.date ?? "",
-        link: typeof item.link === "string" ? item.link : base.blog[index]?.link ?? "",
-        image: typeof item.image === "string" && item.image.trim() ? item.image : base.blog[index]?.image ?? ""
-      }),
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null
-    ),
+      : base.blog,
     process: mergeTextArray(
       input.process,
       base.process,

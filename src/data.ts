@@ -201,8 +201,8 @@ export const cases: ConstructionCase[] = [
     image: "/assets/cases/case1-silicone-tile.jpg"
   },
   {
-    title: "단열공사",
-    area: "서울 길음뉴타운 롯데캐슬골든힐스",
+    title: "천장 결로로 인한 단열 공사",
+    area: "아파트 천장",
     problem: "안방·작은방의 심한 냉기와 결로 우려. 단열재 이음부 틈새와 창호 주변 빈 공간으로 외벽 온도 4~12℃까지 저하",
     solution: "뉴골드폭스보드 22T 단열재를 빈틈없이 밀착 시공하고 천장 단열폼 보강·걸레받이 재시공으로 외벽 온도 14~16℃ 이상 회복",
     link: "https://blog.naver.com/it77khy/224212491748",
@@ -247,10 +247,10 @@ export const pinnedPosts: PortfolioPost[] = [
     image: cases[0].image
   },
   {
-    title: "냉기·결로 잡은 단열 시공 사례",
-    description: "단열재 밀착 시공과 단열폼 보강으로 외벽 냉기를 잡은 사례입니다.",
+    title: "천장 결로로 인한 단열 공사",
+    description: "열화상 카메라로 냉기 구간을 확인하고 단열재 밀착 시공으로 해결한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224212491748",
     image: cases[1].image
   },
   {
