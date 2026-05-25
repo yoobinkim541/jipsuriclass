@@ -1152,3 +1152,26 @@ Verification:
 Follow-up:
 - Deploy to Vercel to verify visual output in browser.
 - Consider replacing placeholder case images with real job-site photos for the hero card deck.
+
+## 2026-05-25 - Waterproofing/Tile Price Pages
+
+Changed files:
+- `src/App.tsx`
+- `src/waterproofingTilePriceData.ts`
+- `src/styles.css`
+- `public/sitemap.xml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a combined `/service/waterproofing-tile/price` page that reuses the existing price-table pattern and computes a mock estimate from selected labor items.
+- Wired the combined landing page CTA and quick estimate chips to the combined price page.
+- Marked product and accessory material costs as separate in the pricing data.
+- Added the combined landing page and price page URLs to `sitemap.xml`.
+
+Verification:
+- `npm run build` passed.
+- Browser verification completed with Playwright on desktop and mobile viewports.
+- Verified landing-page CTA rendering, price-page rendering, and calculator updates after row selection.
+
+Follow-up:
+- None.
