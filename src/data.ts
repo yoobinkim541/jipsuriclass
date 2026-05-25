@@ -190,35 +190,43 @@ export const symptomCategories: SymptomCategory[] = [
  */
 export const cases: ConstructionCase[] = [
   {
-    title: "욕실 천장 누수 복구",
-    area: "아파트 욕실",
-    problem: "윗층 배관 누수 후 천장 마감 손상",
-    solution: "누수 흔적 확인, 손상 면 정리, 마감재 교체",
-    link: business.naverBlogUrl,
+    title: "실리콘코킹·화장실 타일 시공",
+    area: "성남 분당 더헤리티지",
+    problem: "주방 실리콘 변색·경화·갈라짐, 욕실 벽면 도배지로 인한 곰팡이 및 접착 불량 우려",
+    solution: "주방은 낡은 실리콘 완전 제거 후 곰팡이 방지 코킹 재시공, 욕실은 도배지 전면 철거 후 하부와 자연스럽게 이어지도록 정밀 타일 시공",
+    link: "https://blog.naver.com/it77khy/224246606297",
     image: images.cases.bathroomLeak
   },
   {
-    title: "수전 교체",
-    area: "빌라 주방",
-    problem: "수전 노후로 인한 누수와 작동 불량",
-    solution: "기존 수전 철거, 신규 수전 설치 및 누수 점검",
-    link: business.naverBlogUrl,
-    image: images.cases.kitchenRepair
-  },
-  {
-    title: "전체 및 부분 도배",
-    area: "원룸 거실",
-    problem: "누수 이후 벽지 들뜸과 얼룩",
-    solution: "기초면 정리, 부분·전체 도배, 마감 라인 보정",
-    link: business.naverBlogUrl,
+    title: "단열공사",
+    area: "서울 길음뉴타운 롯데캐슬골든힐스",
+    problem: "안방·작은방의 심한 냉기와 결로 우려. 단열재 이음부 틈새와 창호 주변 빈 공간으로 외벽 온도 4~12℃까지 저하",
+    solution: "뉴골드폭스보드 22T 단열재를 빈틈없이 밀착 시공하고 천장 단열폼 보강·걸레받이 재시공으로 외벽 온도 14~16℃ 이상 회복",
+    link: "https://blog.naver.com/it77khy/224212491748",
     image: images.cases.wallRepair
   },
   {
-    title: "베란다 방수 보수",
-    area: "아파트 베란다",
-    problem: "비 온 뒤 바닥면에 남는 누수 자국",
-    solution: "방수층 점검, 취약 구간 보수, 재마감",
-    link: business.naverBlogUrl,
+    title: "거실 LED등 및 스위치 교체",
+    area: "아파트 거실",
+    problem: "노후 조명과 스위치로 실내가 어둡고 안전이 우려되는 상황",
+    solution: "리모컨 제어·색 변환이 가능한 LED 조명과 스위치로 교체하여 밝기와 안전성 확보",
+    link: "https://blog.naver.com/it77khy/224244962003",
+    image: images.cases.kitchenRepair
+  },
+  {
+    title: "주방 싱크볼 교체",
+    area: "성남 분당 더헤리티지",
+    problem: "기존 싱크볼에 누적된 물때·스크래치로 위생 불량 상태",
+    solution: "관리가 쉽고 위생적인 백조 사각 싱크볼(엠보 코팅)로 교체, 수평 조절 및 실리콘 마감까지 정밀 시공",
+    link: "https://blog.naver.com/it77khy/224237946902",
+    image: images.cases.kitchenRepair
+  },
+  {
+    title: "누수 피해 복구",
+    area: "남양주 이편한세상다산",
+    problem: "누수로 인한 베란다 천장 얼룩과 도장 들뜸, 습기·곰팡이 확산 우려",
+    solution: "손상된 석고보드 교체 후 결로 방지 탄성코트 시공으로 마감 복구",
+    link: "https://blog.naver.com/it77khy/224246265335",
     image: images.cases.bathroomLeak
   },
 ];
@@ -229,32 +237,39 @@ export const cases: ConstructionCase[] = [
  */
 export const pinnedPosts: PortfolioPost[] = [
   {
-    title: "누수 흔적이 남은 욕실 천장 복구 사례",
-    description: "사진 상담 후 현장 확인, 손상 부위 철거와 마감 복구까지 진행한 사례입니다.",
+    title: "성남 분당 더헤리티지 실리콘코킹·화장실 타일 시공",
+    description: "주방 실리콘 재시공과 욕실 정밀 타일 시공을 함께 진행한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224246606297",
     image: cases[0].image
   },
   {
-    title: "전체 및 부분 도배 작업",
-    description: "임대차 종료 전 자주 발생하는 훼손 부위를 필요한 만큼만 정리했습니다.",
+    title: "길음뉴타운11단지 롯데캐슬골든힐스 단열공사",
+    description: "단열재 밀착 시공과 단열폼 보강으로 냉기·결로 문제를 해결한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224212491748",
+    image: cases[1].image
+  },
+  {
+    title: "거실 LED등 및 스위치 교체",
+    description: "노후 조명과 스위치를 최신 LED로 교체해 밝기와 안전성을 확보한 사례입니다.",
+    date: "대표 사례",
+    link: "https://blog.naver.com/it77khy/224244962003",
     image: cases[2].image
   },
   {
-    title: "베란다 누수 흔적 정리와 방수 보수",
-    description: "비가 올 때마다 반복되던 자국을 확인하고 방수 보수로 정리한 사례입니다.",
+    title: "성남 분당 더헤리티지 백조 사각 싱크볼 교체",
+    description: "위생 불량 싱크볼을 엠보 코팅 제품으로 교체하고 정밀 마감까지 완료한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224237946902",
     image: cases[3].image
   },
   {
-    title: "수전 교체 및 누수 점검",
-    description: "노후된 수전을 교체하고 연결부 누수까지 꼼꼼히 점검한 사례입니다.",
+    title: "남양주 이편한세상다산 누수 피해 복구",
+    description: "베란다 천장 누수로 손상된 석고보드를 교체하고 탄성코트로 마감 복구한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
-    image: cases[1].image
+    link: "https://blog.naver.com/it77khy/224246265335",
+    image: cases[4].image
   }
 ];
 
