@@ -829,7 +829,7 @@ function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categor
       </div>
 
       {/* 모바일·태블릿: 1단 — 카테고리 칩만 */}
-      <div className="symptom-grid symptom-grid--mobile">
+      <div className="symptom-grid--mobile">
         {categories.map((cat) => (
           <a
             className="symptom-grid-item"

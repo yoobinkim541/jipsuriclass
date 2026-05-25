@@ -3317,7 +3317,7 @@ textarea {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--navy);
   text-decoration: none;
@@ -3342,10 +3342,10 @@ textarea {
 
 .symptom-chip {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--slate);
   text-decoration: none;
-  padding: 5px 10px;
+  padding: 8px 12px;
   border-radius: 6px;
   background: var(--cream-light, #fdf9f0);
   border: 1px solid transparent;
