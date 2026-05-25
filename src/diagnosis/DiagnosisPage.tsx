@@ -35,7 +35,7 @@ export function DiagnosisPage() {
   return (
     <>
       <header className="site-header diagnosis-header">
-        <a className="brand" href="#top" aria-label="집수리클라쓰 홈">
+        <a className="brand" href="/" aria-label="집수리클라쓰 홈">
           <img className="brand-mark" src="/icons/brand-icon.png" alt="" aria-hidden="true" />
           <span>{business.name}</span>
         </a>
