@@ -2270,8 +2270,7 @@ textarea {
   padding: 16px 18px;
   border: 1px solid var(--hair, #e6dfd0);
   border-radius: 18px;
-  background: linear-gradient(180deg, #fff 0%, #fbf7ef 100%);
-  box-shadow: 0 10px 24px rgba(16, 40, 74, 0.04);
+  background: #fff;
 }
 
 .process__signal-icon {
@@ -2338,7 +2337,7 @@ textarea {
   padding: 18px;
   border: 1px solid var(--hair, #e6dfd0);
   border-radius: 14px;
-  background: linear-gradient(180deg, #ffffff 0%, #fdfbf6 100%);
+  background: #fff;
   text-align: left;
   cursor: pointer;
   transition: all 240ms;
@@ -2347,7 +2346,6 @@ textarea {
   gap: 10px;
   min-height: 164px;
   justify-content: space-between;
-  box-shadow: 0 10px 26px rgba(16, 40, 74, 0.04);
 }
 
 .process__step:hover {
@@ -2355,11 +2353,9 @@ textarea {
 }
 
 .process__step.active {
-  background: linear-gradient(180deg, #122a4f 0%, #0b1a30 100%);
+  background: var(--ink, #0b1a30);
   color: #ffffff;
   border-color: var(--ink, #0b1a30);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(8,22,40,.08), 0 22px 60px rgba(8,22,40,.14);
 }
 
 .process__step .step-num {
@@ -2404,7 +2400,7 @@ textarea {
 }
 
 .process__detail-card {
-  background: #fdfbf6;
+  background: #fff;
   border: 1px solid var(--hair, #e6dfd0);
   border-radius: 24px;
   padding: clamp(18px, 2.8vw, 34px);
