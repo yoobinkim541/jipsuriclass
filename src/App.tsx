@@ -452,7 +452,7 @@ function HeroSection({
     const timer = window.setInterval(() => {
       setRotatorIndex((i) => (i + 1) % rotatorWords.length);
       setRotatorKey((k) => k + 1);
-    }, 1600);
+    }, 2400);
     return () => window.clearInterval(timer);
   }, []);
 
