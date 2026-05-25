@@ -1583,59 +1583,129 @@ function BlogShowcase({
   emptyText: string;
 }) {
   const displayPosts = posts.slice(0, 5);
+  const railRef = useRef<HTMLDivElement | null>(null);
+  const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const scrollFrameRef = useRef<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useAutoCarousel(railRef, { enabled: displayPosts.length > 1 });
+
+  function scrollToIndex(index: number) {
+    const rail = railRef.current;
+    const card = cardRefs.current[index];
+    if (!rail || !card) return;
+    const railRect = rail.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    rail.scrollBy({ left: cardRect.left - railRect.left - (railRect.width - cardRect.width) / 2, behavior: "smooth" });
+  }
+
+  function syncActiveFromScroll() {
+    const rail = railRef.current;
+    if (!rail) return;
+    const railCenter = rail.scrollLeft + rail.offsetWidth / 2;
+    let nearest = 0;
+    let nearestDist = Infinity;
+    cardRefs.current.forEach((card, index) => {
+      if (!card) return;
+      const center = card.offsetLeft + card.offsetWidth / 2;
+      const dist = Math.abs(center - railCenter);
+      if (dist < nearestDist) { nearestDist = dist; nearest = index; }
+    });
+    setActiveIndex(nearest);
+  }
+
+  function handleScroll() {
+    if (scrollFrameRef.current !== null) window.cancelAnimationFrame(scrollFrameRef.current);
+    scrollFrameRef.current = window.requestAnimationFrame(syncActiveFromScroll);
+  }
+
+  function goToIndex(next: number) {
+    const normalized = (next + displayPosts.length) % displayPosts.length;
+    setActiveIndex(normalized);
+    scrollToIndex(normalized);
+  }
 
   return (
     <div className="landing-blog-showcase">
       <h3>{label}</h3>
       {displayPosts.length ? (
-        <div className="blog-card-grid landing-blog-grid blog-card-carousel-mobile">
-          {displayPosts.map((post, index) => (
-            <a
-              className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
-              href={post.link}
-              target="_blank"
-              rel="noreferrer"
-              key={`${label}-${post.link}-${post.title}`}
-            >
-              <img
-                className="blog-card-image"
-                src={post.image}
-                alt={post.title}
-                loading="lazy"
-                onError={(event) => {
-                  const image = event.currentTarget;
-                  if (image.dataset.fallbackApplied === "true") return;
-                  image.dataset.fallbackApplied = "true";
-                  image.src = "/assets/consult-hero.png";
-                }}
-              />
-              <div className="blog-card-body">
-                <div className="blog-card-meta">
-                  <span className="naver-mark">N</span>
-                  <time>{post.date}</time>
-                </div>
-                <h3>{post.cardTitle ?? post.title}</h3>
-                <div className="blog-card-summary">
-                  {(post.summary?.length ? post.summary : buildSummaryLines(post.description)).map((line) => (
-                    <p key={line}>{line}</p>
-                  ))}
-                </div>
-                {!!post.keywords?.length && (
-                  <div className="blog-card-keywords" aria-label="요약 키워드">
-                    {post.keywords.slice(0, 4).map((keyword) => (
-                      <span className="blog-keyword" key={keyword}>
-                        {keyword}
-                      </span>
+        <>
+          <div
+            className="blog-card-grid landing-blog-grid blog-card-carousel-mobile"
+            ref={railRef}
+            onScroll={handleScroll}
+          >
+            {displayPosts.map((post, index) => (
+              <a
+                className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
+                href={post.link}
+                target="_blank"
+                rel="noreferrer"
+                key={`${label}-${post.link}-${post.title}`}
+                ref={(el) => { cardRefs.current[index] = el; }}
+              >
+                <img
+                  className="blog-card-image"
+                  src={post.image}
+                  alt={post.title}
+                  loading="lazy"
+                  onError={(event) => {
+                    const image = event.currentTarget;
+                    if (image.dataset.fallbackApplied === "true") return;
+                    image.dataset.fallbackApplied = "true";
+                    image.src = "/assets/consult-hero.png";
+                  }}
+                />
+                <div className="blog-card-body">
+                  <div className="blog-card-meta">
+                    <span className="naver-mark">N</span>
+                    <time>{post.date}</time>
+                  </div>
+                  <h3>{post.cardTitle ?? post.title}</h3>
+                  <div className="blog-card-summary">
+                    {(post.summary?.length ? post.summary : buildSummaryLines(post.description)).map((line) => (
+                      <p key={line}>{line}</p>
                     ))}
                   </div>
-                )}
-                <span className="blog-card-link">
-                  자세히 보기 <ExternalLink size={16} />
-                </span>
+                  {!!post.keywords?.length && (
+                    <div className="blog-card-keywords" aria-label="요약 키워드">
+                      {post.keywords.slice(0, 4).map((keyword) => (
+                        <span className="blog-keyword" key={keyword}>
+                          {keyword}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <span className="blog-card-link">
+                    자세히 보기 <ExternalLink size={16} />
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+          {displayPosts.length > 1 && (
+            <div className="blog-carousel-controls" aria-label={`${label} 캐러셀 컨트롤`}>
+              <button className="cases__carousel-button" type="button" onClick={() => goToIndex(activeIndex - 1)} aria-label="이전 글">
+                <ChevronLeft size={16} />
+              </button>
+              <div className="cases__carousel-dots" aria-label="현재 위치">
+                {displayPosts.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className={index === activeIndex ? "cases__dot active" : "cases__dot"}
+                    onClick={() => goToIndex(index)}
+                    aria-label={`${index + 1}번째 글로 이동`}
+                    aria-pressed={index === activeIndex}
+                  />
+                ))}
               </div>
-            </a>
-          ))}
-        </div>
+              <button className="cases__carousel-button" type="button" onClick={() => goToIndex(activeIndex + 1)} aria-label="다음 글">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <p className="landing-empty">{emptyText}</p>
       )}
