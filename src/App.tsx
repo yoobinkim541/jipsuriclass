@@ -302,6 +302,7 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
       title: `개인정보처리방침 | ${siteName}`,
       description: "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다.",
       image: defaultImage,
+      noindex: true,
       jsonLd: [
         {
           "@context": "https://schema.org",
