@@ -4756,7 +4756,7 @@ textarea {
   }
 
   .estimate-intro-hero {
-    min-height: calc(100dvh - 24px);
+    min-height: 100dvh;
     border-radius: 0;
   }
 
