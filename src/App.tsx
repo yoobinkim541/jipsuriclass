@@ -637,8 +637,8 @@ function HeroSection({
     });
   }, [caseImages, mainCardIndex]);
 
-  const proofs: [string, string][] = [
-    ["진행 과정", "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행"],
+  const proofs: [string, React.ReactNode][] = [
+    ["진행 과정", "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행"],
     ["작업 범위", "부분수리부터 전체 리모델링까지"],
     ["현장 기록", "네이버 블로그 포트폴리오"]
   ];
