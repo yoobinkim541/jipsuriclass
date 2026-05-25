@@ -452,7 +452,7 @@ function HeroSection({
     const timer = window.setInterval(() => {
       setRotatorIndex((i) => (i + 1) % rotatorWords.length);
       setRotatorKey((k) => k + 1);
-    }, 2400);
+    }, 1600);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -914,7 +914,7 @@ function CasesSection({
     const timerId = window.setInterval(() => {
       if (stopped) return;
       scrollToIndex((activeIndexRef.current + 1) % editableCases.length);
-    }, 4200);
+    }, 2800);
 
     const stop = () => {
       if (stopped) return;
@@ -1887,7 +1887,7 @@ function useAutoCarousel(
         left: atEnd ? 0 : container.scrollLeft + step,
         behavior: "smooth"
       });
-    }, 3400);
+    }, 2200);
 
     const stop = () => {
       if (stopped) return;
