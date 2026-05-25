@@ -406,7 +406,7 @@ function SiteHeader({
             <a className="nav__phone" href={business.phoneHref}>
               {business.phone}
             </a>
-            <button className="nav__menu" onClick={onOpenMenu} aria-label="사이드바 열기">
+            <button className="nav__menu" onClick={menuOpen ? onCloseMenu : onOpenMenu} aria-label={menuOpen ? "사이드바 닫기" : "사이드바 열기"}>
               <Menu size={22} />
             </button>
           </div>
@@ -414,6 +414,8 @@ function SiteHeader({
       </header>
 
       {menuOpen && (
+        <>
+        <div className="mobile-menu-overlay" onClick={onCloseMenu} aria-hidden="true" />
         <div className="mobile-menu">
           <button onClick={onCloseMenu} aria-label="메뉴 닫기">
             <X size={24} />
@@ -427,6 +429,7 @@ function SiteHeader({
             로그인
           </a>
         </div>
+        </>
       )}
     </>
   );
