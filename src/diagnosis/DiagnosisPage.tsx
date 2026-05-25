@@ -105,10 +105,7 @@ export function DiagnosisPage() {
         {/* 2단: 세부 증상 */}
         <section className="diagnosis-section section" aria-labelledby="diagnosis-list-title">
           <div className="section-heading">
-            <h2 id="diagnosis-list-title">
-              <span className="diagnosis-cat-badge">{selectedCategory.icon} {selectedCategory.label}</span>
-              {" "}어떤 증상인가요?
-            </h2>
+            <h2 id="diagnosis-list-title">어떤 증상인가요?</h2>
             <p>가장 비슷한 증상을 클릭하세요.</p>
           </div>
           <div className="diagnosis-topic-grid">
