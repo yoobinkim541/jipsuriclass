@@ -113,6 +113,77 @@ export const symptoms = [
   "수전·배수가 불편하다"
 ];
 
+export type SymptomItem = { text: string; id: string };
+export type SymptomCategory = { id: string; label: string; icon: string; symptoms: SymptomItem[] };
+
+export const symptomCategories: SymptomCategory[] = [
+  {
+    id: "door",
+    label: "문·창문",
+    icon: "🚪",
+    symptoms: [
+      { text: "문이 뻑뻑해요", id: "stiff-door" },
+      { text: "삐걱 소리가 나요", id: "door-squeak" },
+      { text: "틈으로 바람이 들어와요", id: "door-draft" },
+      { text: "도어락이 오작동해요", id: "doorlock" },
+    ],
+  },
+  {
+    id: "leak",
+    label: "물·누수",
+    icon: "💧",
+    symptoms: [
+      { text: "천장·벽에 물자국이 생겼어요", id: "leak-stain" },
+      { text: "배관에서 물이 새요", id: "pipe-leak" },
+      { text: "변기 물이 계속 흘러요", id: "toilet-run" },
+      { text: "수압이 갑자기 약해졌어요", id: "low-pressure" },
+    ],
+  },
+  {
+    id: "wall",
+    label: "벽·바닥·천장",
+    icon: "🧱",
+    symptoms: [
+      { text: "벽지가 들뜨거나 얼룩이 생겼어요", id: "peeling-wallpaper" },
+      { text: "타일이 깨지거나 줄눈이 갈라졌어요", id: "broken-tile" },
+      { text: "바닥재가 들뜨거나 삐걱거려요", id: "floor-creak" },
+      { text: "천장에 금이 가거나 내려앉아요", id: "ceiling-crack" },
+    ],
+  },
+  {
+    id: "electric",
+    label: "전기",
+    icon: "⚡",
+    symptoms: [
+      { text: "조명이 깜빡이거나 안 켜져요", id: "light-flicker" },
+      { text: "차단기가 자꾸 내려가요", id: "breaker-trip" },
+      { text: "콘센트·스위치가 작동 안 해요", id: "outlet-fail" },
+      { text: "전기 타는 냄새가 나요", id: "electric-smell" },
+    ],
+  },
+  {
+    id: "bathroom",
+    label: "욕실",
+    icon: "🛁",
+    symptoms: [
+      { text: "욕실 배수가 잘 안 돼요", id: "bath-drain" },
+      { text: "변기가 잘 안 내려가요", id: "toilet-clog" },
+      { text: "곰팡이가 반복해서 생겨요", id: "mold-smell" },
+      { text: "샤워기 수압이 약해요", id: "shower-pressure" },
+    ],
+  },
+  {
+    id: "kitchen",
+    label: "주방·설비",
+    icon: "🍳",
+    symptoms: [
+      { text: "수전에서 물이 새요", id: "drain-trouble" },
+      { text: "주방 배수가 막혔어요", id: "kitchen-drain" },
+      { text: "싱크대 하부장이 젖어 있어요", id: "sink-wet" },
+    ],
+  },
+];
+
 /**
  * 대표 현장사례 편집 구역
  * 실제 시공사진은 public/assets/cases 같은 폴더에 넣고 image 값을 "/assets/cases/파일명.jpg"로 바꾸면 됩니다.

@@ -1,14 +1,36 @@
 import { useMemo, useState } from "react";
 import { ArrowUpRight, CheckCircle2, ChevronLeft, MessageCircle, Phone } from "lucide-react";
 import { business } from "../data";
-import { diagnosisTopics, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
+import { symptomCategories, type SymptomCategory } from "../data";
+import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
 
 export function DiagnosisPage() {
-  const initialTopic = useMemo(() => {
-    const query = new URLSearchParams(window.location.search);
-    return getDiagnosisTopicByTrigger(query.get("issue") ?? query.get("topic"));
-  }, []);
+  const query = useMemo(() => new URLSearchParams(window.location.search), []);
+
+  const initialCategory = useMemo<SymptomCategory | null>(() => {
+    const catId = query.get("category");
+    return catId ? (symptomCategories.find((c) => c.id === catId) ?? symptomCategories[0]) : symptomCategories[0];
+  }, [query]);
+
+  const initialTopic = useMemo<DiagnosisTopic>(() => {
+    const issue = query.get("issue") ?? query.get("topic");
+    if (issue) return getDiagnosisTopicByTrigger(issue) ?? getDiagnosisTopicById(issue);
+    return diagnosisTopics[0];
+  }, [query]);
+
+  const [selectedCategory, setSelectedCategory] = useState<SymptomCategory>(initialCategory ?? symptomCategories[0]);
   const [selectedTopic, setSelectedTopic] = useState<DiagnosisTopic>(initialTopic);
+
+  function pickCategory(cat: SymptomCategory) {
+    setSelectedCategory(cat);
+    const first = diagnosisTopics.find((t) => t.id === cat.symptoms[0]?.id);
+    if (first) setSelectedTopic(first);
+  }
+
+  function pickTopic(id: string) {
+    const topic = getDiagnosisTopicById(id);
+    if (topic) setSelectedTopic(topic);
+  }
 
   return (
     <>
@@ -30,7 +52,7 @@ export function DiagnosisPage() {
             <div className="diagnosis-hero-copy">
               <h1 id="diagnosis-title">증상을 클릭하면 바로 원인과 다음 행동이 보입니다</h1>
               <p>
-                “문이 좀 뻑뻑해요” 같은 생활 증상을 먼저 고르고, 원인 후보와 자가 점검 포인트를 확인한 뒤
+                "문이 좀 뻑뻑해요" 같은 생활 증상을 먼저 고르고, 원인 후보와 자가 점검 포인트를 확인한 뒤
                 필요한 경우 바로 상담으로 이어갑니다.
               </p>
               <div className="hero-actions">
@@ -51,35 +73,65 @@ export function DiagnosisPage() {
             <aside className="diagnosis-hero-panel">
               <span className="landing-panel-label">빠른 흐름</span>
               <ul className="landing-highlight-list">
+                <li>카테고리 선택</li>
                 <li>증상 클릭</li>
-                <li>원인 후보 확인</li>
-                <li>자가 점검 후 상담 연결</li>
+                <li>원인 확인 후 상담 연결</li>
               </ul>
             </aside>
           </div>
         </section>
 
-        <section className="diagnosis-section section" aria-labelledby="diagnosis-list-title">
+        {/* 1단: 카테고리 */}
+        <section className="diagnosis-section section" aria-labelledby="diagnosis-cat-title">
           <div className="section-heading">
-            <h2 id="diagnosis-list-title">증상 선택</h2>
-            <p>가장 비슷한 증상을 클릭하세요. 그러면 아래 답변이 바뀝니다.</p>
+            <h2 id="diagnosis-cat-title">어떤 부분이 문제인가요?</h2>
+            <p>해당하는 카테고리를 먼저 선택하세요.</p>
           </div>
-          <div className="diagnosis-topic-grid">
-            {diagnosisTopics.map((topic) => (
+          <div className="diagnosis-cat-grid">
+            {symptomCategories.map((cat) => (
               <button
-                key={topic.id}
+                key={cat.id}
                 type="button"
-                className={selectedTopic.id === topic.id ? "diagnosis-topic-card active" : "diagnosis-topic-card"}
-                onClick={() => setSelectedTopic(topic)}
+                className={`diagnosis-cat-card${selectedCategory.id === cat.id ? " active" : ""}`}
+                onClick={() => pickCategory(cat)}
               >
-                <span>{topic.trigger}</span>
-                <strong>{topic.title}</strong>
-                <p>{topic.summary}</p>
+                <span className="diagnosis-cat-icon">{cat.icon}</span>
+                <span className="diagnosis-cat-label">{cat.label}</span>
               </button>
             ))}
           </div>
         </section>
 
+        {/* 2단: 세부 증상 */}
+        <section className="diagnosis-section section" aria-labelledby="diagnosis-list-title">
+          <div className="section-heading">
+            <h2 id="diagnosis-list-title">
+              <span className="diagnosis-cat-badge">{selectedCategory.icon} {selectedCategory.label}</span>
+              {" "}어떤 증상인가요?
+            </h2>
+            <p>가장 비슷한 증상을 클릭하세요.</p>
+          </div>
+          <div className="diagnosis-topic-grid">
+            {selectedCategory.symptoms.map((s) => {
+              const topic = diagnosisTopics.find((t) => t.id === s.id);
+              if (!topic) return null;
+              return (
+                <button
+                  key={topic.id}
+                  type="button"
+                  className={`diagnosis-topic-card${selectedTopic.id === topic.id ? " active" : ""}`}
+                  onClick={() => pickTopic(topic.id)}
+                >
+                  <span>{topic.trigger}</span>
+                  <strong>{topic.title}</strong>
+                  <p>{topic.summary}</p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* 답변 */}
         <section className="diagnosis-section section" aria-labelledby="diagnosis-answer-title">
           <div className="section-heading">
             <h2 id="diagnosis-answer-title">답변</h2>

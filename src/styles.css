@@ -2857,10 +2857,57 @@ textarea {
   padding-top: 0;
 }
 
+.diagnosis-cat-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.diagnosis-cat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.diagnosis-cat-card:hover {
+  border-color: var(--gold);
+  background: #fffbec;
+}
+
+.diagnosis-cat-card.active {
+  border-color: var(--navy);
+  background: var(--navy);
+  color: #fff;
+}
+
+.diagnosis-cat-icon {
+  font-size: 24px;
+}
+
+.diagnosis-cat-label {
+  font-size: 12px;
+  text-align: center;
+}
+
+.diagnosis-cat-badge {
+  font-size: 15px;
+  font-weight: 700;
+}
+
 .diagnosis-topic-grid {
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .diagnosis-topic-card {
@@ -3249,23 +3296,101 @@ textarea {
   background: var(--cream-2, #f1ece1);
 }
 
+/* ── 데스크탑 2단: 카테고리 카드 + 증상 칩 ── */
+.symptom-categories {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.symptom-cat-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.symptom-cat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+  text-decoration: none;
+}
+
+.symptom-cat-label:hover {
+  color: var(--gold);
+}
+
+.symptom-cat-icon {
+  font-size: 18px;
+}
+
+.symptom-chip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.symptom-chip {
+  display: block;
+  font-size: 13px;
+  color: var(--slate);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background: var(--cream-light, #fdf9f0);
+  border: 1px solid transparent;
+  transition: background 0.13s, border-color 0.13s, color 0.13s;
+}
+
+.symptom-chip:hover {
+  background: #fffbec;
+  border-color: var(--gold);
+  color: var(--navy);
+}
+
+/* ── 모바일·태블릿 1단: 카테고리 칩만 (데스크탑에서는 숨김) ── */
+.symptom-grid--mobile {
+  display: none;
+}
+
+/* 기존 레거시 호환 */
 .symptom-grid {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(6, 1fr);
 }
 
+.symptom-grid-item,
 .symptom-grid a {
   align-items: center;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   display: flex;
-  font-size: 17px;
-  font-weight: 900;
+  font-size: 15px;
+  font-weight: 700;
   justify-content: space-between;
-  min-height: 74px;
-  padding: 18px;
+  min-height: 64px;
+  padding: 16px 18px;
+  color: var(--navy);
+  text-decoration: none;
+  transition: background 0.13s, border-color 0.13s;
+}
+
+.symptom-grid-item:hover,
+.symptom-grid a:hover {
+  background: #fffbec;
+  border-color: var(--gold);
 }
 
 .service-grid {
@@ -6866,6 +6991,10 @@ textarea {
     min-height: auto;
   }
 
+  .symptom-categories {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .symptom-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -7492,6 +7621,16 @@ textarea {
 
   .contact-actions-note {
     margin-top: 10px;
+  }
+
+  .symptom-categories {
+    display: none;
+  }
+
+  .symptom-grid--mobile {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 
   .proof-list,
@@ -8219,7 +8358,11 @@ textarea {
 .diagnosis-topic-grid,
 .diagnosis-answer-grid {
   grid-template-columns: 1fr;
-  }
+}
+
+.diagnosis-cat-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
 
   .landing-hero-panel,
   .diagnosis-hero-copy,

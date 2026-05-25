@@ -11,7 +11,7 @@ import {
   User,
   X
 } from "lucide-react";
-import { business, cases, navItems, pinnedPosts, process, services, symptoms } from "./data";
+import { business, cases, navItems, pinnedPosts, process, services, symptoms, symptomCategories } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import type { HomepageContent, PortfolioPost } from "./types";
@@ -470,7 +470,7 @@ function HomePage() {
       <main className="home-page" id="top">
         <HeroSection content={homeContent.hero} cases={homeContent.cases} />
         <AboutSection content={homeContent.about} cases={homeContent.cases} />
-        <SymptomsSection symptoms={homeContent.symptoms ?? symptoms} />
+        <SymptomsSection symptoms={homeContent.symptoms ?? symptoms} categories={symptomCategories} />
         <ServicesSection services={homeContent.services} />
         <SpecialtiesSection />
         <CasesSection cases={homeContent.cases} />
@@ -797,7 +797,7 @@ function AboutSection({
 }
 
 /** 증상 기반 진입 영역: 고객이 전문 공종명을 몰라도 문의할 수 있게 돕습니다. */
-function SymptomsSection({ symptoms }: { symptoms: string[] }) {
+function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categories: typeof symptomCategories }) {
   return (
     <section className="symptoms section" aria-labelledby="symptoms-title">
       <SectionHeading
@@ -805,13 +805,38 @@ function SymptomsSection({ symptoms }: { symptoms: string[] }) {
         title="고객이 말하는 증상부터 간편 자기진단을 시작합니다"
         description="전문 용어를 몰라도 괜찮습니다. 지금 보이는 문제를 클릭하면 바로 원인과 다음 행동이 나옵니다."
       />
-      <div className="symptom-grid">
-        {symptoms.map((item) => (
+
+      {/* 데스크탑: 2단 — 카테고리 + 세부 증상 칩 */}
+      <div className="symptom-categories">
+        {categories.map((cat) => (
+          <div className="symptom-cat-card" key={cat.id}>
+            <a className="symptom-cat-label" href={`/diagnosis?category=${cat.id}`}>
+              <span className="symptom-cat-icon">{cat.icon}</span>
+              {cat.label}
+              <ArrowUpRight size={14} />
+            </a>
+            <ul className="symptom-chip-list">
+              {cat.symptoms.map((s) => (
+                <li key={s.id}>
+                  <a className="symptom-chip" href={`/diagnosis?issue=${s.id}`}>
+                    {s.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* 모바일·태블릿: 1단 — 카테고리 칩만 */}
+      <div className="symptom-grid symptom-grid--mobile">
+        {categories.map((cat) => (
           <a
-            href={`/diagnosis?issue=${encodeURIComponent(item)}`}
-            key={item}
+            className="symptom-grid-item"
+            href={`/diagnosis?category=${cat.id}`}
+            key={cat.id}
           >
-            {item}
+            <span>{cat.icon} {cat.label}</span>
             <ArrowUpRight size={18} />
           </a>
         ))}
