@@ -507,28 +507,32 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
       strengths: Array.isArray(input.about?.strengths) ? input.about!.strengths : base.about.strengths
     },
     symptoms: Array.isArray(input.symptoms) ? input.symptoms.filter((item): item is string => typeof item === "string") : base.symptoms,
-    services: mergeTextArray(
-      input.services,
-      base.services,
-      (item, index) => ({
-        title: typeof item.title === "string" ? item.title : base.services[index]?.title ?? "",
-        text: typeof item.text === "string" ? item.text : base.services[index]?.text ?? ""
-      }),
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null
-    ),
-    cases: mergeTextArray(
-      input.cases,
-      base.cases,
-      (item, index) => ({
-        title: typeof item.title === "string" ? item.title : base.cases[index]?.title ?? "",
-        area: typeof item.area === "string" ? item.area : base.cases[index]?.area ?? "",
-        problem: typeof item.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
-        solution: typeof item.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
-        image: base.cases[index]?.image ?? "",
-        link: typeof item.link === "string" ? item.link : base.cases[index]?.link ?? ""
-      }),
-      (value): value is Record<string, unknown> => typeof value === "object" && value !== null
-    ),
+    services: Array.isArray(input.services) && input.services.length === base.services.length
+      ? mergeTextArray(
+          input.services,
+          base.services,
+          (item, index) => ({
+            title: typeof item.title === "string" ? item.title : base.services[index]?.title ?? "",
+            text: typeof item.text === "string" ? item.text : base.services[index]?.text ?? ""
+          }),
+          (value): value is Record<string, unknown> => typeof value === "object" && value !== null
+        )
+      : base.services,
+    cases: Array.isArray(input.cases) && input.cases.length === base.cases.length
+      ? mergeTextArray(
+          input.cases,
+          base.cases,
+          (item, index) => ({
+            title: typeof item.title === "string" ? item.title : base.cases[index]?.title ?? "",
+            area: typeof item.area === "string" ? item.area : base.cases[index]?.area ?? "",
+            problem: typeof item.problem === "string" ? item.problem : base.cases[index]?.problem ?? "",
+            solution: typeof item.solution === "string" ? item.solution : base.cases[index]?.solution ?? "",
+            image: base.cases[index]?.image ?? "",
+            link: typeof item.link === "string" ? item.link : base.cases[index]?.link ?? ""
+          }),
+          (value): value is Record<string, unknown> => typeof value === "object" && value !== null
+        )
+      : base.cases,
     blog: mergeTextArray(
       input.blog,
       base.blog,
