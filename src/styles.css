@@ -8389,13 +8389,15 @@ textarea {
 }
 
 .price-calc__inner {
-  background: var(--navy);
-  color: #fff;
+  background: #fff;
+  color: var(--navy);
   border-radius: 16px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08);
 }
 
 .price-calc__title {
@@ -8406,7 +8408,7 @@ textarea {
 
 .price-calc__sub {
   font-size: 13px;
-  opacity: 0.7;
+  color: var(--muted);
   margin: 0;
 }
 
@@ -8428,11 +8430,11 @@ textarea {
 
 .price-calc__item-name {
   flex: 1;
-  opacity: 0.9;
+  color: var(--slate);
 }
 
 .price-calc__item-qty {
-  opacity: 0.65;
+  color: var(--muted);
 }
 
 .price-calc__item-price {
@@ -8450,7 +8452,7 @@ textarea {
   justify-content: space-between;
   gap: 8px;
   font-size: 13px;
-  opacity: 0.75;
+  color: var(--slate);
 }
 
 .price-calc__total-row {
@@ -8471,14 +8473,14 @@ textarea {
 
 .price-calc__disclaimer {
   font-size: 11px;
-  opacity: 0.6;
+  color: var(--muted);
   line-height: 1.5;
   margin: 0;
 }
 
 .price-calc__empty {
   font-size: 13px;
-  opacity: 0.65;
+  color: var(--muted);
   line-height: 1.6;
   margin: 0;
 }
@@ -8496,15 +8498,6 @@ textarea {
   justify-content: center;
 }
 
-.price-calc__actions .secondary-button {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.25);
-  color: #fff;
-}
-
-.price-calc__actions .secondary-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
 
 /* Back section */
 .price-page__back-section {
