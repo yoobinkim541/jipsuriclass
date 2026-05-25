@@ -561,7 +561,7 @@ function HeroSection({
       <div className="trust trust--embedded" aria-label="신뢰 지표">
         <div className="trust__inner">
           {[
-            { num: "7", label: "국가공인 7 자격", sub: "대표 직접 보유 · 직접 시공" },
+            { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
             { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
             { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
           ].map((item) => (
@@ -1519,8 +1519,8 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
         <section className="landing-section section" aria-labelledby="landing-blog-title">
           <SectionHeading
             id="landing-blog-title"
-            title={`${content.searchTerms[0]} 사례 & 블로그`}
-            description={`${content.searchTerms[0]} 관련 시공 사례와 블로그 게시물을 모았습니다.`}
+            title={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 사례 & 블로그`}
+            description={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 관련 시공 사례와 블로그 게시물을 모았습니다.`}
           />
           <BlogShowcase
             label="블로그 레퍼런스"

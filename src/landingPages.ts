@@ -103,7 +103,7 @@ const servicePages: LandingPageDefinition[] = [
       },
       {
         question: "욕실 전체 공사가 아니어도 되나요?",
-        answer: "대부분은 아닙니다. 필요한 구간만 고치는 부분 수리로도 해결되는 경우가 많습니다."
+        answer: "반드시 그렇지는 않습니다. 필요한 구간만 고치는 부분 수리로 해결되는 경우가 많습니다."
       },
       {
         question: "방수 문제가 의심되면 어떻게 하나요?",
@@ -159,14 +159,14 @@ const servicePages: LandingPageDefinition[] = [
   {
     path: "/service/door",
     categoryLabel: "서비스",
-    title: "문수리 | 집수리클라쓰",
+    title: "문 수리 | 집수리클라쓰",
     description: "문이 안 닫히거나 문틀, 경첩, 손잡이, 도어락 주변이 불편할 때 필요한 보수를 안내합니다.",
     searchTerms: ["문수리", "문틀", "경첩", "도어락", "현관문", "방문", "중문", "중문수리", "고정핀", "안전고리", "디지털도어락", "문닫힘", "레일", "로라", "안닫힘"],
     heroTitle: "문이 안 닫힐 때는 문 자체보다 주변을 봐야 합니다",
     heroDescription:
-      "문수리는 문짝만 손보는 일이 아니라 문틀, 경첩, 바닥 쓸림, 잠금 장치까지 함께 확인해야 정확합니다.",
+      "문 수리는 문짝만 손보는 일이 아니라 문틀, 경첩, 바닥 쓸림, 잠금 장치까지 함께 확인해야 정확합니다.",
     highlights: ["문짝·문틀·경첩 점검", "도어락 주변 마감 보수", "생활 불편 최소화 우선"],
-    pointsTitle: "문수리에서 자주 확인하는 것",
+    pointsTitle: "문 수리에서 자주 확인하는 것",
     points: [
       "문이 닫히지 않는 이유는 경첩 처짐, 문틀 변형, 바닥 쓸림이 함께 있을 수 있습니다.",
       "도어락 주변 문제가 있으면 잠금 장치와 타공 부위 상태를 같이 봅니다.",
@@ -182,7 +182,7 @@ const servicePages: LandingPageDefinition[] = [
         answer: "가능합니다. 잠금 장치 자체보다 주변 마감과 체결 상태를 함께 봅니다."
       },
       {
-        question: "문교체가 꼭 필요한가요?",
+        question: "문 교체가 꼭 필요한가요?",
         answer: "대부분은 조정이나 부분 보수로 해결됩니다. 교체는 손상 정도가 클 때만 검토합니다."
       }
     ],
@@ -192,7 +192,7 @@ const servicePages: LandingPageDefinition[] = [
       { label: "경기", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
-    serviceType: "문수리"
+    serviceType: "문 수리"
   },
   {
     path: "/service/carpentry",
@@ -216,7 +216,7 @@ const servicePages: LandingPageDefinition[] = [
     ],
     relatedLinks: [
       { label: "도배", href: "/service/wallpaper" },
-      { label: "문수리", href: "/service/door" },
+      { label: "문 수리", href: "/service/door" },
       { label: "남양주", href: "/area/namyangju" }
     ],
     pageType: "Service",
@@ -299,7 +299,7 @@ const servicePages: LandingPageDefinition[] = [
       { question: "방충망만 교체도 가능한가요?", answer: "네, 방충망만 따로 교체 가능합니다. 창 종류와 크기를 먼저 알려주세요." }
     ],
     relatedLinks: [
-      { label: "문수리", href: "/service/door" },
+      { label: "문 수리", href: "/service/door" },
       { label: "누수 수리", href: "/service/leak" },
       { label: "하남", href: "/area/hanam" }
     ],
@@ -327,7 +327,7 @@ const servicePages: LandingPageDefinition[] = [
       { question: "누전 차단기가 자꾸 내려가는데 왜 그런가요?", answer: "특정 회로에 과부하나 누전이 있을 가능성이 높습니다. 어느 시점에 내려가는지 알려주시면 원인을 좁혀드립니다." }
     ],
     relatedLinks: [
-      { label: "문수리", href: "/service/door" },
+      { label: "문 수리", href: "/service/door" },
       { label: "목공 수리", href: "/service/carpentry" },
       { label: "구리", href: "/area/guri" }
     ],
@@ -423,7 +423,7 @@ const servicePages: LandingPageDefinition[] = [
       },
       {
         question: "방수와 타일을 같이 해야 하나요?",
-        answer: "상황에 따라 함께 진행하는 것이 좋을 때가 많습니다. 누수 원인이 있으면 방수부터 보아야 합니다."
+        answer: "상황에 따라 함께 진행하는 것이 좋을 때가 많습니다. 누수 원인이 있으면 방수부터 확인해야 합니다."
       },
       {
         question: "줄눈만 다시 해도 되나요?",
@@ -521,12 +521,12 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/namyangju",
     categoryLabel: "지역",
     title: "남양주 집수리 | 집수리클라쓰",
-    description: "남양주에서 누수, 욕실 수리, 도배, 문수리 상담이 필요한 분들을 위한 지역 안내 페이지입니다.",
+    description: "남양주에서 누수, 욕실 수리, 도배, 문 수리 상담이 필요한 분들을 위한 지역 안내 페이지입니다.",
     searchTerms: ["남양주", "화도읍", "마석", "진접", "별내", "평내", "이편한세상", "라온프라이빗", "화도", "녹촌", "금남", "다산", "마젤란", "서희", "신명", "라폴리움", "아띠랑"],
     heroTitle: "남양주 집수리 상담을 빠르게 정리합니다",
     heroDescription:
       "남양주 화도읍을 기반으로 서울·경기 권역의 현장 상담을 조율합니다. 사진을 보내주시면 범위를 먼저 확인합니다.",
-    highlights: ["남양주 현장 상담", "누수·욕실·도배·문수리", "사진 기반 사전 확인"],
+    highlights: ["남양주 현장 상담", "누수·욕실·도배·문 수리", "사진 기반 사전 확인"],
     pointsTitle: "남양주 상담에서 자주 보는 내용",
     points: [
       "아파트, 빌라, 단독주택처럼 주거 형태에 따라 수리 범위가 달라질 수 있습니다.",
@@ -559,11 +559,11 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/guri",
     categoryLabel: "지역",
     title: "구리 집수리 | 집수리클라쓰",
-    description: "구리 지역에서 필요한 누수, 욕실수리, 도배, 문수리 상담을 빠르게 연결하는 페이지입니다.",
+    description: "구리 지역에서 필요한 누수, 욕실수리, 도배, 문 수리 상담을 빠르게 연결하는 페이지입니다.",
     searchTerms: ["구리", "구리시", "인창", "갈매", "교문"],
     heroTitle: "구리에서 자주 찾는 집수리 항목을 한곳에 모았습니다",
     heroDescription:
-      "구리에서 문의가 많은 누수, 욕실, 도배, 문수리를 중심으로 상담 흐름을 정리했습니다.",
+      "구리에서 문의가 많은 누수, 욕실, 도배, 문 수리를 중심으로 상담 흐름을 정리했습니다.",
     highlights: ["구리 지역 상담", "생활 집수리 중심", "사진 먼저 확인"],
     pointsTitle: "구리 상담에서 유용한 정보",
     points: [
@@ -588,7 +588,7 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "남양주", href: "/area/namyangju" },
       { label: "누수 수리", href: "/service/leak" },
-      { label: "문수리", href: "/service/door" }
+      { label: "문 수리", href: "/service/door" }
     ],
     pageType: "Place",
     areaLabel: "구리"
@@ -597,7 +597,7 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/hanam",
     categoryLabel: "지역",
     title: "하남 집수리 | 집수리클라쓰",
-    description: "하남에서 필요한 누수, 욕실수리, 도배, 문수리 상담을 위한 지역 검색 페이지입니다.",
+    description: "하남에서 필요한 누수, 욕실수리, 도배, 문 수리 상담을 위한 지역 검색 페이지입니다.",
     searchTerms: ["하남", "하남시", "미사", "강일", "위례"],
     heroTitle: "하남 집수리 상담도 사진부터 빠르게 확인합니다",
     heroDescription:
@@ -607,7 +607,7 @@ const areaPages: LandingPageDefinition[] = [
     points: [
       "아파트와 빌라, 상가처럼 공간 유형에 따라 필요한 작업이 다릅니다.",
       "누수나 욕실 문제는 마감과 구조를 같이 보는 게 중요합니다.",
-      "도배나 문수리처럼 작은 작업도 증상 정리가 잘 되면 상담이 빠릅니다."
+      "도배나 문 수리처럼 작은 작업도 증상 정리가 잘 되면 상담이 빠릅니다."
     ],
     faq: [
       {
@@ -635,12 +635,12 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/seoul",
     categoryLabel: "지역",
     title: "서울 집수리 | 집수리클라쓰",
-    description: "서울 지역의 누수, 욕실수리, 도배, 문수리 상담을 위한 대표 지역 페이지입니다.",
+    description: "서울 지역의 누수, 욕실수리, 도배, 문 수리 상담을 위한 대표 지역 페이지입니다.",
     searchTerms: ["서울", "서울시", "중랑구", "광진구", "강동구", "송파구", "용산", "서초구", "중화동", "올림픽"],
     heroTitle: "서울 집수리 상담은 증상 기준으로 빠르게 정리합니다",
     heroDescription:
       "서울 전역 문의는 증상과 주소를 함께 보고, 필요한 작업만 먼저 정리하는 방식으로 상담합니다.",
-    highlights: ["서울 전역 상담", "누수·욕실·도배·문수리", "필요한 작업만 안내"],
+    highlights: ["서울 전역 상담", "누수·욕실·도배·문 수리", "필요한 작업만 안내"],
     pointsTitle: "서울 상담에서 주로 보는 것",
     points: [
       "동네와 건물 유형에 따라 출동 시간과 작업 방식이 달라질 수 있습니다.",
@@ -649,12 +649,12 @@ const areaPages: LandingPageDefinition[] = [
     ],
     faq: [
       {
-        question: "서울은 어디까지 가능한가요?",
+        question: "서울 현장 방문도 가능한가요?",
         answer: "권역과 일정에 따라 조율합니다. 문의 시 주소를 보내주시면 우선순위를 확인합니다."
       },
       {
         question: "서울 어느 구든 상담이 가능한가요?",
-        answer: "원칙적으로 전 지역 상담이 가능하나, 현장 방문은 권역과 일정에 따라 조율합니다."
+        answer: "상담은 전 지역에서 가능합니다. 현장 방문은 거리와 일정에 따라 달라지므로, 주소를 보내주시면 더 정확하게 안내드립니다."
       },
       {
         question: "오래된 건물과 신축 건물 수리 방식이 다른가요?",
@@ -664,7 +664,7 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "경기", href: "/area/gyeonggi" },
       { label: "누수 수리", href: "/service/leak" },
-      { label: "문수리", href: "/service/door" }
+      { label: "문 수리", href: "/service/door" }
     ],
     pageType: "Place",
     areaLabel: "서울"
@@ -673,7 +673,7 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/gyeonggi",
     categoryLabel: "지역",
     title: "경기 집수리 | 집수리클라쓰",
-    description: "경기권에서 누수, 욕실수리, 도배, 문수리 상담이 필요할 때 참고할 지역 안내 페이지입니다.",
+    description: "경기권에서 누수, 욕실수리, 도배, 문 수리 상담이 필요할 때 참고할 지역 안내 페이지입니다.",
     searchTerms: ["경기", "경기도", "부천", "안양", "파주", "고양", "의정부", "성남", "수원"],
     heroTitle: "경기권 집수리 상담을 한 페이지에 모았습니다",
     heroDescription:
@@ -683,7 +683,7 @@ const areaPages: LandingPageDefinition[] = [
     points: [
       "광역 지역은 거리보다 실제 출동 동선과 일정이 더 중요합니다.",
       "경기 지역은 누수, 욕실, 도배, 창호처럼 항목별로 상담 방식이 다르므로 증상을 먼저 구분해 주시면 빠릅니다.",
-      "경기권은 출동 동선에 따라 일정 조율이 필요하므로, 주소와 희망 날짜를 함께 보내주시면 더 정확합니다."
+      "아파트, 빌라, 단독주택처럼 주거 유형이 다양해 수리 방식과 자재도 달라질 수 있습니다."
     ],
     faq: [
       {
@@ -739,7 +739,7 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/uijeongbu",
     categoryLabel: "지역",
     title: "의정부 집수리 | 집수리클라쓰",
-    description: "의정부에서 집수리, 누수, 욕실수리, 도배, 문수리 상담을 위한 지역 안내 페이지입니다.",
+    description: "의정부에서 집수리, 누수, 욕실수리, 도배, 문 수리 상담을 위한 지역 안내 페이지입니다.",
     searchTerms: ["의정부", "의정부시", "회룡", "풍림", "호원"],
     heroTitle: "의정부 집수리 상담을 빠르게 연결합니다",
     heroDescription: "의정부 지역의 아파트, 빌라, 단독주택 수리 상담을 사진 기반으로 먼저 확인하고 작업 범위를 정리합니다.",
@@ -851,7 +851,7 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/nowon",
     categoryLabel: "지역",
     title: "노원·도봉 집수리 | 집수리클라쓰",
-    description: "노원구·도봉구에서 누수, 욕실수리, 도배, 문수리, 타일 수리 상담을 위한 지역 안내 페이지입니다.",
+    description: "노원구·도봉구에서 누수, 욕실수리, 도배, 문 수리, 타일 수리 상담을 위한 지역 안내 페이지입니다.",
     searchTerms: ["노원", "도봉", "노원구", "도봉구", "중계", "상계", "쌍문", "방학"],
     heroTitle: "노원·도봉 집수리 상담도 사진으로 먼저 확인합니다",
     heroDescription: "노원구, 도봉구의 아파트, 다세대 수리 상담을 사진 기반으로 먼저 정리하고 필요한 작업만 안내합니다.",
@@ -879,7 +879,7 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/suwon",
     categoryLabel: "지역",
     title: "수원 집수리 | 집수리클라쓰",
-    description: "수원에서 누수, 욕실수리, 도배, 문수리, 타일 수리 상담을 위한 지역 안내 페이지입니다.",
+    description: "수원에서 누수, 욕실수리, 도배, 문 수리, 타일 수리 상담을 위한 지역 안내 페이지입니다.",
     searchTerms: ["수원", "수원시", "영통", "권선", "장안", "팔달"],
     heroTitle: "수원 집수리 상담을 사진으로 빠르게 안내합니다",
     heroDescription: "수원 지역 아파트, 빌라, 오피스텔의 집수리 상담을 사진 기반으로 먼저 확인하고 필요한 작업만 정리합니다.",
@@ -907,7 +907,7 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/goyang",
     categoryLabel: "지역",
     title: "고양·일산 집수리 | 집수리클라쓰",
-    description: "고양시·일산에서 누수, 욕실수리, 도배, 문수리, 창호 수리 상담을 위한 지역 안내 페이지입니다.",
+    description: "고양시·일산에서 누수, 욕실수리, 도배, 문 수리, 창호 수리 상담을 위한 지역 안내 페이지입니다.",
     searchTerms: ["고양", "일산", "고양시", "일산동구", "일산서구", "파주", "가람마을", "한양수자인", "덕양", "행신"],
     heroTitle: "고양·일산 집수리 상담을 빠르게 정리합니다",
     heroDescription: "고양시 일산동구, 일산서구, 덕양구의 아파트와 빌라 수리 상담을 사진으로 먼저 확인합니다.",
@@ -953,7 +953,7 @@ const areaPages: LandingPageDefinition[] = [
     ],
     relatedLinks: [
       { label: "경기", href: "/area/gyeonggi" },
-      { label: "인천·부천", href: "/area/goyang" },
+      { label: "고양·일산", href: "/area/goyang" },
       { label: "도배", href: "/service/wallpaper" }
     ],
     pageType: "Place",
@@ -963,14 +963,14 @@ const areaPages: LandingPageDefinition[] = [
     path: "/area/paju",
     categoryLabel: "지역",
     title: "파주 집수리 | 집수리클라쓰",
-    description: "파주에서 문수리, 욕실장 교체, 베란다 도장, 방충망 수리 등 생활 집수리 상담을 위한 지역 안내 페이지입니다.",
+    description: "파주에서 문 수리, 욕실장 교체, 베란다 도장, 방충망 수리 등 생활 집수리 상담을 위한 지역 안내 페이지입니다.",
     searchTerms: ["파주", "파주시", "가람마을", "한양수자인", "운정", "교하"],
     heroTitle: "파주 집수리 상담도 사진으로 빠르게 확인합니다",
     heroDescription: "파주 운정, 교하 지역의 아파트와 빌라 수리 상담을 사진 기반으로 먼저 확인하고 필요한 작업만 안내합니다.",
-    highlights: ["파주 지역 상담", "문수리·방충망·도장", "사진 기반 확인"],
+    highlights: ["파주 지역 상담", "문 수리·방충망·도장", "사진 기반 확인"],
     pointsTitle: "파주 상담에서 자주 보는 내용",
     points: [
-      "파주 운정 신도시 아파트는 문수리와 욕실 마감 보수 문의가 많습니다.",
+      "파주 운정 신도시 아파트는 문 수리와 욕실 마감 보수 문의가 많습니다.",
       "교하·가람마을 단지는 방충망과 베란다 관련 수리 문의가 자주 들어옵니다.",
       "주소와 증상을 함께 알려주시면 출동 가능 범위와 일정을 빠르게 확인합니다."
     ],

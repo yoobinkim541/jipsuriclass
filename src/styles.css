@@ -2230,6 +2230,12 @@ textarea {
   }
 }
 
+@media (min-width: 720px) and (max-width: 1279px) {
+  .cases__card {
+    flex-basis: min(58vw, 520px);
+  }
+}
+
 @media (min-width: 1280px) {
   .cases__card {
     flex-basis: min(74vw, 760px);
@@ -2310,6 +2316,13 @@ textarea {
   display: grid;
   gap: 10px;
   grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+  .process__track {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -3131,7 +3144,7 @@ textarea {
 .about-visual__hero figcaption span,
 .about-visual__tile figcaption span {
   display: block;
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -7212,7 +7225,7 @@ textarea {
   }
 
   .hero__title {
-    font-size: clamp(72px, 19vw, 108px);
+    font-size: clamp(46px, 14vw, 76px);
     line-height: 1.0;
     margin-bottom: 40px;
   }
@@ -7481,7 +7494,8 @@ textarea {
   .contact-actions .primary-button,
   .contact-actions .secondary-button,
   .hero-actions .primary-button,
-  .hero-actions .secondary-button {
+  .hero-actions .secondary-button,
+  .contact-estimate-card .primary-button {
     width: 100%;
   }
 
@@ -7534,7 +7548,8 @@ textarea {
 
   .landing-back-btn {
     bottom: calc(80px + env(safe-area-inset-bottom));
-    right: 14px;
+    left: 14px;
+    right: auto;
     padding: 8px 14px 8px 10px;
     font-size: 13px;
   }
@@ -8167,7 +8182,7 @@ textarea {
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .landing-hero-grid,
   .landing-point-grid,
   .landing-link-grid,
