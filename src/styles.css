@@ -8263,8 +8263,8 @@ textarea {
 }
 
 .price-table thead tr {
-  background: var(--navy);
-  color: #fff;
+  background: #f1f5f9;
+  color: var(--navy);
 }
 
 .price-table th {
