@@ -2869,25 +2869,25 @@ textarea {
   align-items: center;
   gap: 8px;
   background: #fff;
-  border: 2px solid var(--border);
+  border: 2px solid #e2e8f0;
   border-radius: 40px;
   padding: 12px 22px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
   font-size: 15px;
   font-weight: 600;
-  color: var(--navy);
+  color: #10284a;
   white-space: nowrap;
 }
 
 .diagnosis-cat-card:hover {
-  border-color: var(--gold);
+  border-color: #d4a852;
   background: #fffbec;
 }
 
 .diagnosis-cat-card.active {
-  border-color: var(--navy);
-  background: var(--navy);
+  border-color: #10284a;
+  background: #10284a;
   color: #fff;
 }
 
@@ -2899,14 +2899,12 @@ textarea {
 .diagnosis-cat-icon {
   font-size: 20px;
   line-height: 1;
-  display: block;
 }
 
 .diagnosis-cat-label {
   font-size: 15px;
   font-weight: 600;
-  color: var(--navy);
-  display: block;
+  color: inherit;
 }
 
 .diagnosis-cat-badge {
@@ -2915,7 +2913,7 @@ textarea {
   gap: 4px;
   font-size: 15px;
   font-weight: 700;
-  color: var(--navy);
+  color: #10284a;
 }
 
 .diagnosis-topic-grid {
