@@ -638,9 +638,9 @@ function HeroSection({
   }, [caseImages, mainCardIndex]);
 
   const proofs: [string, string][] = [
-    ["상담 방식", "사진 기반 사전 확인"],
-    ["작업 범위", "부분수리부터 복구까지"],
-    ["현장 기록", "네이버 블로그 사례 연동"]
+    ["진행 과정", "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행"],
+    ["작업 범위", "부분수리부터 전체 리모델링까지"],
+    ["현장 기록", "네이버 블로그 포트폴리오"]
   ];
 
   return (
@@ -708,10 +708,6 @@ function HeroSection({
                 </div>
               );
             })}
-            <div className="hero__chip hero__chip--running">
-              <span className="pulse" />
-              <strong>{caseImages.length}건</strong> 대표사례
-            </div>
           </div>
         ) : null}
       </div>
@@ -744,21 +740,22 @@ function AboutSection({
   cases: HomepageContent["cases"];
 }) {
   const allImages = useMemo(
-    () => cases.filter((item) => item.image).slice(0, 3),
+    () => cases.filter((item) => item.image).slice(0, 5),
     [cases]
   );
   const [featuredIndex, setFeaturedIndex] = useState(0);
-  const [heroKey, setHeroKey] = useState(0);
+
+  // 4초마다 대표 이미지 자동 회전
+  useEffect(() => {
+    if (allImages.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setFeaturedIndex((i) => (i + 1) % allImages.length);
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [allImages.length]);
 
   const heroItem = allImages[featuredIndex];
-  const tileItems = allImages.filter((_, i) => i !== featuredIndex);
-
-  function handleTileClick(item: typeof allImages[0]) {
-    const newIndex = allImages.indexOf(item);
-    if (newIndex === featuredIndex) return;
-    setFeaturedIndex(newIndex);
-    setHeroKey((k) => k + 1);
-  }
+  const tileItems = allImages.filter((_, i) => i !== featuredIndex).slice(0, 2);
 
   return (
     <section className="about section" id="about" aria-labelledby="about-title">
@@ -777,7 +774,7 @@ function AboutSection({
       </div>
       <div className="about-visual" aria-label="현장 사진 요약">
         {heroItem && (
-          <figure className="about-visual__hero" key={`hero-${heroKey}`}>
+          <figure className="about-visual__hero about-visual__hero--auto" key={`hero-${featuredIndex}`}>
             <img src={heroItem.image} alt={heroItem.title} loading="lazy" />
             <figcaption>
               <strong>{heroItem.area}</strong>
@@ -790,11 +787,11 @@ function AboutSection({
             <figure
               className="about-visual__tile about-visual__tile--clickable"
               key={item.title}
-              onClick={() => handleTileClick(item)}
+              onClick={() => setFeaturedIndex(allImages.indexOf(item))}
               role="button"
               tabIndex={0}
               aria-label={`${item.title} 크게 보기`}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleTileClick(item); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setFeaturedIndex(allImages.indexOf(item)); }}
             >
               <img src={item.image} alt={item.title} loading="lazy" />
               <figcaption>
