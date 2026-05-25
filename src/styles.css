@@ -6998,9 +6998,25 @@ textarea {
 
   .admin-search-wrap,
   .admin-sort,
-  .admin-search,
+  .admin-search {
+    width: 100%;
+  }
+
   .admin-toolbar-group {
     width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+
+  .admin-toolbar-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-filter {
+    flex-shrink: 0;
   }
 
   .admin-toolbar-meta {
@@ -7485,9 +7501,25 @@ textarea {
 
   .admin-search-wrap,
   .admin-sort,
-  .admin-search,
+  .admin-search {
+    width: 100%;
+  }
+
   .admin-toolbar-group {
     width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+
+  .admin-toolbar-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .admin-filter {
+    flex-shrink: 0;
   }
 
   .admin-toolbar-meta {
