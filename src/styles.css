@@ -1252,7 +1252,7 @@ textarea {
   font-size: clamp(40px, 6vw, 78px);
   line-height: 1.0;
   letter-spacing: -0.04em;
-  margin: 0 0 48px;
+  margin: 0 0 6vh;
   color: var(--ink, #0b1a30);
 }
 
