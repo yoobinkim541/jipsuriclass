@@ -287,6 +287,16 @@ function HomePage() {
   const [contentReady, setContentReady] = useState(false);
 
   useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash) return;
+    const id = hash.slice(1);
+    const timer = setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }, 120);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
 
     void siteContentService.loadHomepageContent().then((content) => {
