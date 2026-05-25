@@ -1,5 +1,30 @@
 # Work Log
 
+## 2026-05-25 - Copy & UX Fix Pass
+
+Changed files: `src/App.tsx`, `src/landingPages.ts`, `src/styles.css`
+
+Implemented behavior:
+- **Copy**: `문수리` → `문 수리` across all human-visible labels, descriptions, headings in all service/area pages. Search terms untouched for SEO.
+- **Copy**: Fixed broken relatedLink in `/area/bucheon` (label "인천·부천" was pointing to `/area/goyang`; label corrected to "고양·일산").
+- **Copy**: `/service/bathroom` FAQ answer rephrased ("대부분은 아닙니다" → "반드시 그렇지는 않습니다").
+- **Copy**: `/service/waterproofing-tile` FAQ ("보아야 합니다" → "확인해야 합니다").
+- **Copy**: `/area/gyeonggi` duplicate 출동 동선 point replaced with housing type diversity note.
+- **Copy**: `/area/seoul` two near-identical FAQ answers differentiated.
+- **Copy**: Trust bar label redundancy removed ("국가공인 7 자격" → "국가공인 자격").
+- **Copy**: Landing blog section heading now uses `serviceType`/`areaLabel` instead of `searchTerms[0]` to avoid "문수리 사례 & 블로그" inconsistency.
+- **CSS HIGH-1**: `.about-visual__tile figcaption span` font-size 15px → 13px (prevents overflow on 164px tiles).
+- **CSS HIGH-2**: `.landing-back-btn` mobile: `right: 14px` → `left: 14px` (avoids covering right-side content).
+- **CSS HIGH-3**: Added `.contact-estimate-card .primary-button { width: 100% }` at max-width:720px.
+- **CSS MED-1**: `process__track` intermediate 2-col layout at min-width:480px (before jumping to 5-col at 768px).
+- **CSS MED-2**: Landing page collapse breakpoint: `max-width:900px` → `768px` (consistent with site breakpoints).
+- **CSS MED-3**: Hero title mobile: `clamp(72px,19vw,108px)` → `clamp(46px,14vw,76px)` (was too large at 320px).
+- **CSS MED-5**: Cases carousel tablet rule added: `min(58vw,520px)` at 720–1279px (peek at next card).
+
+Verification: `npm run build` passed. DOM/computed-style checks via browser JS confirmed trust label, tile caption, door page headings/FAQ, bucheon link, bathroom FAQ.
+
+Follow-up: None.
+
 Use this file as the final stop for each completed task. Keep entries short and practical so future maintenance starts here before searching the codebase.
 
 ## 2026-05-22 - Current Implementation Brief
