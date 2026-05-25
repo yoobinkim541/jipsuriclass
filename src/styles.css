@@ -3974,6 +3974,7 @@ textarea {
 
 .estimate-shell-intro {
   padding: 0;
+  grid-template-rows: 1fr;
 }
 
 .estimate-shell-survey {
@@ -4308,7 +4309,7 @@ textarea {
 
 .estimate-survey-form {
   height: 100%;
-  align-content: start;
+  align-content: center;
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
