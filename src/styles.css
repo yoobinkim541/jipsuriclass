@@ -1331,11 +1331,12 @@ textarea {
   overflow: hidden;
   box-shadow: 0 8px 18px rgba(8,22,40,.06), 0 22px 60px rgba(8,22,40,.08);
   transition:
-    top 500ms cubic-bezier(.16,1,.3,1),
-    left 500ms cubic-bezier(.16,1,.3,1),
-    width 500ms cubic-bezier(.16,1,.3,1),
-    height 500ms cubic-bezier(.16,1,.3,1),
-    transform 500ms cubic-bezier(.16,1,.3,1),
+    top 600ms cubic-bezier(.16,1,.3,1),
+    left 600ms cubic-bezier(.16,1,.3,1),
+    width 600ms cubic-bezier(.16,1,.3,1),
+    height 600ms cubic-bezier(.16,1,.3,1),
+    transform 600ms cubic-bezier(.16,1,.3,1),
+    opacity 400ms ease,
     box-shadow 300ms;
   background: #ffffff;
 }
@@ -1363,9 +1364,10 @@ textarea {
 }
 
 /* Card positions use top/left/width/height so they can all be CSS-transitioned on swap */
-.hero__card--main { top: 5%;  left: 18%; width: 76%; height: 77%; z-index: 3; transform: rotate(-3deg); }
-.hero__card--b    { top: 22%; left: 0;   width: 42%; height: 40%; z-index: 2; transform: rotate(4deg) scale(.7); }
-.hero__card--c    { top: 55%; left: 30%; width: 58%; height: 40%; z-index: 1; transform: rotate(-6deg) scale(.75); }
+.hero__card--main   { top: 5%;  left: 18%; width: 76%; height: 77%; z-index: 3; transform: rotate(-3deg); opacity: 1; }
+.hero__card--b      { top: 22%; left: 0;   width: 42%; height: 40%; z-index: 2; transform: rotate(4deg) scale(.7); opacity: 1; }
+.hero__card--c      { top: 55%; left: 30%; width: 58%; height: 40%; z-index: 1; transform: rotate(-6deg) scale(.75); opacity: 1; }
+.hero__card--hidden { top: 50%; left: 50%; width: 30%; height: 25%; z-index: 0; transform: scale(.4); opacity: 0; pointer-events: none; }
 .hero__deck:hover .hero__card--main { transform: rotate(-2deg) translateY(-6px); }
 .hero__deck:hover .hero__card--b    { transform: rotate(2deg) scale(.72) translate(-8px, -4px); }
 .hero__deck:hover .hero__card--c    { transform: rotate(-4deg) scale(.78) translate(6px, 4px); }

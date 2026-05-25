@@ -613,21 +613,28 @@ function HeroSection({
   }, []);
 
   const caseImages = useMemo(
-    () => editableCases.filter((c) => c.image).slice(0, 3),
+    () => editableCases.filter((c) => c.image).slice(0, 5),
     [editableCases]
   );
 
+  // 4초마다 메인 카드 자동 회전
+  useEffect(() => {
+    if (caseImages.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setMainCardIndex((i) => (i + 1) % caseImages.length);
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [caseImages.length]);
+
+  // 각 이미지에 role 부여 (순서 고정 → CSS transition 작동)
   const cardSlots = useMemo(() => {
     if (caseImages.length === 0) return [];
-    const nonMain = caseImages
-      .map((img, i) => ({ img, i }))
-      .filter(({ i }) => i !== mainCardIndex);
-    const slots: Array<{ img: (typeof caseImages)[number]; role: "main" | "b" | "c"; imgIndex: number }> = [
-      { img: caseImages[mainCardIndex], role: "main", imgIndex: mainCardIndex }
-    ];
-    if (nonMain[0]) slots.push({ img: nonMain[0].img, role: "b", imgIndex: nonMain[0].i });
-    if (nonMain[1]) slots.push({ img: nonMain[1].img, role: "c", imgIndex: nonMain[1].i });
-    return slots;
+    return caseImages.map((img, i) => {
+      const offset = (i - mainCardIndex + caseImages.length) % caseImages.length;
+      const role: "main" | "b" | "c" | "hidden" =
+        offset === 0 ? "main" : offset === 1 ? "b" : offset === 2 ? "c" : "hidden";
+      return { img, role, imgIndex: i };
+    });
   }, [caseImages, mainCardIndex]);
 
   const proofs: [string, string][] = [
@@ -684,12 +691,12 @@ function HeroSection({
               return (
                 <div
                   key={img.title}
-                  className={`hero__card hero__card--${role}${isMain ? "" : " hero__card--clickable"}`}
-                  onClick={isMain ? undefined : () => setMainCardIndex(imgIndex)}
-                  role={isMain ? undefined : "button"}
-                  tabIndex={isMain ? undefined : 0}
-                  aria-label={isMain ? undefined : `${img.area} 크게 보기`}
-                  onKeyDown={isMain ? undefined : (e) => {
+                  className={`hero__card hero__card--${role}${isMain || role === "hidden" ? "" : " hero__card--clickable"}`}
+                  onClick={isMain || role === "hidden" ? undefined : () => setMainCardIndex(imgIndex)}
+                  role={isMain || role === "hidden" ? undefined : "button"}
+                  tabIndex={isMain || role === "hidden" ? undefined : 0}
+                  aria-label={isMain || role === "hidden" ? undefined : `${img.area} 크게 보기`}
+                  onKeyDown={isMain || role === "hidden" ? undefined : (e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       setMainCardIndex(imgIndex);
