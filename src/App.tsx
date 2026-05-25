@@ -25,6 +25,7 @@ import { DiagnosisPage } from "./diagnosis/DiagnosisPage";
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 import { buildLandingPageJsonLd, getLandingPageDefinition, getLandingPageIndexLinks, mergeLandingPageContent } from "./landingPages";
 import { defaultLandingPagesContent, type LandingPagesContent } from "./services/SiteContentService";
+import { electricPriceCategories, type PriceItem } from "./electricPriceData";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();
@@ -76,6 +77,10 @@ function App() {
     return <EstimatePage />;
   }
 
+  if (window.location.pathname === "/service/electric/price") {
+    return <ElectricPricePage />;
+  }
+
   if (mergedLandingPage) {
     return <LandingPage content={mergedLandingPage} />;
   }
@@ -125,6 +130,24 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
       description: defaultDescription,
       image: defaultImage,
       noindex: true
+    };
+  }
+
+  if (pathname === "/service/electric/price") {
+    return {
+      path: "/service/electric/price",
+      title: `전기공사 가격표 | ${siteName}`,
+      description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
+      image: defaultImage,
+      jsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: `전기공사 가격표 | ${siteName}`,
+          url: `${siteUrl}/service/electric/price`,
+          description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
+        }
+      ]
     };
   }
 
@@ -1490,6 +1513,12 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
                   <ArrowUpRight size={20} />
                   견적상담
                 </a>
+                {content.path === "/service/electric" && (
+                  <a className="secondary-button price-table-btn" href="/service/electric/price">
+                    <ArrowUpRight size={20} />
+                    가격표 보기
+                  </a>
+                )}
               </div>
             </div>
             <aside className="landing-hero-panel">
@@ -1913,6 +1942,194 @@ function useAutoCarousel(
       });
     };
   }, [enabled, ref]);
+}
+
+function ElectricPricePage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [selected, setSelected] = useState<Record<string, number>>({});
+
+  function toggle(item: PriceItem) {
+    setSelected((prev) => {
+      const next = { ...prev };
+      if (next[item.id]) {
+        delete next[item.id];
+      } else {
+        next[item.id] = 1;
+      }
+      return next;
+    });
+  }
+
+  function setQty(itemId: string, qty: number) {
+    setSelected((prev) => {
+      if (qty <= 0) {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      }
+      return { ...prev, [itemId]: qty };
+    });
+  }
+
+  const allItems = electricPriceCategories.flatMap((c) => c.items);
+  const selectedItems = allItems.filter((item) => selected[item.id]);
+  const total = selectedItems.reduce((sum, item) => sum + item.price * (selected[item.id] ?? 0), 0);
+  const hasSelection = selectedItems.length > 0;
+
+  return (
+    <>
+      <SiteHeader
+        menuOpen={menuOpen}
+        navLabels={defaultHomepageContent.navLabels}
+        onOpenMenu={() => setMenuOpen(true)}
+        onCloseMenu={() => setMenuOpen(false)}
+        brandHref="/"
+      />
+      <LandingBackButton />
+      <main className="price-page" id="top">
+        <section className="price-page__hero section">
+          <span className="landing-kicker">전기공사 서비스</span>
+          <h1 className="price-page__title">전기공사 가격표</h1>
+          <p className="price-page__desc">
+            항목을 선택하면 아래 모의 견적 계산기에 자동으로 반영됩니다.
+            <br />
+            <span className="price-page__note">※ 출장비는 별도이며, 실제 현장 상태에 따라 달라질 수 있습니다.</span>
+          </p>
+        </section>
+
+        <div className="price-page__layout section">
+          <div className="price-page__table-wrap">
+            {electricPriceCategories.map((cat) => (
+              <section key={cat.id} className="price-category">
+                <h2 className="price-category__title">{cat.title}</h2>
+                <table className="price-table">
+                  <thead>
+                    <tr>
+                      <th className="price-table__check">선택</th>
+                      <th className="price-table__name">항목</th>
+                      <th className="price-table__unit">단위</th>
+                      <th className="price-table__price">인건비</th>
+                      <th className="price-table__material">자재비</th>
+                      <th className="price-table__qty">수량</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cat.items.map((item) => {
+                      const isSelected = !!selected[item.id];
+                      return (
+                        <tr
+                          key={item.id}
+                          className={`price-table__row${isSelected ? " price-table__row--selected" : ""}`}
+                          onClick={() => toggle(item)}
+                        >
+                          <td className="price-table__check">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggle(item)}
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label={`${item.name} 선택`}
+                            />
+                          </td>
+                          <td className="price-table__name">
+                            {item.name}
+                            {item.note && <span className="price-table__row-note">{item.note}</span>}
+                          </td>
+                          <td className="price-table__unit">{item.unit}</td>
+                          <td className="price-table__price">{item.price.toLocaleString()}원</td>
+                          <td className="price-table__material">
+                            {item.materialNote ? <span className="price-tag-separate">별도</span> : "포함"}
+                          </td>
+                          <td className="price-table__qty" onClick={(e) => e.stopPropagation()}>
+                            {isSelected ? (
+                              <div className="price-qty">
+                                <button
+                                  type="button"
+                                  className="price-qty__btn"
+                                  onClick={() => setQty(item.id, (selected[item.id] ?? 1) - 1)}
+                                  aria-label="수량 감소"
+                                >
+                                  −
+                                </button>
+                                <span className="price-qty__val">{selected[item.id]}</span>
+                                <button
+                                  type="button"
+                                  className="price-qty__btn"
+                                  onClick={() => setQty(item.id, (selected[item.id] ?? 1) + 1)}
+                                  aria-label="수량 증가"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="price-qty__placeholder">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </section>
+            ))}
+          </div>
+
+          <aside className="price-calc" aria-label="모의 견적 계산기">
+            <div className="price-calc__inner">
+              <h2 className="price-calc__title">모의 견적 계산기</h2>
+              <p className="price-calc__sub">표에서 항목을 선택하면 자동으로 계산됩니다.</p>
+
+              {hasSelection ? (
+                <>
+                  <ul className="price-calc__list">
+                    {selectedItems.map((item) => (
+                      <li key={item.id} className="price-calc__item">
+                        <span className="price-calc__item-name">
+                          {item.name}
+                          {selected[item.id] > 1 && <span className="price-calc__item-qty"> ×{selected[item.id]}</span>}
+                        </span>
+                        <span className="price-calc__item-price">{(item.price * selected[item.id]).toLocaleString()}원</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="price-calc__divider" />
+                  <div className="price-calc__total-row">
+                    <span>인건비 합계</span>
+                    <span className="price-calc__total">{total.toLocaleString()}원~</span>
+                  </div>
+                  <p className="price-calc__disclaimer">
+                    자재비·출장비는 별도이며, 실제 견적은 현장 확인 후 달라질 수 있습니다.
+                  </p>
+                </>
+              ) : (
+                <p className="price-calc__empty">아직 선택된 항목이 없습니다.<br />위 표에서 항목을 클릭해 보세요.</p>
+              )}
+
+              <div className="price-calc__actions">
+                <a className="primary-button" href={business.phoneHref}>
+                  <Phone size={18} />
+                  전화 상담
+                </a>
+                <a className="secondary-button" href="/estimate">
+                  <ArrowUpRight size={18} />
+                  견적 요청
+                </a>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <section className="price-page__back-section section">
+          <a className="secondary-button" href="/service/electric">
+            <ChevronLeft size={18} />
+            전기공사 서비스 보기
+          </a>
+        </section>
+      </main>
+      <SiteFooter />
+      <MobileQuickCta />
+    </>
+  );
 }
 
 export default App;

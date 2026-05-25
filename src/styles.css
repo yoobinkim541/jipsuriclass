@@ -8199,3 +8199,334 @@ textarea {
     padding: 20px;
   }
 }
+
+/* ============================================================
+   Electric Price Page
+   ============================================================ */
+
+.price-page {
+  padding-top: 80px;
+}
+
+.price-page__hero {
+  text-align: center;
+  padding-bottom: 32px;
+}
+
+.price-page__title {
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 800;
+  color: var(--navy);
+  margin: 8px 0 12px;
+}
+
+.price-page__desc {
+  font-size: 16px;
+  color: var(--slate);
+  line-height: 1.7;
+}
+
+.price-page__note {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Two-column layout: table + sticky calculator */
+.price-page__layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  align-items: start;
+}
+
+.price-page__table-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Price category */
+.price-category__title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--gold);
+}
+
+/* Price table */
+.price-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.price-table thead tr {
+  background: var(--navy);
+  color: #fff;
+}
+
+.price-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.price-table th.price-table__check,
+.price-table td.price-table__check {
+  width: 40px;
+  text-align: center;
+}
+
+.price-table th.price-table__unit,
+.price-table td.price-table__unit,
+.price-table th.price-table__material,
+.price-table td.price-table__material {
+  width: 60px;
+  text-align: center;
+}
+
+.price-table th.price-table__price,
+.price-table td.price-table__price {
+  width: 110px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.price-table th.price-table__qty,
+.price-table td.price-table__qty {
+  width: 90px;
+  text-align: center;
+}
+
+.price-table__row {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.price-table__row:hover {
+  background: var(--cream-light, #fdf9f0);
+}
+
+.price-table__row--selected {
+  background: #fffbec;
+}
+
+.price-table__row--selected:hover {
+  background: #fff6d6;
+}
+
+.price-table td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.price-table__row-note {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.price-tag-separate {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold-dark, #b8860b);
+  background: #fff8dc;
+  border: 1px solid #e8d070;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* Qty stepper */
+.price-qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.price-qty__btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  transition: background 0.12s;
+}
+
+.price-qty__btn:hover {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+.price-qty__val {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.price-qty__placeholder {
+  color: var(--muted);
+}
+
+/* Sticky calculator sidebar */
+.price-calc {
+  position: sticky;
+  top: 100px;
+}
+
+.price-calc__inner {
+  background: var(--navy);
+  color: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.price-calc__title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.price-calc__sub {
+  font-size: 13px;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.price-calc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.price-calc__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.price-calc__item-name {
+  flex: 1;
+  opacity: 0.9;
+}
+
+.price-calc__item-qty {
+  opacity: 0.65;
+}
+
+.price-calc__item-price {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.price-calc__divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.price-calc__total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.price-calc__total {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.price-calc__disclaimer {
+  font-size: 11px;
+  opacity: 0.6;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.price-calc__empty {
+  font-size: 13px;
+  opacity: 0.65;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.price-calc__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.price-calc__actions .primary-button,
+.price-calc__actions .secondary-button {
+  width: 100%;
+  justify-content: center;
+}
+
+.price-calc__actions .secondary-button {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.price-calc__actions .secondary-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Back section */
+.price-page__back-section {
+  padding-top: 0;
+  padding-bottom: 60px;
+}
+
+/* Mobile: stack layout */
+@media (max-width: 900px) {
+  .price-page__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .price-calc {
+    position: static;
+    order: -1;
+  }
+
+  .price-calc__inner {
+    padding: 20px;
+  }
+
+  .price-table th,
+  .price-table td {
+    padding: 8px 8px;
+    font-size: 13px;
+  }
+
+  .price-table th.price-table__material,
+  .price-table td.price-table__material {
+    display: none;
+  }
+}
