@@ -6,6 +6,7 @@ import {
   Hammer,
   Home,
   LampCeiling,
+  Layers,
   PaintRoller,
   Ruler,
   ShieldCheck,
@@ -96,12 +97,14 @@ export const navItems: NavItem[] = [
 export const services: ServiceCategory[] = [
   { title: "부분·전체 리모델링", icon: Ruler, text: "공간 상태와 예산에 맞춘 인테리어 리모델링 공사", href: "/estimate" },
   { title: "종합 설비", icon: Droplets, text: "누수탐지, 상하수도 공사, 막힘 해결, 해빙 작업", href: "/service/plumbing" },
-  { title: "방수·타일", icon: Bath, text: "옥상방수, 욕실·주방 타일 시공과 파손 부위 보수", href: "/service/waterproofing-tile" },
+  { title: "방수·타일", icon: Layers, text: "옥상방수, 욕실·주방 타일 시공과 파손 부위 보수", href: "/service/waterproofing-tile" },
+  { title: "욕실 수리", icon: Bath, text: "수전·세면기·양변기·욕조 교체, 욕실 타일 보수", href: "/service/bathroom" },
   { title: "목공", icon: Home, text: "문, 문틀, 몰딩, 걸레받이, 수납 등 생활 목공 보수", href: "/service/carpentry" },
   { title: "전기", icon: LampCeiling, text: "스위치, 콘센트, 조명 교체와 생활 전기 점검", href: "/service/electric" },
   { title: "도배·바닥", icon: PaintRoller, text: "도배, 장판, 바닥 마감, 오염·들뜸 부분 복구", href: "/service/wallpaper-floor" },
   { title: "도장·페인트", icon: Building2, text: "실내외 페인트, 도장 마감, 보수 도색 작업", href: "/service/paint" },
-  { title: "인테리어 필름", icon: Wrench, text: "문, 몰딩, 가구, 싱크대 표면 필름 시공과 리폼", href: "/service/film" }
+  { title: "인테리어 필름", icon: Wrench, text: "문, 몰딩, 가구, 싱크대 표면 필름 시공과 리폼", href: "/service/film" },
+  { title: "외부 부분보수", icon: Hammer, text: "외벽 파손, 드라이비트, 데킹, 난간, 어닝 보수", href: "/service/exterior" }
 ];
 
 export const symptoms = [

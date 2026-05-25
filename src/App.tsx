@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ArrowUpRight,
+  Calculator,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -8,6 +9,8 @@ import {
   Menu,
   MessageCircle,
   Phone,
+  ReceiptText,
+  RefreshCw,
   User,
   X
 } from "lucide-react";
@@ -31,6 +34,9 @@ import {
   waterproofingPriceCategories,
   waterproofingTilePriceCategories
 } from "./waterproofingTilePriceData";
+import { ServicePricingPage } from "./pricing/ServicePricingPage";
+import { getServicePricingConfig, getServicePricingConfigByPricingPath } from "./pricing/registry";
+import type { ServicePricingConfig } from "./pricing/types";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();
@@ -129,6 +135,10 @@ function App() {
   }
   if (window.location.pathname.startsWith("/estimate")) {
     return <EstimatePage />;
+  }
+  const pricingPageConfig = getServicePricingConfigByPricingPath(window.location.pathname);
+  if (pricingPageConfig) {
+    return <ServicePricingPage config={pricingPageConfig} />;
   }
 
   if (window.location.pathname === "/service/electric/price") {
@@ -1655,15 +1665,9 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
                   <ArrowUpRight size={20} />
                   견적상담
                 </a>
-                {content.path === "/service/electric" && (
-                  <a className="secondary-button price-table-btn" href="/service/electric/price">
-                    <ArrowUpRight size={20} />
-                    가격표 보기
-                  </a>
-                )}
-                {content.path === "/service/waterproofing-tile" && (
-                  <a className="secondary-button price-table-btn" href="/service/waterproofing-tile/price">
-                    <ArrowUpRight size={20} />
+                {getServicePricingConfig(content.path) && (
+                  <a className="secondary-button" href={getServicePricingConfig(content.path)!.pricingPagePath}>
+                    <ReceiptText size={20} />
                     가격표 보기
                   </a>
                 )}
@@ -1754,6 +1758,10 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
           />
         </section>
 
+        {getServicePricingConfig(content.path) && (
+          <ServiceEstimator config={getServicePricingConfig(content.path)!} />
+        )}
+
         <section className="landing-section section" aria-labelledby="landing-faq-title">
           <SectionHeading
             id="landing-faq-title"
@@ -1788,6 +1796,189 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
       <SiteFooter />
       <MobileQuickCta />
     </>
+  );
+}
+
+function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggle = useCallback((name: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }, []);
+
+  const selectedItems = useMemo(
+    () => config.categories.flatMap((cat) => cat.items).filter((item) => selected.has(item.name)),
+    [selected, config]
+  );
+
+  const total = useMemo(() => selectedItems.reduce((sum, item) => sum + item.price, 0), [selectedItems]);
+  const hasCallout = selectedItems.some((i) => i.name.includes("출장"));
+  const hasMaterial = selectedItems.some((i) => i.materialNote === "별도");
+  const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
+
+  return (
+    <section className="landing-section section" aria-labelledby="estimator-title">
+      <SectionHeading
+        id="estimator-title"
+        title="모의 견적 계산기"
+        description="항목을 클릭해 선택하면 최소 기준 비용을 바로 확인할 수 있습니다. 실제 견적은 현장 상태에 따라 달라집니다."
+      />
+
+      <div className="estimator-layout">
+        {/* ── 왼쪽: 항목 테이블 ── */}
+        <div className="estimator-table-col">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <span style={{ fontSize: 13, color: "var(--ink-3,#5b6781)" }}>
+              항목 클릭으로 선택 · 복수 항목 동시 선택 가능
+            </span>
+            {selected.size > 0 && (
+              <button
+                onClick={() => setSelected(new Set())}
+                style={{ background: "none", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 6, cursor: "pointer", fontSize: 12, color: "var(--ink-3,#5b6781)", padding: "3px 10px", display: "flex", alignItems: "center", gap: 4 }}
+              >
+                <RefreshCw size={12} />
+                초기화
+              </button>
+            )}
+          </div>
+
+          <div style={{ background: "#fff", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 12, overflow: "hidden" }}>
+            {config.categories.map((cat, catIdx) => (
+              <div key={cat.id}>
+                <div style={{ background: "var(--cream-2,#f1ece1)", padding: "8px 16px", borderTop: catIdx > 0 ? "1px solid var(--hair,#e6dfd0)" : undefined, display: "flex", alignItems: "baseline", gap: 8 }}>
+                  <span style={{ fontWeight: 700, fontSize: 13, color: "var(--ink,#0b1a30)" }}>{cat.title}</span>
+                  {cat.note && <span style={{ fontSize: 12, color: "var(--ink-3,#5b6781)" }}>· {cat.note}</span>}
+                </div>
+
+                {cat.items.map((item) => {
+                  const isSelected = selected.has(item.name);
+                  return (
+                    <div
+                      key={item.name}
+                      className="estimator-item-row"
+                      role="checkbox"
+                      aria-checked={isSelected}
+                      tabIndex={0}
+                      onClick={() => toggle(item.name)}
+                      onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(item.name); } }}
+                    >
+                      <div className="estimator-checkbox">
+                        {isSelected && (
+                          <svg width="10" height="8" viewBox="0 0 10 8" fill="none" aria-hidden="true">
+                            <path d="M1 4L3.5 6.5L9 1" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontSize: "clamp(13px,1.2vw,14px)", color: "var(--ink,#0b1a30)" }}>
+                          {item.name}
+                        </span>
+                        <span style={{ marginLeft: 6, fontSize: 11, color: "var(--ink-4,#94a0b8)" }}>/ {item.unit}</span>
+                      </div>
+
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--navy-700,#10284a)", whiteSpace: "nowrap" }}>
+                        {item.priceLabel}
+                      </span>
+
+                      {item.materialNote === "별도" ? (
+                        <span style={{ background: "#f0f4ff", color: "#3b5bdb", fontWeight: 600, fontSize: 11, padding: "2px 6px", borderRadius: 4, whiteSpace: "nowrap", flexShrink: 0 }}>
+                          자재별도
+                        </span>
+                      ) : (
+                        <span style={{ width: 44, flexShrink: 0 }} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── 오른쪽: 견적 요약 패널 ── */}
+        <div className="estimator-panel-col">
+          <div style={{ background: "#fff", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--hair,#e6dfd0)", display: "flex", alignItems: "center", gap: 8 }}>
+              <Calculator size={16} style={{ color: "var(--ink-2,#2a3a55)" }} />
+              <span style={{ fontWeight: 700, fontSize: 14, color: "var(--ink,#0b1a30)" }}>견적 요약</span>
+              {selected.size > 0 && (
+                <span style={{ marginLeft: "auto", background: "#3b5bdb", color: "#fff", borderRadius: 10, fontSize: 11, fontWeight: 700, padding: "1px 7px" }}>
+                  {selected.size}
+                </span>
+              )}
+            </div>
+
+            <div style={{ padding: "16px 18px" }}>
+              {selectedItems.length === 0 ? (
+                <p style={{ margin: 0, fontSize: 13, color: "var(--ink-3,#5b6781)", textAlign: "center", lineHeight: 1.7 }}>
+                  왼쪽에서 항목을 선택하면<br />견적이 자동으로 계산됩니다.
+                </p>
+              ) : (
+                <div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                    {selectedItems.map((item) => (
+                      <div key={item.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, fontSize: 13 }}>
+                        <span style={{ color: "var(--ink-2,#2a3a55)", flex: 1, lineHeight: 1.4 }}>{item.name}</span>
+                        <span style={{ fontWeight: 600, color: "var(--ink,#0b1a30)", whiteSpace: "nowrap" }}>{fmt(item.price)}~</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {!hasCallout && (
+                    <p style={{ fontSize: 12, color: "var(--ink-3,#5b6781)", margin: "0 0 6px" }}>* 출장비(평일 15,000원~) 별도</p>
+                  )}
+                  {hasMaterial && (
+                    <p style={{ fontSize: 12, color: "var(--ink-3,#5b6781)", margin: "0 0 10px" }}>* 부속자재 비용 별도 항목 있음</p>
+                  )}
+
+                  <div style={{ borderTop: "1px solid var(--hair,#e6dfd0)", paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--ink-2,#2a3a55)" }}>
+                      <span>공급가액</span>
+                      <span style={{ fontWeight: 600 }}>{fmt(total)}~</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "var(--ink-2,#2a3a55)" }}>
+                      <span>부가세 (10%)</span>
+                      <span style={{ fontWeight: 600 }}>{fmt(Math.round(total * 0.1))}~</span>
+                    </div>
+                    <div style={{ borderTop: "2px solid var(--navy-700,#10284a)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontWeight: 700, fontSize: 13, color: "var(--ink,#0b1a30)" }}>최소 합계</span>
+                      <span style={{ fontWeight: 800, fontSize: "clamp(16px,1.8vw,20px)", color: "var(--navy-700,#10284a)" }}>
+                        {fmt(Math.round(total * 1.1))}~
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <a className="primary-button" href={business.phoneHref} style={{ minHeight: 42, justifyContent: "center" }}>
+                      <Phone size={16} />
+                      전화 상담
+                    </a>
+                    <a
+                      className="secondary-button"
+                      href={`/estimate?works=${encodeURIComponent(selectedItems.map((i) => i.name).join(","))}`}
+                      style={{ minHeight: 38, justifyContent: "center", fontSize: 13 }}
+                    >
+                      이 항목으로 견적 받기 <ArrowUpRight size={14} />
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <a href={config.pricingPagePath} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 13, color: "var(--ink-3,#5b6781)", marginTop: 12 }}>
+            <ReceiptText size={14} />
+            전체 가격표 보기
+          </a>
+        </div>
+      </div>
+    </section>
   );
 }
 

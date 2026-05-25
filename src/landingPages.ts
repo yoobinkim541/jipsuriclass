@@ -514,6 +514,44 @@ const servicePages: LandingPageDefinition[] = [
     ],
     pageType: "Service",
     serviceType: "인테리어 필름"
+  },
+  {
+    path: "/service/exterior",
+    categoryLabel: "서비스",
+    title: "외부 부분보수 | 집수리클라쓰",
+    description: "외벽 파손, 드라이비트, 데킹, 난간, 어닝 등 건물 외부 부분보수를 사진 상담으로 빠르게 확인합니다.",
+    searchTerms: ["외벽보수", "드라이비트", "스톤코트", "외부보수", "데킹", "난간", "어닝", "주차장", "외벽", "칼라강판", "방수도색", "건물외부"],
+    heroTitle: "외부 손상은 빠르게 확인할수록 범위를 줄입니다",
+    heroDescription:
+      "외벽 파손, 도색 벗겨짐, 난간·데킹 손상은 사진으로 먼저 보면 현장 방문 전에 작업 범위를 파악할 수 있습니다.",
+    highlights: ["외벽·드라이비트 보수", "데킹·난간·어닝 설치", "주차장 시설 보수"],
+    pointsTitle: "외부 보수 상담에서 주로 확인하는 것",
+    points: [
+      "드라이비트, 스톤코트, 칼라강판 등 외장재 종류에 따라 보수 방법이 달라집니다.",
+      "외벽 도색 벗겨짐은 방수 기능 저하와 연결될 수 있어 상태를 같이 확인합니다.",
+      "데킹·난간은 재질(방부목·WPC)과 부식 범위에 따라 부분 교체와 전체 교체를 구분합니다."
+    ],
+    faq: [
+      {
+        question: "외벽 사진만으로 상담이 가능한가요?",
+        answer: "가능합니다. 손상 위치와 범위, 외장재 종류가 보이면 대략적인 작업 범위를 먼저 안내할 수 있습니다."
+      },
+      {
+        question: "드라이비트와 일반 외벽 도색은 어떻게 다른가요?",
+        answer: "드라이비트는 단열재와 마감재가 일체형이라 보수 방법이 다릅니다. 사진으로 확인 후 적합한 방법을 안내합니다."
+      },
+      {
+        question: "고층 외벽 작업도 가능한가요?",
+        answer: "고층 작업은 장비 사용료가 추가됩니다. 현장 상황에 따라 안내드립니다."
+      }
+    ],
+    relatedLinks: [
+      { label: "도장·페인트", href: "/service/paint" },
+      { label: "방수", href: "/service/waterproofing" },
+      { label: "누수 탐지·보수", href: "/service/leak" }
+    ],
+    pageType: "Service",
+    serviceType: "외부 부분보수"
   }
 ];
 
