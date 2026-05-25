@@ -8729,3 +8729,82 @@ textarea {
     width: 72px;
   }
 }
+
+/* ── Estimator layout ──────────────────────────────────────── */
+.estimator-layout {
+  display: flex;
+  gap: clamp(16px, 2.5vw, 28px);
+  align-items: flex-start;
+}
+
+.estimator-table-col {
+  flex: 1 1 480px;
+  min-width: 0;
+}
+
+.estimator-panel-col {
+  flex: 0 0 288px;
+  width: 288px;
+  position: sticky;
+  top: 88px;
+}
+
+.estimator-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-top: 1px solid var(--hair, #e6dfd0);
+  cursor: pointer;
+  background: #fff;
+  transition: background 120ms;
+  user-select: none;
+}
+
+.estimator-item-row:hover {
+  background: #f8f9ff;
+}
+
+.estimator-item-row[aria-checked="true"] {
+  background: #f0f4ff;
+}
+
+.estimator-item-row[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.estimator-item-row[aria-disabled="true"]:hover {
+  background: #fff;
+}
+
+.estimator-checkbox {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--hair, #e6dfd0);
+  background: #fff;
+  transition: all 120ms;
+}
+
+.estimator-item-row[aria-checked="true"] .estimator-checkbox {
+  background: #3b5bdb;
+  border-color: #3b5bdb;
+}
+
+@media (max-width: 720px) {
+  .estimator-layout {
+    flex-direction: column;
+  }
+
+  .estimator-table-col,
+  .estimator-panel-col {
+    flex: none;
+    width: 100%;
+    position: static;
+  }
+}
