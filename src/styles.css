@@ -2711,6 +2711,7 @@ textarea {
 .landing-related-links {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 10px;
   margin-top: 24px;
 }
@@ -4758,9 +4759,14 @@ textarea {
     top: 12px;
   }
 
+  .estimate-shell-intro .admin-home {
+    width: fit-content;
+    justify-content: flex-start;
+  }
+
   .estimate-intro-content {
     justify-content: flex-end;
-    padding: 76px 16px 28px;
+    padding: 76px 16px 16px;
     gap: 10px;
   }
 

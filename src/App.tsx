@@ -352,6 +352,8 @@ function SiteHeader({
 }) {
   const menuItems = navItems;
   const desktopMenuItems = menuItems.filter((item) => item.href.startsWith("#"));
+  const isHome = window.location.pathname === "/";
+  const resolveHref = (href: string) => href.startsWith("#") && !isHome ? `/${href}` : href;
 
   const [scrollPct, setScrollPct] = useState(0);
   const [scrolled, setScrolled] = useState(false);
@@ -381,7 +383,7 @@ function SiteHeader({
           </a>
           <nav className="nav__links" aria-label="주요 메뉴">
             {desktopMenuItems.map((item) => (
-              <a href={item.href} key={item.href}>
+              <a href={resolveHref(item.href)} key={item.href}>
                 {item.label}
               </a>
             ))}
@@ -407,7 +409,7 @@ function SiteHeader({
             <X size={24} />
           </button>
           {menuItems.map((item) => (
-            <a href={item.href} key={item.href} onClick={onCloseMenu}>
+            <a href={resolveHref(item.href)} key={item.href} onClick={onCloseMenu}>
               {item.label}
             </a>
           ))}
