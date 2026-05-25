@@ -431,6 +431,7 @@ const servicePages: LandingPageDefinition[] = [
       }
     ],
     relatedLinks: [
+      { label: "가격표", href: "/service/waterproofing-tile/price" },
       { label: "누수 수리", href: "/service/leak" },
       { label: "욕실 수리", href: "/service/bathroom" },
       { label: "종합 설비", href: "/service/plumbing" }
