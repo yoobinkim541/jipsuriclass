@@ -511,7 +511,7 @@ export function EstimatePage() {
                       {content.final.requestLabel}
                       <textarea
                         rows={4}
-                        maxLength={300}
+                        maxLength={1000}
                         value={draft.requestNote}
                         onChange={(event) => setDraft((current) => ({ ...current, requestNote: event.target.value }))}
                         placeholder={content.final.requestPlaceholder}

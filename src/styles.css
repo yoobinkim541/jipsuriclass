@@ -4309,7 +4309,7 @@ textarea {
 
 .estimate-survey-form {
   height: 100%;
-  align-content: center;
+  align-content: safe center;
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
