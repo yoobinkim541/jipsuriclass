@@ -198,18 +198,18 @@ export const cases: ConstructionCase[] = [
     image: images.cases.bathroomLeak
   },
   {
-    title: "주방 싱크대 배수 보수",
+    title: "수전 교체",
     area: "빌라 주방",
-    problem: "배수 냄새와 하부장 습기",
-    solution: "배수 부속 교체, 하부장 내부 건조와 실리콘 마감",
+    problem: "수전 노후로 인한 누수와 작동 불량",
+    solution: "기존 수전 철거, 신규 수전 설치 및 누수 점검",
     link: business.naverBlogUrl,
     image: images.cases.kitchenRepair
   },
   {
-    title: "벽지 들뜸 부분 복구",
+    title: "전체 및 부분 도배",
     area: "원룸 거실",
     problem: "누수 이후 벽지 들뜸과 얼룩",
-    solution: "기초면 정리, 부분 도배, 마감 라인 보정",
+    solution: "기초면 정리, 부분·전체 도배, 마감 라인 보정",
     link: business.naverBlogUrl,
     image: images.cases.wallRepair
   },
@@ -221,14 +221,6 @@ export const cases: ConstructionCase[] = [
     link: business.naverBlogUrl,
     image: images.cases.bathroomLeak
   },
-  {
-    title: "창가 실리콘 재시공",
-    area: "주택 창가",
-    problem: "창틀 주변 미세 누수와 실리콘 노후",
-    solution: "기존 실리콘 제거, 주변면 정리, 재시공",
-    link: business.naverBlogUrl,
-    image: images.cases.kitchenRepair
-  }
 ];
 
 /**
@@ -244,7 +236,7 @@ export const pinnedPosts: PortfolioPost[] = [
     image: cases[0].image
   },
   {
-    title: "퇴거 전 원상복구와 부분 도배 작업",
+    title: "전체 및 부분 도배 작업",
     description: "임대차 종료 전 자주 발생하는 훼손 부위를 필요한 만큼만 정리했습니다.",
     date: "대표 사례",
     link: business.naverBlogUrl,
@@ -258,15 +250,8 @@ export const pinnedPosts: PortfolioPost[] = [
     image: cases[3].image
   },
   {
-    title: "창가 실리콘 노후 구간 재시공",
-    description: "창틀 주변 미세한 스며듦을 잡기 위해 실리콘 라인을 다시 정리했습니다.",
-    date: "대표 사례",
-    link: business.naverBlogUrl,
-    image: cases[4].image
-  },
-  {
-    title: "주방 배수 보수와 하부장 건조 작업",
-    description: "냄새와 습기가 반복되던 배수 부위를 점검해 필요한 부속만 교체했습니다.",
+    title: "수전 교체 및 누수 점검",
+    description: "노후된 수전을 교체하고 연결부 누수까지 꼼꼼히 점검한 사례입니다.",
     date: "대표 사례",
     link: business.naverBlogUrl,
     image: cases[1].image
