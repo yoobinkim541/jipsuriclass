@@ -8551,12 +8551,28 @@ textarea {
 
   .price-table th,
   .price-table td {
-    padding: 8px 8px;
+    padding: 8px 6px;
     font-size: 13px;
   }
 
   .price-table th.price-table__material,
-  .price-table td.price-table__material {
+  .price-table td.price-table__material,
+  .price-table th.price-table__unit,
+  .price-table td.price-table__unit {
     display: none;
+  }
+
+  .price-table td.price-table__name {
+    word-break: keep-all;
+  }
+
+  .price-table th.price-table__price,
+  .price-table td.price-table__price {
+    width: 88px;
+  }
+
+  .price-table th.price-table__qty,
+  .price-table td.price-table__qty {
+    width: 72px;
   }
 }
