@@ -5181,6 +5181,47 @@ textarea {
   padding: 24px clamp(18px, 5vw, 64px) 0;
 }
 
+.admin-nav {
+  display: flex;
+  gap: 4px;
+  background: var(--hair, #e6dfd0);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.admin-nav-tab {
+  align-items: center;
+  border-radius: 6px;
+  color: var(--ink-2, #2a3a55);
+  display: flex;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 6px;
+  padding: 6px 16px;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.admin-nav-tab:hover {
+  background: rgba(255,255,255,0.6);
+  color: var(--ink, #0b1a30);
+}
+
+.admin-nav-tab.active {
+  background: #fff;
+  color: var(--ink, #0b1a30);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 600px) {
+  .admin-nav-tab {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
 .admin-home {
   align-items: center;
   color: var(--ink, #0b1a30);

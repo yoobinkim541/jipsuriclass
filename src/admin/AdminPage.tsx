@@ -229,6 +229,20 @@ export function AdminPage() {
           <ArrowLeft size={18} />
           {business.name}
         </a>
+        <nav className="admin-nav">
+          <a
+            className={`admin-nav-tab${view === "editor" ? " active" : ""}`}
+            href="/admin"
+          >
+            페이지 편집
+          </a>
+          <a
+            className={`admin-nav-tab${view === "inquiries" ? " active" : ""}`}
+            href="/admin/inquiries"
+          >
+            문의 관리
+          </a>
+        </nav>
         <div className="admin-actions">
           {sessionEmail ? <span className="admin-email">{sessionEmail}</span> : null}
           <button className="admin-ghost-button" onClick={() => void handleRefresh()} type="button" aria-label="새로고침">
