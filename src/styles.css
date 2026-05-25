@@ -2730,6 +2730,33 @@ textarea {
   transform: none;
 }
 
+.landing-back-btn {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 24px;
+  bottom: 28px;
+  box-shadow: 0 4px 16px rgba(8, 22, 40, 0.12);
+  color: var(--ink, #0b1a30);
+  cursor: pointer;
+  display: flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 4px;
+  padding: 10px 18px 10px 12px;
+  position: fixed;
+  right: 24px;
+  transition: background 150ms, box-shadow 150ms, transform 150ms;
+  z-index: 30;
+}
+
+.landing-back-btn:hover {
+  background: var(--navy-700, #10284a);
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(8, 22, 40, 0.2);
+}
+
 .diagnosis-page {
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.78), transparent 28%),
@@ -7377,6 +7404,13 @@ textarea {
 
   .mobile-cta a:first-child {
     background: var(--navy-800, #0b1d34);
+  }
+
+  .landing-back-btn {
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    right: 14px;
+    padding: 8px 14px 8px 10px;
+    font-size: 13px;
   }
 
   .footer {

@@ -1447,6 +1447,7 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
         onOpenMenu={() => setMenuOpen(true)}
         onCloseMenu={() => setMenuOpen(false)}
       />
+      <LandingBackButton />
       <main className="landing-page" id="top">
         <section className="landing-hero section" aria-labelledby="landing-title">
           <span className="landing-kicker">{content.categoryLabel}</span>
@@ -1545,6 +1546,26 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
       <SiteFooter />
       <MobileQuickCta />
     </>
+  );
+}
+
+function LandingBackButton() {
+  return (
+    <button
+      className="landing-back-btn"
+      type="button"
+      aria-label="이전 페이지로 이동"
+      onClick={() => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = "/";
+        }
+      }}
+    >
+      <ChevronLeft size={18} />
+      <span>이전</span>
+    </button>
   );
 }
 

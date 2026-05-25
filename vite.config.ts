@@ -21,7 +21,7 @@ function naverBlogApi(): Plugin {
 
         try {
           const response = await fetch(
-            `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=6&sort=date`,
+            `https://openapi.naver.com/v1/search/blog.json?query=${query}&display=20&sort=date`,
             {
               headers: {
                 "X-Naver-Client-Id": clientId,
@@ -35,7 +35,14 @@ function naverBlogApi(): Plugin {
           }
 
           const data = await response.json();
-          const items = Array.isArray(data.items) ? data.items.slice(0, 6) : [];
+          // Only show posts from 집수리클라쓰's own blog — filter out other blogs
+          const allItems = Array.isArray(data.items) ? data.items : [];
+          const ownItems = allItems.filter(
+            (item: { link?: string; bloggerlink?: string }) =>
+              (typeof item.link === "string" && item.link.includes(`/${blogId}/`)) ||
+              (typeof item.bloggerlink === "string" && item.bloggerlink.includes(blogId))
+          );
+          const items = (ownItems.length > 0 ? ownItems : allItems).slice(0, 6);
           const enrichedItems = await Promise.all(
             items.map(async (item: { link: string }) => ({
               ...item,
