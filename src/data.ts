@@ -210,7 +210,7 @@ export const cases: ConstructionCase[] = [
   },
   {
     title: "거실 LED등 및 스위치 교체",
-    area: "아파트 거실",
+    area: "의정부 회룡역풍림아이원아파트",
     problem: "노후 조명과 스위치로 실내가 어둡고 안전이 우려되는 상황",
     solution: "리모컨 제어·색 변환이 가능한 LED 조명과 스위치로 교체하여 밝기와 안전성 확보",
     link: "https://blog.naver.com/it77khy/224244962003",
