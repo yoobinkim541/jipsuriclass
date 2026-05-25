@@ -66,7 +66,7 @@ export const business: BusinessProfile = {
   ],
   phone: "010-3323-9677",
   phoneHref: "tel:010-3323-9677",
-  kakaoUrl: "https://pf.kakao.com/",
+  kakaoUrl: "http://pf.kakao.com/_xmygxmxb/chat",
   naverBlogUrl: "https://m.blog.naver.com/it77khy?tab=1",
   area: "서울·경기 및 수도권 협의",
   hours: "08:00 - 21:00 / 매주 일요일 휴무",

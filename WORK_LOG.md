@@ -1006,6 +1006,17 @@ Verification:
 Follow-up:
 - If you want it even tighter, the left inset can be reduced another few pixels without affecting the desktop layout.
 
+# 2026-05-25 - KakaoTalk Chat Link Update
+
+Changed files:
+- `src/data.ts`
+
+Implemented behavior:
+- Updated the shared `business.kakaoUrl` so every KakaoTalk button now points to `http://pf.kakao.com/_xmygxmxb/chat`.
+
+Verification:
+- `npm run build` passed.
+
 # 2026-05-24 - Remove White Icon Backgrounds
 
 Changed files:
