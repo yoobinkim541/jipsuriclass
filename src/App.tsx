@@ -1887,7 +1887,7 @@ function useAutoCarousel(
         left: atEnd ? 0 : container.scrollLeft + step,
         behavior: "smooth"
       });
-    }, 2200);
+    }, 2800);
 
     const stop = () => {
       if (stopped) return;
