@@ -123,8 +123,8 @@ export const diagnosisTopics: DiagnosisTopic[] = [
     likelyCauses: ["충격 파손", "하자 발생", "줄눈 손상", "방수층 문제"],
     firstChecks: ["파손된 조각이 더 흔들리는지 확인", "줄눈이 같이 갈라졌는지 확인", "주변 타일도 들뜨는지 확인"],
     whenToCall: "깨진 조각이 날카롭거나 물이 스며들면 빠르게 보수해야 합니다.",
-    ctaLabel: "욕실 수리 상담으로 이어가기",
-    ctaHref: "/service/bathroom"
+    ctaLabel: "타일 수리 상담으로 이어가기",
+    ctaHref: "/service/tile"
   },
   {
     id: "floor-creak",
@@ -226,8 +226,8 @@ export const diagnosisTopics: DiagnosisTopic[] = [
     likelyCauses: ["결로", "환기 부족", "잔수·배수 문제", "숨은 누수"],
     firstChecks: ["생기는 계절과 시간을 기록", "창문 주변과 욕실 천장을 확인", "냄새가 강해지는 곳을 체크"],
     whenToCall: "같은 위치에 반복되면 표면 문제가 아니라 원인 해결이 필요합니다.",
-    ctaLabel: "방수·수리 상담으로 이어가기",
-    ctaHref: "/estimate"
+    ctaLabel: "방수·타일 서비스 보기",
+    ctaHref: "/service/waterproofing-tile"
   },
   {
     id: "shower-pressure",
@@ -250,8 +250,8 @@ export const diagnosisTopics: DiagnosisTopic[] = [
     likelyCauses: ["배수 부속 노후", "호스·트랩 문제", "수전 누수", "하부장 습기"],
     firstChecks: ["물 빠지는 속도 확인", "하부장 내부가 젖었는지 확인", "악취가 배수구에서 나는지 확인"],
     whenToCall: "냄새가 나거나 하부장 안쪽이 젖으면 부속 점검이 필요합니다.",
-    ctaLabel: "주방·배수 상담으로 이어가기",
-    ctaHref: "/estimate"
+    ctaLabel: "설비 서비스 보기",
+    ctaHref: "/service/plumbing"
   },
   {
     id: "kitchen-drain",
@@ -272,8 +272,8 @@ export const diagnosisTopics: DiagnosisTopic[] = [
     likelyCauses: ["수전 호스 연결부 누수", "배수 트랩 느슨함", "냉온수 밸브 패킹 마모"],
     firstChecks: ["하부장 안에 손전등 비춰 물기 위치 특정", "수전 사용 중 물기가 늘어나는지 확인", "배수구 주변 고무 패킹 상태 확인"],
     whenToCall: "하부장 바닥재나 목재가 젖었으면 곰팡이 전에 빠르게 수리해야 합니다.",
-    ctaLabel: "주방·배수 상담으로 이어가기",
-    ctaHref: "/estimate"
+    ctaLabel: "설비 서비스 보기",
+    ctaHref: "/service/plumbing"
   }
 ];
 
