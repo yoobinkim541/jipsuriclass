@@ -3627,6 +3627,16 @@ textarea {
   .blog-card-featured {
     grid-column: span 1;
   }
+
+  .symptom-categories {
+    display: none;
+  }
+
+  .symptom-grid--mobile {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
 }
 
 .blog-card-link {
@@ -6991,10 +7001,6 @@ textarea {
     min-height: auto;
   }
 
-  .symptom-categories {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .symptom-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -7623,15 +7629,10 @@ textarea {
     margin-top: 10px;
   }
 
-  .symptom-categories {
-    display: none;
+  .symptom-grid--mobile {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .symptom-grid--mobile {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
 
   .proof-list,
   .symptom-grid,
