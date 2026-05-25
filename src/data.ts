@@ -237,38 +237,38 @@ export const cases: ConstructionCase[] = [
  */
 export const pinnedPosts: PortfolioPost[] = [
   {
-    title: "성남 분당 더헤리티지 실리콘코킹·화장실 타일 시공",
-    description: "주방 실리콘 재시공과 욕실 정밀 타일 시공을 함께 진행한 사례입니다.",
+    title: "누수 흔적이 남은 욕실 천장 복구 사례",
+    description: "사진 상담 후 현장 확인, 손상 부위 철거와 마감 복구까지 진행한 사례입니다.",
     date: "대표 사례",
-    link: "https://blog.naver.com/it77khy/224246606297",
+    link: business.naverBlogUrl,
     image: cases[0].image
   },
   {
-    title: "길음뉴타운11단지 롯데캐슬골든힐스 단열공사",
-    description: "단열재 밀착 시공과 단열폼 보강으로 냉기·결로 문제를 해결한 사례입니다.",
+    title: "냉기·결로 잡은 단열 시공 사례",
+    description: "단열재 밀착 시공과 단열폼 보강으로 외벽 냉기를 잡은 사례입니다.",
     date: "대표 사례",
-    link: "https://blog.naver.com/it77khy/224212491748",
+    link: business.naverBlogUrl,
     image: cases[1].image
   },
   {
-    title: "거실 LED등 및 스위치 교체",
-    description: "노후 조명과 스위치를 최신 LED로 교체해 밝기와 안전성을 확보한 사례입니다.",
+    title: "노후 조명·스위치 LED 교체 사례",
+    description: "리모컨 제어 LED 조명과 스위치로 교체해 밝기와 안전성을 확보한 사례입니다.",
     date: "대표 사례",
-    link: "https://blog.naver.com/it77khy/224244962003",
+    link: business.naverBlogUrl,
     image: cases[2].image
   },
   {
-    title: "성남 분당 더헤리티지 백조 사각 싱크볼 교체",
-    description: "위생 불량 싱크볼을 엠보 코팅 제품으로 교체하고 정밀 마감까지 완료한 사례입니다.",
+    title: "주방 싱크볼 교체 사례",
+    description: "위생 불량 싱크볼을 새 제품으로 교체하고 수평·실리콘 마감까지 완료한 사례입니다.",
     date: "대표 사례",
-    link: "https://blog.naver.com/it77khy/224237946902",
+    link: business.naverBlogUrl,
     image: cases[3].image
   },
   {
-    title: "남양주 이편한세상다산 누수 피해 복구",
-    description: "베란다 천장 누수로 손상된 석고보드를 교체하고 탄성코트로 마감 복구한 사례입니다.",
+    title: "베란다 천장 누수 피해 복구 사례",
+    description: "손상된 석고보드를 교체하고 탄성코트로 마감 복구한 사례입니다.",
     date: "대표 사례",
-    link: "https://blog.naver.com/it77khy/224246265335",
+    link: business.naverBlogUrl,
     image: cases[4].image
   }
 ];
