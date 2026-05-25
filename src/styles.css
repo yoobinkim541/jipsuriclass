@@ -3119,7 +3119,7 @@ textarea {
 .about-strengths {
   border-left: 3px solid var(--navy-700);
   display: grid;
-  gap: 14px;
+  gap: 22px;
   list-style: none;
   margin: 0;
   padding: 8px 0 8px 22px;
