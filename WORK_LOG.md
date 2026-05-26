@@ -17,6 +17,41 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-26 - 노트북 섹션 압축 정리
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Kept `가능 작업` back on the original sizing path and limited the laptop compact rules to `서비스`, `대표 현장 사례`, and `블로그`.
+- Changed the laptop service section to a compact 5-column grid with shorter cards.
+- Reduced representative case card width, media ratio, body text, and controls for laptop viewports.
+- Changed the laptop blog section to 5 compact equal cards so the current posts fit in one row.
+
+Verification:
+- `npm run build` passed.
+- Browser measurement initially confirmed blog fit at 1280x720 and cases/blog fit at 1440x900; a later in-app browser recheck was blocked by local URL policy after the final additional reductions.
+
+Follow-up:
+- None.
+
+## 2026-05-26 - 블로그 카드 위치 하향 조정
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a small top margin above the homepage blog card grid so the cards sit slightly lower in the viewport.
+- Left the blog heading and card sizing unchanged.
+
+Verification:
+- Pending build.
+
+Follow-up:
+- None.
+
 ## 2026-05-25 - 방수·타일 가격표 통합
 
 Changed files: `src/App.tsx`, `src/waterproofingTilePriceData.ts`, `src/landingPages.ts`, `src/styles.css`, `public/sitemap.xml`
