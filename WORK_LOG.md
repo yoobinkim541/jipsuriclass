@@ -1,5 +1,39 @@
 # Work Log
 
+## 2026-05-26 - Search SEO Pass
+
+Changed files: `src/App.tsx`, `src/seo.ts`, `vite.config.ts`, `index.html`, `public/sitemap.xml`
+
+Implemented behavior:
+- Moved page SEO definitions into `src/seo.ts` so runtime and build-time metadata share one source of truth.
+- Added build-time static HTML generation for landing pages, service pricing pages, and utility routes so crawlers can read titles, descriptions, canonical URLs, and structured data without waiting for client-side rendering.
+- Marked thin utility pages like `estimate`, `diagnosis`, and auth/admin screens as `noindex`.
+- Expanded `public/sitemap.xml` to include the `/service/*/pricing` pages that were previously missing.
+- Aligned the root HTML title/description with the new SEO copy.
+
+Verification:
+- `npm run build` passed.
+- Build output now emits static HTML files for landing, pricing, and utility routes in `dist/`.
+
+Follow-up:
+- If you want stronger SEO still, the next step is to prerender the home page body more aggressively and add Search Console verification.
+
+## 2026-05-26 - 초기 로딩 체감 속도 개선
+
+Changed files: `src/App.tsx`, `package-lock.json`
+
+Implemented behavior:
+- 홈 화면에서 보이지 않는 일부 대표 이미지 수를 줄이고, 비주얼 보조 이미지와 사례/절차 이미지를 lazy/async 로딩으로 바꿨습니다.
+- 대표 사례 캐러셀 자동 회전을 모바일에서만 돌도록 제한해 불필요한 반복 스크롤 작업을 줄였습니다.
+- 관리자/계정/로그인/문의/진단/가격표 페이지를 `React.lazy`로 분리해 초기 번들 크기를 줄였습니다.
+
+Verification:
+- `npm run build` passed.
+- 생산 번들 확인 결과 메인 JS가 `535.36 kB`에서 `392.93 kB`로 줄었습니다.
+
+Follow-up:
+- 이미지 파일 자체가 아직 크므로, 추가로 WebP/AVIF 변환을 하면 체감 속도를 더 줄일 수 있습니다.
+
 ## 2026-05-25 - 방수·타일 가격표 통합
 
 Changed files: `src/App.tsx`, `src/waterproofingTilePriceData.ts`, `src/landingPages.ts`, `src/styles.css`, `public/sitemap.xml`

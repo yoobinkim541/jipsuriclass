@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ArrowUpRight,
   Calculator,
@@ -18,15 +18,8 @@ import { business, cases, navItems, pinnedPosts, process, services, symptoms, sy
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import type { HomepageContent, PortfolioPost } from "./types";
-import { AdminPage } from "./admin/AdminPage";
-import { AdminLoginPage } from "./admin/AdminLoginPage";
-import { AccountPage } from "./account/AccountPage";
-import { LoginPage } from "./login/LoginPage";
-import { PrivacyPolicyPage } from "./privacy/PrivacyPolicyPage";
-import { EstimatePage } from "./estimate/EstimatePage";
-import { DiagnosisPage } from "./diagnosis/DiagnosisPage";
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
-import { buildLandingPageJsonLd, getLandingPageDefinition, getLandingPageIndexLinks, mergeLandingPageContent } from "./landingPages";
+import { getLandingPageDefinition, getLandingPageIndexLinks, mergeLandingPageContent } from "./landingPages";
 import { defaultLandingPagesContent, type LandingPagesContent } from "./services/SiteContentService";
 import { electricPriceCategories, type PriceCategory, type PriceItem } from "./electricPriceData";
 import {
@@ -34,16 +27,21 @@ import {
   waterproofingPriceCategories,
   waterproofingTilePriceCategories
 } from "./waterproofingTilePriceData";
-import { ServicePricingPage } from "./pricing/ServicePricingPage";
 import { getServicePricingConfig, getServicePricingConfigByPricingPath } from "./pricing/registry";
 import type { ServicePricingConfig } from "./pricing/types";
+import { defaultDescription, defaultImage, getSeoConfigForPath, siteName, siteUrl, type SeoConfig } from "./seo";
+
+const AdminPage = lazy(() => import("./admin/AdminPage").then((module) => ({ default: module.AdminPage })));
+const AdminLoginPage = lazy(() => import("./admin/AdminLoginPage").then((module) => ({ default: module.AdminLoginPage })));
+const AccountPage = lazy(() => import("./account/AccountPage").then((module) => ({ default: module.AccountPage })));
+const LoginPage = lazy(() => import("./login/LoginPage").then((module) => ({ default: module.LoginPage })));
+const PrivacyPolicyPage = lazy(() => import("./privacy/PrivacyPolicyPage").then((module) => ({ default: module.PrivacyPolicyPage })));
+const EstimatePage = lazy(() => import("./estimate/EstimatePage").then((module) => ({ default: module.EstimatePage })));
+const DiagnosisPage = lazy(() => import("./diagnosis/DiagnosisPage").then((module) => ({ default: module.DiagnosisPage })));
+const LazyServicePricingPage = lazy(() => import("./pricing/ServicePricingPage").then((module) => ({ default: module.ServicePricingPage })));
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();
-const siteUrl = "https://www.jipsuriclass.kr";
-const siteName = business.name;
-const defaultDescription = "서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 빠르게 안내합니다.";
-const defaultImage = `${siteUrl}/og-image.png`;
 type PricePageConfig = {
   path: string;
   serviceLabel: string;
@@ -112,53 +110,51 @@ function App() {
 
   const landingPage = getLandingPageDefinition(window.location.pathname);
   const mergedLandingPage = landingPage ? mergeLandingPageContent(landingPage, landingPageOverrides[landingPage.path] ?? null) : null;
+  const pricingPageConfig = getServicePricingConfigByPricingPath(window.location.pathname);
 
   usePageSeo(getSeoConfigForPath(window.location.pathname, mergedLandingPage ?? undefined));
 
-  if (window.location.pathname.startsWith("/admin/login")) {
-    return <AdminLoginPage />;
-  }
-  if (window.location.pathname.startsWith("/admin")) {
-    return <AdminPage />;
-  }
-  if (window.location.pathname.startsWith("/mypage") || window.location.pathname.startsWith("/account")) {
-    return <AccountPage />;
-  }
-  if (window.location.pathname.startsWith("/login")) {
-    return <LoginPage />;
-  }
-  if (window.location.pathname.startsWith("/privacy")) {
-    return <PrivacyPolicyPage />;
-  }
-  if (window.location.pathname.startsWith("/diagnosis")) {
-    return <DiagnosisPage />;
-  }
-  if (window.location.pathname.startsWith("/estimate")) {
-    return <EstimatePage />;
-  }
-  const pricingPageConfig = getServicePricingConfigByPricingPath(window.location.pathname);
-  if (pricingPageConfig) {
-    return <ServicePricingPage config={pricingPageConfig} />;
-  }
+  return (
+    <Suspense fallback={<RouteLoading />}>
+      {window.location.pathname.startsWith("/admin/login") ? (
+        <AdminLoginPage />
+      ) : window.location.pathname.startsWith("/admin") ? (
+        <AdminPage />
+      ) : window.location.pathname.startsWith("/mypage") || window.location.pathname.startsWith("/account") ? (
+        <AccountPage />
+      ) : window.location.pathname.startsWith("/login") ? (
+        <LoginPage />
+      ) : window.location.pathname.startsWith("/privacy") ? (
+        <PrivacyPolicyPage />
+      ) : window.location.pathname.startsWith("/diagnosis") ? (
+        <DiagnosisPage />
+      ) : window.location.pathname.startsWith("/estimate") ? (
+        <EstimatePage />
+      ) : pricingPageConfig ? (
+        <LazyServicePricingPage config={pricingPageConfig} />
+      ) : window.location.pathname === "/service/electric/price" ? (
+        <ElectricPricePage />
+      ) : window.location.pathname === "/service/waterproofing-tile/price" ? (
+        <WaterproofingTilePricePage />
+      ) : window.location.pathname === "/service/waterproofing/price" ? (
+        <WaterproofingPricePage />
+      ) : window.location.pathname === "/service/tile/price" ? (
+        <TilePricePage />
+      ) : mergedLandingPage ? (
+        <LandingPage content={mergedLandingPage} />
+      ) : (
+        <HomePage />
+      )}
+    </Suspense>
+  );
+}
 
-  if (window.location.pathname === "/service/electric/price") {
-    return <ElectricPricePage />;
-  }
-  if (window.location.pathname === "/service/waterproofing-tile/price") {
-    return <WaterproofingTilePricePage />;
-  }
-  if (window.location.pathname === "/service/waterproofing/price") {
-    return <WaterproofingPricePage />;
-  }
-  if (window.location.pathname === "/service/tile/price") {
-    return <TilePricePage />;
-  }
-
-  if (mergedLandingPage) {
-    return <LandingPage content={mergedLandingPage} />;
-  }
-
-  return <HomePage />;
+function RouteLoading() {
+  return (
+    <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: 24, color: "var(--ink,#0b1a30)", fontSize: 16 }}>
+      불러오는 중...
+    </div>
+  );
 }
 
 function usePageSeo(config: SeoConfig) {
@@ -184,212 +180,6 @@ function usePageSeo(config: SeoConfig) {
     setLinkTag("canonical", `${siteUrl}${config.path}`);
     setStructuredData(config.jsonLd);
   }, [config]);
-}
-
-type SeoConfig = {
-  path: string;
-  title: string;
-  description: string;
-  image?: string;
-  noindex?: boolean;
-  jsonLd?: Record<string, unknown>[];
-};
-
-function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof getLandingPageDefinition>): SeoConfig {
-  if (pathname.startsWith("/admin") || pathname.startsWith("/account") || pathname.startsWith("/mypage") || pathname.startsWith("/login")) {
-    return {
-      path: pathname,
-      title: `${siteName} | 내부 페이지`,
-      description: defaultDescription,
-      image: defaultImage,
-      noindex: true
-    };
-  }
-
-  if (pathname === "/service/electric/price") {
-    return {
-      path: "/service/electric/price",
-      title: `전기공사 가격표 | ${siteName}`,
-      description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `전기공사 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/electric/price`,
-          description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname === "/service/waterproofing-tile/price") {
-    return {
-      path: "/service/waterproofing-tile/price",
-      title: `방수·타일 가격표 | ${siteName}`,
-      description: "집수리클라쓰 방수·타일 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `방수·타일 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/waterproofing-tile/price`,
-          description: "집수리클라쓰 방수·타일 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname === "/service/waterproofing/price") {
-    return {
-      path: "/service/waterproofing/price",
-      title: `방수 보수 가격표 | ${siteName}`,
-      description: "집수리클라쓰 방수 보수 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `방수 보수 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/waterproofing/price`,
-          description: "집수리클라쓰 방수 보수 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname === "/service/tile/price") {
-    return {
-      path: "/service/tile/price",
-      title: `타일 시공·보수 가격표 | ${siteName}`,
-      description: "집수리클라쓰 타일 시공·보수 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `타일 시공·보수 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/tile/price`,
-          description: "집수리클라쓰 타일 시공·보수 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname.startsWith("/estimate")) {
-    return {
-      path: "/estimate",
-      title: `견적상담 | ${siteName}`,
-      description: "사진과 증상으로 집수리·누수 복구·부분수리 견적을 빠르게 상담하는 페이지입니다.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `견적상담 | ${siteName}`,
-          url: `${siteUrl}/estimate`,
-          description: "사진과 증상으로 집수리·누수 복구·부분수리 견적을 빠르게 상담하는 페이지입니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname.startsWith("/privacy")) {
-    return {
-      path: "/privacy",
-      title: `개인정보처리방침 | ${siteName}`,
-      description: "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다.",
-      image: defaultImage,
-      noindex: true,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `개인정보처리방침 | ${siteName}`,
-          url: `${siteUrl}/privacy`,
-          description: "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname.startsWith("/diagnosis")) {
-    return {
-      path: "/diagnosis",
-      title: `간편 자기진단 | ${siteName}`,
-      description: "문이 뻑뻑하거나 물이 새는 등 생활 집수리 증상을 클릭하면 원인과 다음 행동을 바로 확인할 수 있습니다.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            {
-              "@type": "Question",
-              name: "문이 뻑뻑해요. 어떻게 확인하나요?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "경첩 처짐, 문틀 변형, 바닥 쓸림을 먼저 확인하고, 증상이 반복되면 문수리 상담이 필요합니다."
-              }
-            },
-            {
-              "@type": "Question",
-              name: "물이 샌다. 바로 뭘 해야 하나요?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "전기 기기 주변이면 사용을 멈추고 물자국이 번지는 방향을 확인한 뒤 누수 상담을 받는 것이 좋습니다."
-              }
-            }
-          ]
-        }
-      ]
-    };
-  }
-
-  if (landingPage) {
-    return {
-      path: landingPage.path,
-      title: landingPage.title,
-      description: landingPage.description,
-      image: defaultImage,
-      jsonLd: buildLandingPageJsonLd(landingPage, siteUrl)
-    };
-  }
-
-  return {
-    path: "/",
-    title: `${siteName} - 클라쓰가 다른 종합 집수리`,
-    description: defaultDescription,
-    image: defaultImage,
-    jsonLd: [
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: siteName,
-        url: siteUrl,
-        description: defaultDescription
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "HomeAndConstructionBusiness",
-        name: siteName,
-        url: siteUrl,
-        telephone: business.phone,
-        image: defaultImage,
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: business.address,
-          addressCountry: "KR"
-        },
-        areaServed: business.area,
-        openingHours: business.hours,
-        sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl],
-        description: business.introduction
-      }
-    ]
-  };
 }
 
 function setMetaTag(name: string, content: string, attribute: "name" | "property" = "name") {
@@ -614,7 +404,7 @@ function HeroSection({
   }, []);
 
   const caseImages = useMemo(
-    () => editableCases.filter((c) => c.image).slice(0, 5),
+    () => editableCases.filter((c) => c.image).slice(0, 3),
     [editableCases]
   );
 
@@ -704,7 +494,7 @@ function HeroSection({
                     }
                   }}
                 >
-                  <img src={img.image} alt={img.title} />
+                  <img src={img.image} alt={img.title} loading={isMain ? "eager" : "lazy"} decoding="async" />
                   {isMain && <div className="hero__card-tag">{img.area}</div>}
                 </div>
               );
@@ -741,7 +531,7 @@ function AboutSection({
   cases: HomepageContent["cases"];
 }) {
   const allImages = useMemo(
-    () => cases.filter((item) => item.image).slice(0, 5),
+    () => cases.filter((item) => item.image).slice(0, 3),
     [cases]
   );
   const [featuredIndex, setFeaturedIndex] = useState(0);
@@ -776,7 +566,7 @@ function AboutSection({
       <div className="about-visual" aria-label="현장 사진 요약">
         {heroItem && (
           <figure className="about-visual__hero about-visual__hero--auto" key={`hero-${featuredIndex}`}>
-            <img src={heroItem.image} alt={heroItem.title} loading="lazy" />
+            <img src={heroItem.image} alt={heroItem.title} loading="lazy" decoding="async" />
             <figcaption>
               <strong>{heroItem.area}</strong>
               <span>{heroItem.title}</span>
@@ -794,7 +584,7 @@ function AboutSection({
               aria-label={`${item.title} 크게 보기`}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setFeaturedIndex(allImages.indexOf(item)); }}
             >
-              <img src={item.image} alt={item.title} loading="lazy" />
+              <img src={item.image} alt={item.title} loading="lazy" decoding="async" />
               <figcaption>
                 <strong>{item.area}</strong>
                 <span>{item.title}</span>
@@ -1093,7 +883,8 @@ function CasesSection({
     if (typeof window === "undefined" || editableCases.length <= 1) return;
 
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
+    const isMobile = window.matchMedia("(max-width: 720px)").matches;
+    if (prefersReducedMotion || !isMobile) return;
 
     const stopEvents: Array<keyof HTMLElementEventMap> = ["pointerdown", "touchstart", "wheel", "mousedown", "keydown"];
     let stopped = false;
@@ -1196,7 +987,7 @@ function CasesSection({
               aria-current={index === activeIndex ? "true" : undefined}
             >
               <div className="cases__media">
-                <img src={item.image} alt={item.title} />
+                <img src={item.image} alt={item.title} loading="lazy" decoding="async" />
               </div>
               <div className="cases__body">
                 <h3>{item.title}</h3>
@@ -1467,11 +1258,13 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                 {activeStep === index && (
                   <div className="process__inline-detail">
                     <div className="process__illustration">
-                      <img
-                        src={steps[index]?.image || processIllustrations[index]}
-                        alt={steps[index]?.title ?? step.title}
-                        className="process__step-photo"
-                      />
+                    <img
+                      src={steps[index]?.image || processIllustrations[index]}
+                      alt={steps[index]?.title ?? step.title}
+                      className="process__step-photo"
+                      loading="lazy"
+                      decoding="async"
+                    />
                     </div>
                     <div className="process__inline-text">
                       <h3>{steps[index]?.title ?? step.title}</h3>
@@ -1492,6 +1285,8 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                       src={steps[activeStep]?.image || processIllustrations[activeStep]}
                       alt={activeContent?.title ?? activeData.title}
                       className="process__step-photo"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 </div>

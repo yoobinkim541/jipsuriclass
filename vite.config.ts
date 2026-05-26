@@ -1,5 +1,8 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type Plugin } from "vite";
+import { landingPageDefinitions, type LandingPageDefinition } from "./src/landingPages";
+import { getLegacyPricePageConfigs, getSeoConfigForPath, siteName, siteUrl } from "./src/seo";
+import { servicePricingRegistry } from "./src/pricing/registry";
 
 function naverBlogApi(): Plugin {
   return {
@@ -348,6 +351,220 @@ function naverGeocodeApi(): Plugin {
   };
 }
 
+function seoStaticPages(): Plugin {
+  return {
+    name: "seo-static-pages",
+    generateBundle(_, bundle) {
+      const bundleEntries = Object.values(bundle) as any[];
+      const entryChunk = bundleEntries.find((item) => item.type === "chunk" && item.isEntry) as { fileName?: string } | undefined;
+      if (!entryChunk) return;
+
+      if (!entryChunk.fileName) return;
+      const scriptSrc = `/${entryChunk.fileName}`;
+      const styleHrefs = bundleEntries
+        .filter((item) => item.type === "asset" && typeof item.fileName === "string" && item.fileName.endsWith(".css"))
+        .map((item) => `/${String(item.fileName)}`);
+
+      const routes = [
+        ...landingPageDefinitions.map((page) => ({
+          path: page.path,
+          seo: getSeoConfigForPath(page.path, page),
+          body: renderLandingPageBody(page)
+        })),
+        ...Object.entries(servicePricingRegistry).map(([servicePath, config]) => ({
+          path: config.pricingPagePath,
+          seo: getSeoConfigForPath(config.pricingPagePath),
+          body: renderPricingPageBody(servicePath, config.serviceName, config.disclaimer, config.categories)
+        })),
+        ...getLegacyPricePageConfigs().map((config) => ({
+          path: config.path,
+          seo: getSeoConfigForPath(config.path),
+          body: renderLegacyPricingPageBody(config.title, config.description, config.note)
+        })),
+        ...[
+          "/estimate",
+          "/diagnosis",
+          "/privacy",
+          "/login",
+          "/admin",
+          "/admin/login",
+          "/account",
+          "/mypage"
+        ].map((path) => ({
+          path,
+          seo: getSeoConfigForPath(path),
+          body: renderUtilityPageBody(getSeoConfigForPath(path))
+        }))
+      ];
+
+      for (const route of routes) {
+        if (route.path === "/") continue;
+        this.emitFile({
+          type: "asset",
+          fileName: routeToHtmlFile(route.path),
+          source: renderStaticHtml({
+            seo: route.seo,
+            body: route.body,
+            scriptSrc,
+            styleHrefs
+          })
+        });
+      }
+    }
+  };
+}
+
+function renderStaticHtml({
+  seo,
+  body,
+  scriptSrc,
+  styleHrefs
+}: {
+  seo: ReturnType<typeof getSeoConfigForPath>;
+  body: string;
+  scriptSrc: string;
+  styleHrefs: string[];
+}) {
+  const robots = seo.noindex ? "noindex,nofollow" : "index,follow";
+  const jsonLd = seo.jsonLd?.length
+    ? `<script type="application/ld+json">${JSON.stringify(seo.jsonLd).replace(/</g, "\\u003c")}</script>`
+    : "";
+  const styleLinks = styleHrefs.map((href) => `<link rel="stylesheet" href="${href}" />`).join("");
+
+  return `<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="description" content="${escapeHtml(seo.description)}" />
+    <meta name="robots" content="${robots}" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="${escapeHtml(siteName)}" />
+    <meta property="og:title" content="${escapeHtml(seo.title)}" />
+    <meta property="og:description" content="${escapeHtml(seo.description)}" />
+    <meta property="og:image" content="${escapeHtml(seo.image ?? `${siteUrl}/og-image.png`)}" />
+    <meta property="og:url" content="${escapeHtml(`${siteUrl}${seo.path}`)}" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(seo.title)}" />
+    <meta name="twitter:description" content="${escapeHtml(seo.description)}" />
+    <meta name="twitter:image" content="${escapeHtml(seo.image ?? `${siteUrl}/og-image.png`)}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="/icons/icon.png" />
+    <link rel="apple-touch-icon" href="/icons/icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="canonical" href="${escapeHtml(`${siteUrl}${seo.path}`)}" />
+    <title>${escapeHtml(seo.title)}</title>
+    ${styleLinks}
+    ${jsonLd}
+  </head>
+  <body>
+    <div id="root">${body}</div>
+    <script type="module" src="${scriptSrc}"></script>
+  </body>
+</html>`;
+}
+
+function renderLandingPageBody(page: LandingPageDefinition) {
+  return `
+    <main data-static-route="${escapeHtml(page.path)}">
+      <section>
+        <p>${escapeHtml(page.categoryLabel)}</p>
+        <h1>${escapeHtml(page.heroTitle)}</h1>
+        <p>${escapeHtml(page.heroDescription)}</p>
+        <ul>${page.highlights.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+      </section>
+      <section>
+        <h2>${escapeHtml(page.pointsTitle)}</h2>
+        <ol>${page.points.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
+      </section>
+      <section>
+        <h2>자주 묻는 질문</h2>
+        ${page.faq
+          .map(
+            (item) => `
+              <article>
+                <h3>${escapeHtml(item.question)}</h3>
+                <p>${escapeHtml(item.answer)}</p>
+              </article>`
+          )
+          .join("")}
+      </section>
+      <section>
+        <h2>관련 페이지</h2>
+        <ul>${page.relatedLinks.map((item) => `<li><a href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a></li>`).join("")}</ul>
+      </section>
+    </main>`;
+}
+
+function renderPricingPageBody(
+  servicePath: string,
+  serviceName: string,
+  disclaimer: string,
+  categories: Array<{ title: string; note?: string; items: Array<{ name: string; unit: string; priceLabel: string; materialNote: string | null }> }>
+) {
+  return `
+    <main data-static-route="${escapeHtml(servicePath)}">
+      <section>
+        <p>가격표</p>
+        <h1>${escapeHtml(serviceName)} 가격표</h1>
+        <p>${escapeHtml(disclaimer)}</p>
+      </section>
+      ${categories
+        .map(
+          (category) => `
+            <section>
+              <h2>${escapeHtml(category.title)}</h2>
+              ${category.note ? `<p>${escapeHtml(category.note)}</p>` : ""}
+              <ul>
+                ${category.items
+                  .map(
+                    (item) => `
+                      <li>
+                        <strong>${escapeHtml(item.name)}</strong>
+                        <span>${escapeHtml(item.priceLabel)}</span>
+                        <span>${escapeHtml(item.unit)}</span>
+                        ${item.materialNote ? `<small>자재 ${escapeHtml(item.materialNote)}</small>` : ""}
+                      </li>`
+                  )
+                  .join("")}
+              </ul>
+            </section>`
+        )
+        .join("")}
+    </main>`;
+}
+
+function renderLegacyPricingPageBody(title: string, description: string, note?: string) {
+  return `
+    <main>
+      <section>
+        <p>가격표</p>
+        <h1>${escapeHtml(title)}</h1>
+        <p>${escapeHtml(description)}</p>
+        ${note ? `<p>${escapeHtml(note)}</p>` : ""}
+      </section>
+    </main>`;
+}
+
+function renderUtilityPageBody(seo: ReturnType<typeof getSeoConfigForPath>) {
+  return `
+    <main>
+      <section>
+        <h1>${escapeHtml(seo.title)}</h1>
+        <p>${escapeHtml(seo.description)}</p>
+      </section>
+    </main>`;
+}
+
+function routeToHtmlFile(pathname: string) {
+  const trimmed = pathname.replace(/^\/+/, "").replace(/\/+$/, "");
+  return trimmed ? `${trimmed}/index.html` : "index.html";
+}
+
 function escapeHtml(value: string) {
   return value
     .replace(/&/g, "&amp;")
@@ -469,5 +686,5 @@ function formatIntakeSummary(intake: Record<string, unknown>) {
 }
 
 export default defineConfig({
-  plugins: [react(), naverBlogApi(), inquiryApi(), naverGeocodeApi()]
+  plugins: [react(), naverBlogApi(), inquiryApi(), naverGeocodeApi(), seoStaticPages()]
 });
