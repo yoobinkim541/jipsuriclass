@@ -79,6 +79,7 @@ export const business: BusinessProfile = {
 
 export const navItems: NavItem[] = [
   { label: "소개", href: "#about" },
+  { label: "자가진단", href: "/diagnosis" },
   { label: "서비스", href: "#services" },
   { label: "가능작업", href: "#specialties" },
   { label: "현장사례", href: "#cases" },
@@ -86,7 +87,6 @@ export const navItems: NavItem[] = [
   { label: "블로그", href: "#blog" },
   { label: "오시는길", href: "#location" },
   { label: "문의", href: "#contact" },
-  { label: "자가진단", href: "/diagnosis" },
   { label: "견적상담", href: "/estimate" }
 ];
 

@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-05-26 - 서비스 섹션 압축 및 네비게이션 순서 조정
+
+Changed files:
+- `src/styles.css`
+- `src/data.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Kept the service section in place and tightened its laptop-size layout by reducing the section head spacing, card padding, card height, and typography.
+- Moved the top navigation `자가진단` link to appear between `소개` and `서비스`.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None.
+
 ## 2026-05-25 - 방수·타일 가격표 통합
 
 Changed files: `src/App.tsx`, `src/waterproofingTilePriceData.ts`, `src/landingPages.ts`, `src/styles.css`, `public/sitemap.xml`

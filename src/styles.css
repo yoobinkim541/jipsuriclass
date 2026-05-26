@@ -1210,67 +1210,166 @@ textarea {
 }
 
 @media (min-width: 1100px) and (max-width: 1599px) {
-  main.home-page section.specialties {
+  main.home-page .services,
+  main.home-page .cases,
+  main.home-page .blog {
     justify-content: flex-start;
-    padding-top: clamp(12px, 2vh, 20px);
   }
 
-  main.home-page .specialties .sec-head {
-    padding-top: clamp(12px, 2vh, 20px) !important;
-    padding-bottom: 10px !important;
+  main.home-page .services .sec-head {
+    padding-top: clamp(18px, 2.4vh, 28px) !important;
+    padding-bottom: 14px !important;
   }
 
-  main.home-page .specialties .sec-head h2 {
-    font-size: clamp(26px, 2.6vw, 34px) !important;
+  main.home-page .services .sec-head h2 {
+    font-size: clamp(24px, 2.4vw, 36px) !important;
     margin-bottom: 6px !important;
   }
 
-  main.home-page .specialties .sec-head p {
-    font-size: 15px !important;
+  main.home-page .services .sec-head p {
+    font-size: 14px !important;
     line-height: 1.45;
+    max-width: 58ch;
+    margin-inline: auto;
   }
 
-  main.home-page .specs__controls {
-    margin-bottom: 10px;
+  main.home-page .bento {
+    gap: 12px;
+    grid-auto-rows: minmax(164px, 1fr);
+  }
+
+  main.home-page .bento__card {
+    min-height: 164px;
+    padding: clamp(18px, 1.6vw, 24px);
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr) 240px;
   }
 
-  main.home-page .specs__filters {
+  main.home-page .bento__card h3 {
+    font-size: clamp(16px, 1.3vw, 22px);
+  }
+
+  main.home-page .bento__card p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  main.home-page .bento__num {
+    top: 14px;
+    right: 16px;
+    font-size: 10px;
+  }
+
+  main.home-page .bento__link-label {
+    font-size: 11px;
+  }
+
+  main.home-page .cases .section-heading,
+  main.home-page .blog .section-heading {
+    margin-bottom: 12px;
+  }
+
+  main.home-page .cases__rail {
+    gap: 12px;
+    padding-top: 4px;
+    padding-bottom: 10px;
+  }
+
+  main.home-page .cases__card {
+    flex-basis: 360px;
+    border-radius: 14px;
+  }
+
+  main.home-page .cases__media {
+    aspect-ratio: 16 / 9;
+  }
+
+  main.home-page .cases__body {
+    padding: 14px 16px 16px;
+    gap: 8px;
+  }
+
+  main.home-page .cases__body h3 {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  main.home-page .cases__body .row {
+    grid-template-columns: 42px 1fr;
     gap: 6px;
-  }
-
-  main.home-page .specs__filter {
-    padding: 6px 11px;
     font-size: 12px;
   }
 
-  main.home-page .specs__search {
-    padding: 8px 12px;
+  main.home-page .cases__body .row dd {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
 
-  main.home-page .specs__grid {
-    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
-    gap: 8px;
-  }
-
-  main.home-page .specs__item {
-    min-height: 40px;
-    padding: 9px 12px;
-    border-radius: 8px;
+  main.home-page .cases__body .more {
+    padding-top: 8px;
     font-size: 12px;
   }
 
-  main.home-page .specs__jump-actions {
-    margin-top: 14px;
-    padding-bottom: 14px;
-    gap: 8px;
+  main.home-page .cases__carousel-controls {
+    margin-bottom: 4px;
   }
 
-  main.home-page .specs__jump-button {
-    min-height: 44px;
-    padding: 0 24px;
+  main.home-page .cases__carousel-button {
+    width: 34px;
+    height: 34px;
+  }
+
+  main.home-page .blog-card-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  main.home-page .blog-card,
+  main.home-page .blog-card-featured {
+    grid-column: span 1;
+  }
+
+  main.home-page .blog-card-image,
+  main.home-page .blog-card-featured .blog-card-image {
+    aspect-ratio: 16 / 8.5;
+  }
+
+  main.home-page .blog-card-body,
+  main.home-page .blog-card-featured .blog-card-body {
+    gap: 8px;
+    padding: 13px;
+  }
+
+  main.home-page .naver-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
+    font-size: 15px;
+  }
+
+  main.home-page .blog-card h3,
+  main.home-page .blog-card-featured h3 {
     font-size: 14px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  main.home-page .blog-card-summary p {
+    font-size: 12px;
+    line-height: 1.55;
+    -webkit-line-clamp: 2;
+  }
+
+  main.home-page .blog-card-keywords {
+    display: none;
+  }
+
+  main.home-page .blog-card-link {
+    font-size: 12px;
   }
 }
 
