@@ -1321,6 +1321,7 @@ textarea {
 .hero__deck {
   position: relative;
   aspect-ratio: 5/6;
+  justify-self: end;
   max-width: 100%;
   perspective: 1200px;
 }
@@ -1376,6 +1377,36 @@ textarea {
 .hero__card--clickable:hover {
   box-shadow: 0 16px 40px rgba(8,22,40,.22), 0 32px 80px rgba(8,22,40,.16);
   z-index: 5;
+}
+
+@media (min-width: 1100px) and (max-width: 1599px) {
+  main.home-page .hero__grid {
+    grid-template-columns: minmax(0, 1.08fr) minmax(360px, .72fr);
+  }
+
+  main.home-page .hero__deck {
+    width: min(100%, 460px);
+  }
+}
+
+@media (min-width: 1600px) and (max-width: 2199px) {
+  main.home-page .hero__grid {
+    grid-template-columns: minmax(0, 1.12fr) minmax(420px, .68fr);
+  }
+
+  main.home-page .hero__deck {
+    width: min(100%, 520px);
+  }
+}
+
+@media (min-width: 2200px) {
+  main.home-page .hero__grid {
+    grid-template-columns: minmax(0, 1.05fr) minmax(520px, .9fr);
+  }
+
+  main.home-page .hero__deck {
+    width: min(100%, 720px);
+  }
 }
 
 .hero__chip {

@@ -1106,6 +1106,24 @@ Verification:
 Follow-up:
 - If the device-specific browser chrome still creates a gap, the next refinement is a per-device safe-area adjustment and a slightly smaller header inset.
 
+## 2026-05-26 - Homepage Hero Laptop Image Sizing
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Split the homepage hero card deck sizing into laptop, large desktop, and 4K-class media queries.
+- Capped the right hero image deck at 460px on 1100-1599px laptop widths, 520px on 1600-2199px widths, and 720px on 2200px+ 4K-class widths.
+- Kept the existing mobile/tablet behavior that hides the right-side hero deck below 1024px.
+
+Verification:
+- `npm run build` passed.
+- Browser measurement passed at 1440x900, 1920x1080, and 2560x1440; the hero deck measured 460px, 520px, and 720px wide respectively.
+
+Follow-up:
+- None.
+
 ## 2026-05-23 - Transparent Favicon Refresh
 
 Changed files:
