@@ -1209,6 +1209,71 @@ textarea {
   }
 }
 
+@media (min-width: 1100px) and (max-width: 1599px) {
+  main.home-page section.specialties {
+    justify-content: flex-start;
+    padding-top: clamp(12px, 2vh, 20px);
+  }
+
+  main.home-page .specialties .sec-head {
+    padding-top: clamp(12px, 2vh, 20px) !important;
+    padding-bottom: 10px !important;
+  }
+
+  main.home-page .specialties .sec-head h2 {
+    font-size: clamp(26px, 2.6vw, 34px) !important;
+    margin-bottom: 6px !important;
+  }
+
+  main.home-page .specialties .sec-head p {
+    font-size: 15px !important;
+    line-height: 1.45;
+  }
+
+  main.home-page .specs__controls {
+    margin-bottom: 10px;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) 240px;
+  }
+
+  main.home-page .specs__filters {
+    gap: 6px;
+  }
+
+  main.home-page .specs__filter {
+    padding: 6px 11px;
+    font-size: 12px;
+  }
+
+  main.home-page .specs__search {
+    padding: 8px 12px;
+  }
+
+  main.home-page .specs__grid {
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 8px;
+  }
+
+  main.home-page .specs__item {
+    min-height: 40px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+
+  main.home-page .specs__jump-actions {
+    margin-top: 14px;
+    padding-bottom: 14px;
+    gap: 8px;
+  }
+
+  main.home-page .specs__jump-button {
+    min-height: 44px;
+    padding: 0 24px;
+    font-size: 14px;
+  }
+}
+
 /* ===== New two-column hero ===== */
 .hero {
   position: relative;

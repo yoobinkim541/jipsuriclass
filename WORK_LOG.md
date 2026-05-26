@@ -1124,6 +1124,24 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-26 - Homepage Specialties Laptop Fit
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added laptop-only compact sizing for the homepage `가능 작업` section at 1100-1599px widths.
+- Reduced the section title spacing, filter buttons, search input, work chips, grid gaps, and bottom jump buttons so all work chips fit in one laptop viewport.
+- Kept the existing mobile, tablet, and 4K sizing rules unchanged.
+
+Verification:
+- `npm run build` passed.
+- Browser measurement passed at laptop-sized viewport; the `가능 작업` section fit without internal scrolling and the visible work grid compressed to 184px high.
+
+Follow-up:
+- None.
+
 ## 2026-05-23 - Transparent Favicon Refresh
 
 Changed files:
