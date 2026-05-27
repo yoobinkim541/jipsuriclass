@@ -24,25 +24,34 @@ export class BlogPortfolioService {
     private readonly maxPosts = 6
   ) {}
 
-  async loadPortfolioPosts(terms: string[] = []): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
-    const cacheKey = this.buildCacheKey(terms);
+  async loadPortfolioPosts(
+    terms: string[] = [],
+    categoryNos: number[] = []
+  ): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+    const cacheKey = this.buildCacheKey(terms, categoryNos);
     const cached = this.readCache(cacheKey);
     if (cached) {
       return { posts: cached, source: "naver" };
     }
 
-    const result = await this.fetchFromApi(terms);
+    const result = await this.fetchFromApi(terms, categoryNos);
     if (result.source === "naver" && result.posts.length) {
       this.writeCache(cacheKey, result.posts);
     }
     return result;
   }
 
-  private async fetchFromApi(terms?: string[]): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+  private async fetchFromApi(
+    terms?: string[],
+    categoryNos?: number[]
+  ): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
     try {
       const url = new URL(this.endpoint, typeof window !== "undefined" ? window.location.origin : "http://localhost");
       if (Array.isArray(terms) && terms.length) {
         url.searchParams.set("terms", terms.join(","));
+      }
+      if (Array.isArray(categoryNos) && categoryNos.length) {
+        url.searchParams.set("categoryNos", categoryNos.join(","));
       }
 
       const response = await fetch(url.toString());
@@ -63,8 +72,10 @@ export class BlogPortfolioService {
     }
   }
 
-  private buildCacheKey(terms: string[]) {
-    return `blog-cache:${terms.slice().sort().join(",")}`;
+  private buildCacheKey(terms: string[], categoryNos: number[]) {
+    const normalizedTerms = terms.slice().sort().join(",");
+    const normalizedCategories = categoryNos.slice().sort((left, right) => left - right).join(",");
+    return `blog-cache:${normalizedTerms}|${normalizedCategories}`;
   }
 
   private readCache(key: string): PortfolioPost[] | null {

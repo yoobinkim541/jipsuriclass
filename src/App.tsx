@@ -28,6 +28,7 @@ import { DiagnosisPage } from "./diagnosis/DiagnosisPage";
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 import { buildLandingPageJsonLd, getLandingPageDefinition, getLandingPageIndexLinks, mergeLandingPageContent } from "./landingPages";
 import { defaultLandingPagesContent, type LandingPagesContent } from "./services/SiteContentService";
+import { defaultHomepageSectionOrder, defaultLandingSectionOrder, type HomepageSectionId, type LandingSectionId } from "./contentSections";
 import { electricPriceCategories, type PriceCategory, type PriceItem } from "./electricPriceData";
 import {
   tilePriceCategories,
@@ -485,16 +486,32 @@ function HomePage() {
         onCloseMenu={() => setMenuOpen(false)}
       />
       <main className="home-page" id="top">
-        <HeroSection content={homeContent.hero} cases={homeContent.cases} />
-        <AboutSection content={homeContent.about} cases={homeContent.cases} />
-        <SymptomsSection symptoms={homeContent.symptoms ?? symptoms} categories={symptomCategories} />
-        <ServicesSection services={homeContent.services} />
-        <SpecialtiesSection />
-        <CasesSection cases={homeContent.cases} />
-        <ProcessSection steps={homeContent.process} />
-        <BlogSection posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />
-        <OfficeSection />
-        <ContactSection content={homeContent.contact} />
+        {(homeContent.sections ?? defaultHomepageSectionOrder).map((sectionId) => {
+          switch (sectionId) {
+            case "hero":
+              return <HeroSection key={sectionId} content={homeContent.hero} cases={homeContent.cases} />;
+            case "about":
+              return <AboutSection key={sectionId} content={homeContent.about} cases={homeContent.cases} />;
+            case "symptoms":
+              return <SymptomsSection key={sectionId} symptoms={homeContent.symptoms ?? symptoms} categories={symptomCategories} />;
+            case "services":
+              return <ServicesSection key={sectionId} services={homeContent.services} />;
+            case "specialties":
+              return <SpecialtiesSection key={sectionId} specialties={homeContent.specialties ?? business.specialties} />;
+            case "cases":
+              return <CasesSection key={sectionId} cases={homeContent.cases} />;
+            case "blog":
+              return <BlogSection key={sectionId} posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />;
+            case "location":
+              return <OfficeSection key={sectionId} />;
+            case "contact":
+              return <ContactSection key={sectionId} content={homeContent.contact} />;
+            case "process":
+              return <ProcessSection key={sectionId} steps={homeContent.process} />;
+            default:
+              return null;
+          }
+        })}
       </main>
       {!contentReady ? <div className="content-loading">페이지 내용을 불러오는 중</div> : null}
       <SiteFooter />
@@ -606,18 +623,18 @@ function HeroSection({
   content: HomepageContent["hero"];
   cases: HomepageContent["cases"];
 }) {
-  const rotatorWords = ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문"];
+  const heroRotatorWords = content.rotatorWords.length > 0 ? content.rotatorWords : defaultHomepageContent.hero.rotatorWords;
   const [rotatorIndex, setRotatorIndex] = useState(0);
   const [rotatorKey, setRotatorKey] = useState(0);
   const [mainCardIndex, setMainCardIndex] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setRotatorIndex((i) => (i + 1) % rotatorWords.length);
+      setRotatorIndex((i) => (i + 1) % heroRotatorWords.length);
       setRotatorKey((k) => k + 1);
     }, 2400);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [heroRotatorWords.length]);
 
   const caseImages = useMemo(
     () => editableCases.filter((c) => c.image).slice(0, 5),
@@ -644,11 +661,8 @@ function HeroSection({
     });
   }, [caseImages, mainCardIndex]);
 
-  const proofs: [string, React.ReactNode][] = [
-    ["진행 과정", "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행"],
-    ["작업 범위", "부분수리부터 전체 리모델링까지"],
-    ["현장 기록", "네이버 블로그 포트폴리오"]
-  ];
+  const proofs = content.proofs.length > 0 ? content.proofs : defaultHomepageContent.hero.proofs;
+  const trustItems = content.trust.length > 0 ? content.trust : defaultHomepageContent.hero.trust;
 
   return (
     <section className="hero" id="hero">
@@ -659,7 +673,7 @@ function HeroSection({
             집의 모든 불편을
             <br />
             <span className="hero__rotator">
-              <em key={rotatorKey}>{rotatorWords[rotatorIndex]}</em>
+              <em key={rotatorKey}>{heroRotatorWords[rotatorIndex % heroRotatorWords.length]}</em>
             </span>
             으로 끝냅니다.
           </h1>
@@ -681,10 +695,10 @@ function HeroSection({
             </a>
           </div>
           <dl className="hero__proof">
-            {proofs.map(([dt, dd]) => (
-              <div key={dt}>
-                <dt>{dt}</dt>
-                <dd>{dd}</dd>
+            {proofs.map((item) => (
+              <div key={item.label}>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
               </div>
             ))}
           </dl>
@@ -720,11 +734,7 @@ function HeroSection({
       </div>
       <div className="trust trust--embedded" aria-label="신뢰 지표">
         <div className="trust__inner">
-          {[
-            { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
-            { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
-            { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
-          ].map((item) => (
+          {trustItems.map((item) => (
             <div className="trust__item" key={item.label}>
               <span className="trust__num">{item.num}</span>
               <div className="trust__label">
@@ -898,7 +908,7 @@ function ServicesSection({
   );
 }
 
-function SpecialtiesSection() {
+function SpecialtiesSection({ specialties = business.specialties }: { specialties?: string[] }) {
   const categories = [
     { key: "all", label: "전체" },
     { key: "utility", label: "설비·배관" },
@@ -928,12 +938,12 @@ function SpecialtiesSection() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const filteredItems = useMemo(() => {
-    return business.specialties.filter((item) => {
+    return specialties.filter((item) => {
       const catMatch = activeCategory === "all" || itemCatMap[item] === activeCategory;
       const searchMatch = !searchQuery || item.toLowerCase().includes(searchQuery.toLowerCase());
       return catMatch && searchMatch;
     });
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, specialties]);
 
   const toggleSelected = (item: string) => {
     setSelected((prev) => {
@@ -1624,13 +1634,14 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   const [landingSource, setLandingSource] = useState<"loading" | "naver" | "fallback">("loading");
 
   const landingSearchTerms = buildLandingSearchTerms(content);
+  const landingMatchTerms = buildLandingMatchTerms(content);
   const landingQueryTerms = buildLandingQueryTerms(content);
-  const landingSearchKey = landingQueryTerms.join("|");
+  const landingSearchKey = `${landingQueryTerms.join("|")}::${(content.blogCategoryNos ?? []).join(",")}`;
 
   useEffect(() => {
     let mounted = true;
 
-    blogPortfolioService.loadPortfolioPosts(landingQueryTerms).then(({ posts, source }) => {
+    blogPortfolioService.loadPortfolioPosts(landingQueryTerms, content.blogCategoryNos ?? []).then(({ posts, source }) => {
       if (!mounted) return;
       setLandingPosts(posts);
       setLandingSource(source);
@@ -1642,7 +1653,7 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   }, [landingSearchKey]);
 
   // Reference: dynamically matched blog posts (only shown when they actually match keywords)
-  const referencePosts = useMemo(() => filterLandingPosts(landingPosts, content, landingSearchTerms), [content, landingPosts, landingSearchTerms]);
+  const referencePosts = useMemo(() => filterLandingPosts(landingPosts, content, landingMatchTerms), [content, landingPosts, landingMatchTerms]);
   // Portfolio: fixed curated posts managed via admin editor — never changes automatically
   const portfolioPosts = pinnedPosts.slice(0, 5);
 
@@ -2232,8 +2243,26 @@ function buildLandingSearchTerms(page: NonNullable<ReturnType<typeof getLandingP
     .filter((term, index, array) => array.indexOf(term) === index);
 }
 
+function buildLandingMatchTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
+  const terms = page.pageType === "Service"
+    ? (page.blogMatchTerms ?? page.blogQueryTerms ?? page.blogTerms ?? page.searchTerms)
+    : [page.areaLabel, ...page.searchTerms];
+
+  return terms
+    .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
+    .map((term) => term.toLowerCase())
+    .filter((term, index, array) => array.indexOf(term) === index);
+}
+
 function buildLandingQueryTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
-  return buildLandingSearchTerms(page);
+  const terms = page.pageType === "Service"
+    ? (page.blogQueryTerms ?? page.blogTerms ?? page.searchTerms)
+    : [page.areaLabel, ...page.searchTerms];
+
+  return terms
+    .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
+    .map((term) => term.toLowerCase())
+    .filter((term, index, array) => array.indexOf(term) === index);
 }
 
 function buildPriceSelectionHref(
@@ -2265,6 +2294,11 @@ function scoreLandingPost(
   const summary = normalizeSearchText((post.summary ?? []).join(" "));
   const keywords = normalizeSearchText((post.keywords ?? []).join(" "));
   const haystack = `${title} ${description} ${summary} ${keywords}`;
+  const blockedTerms = page.blogExcludeTerms ?? [];
+
+  if (blockedTerms.some((term) => term && haystack.includes(term))) {
+    return 0;
+  }
 
   if (!terms.length || !terms.some((term) => haystack.includes(term))) {
     return 0;
@@ -2285,11 +2319,6 @@ function scoreLandingPost(
     if (descriptionHit) score += 4;
     if (summaryHit) score += 5;
     score += term.length >= 3 ? 2 : 1;
-  }
-
-  const primaryTerm = terms[0] ?? "";
-  if (primaryTerm && haystack.includes(primaryTerm)) {
-    score += page.pageType === "Service" ? 24 : 20;
   }
 
   if (page.pageType === "Service") {

@@ -1,4 +1,6 @@
 import { business } from "./data";
+import { defaultLandingSectionOrder, normalizeSectionOrder, type LandingSectionId } from "./contentSections";
+import { getServiceBlogProfile } from "./services/BlogMatchingProfiles";
 
 export type LandingFaq = {
   question: string;
@@ -11,6 +13,7 @@ export type LandingLink = {
 };
 
 export type LandingPageContent = {
+  sections: LandingSectionId[];
   title: string;
   description: string;
   searchTerms: string[];
@@ -28,7 +31,13 @@ export type LandingPageDefinition = {
   categoryLabel: "서비스" | "지역";
   title: string;
   description: string;
+  sections?: LandingSectionId[];
   searchTerms: string[];
+  blogTerms?: string[];
+  blogMatchTerms?: string[];
+  blogQueryTerms?: string[];
+  blogExcludeTerms?: string[];
+  blogCategoryNos?: number[];
   heroTitle: string;
   heroDescription: string;
   highlights: string[];
@@ -41,7 +50,7 @@ export type LandingPageDefinition = {
   areaLabel?: string;
 };
 
-const servicePages: LandingPageDefinition[] = [
+const servicePagesBase: LandingPageDefinition[] = [
   {
     path: "/service/leak",
     categoryLabel: "서비스",
@@ -1056,12 +1065,27 @@ const areaPages: LandingPageDefinition[] = [
   }
 ];
 
+const servicePages = servicePagesBase.map((page) => ({
+  ...page,
+  ...(() => {
+    const profile = getServiceBlogProfile(page.path);
+    return {
+      blogTerms: profile?.fetchTerms ?? page.searchTerms,
+      blogMatchTerms: profile?.matchTerms ?? profile?.fetchTerms ?? page.searchTerms,
+      blogCategoryNos: profile?.categoryNos,
+      blogQueryTerms: profile?.queryTerms,
+      blogExcludeTerms: profile?.excludeTerms
+    };
+  })()
+}));
+
 export const landingPageDefinitions = [...servicePages, ...areaPages];
 
 export const defaultLandingPageContent: Record<string, LandingPageContent> = Object.fromEntries(
   landingPageDefinitions.map((page) => [
     page.path,
     {
+      sections: page.sections ?? defaultLandingSectionOrder,
       title: page.title,
       description: page.description,
       searchTerms: page.searchTerms,
@@ -1087,6 +1111,7 @@ export function mergeLandingPageContent(page: LandingPageDefinition, override?: 
 
   return {
     ...page,
+    sections: normalizeSectionOrder(override.sections, page.sections ?? defaultLandingSectionOrder),
     title: typeof override.title === "string" ? override.title : page.title,
     description: typeof override.description === "string" ? override.description : page.description,
     searchTerms: Array.isArray(override.searchTerms)

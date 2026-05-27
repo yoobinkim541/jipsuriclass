@@ -1,5 +1,6 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type Plugin } from "vite";
+import { loadNaverBlogCandidates } from "./src/services/NaverBlogSource";
 
 function naverBlogApi(): Plugin {
   return {
@@ -8,35 +9,12 @@ function naverBlogApi(): Plugin {
       server.middlewares.use("/api/naver-blog", async (req, res) => {
         const env = loadEnv(server.config.mode, process.cwd(), "");
         const blogId = env.NAVER_BLOG_ID || "it77khy";
+        const search = new URL(req.url || "", "http://localhost").searchParams;
+        const terms = parseTerms(search.get("terms") || "");
+        const categoryNos = parseCategoryNos(search.get("categoryNos") || "");
 
         try {
-          const rssResponse = await fetch(`https://rss.blog.naver.com/${blogId}.xml`, {
-            headers: { Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8" }
-          });
-
-          if (!rssResponse.ok) {
-            throw new Error(`Naver RSS returned ${rssResponse.status}`);
-          }
-
-          const xml = await rssResponse.text();
-          const termsRaw = new URL(req.url || "", "http://localhost").searchParams.get("terms") || "";
-          const terms = termsRaw.split(/[,\s]+/).map((t) => t.trim().toLowerCase()).filter(Boolean);
-          const allItems = parseRssItems(xml).slice(0, 30);
-
-          // When terms are provided, only return posts that match — never fall back to unrelated posts
-          const scored = allItems.map((item) => ({
-            item,
-            score: scoreRssItem(item, terms)
-          }));
-          const pool = terms.length ? scored.filter((e) => e.score > 0) : scored;
-          const ranked = pool.sort((a, b) => b.score - a.score).map((e) => e.item).slice(0, 6);
-
-          const enrichedItems = await Promise.all(
-            ranked.map(async (item) => ({
-              ...item,
-              image: item.image ?? (await resolveBlogImage(item.link)) ?? undefined
-            }))
-          );
+          const enrichedItems = await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: 6 });
           res.setHeader("Content-Type", "application/json; charset=utf-8");
           res.end(JSON.stringify({ items: enrichedItems, source: "naver" }));
         } catch (error) {
@@ -47,6 +25,22 @@ function naverBlogApi(): Plugin {
       });
     }
   };
+}
+
+function parseTerms(value: string) {
+  return value
+    .split(/[,\s]+/)
+    .map((term) => term.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 8);
+}
+
+function parseCategoryNos(value: string) {
+  return value
+    .split(/[,\s]+/)
+    .map((term) => Number.parseInt(term.trim(), 10))
+    .filter((term): term is number => Number.isInteger(term) && term > 0)
+    .slice(0, 8);
 }
 
 function parseRssItems(xml: string) {

@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { loadNaverBlogCandidates } from "../src/services/NaverBlogSource";
 
 type NaverBlogItem = {
   title: string;
@@ -39,25 +40,15 @@ const ALLOWED_IMAGE_HOSTS = ["pstatic.net", "naver.net", "naver.com"];
 export default async function handler(_request: VercelRequest, response: VercelResponse) {
   const blogId = process.env.NAVER_BLOG_ID || "it77khy";
   const terms = parseTerms(_request.query.terms);
+  const categoryNos = parseCategoryNos(_request.query.categoryNos);
 
   try {
-    const items = await loadLatestBlogItems(blogId, terms);
+    const items = await loadLatestBlogItems(blogId, terms, categoryNos);
     response.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=86400");
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });
   }
-}
-
-async function loadLatestBlogItems(blogId: string, terms: string[]) {
-  const rssItems = await fetchRssItems(blogId);
-  const candidates: RankedBlogCandidate[] = rssItems.map((item) => ({
-    item,
-    sources: new Set<"rss" | "search-date" | "search-sim">(["rss"])
-  }));
-  const ordered = rankCandidates(candidates, terms).slice(0, PORTFOLIO_LIMIT);
-  const items = ordered.map((entry) => entry.item);
-  return await enrichItemsWithSummary(items, blogId);
 }
 
 function parseRssItems(xml: string): NaverBlogItem[] {
@@ -97,22 +88,18 @@ function parseTerms(value: string | string[] | undefined) {
     .slice(0, 8);
 }
 
-async function fetchRssItems(blogId: string) {
-  try {
-    const rssResponse = await fetch(`https://rss.blog.naver.com/${blogId}.xml`, {
-      headers: {
-        Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
-      }
-    });
+function parseCategoryNos(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value.join(",") : value ?? "";
+  return raw
+    .split(/[,\s]+/)
+    .map((term) => Number.parseInt(term.trim(), 10))
+    .filter((term): term is number => Number.isInteger(term) && term > 0)
+    .slice(0, 8);
+}
 
-    if (!rssResponse.ok) {
-      throw new Error(`Naver RSS returned ${rssResponse.status}`);
-    }
-
-    return parseRssItems(await rssResponse.text()).slice(0, RSS_FETCH_LIMIT);
-  } catch {
-    return [];
-  }
+async function loadLatestBlogItems(blogId: string, terms: string[], categoryNos: number[]) {
+  const items = await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: PORTFOLIO_LIMIT });
+  return await enrichItemsWithSummary(items, blogId);
 }
 
 

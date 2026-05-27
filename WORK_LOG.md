@@ -1,5 +1,180 @@
 # Work Log
 
+## 2026-05-28 - Admin Fullscreen Preview Mode
+
+Changed files: `src/admin/HomepageEditor.tsx`, `src/admin/LandingPagesEditor.tsx`, `src/admin/SiteContentEditor.tsx`, `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- Added an explicit `전체 미리보기` toggle to the homepage, landing-page, account, and estimate admin editors.
+- Rendered the preview panels as fixed overlays when fullscreen mode is active so mobile and tablet users can inspect the whole mock page without fighting the editor layout.
+- Kept the preview panels scrollable inside the overlay with touch-friendly momentum scrolling.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want, the next pass can add a dimmed backdrop or split the fullscreen preview into a true modal with a separate close button row.
+
+## 2026-05-28 - Admin Preview Scrollability Fix
+
+Changed files: `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- Restored internal scrolling for admin preview panels on tablet and mobile so the full preview can be inspected without the whole page feeling stuck.
+- Kept the inspector itself non-scroll-trapping, while letting preview panels scroll with touch drag, wheel, and overscroll containment.
+- Increased the mobile preview scale slightly so more of the rendered page is visible inside the bounded preview viewport.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- If you want, the next pass can add a visible drag handle or "전체 미리보기" modal for an even clearer mobile preview mode.
+
+## 2026-05-28 - Admin Home Hero Editability Expansion
+
+Changed files: `src/App.tsx`, `src/admin/HomepageEditor.tsx`, `src/services/SiteContentService.ts`, `src/types.ts`, `WORK_LOG.md`
+
+Implemented behavior:
+- Exposed the homepage hero rotating words, proof text, and trust metrics in the admin editor instead of leaving them hardcoded.
+- Updated the live homepage hero and trust band to render from saved homepage content with sensible defaults.
+- Kept the editor preview aligned with the new hero fields so the admin can see the same text that will appear on the public page.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- The remaining global business profile values still live outside the homepage content model and can be split out next if you want full site-wide editing.
+
+## 2026-05-27 - Admin Editor UX Polish
+
+Changed files: `src/admin/SiteContentEditor.tsx`, `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- Made the admin page tabs sticky on desktop so page switching stays visible while scrolling long edit forms.
+- Tightened the editor save-state strip so the autosave note reads more compactly.
+- Collapsed the `Ctrl + S` hint into a single shortcut pill and hid shortcut keys on mobile so the summary area is less cramped.
+
+Verification:
+- `npm run build` passed.
+- Browser screenshots reviewed on desktop and mobile after the change.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Blog Profile Split + Unit Tests
+
+Changed files:
+- `src/services/BlogMatchingProfiles.ts`
+- `src/landingPages.ts`
+- `src/App.tsx`
+- `tests/blog-profiles.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved service blog matching rules into a dedicated `BlogMatchingProfiles` service module.
+- Kept landing-page blog selection driven by the shared profile table.
+- Added unit-style tests that verify the profile table keys and the critical `tile`, `방수·타일`, and `외부` rule sets.
+
+Verification:
+- `npm run build` passed.
+- `npm run test:blog` passed.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Blog Profile Consolidation
+
+Changed files:
+- `src/landingPages.ts`
+- `src/App.tsx`
+- `tests/blog-matching.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Consolidated service blog rules into a single profile table with fetch, match, query, exclude, and category settings.
+- Kept landing-page blog selection driven by explicit match terms instead of position-based anchors.
+- Preserved category-based fetching and page-specific exclusions.
+
+Verification:
+- `npm run build` passed.
+- `npm run test:blog` passed.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Blog Matching Rule Hardening
+
+Changed files:
+- `src/landingPages.ts`
+- `src/App.tsx`
+- `tests/blog-matching.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Split landing-page blog logic into `searchTerms`, `queryTerms`, and explicit `matchTerms`.
+- Removed the old first-three-term gating so service pages are filtered by page-specific match rules instead of ad hoc anchor order.
+- Kept category-based fetching, but made the landing render layer depend on explicit service match terms for more stable results.
+- Expanded the blog regression test to cover the `방수·타일` browser flow again.
+
+Verification:
+- `npm run build` passed.
+- `npm run test:blog` passed.
+
+Follow-up:
+- None.
+
+## 2026-05-27 - Blog Matching Regression Tests
+
+Changed files:
+- `playwright.config.ts`
+- `tests/blog-matching.spec.ts`
+- `package.json`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added Playwright regression coverage for representative service landing pages.
+- Verified `/api/naver-blog` returns posts for the key service categories.
+- Verified the landing page blog reference section renders cards for `욕실`, `타일`, and `외부` pages.
+- Kept `방수·타일` under API coverage only because its browser render is slower and more network-sensitive in CI.
+
+Verification:
+- `npm run test:blog` passed.
+- `npm run build` passed.
+
+Follow-up:
+- None.
+
+## 2026-05-27 - Service Landing Blog Audit
+
+Changed files: `WORK_LOG.md`
+
+Implemented behavior:
+- Audited every service landing page's `블로그 레퍼런스` section in the browser.
+- Confirmed the stricter blog filter now leaves the problem pages empty instead of showing wrong cross-service posts.
+
+Verification:
+- Browser audit completed for all service landing pages.
+- `tile`, `방수·타일`, and `외부 부분보수` blog reference sections are empty instead of showing unrelated posts.
+
+Follow-up:
+- Some service pages still have sparse or empty blog references because the blog has no sufficiently specific matching posts for the new stricter filters.
+
+## 2026-05-27 - Landing Blog Matching Hardening
+
+Changed files: `src/landingPages.ts`, `src/App.tsx`
+
+Implemented behavior:
+- Tightened service-page blog anchors so broad overlap terms do not pull unrelated posts across services.
+- Added page-level blog exclusion terms for `방수·타일` and `타일` pages to block obvious cross-service matches.
+- Kept area pages on their existing location-based matching rules.
+
+Verification:
+- `npm run build` passed.
+- Browser checks confirmed the wrong `외벽 방수` and unrelated `욕실/문/배관` titles do not appear on `/service/tile` and `/service/waterproofing-tile`.
+
+Follow-up:
+- `api/naver-blog` can still return broad candidates for some pages, but the landing-page filter now suppresses them before rendering.
+
 ## 2026-05-27 - Landing Blog Matching Refinement
 
 Changed files: `src/landingPages.ts`, `src/App.tsx`
@@ -113,6 +288,29 @@ Implemented behavior:
 
 Verification:
 - Pending build.
+
+Follow-up:
+- None.
+
+## 2026-05-27 - Naver Blog Category Matching
+
+Changed files:
+- `src/services/BlogPortfolioService.ts`
+- `src/services/NaverBlogSource.ts`
+- `src/landingPages.ts`
+- `src/App.tsx`
+- `vite.config.ts`
+
+Implemented behavior:
+- Added service-page `blogCategoryNos` so landing blog fetches can pull from the right Naver Blog categories.
+- Routed both the dev proxy and production API through the shared category-aware Naver Blog loader.
+- Loosened the landing-page blog anchors for `타일`, `방수·타일`, and `외벽` pages so real matching posts are not filtered out.
+- Kept unrelated posts blocked with page-specific exclude terms.
+
+Verification:
+- `npm run build` passed.
+- Browser verified `/service/tile`, `/service/waterproofing-tile`, and `/service/exterior` now render non-empty blog cards.
+- Confirmed the landing pages show relevant titles from the matching Naver Blog categories.
 
 Follow-up:
 - None.
