@@ -1,5 +1,147 @@
 # Work Log
 
+## 2026-05-28 - All Admin Stack Unification
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Applied the same stacked preview-over-inspector layout to the landing-page, account, and estimate editors at mobile and tablet sizes.
+- Added explicit admin-shell overrides so all editor pages follow the same order and avoid split-panel feel on smaller screens.
+
+Verification:
+- `npm run build` passed.
+- Browser verification at 390px and 1024px confirmed the homepage, landing-page, account, and estimate editors all keep preview above inspector.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Tablet Editor Stack Refinement
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Extended the vertical editor layout to the tablet breakpoint as well, so preview sits above the inspector instead of staying in a more side-by-side feeling layout.
+- Disabled the sticky inspector behavior on tablet so the panel reads as a normal section below the preview.
+
+Verification:
+- `npm run build` passed.
+- Browser verification at a 1024px viewport confirmed the homepage editor preview renders above the inspector.
+
+Follow-up:
+- The same tablet stacking can be applied to the other admin editors if you want the whole admin area to behave identically.
+
+## 2026-05-28 - Editor Header Copy Shortening
+
+Changed files:
+- `src/admin/HomepageEditor.tsx`
+- `src/admin/LandingPagesEditor.tsx`
+- `src/admin/SiteContentEditor.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Shortened the top explanatory copy in the homepage, landing-page, account, and estimate editors.
+- Kept the headings unchanged and reduced only the supporting paragraph text so the headers scan faster.
+
+Verification:
+- `npm run build` passed.
+- Browser verification confirmed the shortened header copy renders on the admin pages.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Mobile Editor Stack Refinement
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reworked the mobile admin editor layout so the preview panel renders above the inspector instead of competing side-by-side.
+- Kept the preview panel independently scrollable on mobile while leaving the inspector as a separate section below it.
+- Preserved the sticky desktop layout; this pass only tightens the mobile stacking behavior.
+
+Verification:
+- `npm run build` passed.
+- Browser verification at a 390px viewport confirmed the homepage editor preview now stacks above the inspector.
+
+Follow-up:
+- If needed, the same mobile stacking pattern can be applied to the landing, account, and estimate editors for consistency.
+
+## 2026-05-28 - Editor UX Polish Pass
+
+Changed files:
+- `src/admin/HomepageEditor.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a compact context strip to the editor header so the current section and its description are visible without hunting in the sidebar.
+- Made the section navigation sticky and visually grouped so switching sections feels more direct.
+- Made the inspector panel sticky on desktop with its own scroll area so long sections do not trap the user in the page scroll.
+- Tightened the shared inspector copy to reduce repeated wording and clarified the shared-image note in the about section.
+
+Verification:
+- `npm run build` passed.
+- Browser verification confirmed the homepage admin editor still renders and the new context strip appears.
+
+Follow-up:
+- The remaining UX work, if desired, is mostly microcopy and spacing tuning rather than structural changes.
+
+## 2026-05-28 - Homepage Hero Subgroup Schema Pass
+
+Changed files:
+- `src/contentSections.ts`
+- `src/admin/HomepageEditor.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the homepage hero's trust, proof, and menu label repeaters onto shared tuple-group schema definitions.
+- Removed the last remaining bespoke homepage editor blocks for those repeated fields.
+- Kept the hero content editing aligned with the public hero rendering while reducing one-off form code.
+
+Verification:
+- `npm run build` passed.
+- Browser verification confirmed the homepage and admin page still render normally.
+
+Follow-up:
+- The homepage editor is now largely schema-driven. The remaining manual bits are the hero card-image picker and the about-section image links, which are intentionally kept separate because they point at shared case images.
+
+## 2026-05-28 - Landing Page Form Schema Pass
+
+Changed files: `src/admin/LandingPagesEditor.tsx`, `src/contentSections.ts`, `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the landing-page editor's basic information, hero, and body fields onto shared field schema metadata.
+- Kept FAQ and related-link repeaters intact for now, but reduced the amount of section-specific hardcoding in the admin form.
+- Continued the section-based CMS direction by making the landing editor's core inputs derive from schema definitions rather than hand-written one-off inputs.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- The homepage editor still has more bespoke section rendering than the landing editor. The next pass should lift its remaining repeaters and simple fields into the same schema pattern.
+
+## 2026-05-28 - Section-Based CMS Schema
+
+Changed files: `src/App.tsx`, `src/admin/HomepageEditor.tsx`, `src/contentSections.ts`, `src/landingPages.ts`, `src/services/SiteContentService.ts`, `src/types.ts`, `WORK_LOG.md`
+
+Implemented behavior:
+- Added a shared section schema module so homepage and landing-page content use the same section identity and order model.
+- Stored section order in homepage and landing-page CMS payloads, with defaults preserved for older saved content.
+- Switched the public homepage and landing pages to render from the shared section order instead of hardcoded page composition.
+- Wired the homepage admin section navigator to the shared schema labels so the editor and public page stay aligned.
+
+Verification:
+- `npm run build` passed.
+- Playwright browser verification confirmed the homepage and landing page render in the shared section order.
+
+Follow-up:
+- The section schema now covers ordering and grouping. Next step, if desired, is to move individual section field definitions into the same schema so the editor form itself becomes fully data-driven.
+
 ## 2026-05-28 - Admin Fullscreen Preview Mode
 
 Changed files: `src/admin/HomepageEditor.tsx`, `src/admin/LandingPagesEditor.tsx`, `src/admin/SiteContentEditor.tsx`, `src/styles.css`, `WORK_LOG.md`
@@ -57,6 +199,109 @@ Implemented behavior:
 Verification:
 - `npm run build` passed.
 - Browser screenshots reviewed on desktop and mobile after the change.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Quote Template Download and XLSX Validation
+
+Changed files:
+- `src/admin/InquiryQuoteEditor.tsx`
+- `src/services/QuoteService.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a sample quote template download button in the admin quote editor.
+- Generated a dedicated 상담 견적서 template workbook that matches the current import structure.
+- Strengthened XLSX import validation with clearer errors for missing sheets, empty sheets, missing quote structure, and malformed line-item headers.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Consultation Quote Title and Template
+
+Changed files:
+- `src/admin/InquiryQuoteEditor.tsx`
+- `src/services/QuoteService.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Split exported quote titles and filenames so direct-written 상담 견적 uses `상담 견적서`, while mock-quote based exports keep `견적서`.
+- Added a basic consultation quote template button in the admin quote editor for inquiries without a prefilled mock quote.
+- Kept the existing confirm flow, customer mypage quote visibility, and Excel import/export behavior intact.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Confirmed Quote Visibility in My Page
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `src/admin/InquiryQuoteEditor.tsx`
+- `src/account/AccountPage.tsx`
+- `src/services/QuoteService.ts`
+- `src/types.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a quote confirm toggle in the admin quote editor that stamps `confirmedAt` onto the saved quote snapshot.
+- Added customer-facing quote cards in 마이페이지 for confirmed quotes, including source, confirm date, totals, top line items, and PDF/XLSX download actions.
+- Updated quote export/import metadata to preserve confirmation dates.
+- Marked confirmed quotes in the admin inquiry list so the confirmation state is visible at a glance.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Admin Quote Material Quantity and Excel Import
+
+Changed files:
+- `src/admin/InquiryQuoteEditor.tsx`
+- `src/services/QuoteService.ts`
+- `src/types.ts`
+- `src/styles.css`
+- `src/admin/HomepageEditor.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added quantity and unit-price inputs to admin quote material charges, with the material total recalculated from `qty * unitPrice`.
+- Added an Excel drag-and-drop / file-pick import zone in the quote editor that replaces the current draft with data parsed from an `.xlsx` or `.xls` file.
+- Updated quote XLSX/PDF exports to include material quantities and unit prices so imported files round-trip cleanly.
+- Kept legacy quote snapshots compatible by normalizing older material charge data into the new structure.
+
+Verification:
+- `npm run build` passed.
+- Local Vite dev server is running on `127.0.0.1:5173`.
+
+Follow-up:
+- Browser-authenticated verification of the admin inquiry page was not performed in this turn.
+
+## 2026-05-28 - Direct Quote Writing for Non-Mock Inquiries
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `src/admin/InquiryQuoteEditor.tsx`
+- `src/services/QuoteService.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Allowed the admin inquiry detail panel to open the quote editor for every inquiry, even when the customer did not submit a mock estimate.
+- Added manual quote line-item creation and deletion so admins can build a 상담 견적 from scratch.
+- Updated the quote editor to label no-source quotes as direct-written estimates instead of implying a mock estimate exists.
+- Kept the existing Excel import/export flow and material quantity handling intact.
+
+Verification:
+- `npm run build` passed.
 
 Follow-up:
 - None.
@@ -1559,6 +1804,48 @@ Verification:
 
 Follow-up:
 - None.
+
+## 2026-05-28 - Homepage Repeater Schema Pass
+
+Changed files:
+- `src/contentSections.ts`
+- `src/admin/HomepageEditor.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added shared repeater schemas for homepage services, cases, blog posts, and process steps.
+- Replaced the homepage editor's manual repeater inspectors with schema-driven list and field rendering.
+- Kept image upload support for repeater items while centralizing the edit handlers.
+
+Verification:
+- `npm run build` passed.
+- Browser verified homepage and admin page render without obvious layout breakage.
+
+Follow-up:
+- The homepage editor is now mostly schema-driven; only the hero media deck and a few targeted image upload controls still remain bespoke.
+
+## 2026-05-28 - Homepage Editor Schema Pass
+
+Changed files:
+- `src/contentSections.ts`
+- `src/admin/HomepageEditor.tsx`
+- `src/App.tsx`
+- `src/admin/InquiryQuoteEditor.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added shared homepage editor field schemas for hero, about, symptoms, specialties, and contact.
+- Swapped the homepage editor's simple sections to schema-driven form rendering instead of hardcoded field blocks.
+- Made the public homepage hero use `hero.title` so the editor's title field affects the live view.
+- Fixed the hero title spacing bug so the rotator text no longer runs into the title.
+- Updated the inquiry quote editor's default charge shape to match the current quote types.
+
+Verification:
+- `npm run build` passed.
+- Browser checked the homepage hero text on `http://127.0.0.1:4173/` and confirmed it renders as expected.
+
+Follow-up:
+- The remaining complex homepage repeaters (`services`, `cases`, `blog`, `process`) are still manual and can be moved into the same schema pattern next.
 
 ## 2026-05-27 - Price Calculator Selection Persistence
 

@@ -28,7 +28,7 @@ import { DiagnosisPage } from "./diagnosis/DiagnosisPage";
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 import { buildLandingPageJsonLd, getLandingPageDefinition, getLandingPageIndexLinks, mergeLandingPageContent } from "./landingPages";
 import { defaultLandingPagesContent, type LandingPagesContent } from "./services/SiteContentService";
-import { defaultHomepageSectionOrder, defaultLandingSectionOrder, type HomepageSectionId, type LandingSectionId } from "./contentSections";
+import { defaultHomepageSectionOrder, defaultLandingSectionOrder } from "./contentSections";
 import { electricPriceCategories, type PriceCategory, type PriceItem } from "./electricPriceData";
 import {
   tilePriceCategories,
@@ -670,7 +670,7 @@ function HeroSection({
         {/* Left column */}
         <div>
           <h1 className="hero__title">
-            집의 모든 불편을
+            {content.title || "집의 모든 불편을"}{" "}
             <br />
             <span className="hero__rotator">
               <em key={rotatorKey}>{heroRotatorWords[rotatorIndex % heroRotatorWords.length]}</em>
@@ -1656,6 +1656,7 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   const referencePosts = useMemo(() => filterLandingPosts(landingPosts, content, landingMatchTerms), [content, landingPosts, landingMatchTerms]);
   // Portfolio: fixed curated posts managed via admin editor — never changes automatically
   const portfolioPosts = pinnedPosts.slice(0, 5);
+  const landingSectionOrder = content.sections ?? defaultLandingSectionOrder;
 
   return (
     <>
@@ -1668,152 +1669,166 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
       />
       <LandingBackButton fallbackHref="/" />
       <main className="landing-page" id="top">
-        <section className="landing-hero section" aria-labelledby="landing-title">
-          <span className="landing-kicker">{content.categoryLabel}</span>
-          <div className="landing-hero-grid">
-            <div className="landing-hero-copy">
-              <h1 id="landing-title">{content.heroTitle}</h1>
-              <p>{content.heroDescription}</p>
-              <div className="hero-actions">
-                <a className="primary-button" href={business.phoneHref}>
-                  <Phone size={20} />
-                  전화 상담
-                </a>
-                <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
-                  <MessageCircle size={20} />
-                  카카오톡 상담
-                </a>
-                <a className="secondary-button" href="/estimate">
-                  <ArrowUpRight size={20} />
-                  견적상담
-                </a>
-                {getServicePricingConfig(content.path) && (
-                  <a className="secondary-button" href={getServicePricingConfig(content.path)!.pricingPagePath}>
-                    <ReceiptText size={20} />
-                    가격표 보기
-                  </a>
-                )}
-              </div>
-              {content.path === "/service/waterproofing-tile" ? (
-                <div className="landing-price-quick">
-                  <span className="landing-price-quick__label">빠른 모의견적</span>
-                  <div className="landing-price-quick__grid">
-                    <a
-                      className="secondary-button"
-                      href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
-                        focus: "waterproofing-finish",
-                        items: ["waterproof-bathroom-waterproof", "waterproof-bathroom-silicone", "waterproof-tile-repair"]
-                      })}
-                    >
-                      욕실 방수
-                    </a>
-                    <a
-                      className="secondary-button"
-                      href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
-                        focus: "tile-repair",
-                        items: ["tile-break-repair"]
-                      })}
-                    >
-                      타일 깨짐보수
-                    </a>
-                    <a
-                      className="secondary-button"
-                      href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
-                        focus: "tile-repair",
-                        items: ["tile-caulking", "tile-silicone"]
-                      })}
-                    >
-                      줄눈·실리콘 보수
-                    </a>
-                    <a
-                      className="secondary-button"
-                      href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
-                        focus: "tile-repair",
-                        items: ["tile-bathtub-finish"]
-                      })}
-                    >
-                      욕조철거 후 타일마감
-                    </a>
+        {landingSectionOrder.map((sectionId) => {
+          switch (sectionId) {
+            case "summary":
+              return (
+                <section className="landing-hero section" aria-labelledby="landing-title" key={sectionId}>
+                  <span className="landing-kicker">{content.categoryLabel}</span>
+                  <div className="landing-hero-grid">
+                    <div className="landing-hero-copy">
+                      <h1 id="landing-title">{content.heroTitle}</h1>
+                      <p>{content.heroDescription}</p>
+                      <div className="hero-actions">
+                        <a className="primary-button" href={business.phoneHref}>
+                          <Phone size={20} />
+                          전화 상담
+                        </a>
+                        <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
+                          <MessageCircle size={20} />
+                          카카오톡 상담
+                        </a>
+                        <a className="secondary-button" href="/estimate">
+                          <ArrowUpRight size={20} />
+                          견적상담
+                        </a>
+                        {getServicePricingConfig(content.path) && (
+                          <a className="secondary-button" href={getServicePricingConfig(content.path)!.pricingPagePath}>
+                            <ReceiptText size={20} />
+                            가격표 보기
+                          </a>
+                        )}
+                      </div>
+                      {content.path === "/service/waterproofing-tile" ? (
+                        <div className="landing-price-quick">
+                          <span className="landing-price-quick__label">빠른 모의견적</span>
+                          <div className="landing-price-quick__grid">
+                            <a
+                              className="secondary-button"
+                              href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
+                                focus: "waterproofing-finish",
+                                items: ["waterproof-bathroom-waterproof", "waterproof-bathroom-silicone", "waterproof-tile-repair"]
+                              })}
+                            >
+                              욕실 방수
+                            </a>
+                            <a
+                              className="secondary-button"
+                              href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
+                                focus: "tile-repair",
+                                items: ["tile-break-repair"]
+                              })}
+                            >
+                              타일 깨짐보수
+                            </a>
+                            <a
+                              className="secondary-button"
+                              href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
+                                focus: "tile-repair",
+                                items: ["tile-caulking", "tile-silicone"]
+                              })}
+                            >
+                              줄눈·실리콘 보수
+                            </a>
+                            <a
+                              className="secondary-button"
+                              href={buildPriceSelectionHref("/service/waterproofing-tile/price", {
+                                focus: "tile-repair",
+                                items: ["tile-bathtub-finish"]
+                              })}
+                            >
+                              욕조철거 후 타일마감
+                            </a>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                    <aside className="landing-hero-panel">
+                      <span className="landing-panel-label">핵심 안내</span>
+                      <ul className="landing-highlight-list">
+                        {content.highlights.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                      <BusinessInfoList />
+                    </aside>
                   </div>
-                </div>
-              ) : null}
-            </div>
-            <aside className="landing-hero-panel">
-              <span className="landing-panel-label">핵심 안내</span>
-              <ul className="landing-highlight-list">
-                {content.highlights.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-              <BusinessInfoList />
-            </aside>
-          </div>
-        </section>
-
-        <section className="landing-section section" aria-labelledby="landing-points-title">
-          <SectionHeading id="landing-points-title" title={content.pointsTitle} description={content.description} />
-          <div className="landing-point-grid">
-            {content.points.map((point) => (
-              <article className="landing-point-card" key={point}>
-                <CheckCircle2 size={20} />
-                <p>{point}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-section section" aria-labelledby="landing-blog-title">
-          <SectionHeading
-            id="landing-blog-title"
-            title={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 사례 & 블로그`}
-            description={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 관련 시공 사례와 블로그 게시물을 모았습니다.`}
-          />
-          <BlogShowcase
-            label="블로그 레퍼런스"
-            posts={referencePosts}
-            emptyText="키워드가 맞는 최신 게시물을 찾지 못했습니다."
-          />
-          <BlogShowcase
-            label="포트폴리오"
-            posts={portfolioPosts}
-            emptyText="추가 포트폴리오를 찾지 못했습니다."
-          />
-        </section>
-
-        {getServicePricingConfig(content.path) && (
-          <ServiceEstimator config={getServicePricingConfig(content.path)!} />
-        )}
-
-        <section className="landing-section section" aria-labelledby="landing-faq-title">
-          <SectionHeading
-            id="landing-faq-title"
-            title="자주 묻는 질문"
-            description="자주 묻는 질문을 짧고 분명하게 정리했습니다."
-          />
-          <div className="landing-faq-list">
-            {content.faq.map((item) => (
-              <details className="landing-faq-item" key={item.question}>
-                <summary>{item.question}</summary>
-                <p>{item.answer}</p>
-              </details>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-section section" aria-labelledby="landing-related-title">
-          <SectionHeading
-            id="landing-related-title"
-            title="함께 보면 좋은 페이지"
-            description="관련 서비스나 인근 지역 상담 페이지로 바로 이동할 수 있습니다."
-          />
-          <div className="landing-related-links">
-            {content.relatedLinks.map((link) => (
-              <a className="landing-related-link" href={link.href} key={link.href}>
-                {link.label}
-              </a>
-            ))}
-          </div>
-        </section>
+                </section>
+              );
+            case "points":
+              return (
+                <section className="landing-section section" aria-labelledby="landing-points-title" key={sectionId}>
+                  <SectionHeading id="landing-points-title" title={content.pointsTitle} description={content.description} />
+                  <div className="landing-point-grid">
+                    {content.points.map((point) => (
+                      <article className="landing-point-card" key={point}>
+                        <CheckCircle2 size={20} />
+                        <p>{point}</p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              );
+            case "blog":
+              return (
+                <section className="landing-section section" aria-labelledby="landing-blog-title" key={sectionId}>
+                  <SectionHeading
+                    id="landing-blog-title"
+                    title={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 사례 & 블로그`}
+                    description={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 관련 시공 사례와 블로그 게시물을 모았습니다.`}
+                  />
+                  <BlogShowcase
+                    label="블로그 레퍼런스"
+                    posts={referencePosts}
+                    emptyText="키워드가 맞는 최신 게시물을 찾지 못했습니다."
+                  />
+                  <BlogShowcase
+                    label="포트폴리오"
+                    posts={portfolioPosts}
+                    emptyText="추가 포트폴리오를 찾지 못했습니다."
+                  />
+                  {getServicePricingConfig(content.path) && <ServiceEstimator config={getServicePricingConfig(content.path)!} />}
+                </section>
+              );
+            case "faq":
+              return (
+                <section className="landing-section section" aria-labelledby="landing-faq-title" key={sectionId}>
+                  <SectionHeading
+                    id="landing-faq-title"
+                    title="자주 묻는 질문"
+                    description="자주 묻는 질문을 짧고 분명하게 정리했습니다."
+                  />
+                  <div className="landing-faq-list">
+                    {content.faq.map((item) => (
+                      <details className="landing-faq-item" key={item.question}>
+                        <summary>{item.question}</summary>
+                        <p>{item.answer}</p>
+                      </details>
+                    ))}
+                  </div>
+                </section>
+              );
+            case "relatedLinks":
+              return (
+                <section className="landing-section section" aria-labelledby="landing-related-title" key={sectionId}>
+                  <SectionHeading
+                    id="landing-related-title"
+                    title="함께 보면 좋은 페이지"
+                    description="관련 서비스나 인근 지역 상담 페이지로 바로 이동할 수 있습니다."
+                  />
+                  <div className="landing-related-links">
+                    {content.relatedLinks.map((link) => (
+                      <a className="landing-related-link" href={link.href} key={link.href}>
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              );
+            default:
+              return null;
+          }
+        })}
       </main>
       <SiteFooter />
       <MobileQuickCta />

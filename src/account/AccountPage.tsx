@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  Download,
   Globe,
   Edit2,
   KeyRound,
@@ -12,8 +13,9 @@ import {
 import { business } from "../data";
 import { supabase } from "../lib/supabaseClient";
 import { AuthService } from "../services/AuthService";
+import { buildQuoteSourceLabel, calculateQuoteTotals, downloadQuoteAsPdf, downloadQuoteAsXlsx } from "../services/QuoteService";
 import { SiteContentService, defaultAccountPageContent } from "../services/SiteContentService";
-import type { InquiryRow } from "../types";
+import type { InquiryQuoteSnapshot, InquiryRow } from "../types";
 
 const authService = new AuthService();
 const siteContentService = new SiteContentService();
@@ -431,6 +433,11 @@ export function AccountPage() {
                       </span>
                       <span>{item.notified_at ? `${content.list.notifiedLabel} ${formatDate(item.notified_at)}` : `${content.list.notifiedLabel} 미발송`}</span>
                     </div>
+                    {item.intake?.quoteSnapshot?.confirmedAt ? (
+                      <ConfirmedQuoteCard inquiry={item} quote={item.intake.quoteSnapshot} />
+                    ) : item.intake?.quoteSnapshot ? (
+                      <p className="account-quote-note">견적서는 아직 컨펌되지 않았습니다.</p>
+                    ) : null}
                     {item.attachments?.length ? (
                       <div className="inquiry-attachment-grid" aria-label="첨부 사진">
                         {item.attachments.map((attachment) => (
@@ -493,4 +500,61 @@ function formatIntakeEntries(
     { label: labels.preferredTime, value: String(intake.preferredTime ?? "-") },
     { label: labels.budget, value: String(intake.budget ?? "-") }
   ];
+}
+
+function ConfirmedQuoteCard({ inquiry, quote }: { inquiry: InquiryRow; quote: InquiryQuoteSnapshot }) {
+  const totals = calculateQuoteTotals(quote);
+
+  async function handleDownloadXlsx() {
+    await downloadQuoteAsXlsx({ inquiry, quote, totals });
+  }
+
+  async function handleDownloadPdf() {
+    await downloadQuoteAsPdf({ inquiry, quote, totals });
+  }
+
+  return (
+    <div className="account-quote-card" aria-label="컨펌된 견적서">
+      <div className="account-quote-card__head">
+        <div>
+          <span className="account-quote-kicker">컨펌된 견적서</span>
+          <strong>{buildQuoteSourceLabel(quote)}</strong>
+          <p>컨펌일 {quote.confirmedAt ? formatDate(quote.confirmedAt) : "-"}</p>
+        </div>
+        <div className="account-quote-actions">
+          <button className="admin-status-button" type="button" onClick={() => void handleDownloadXlsx()}>
+            <Download size={14} />
+            XLSX
+          </button>
+          <button className="admin-status-button" type="button" onClick={() => void handleDownloadPdf()}>
+            <Download size={14} />
+            PDF
+          </button>
+        </div>
+      </div>
+      <div className="account-quote-grid">
+        <div>
+          <span>공급가액</span>
+          <strong>{(totals.workSubtotal + totals.materialSubtotal + totals.extraSubtotal).toLocaleString()}원</strong>
+        </div>
+        <div>
+          <span>부가세</span>
+          <strong>{totals.vat.toLocaleString()}원</strong>
+        </div>
+        <div>
+          <span>합계</span>
+          <strong>{totals.total.toLocaleString()}원</strong>
+        </div>
+      </div>
+      <ul className="account-quote-list">
+        {quote.lineItems.slice(0, 4).map((item) => (
+          <li key={item.id}>
+            <span>{item.name}</span>
+            <strong>{(item.qty * item.unitPrice).toLocaleString()}원</strong>
+          </li>
+        ))}
+        {quote.lineItems.length > 4 ? <li><span>외 {quote.lineItems.length - 4}개 항목</span><strong>-</strong></li> : null}
+      </ul>
+    </div>
+  );
 }

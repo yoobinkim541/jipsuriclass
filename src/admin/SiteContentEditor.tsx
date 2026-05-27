@@ -75,8 +75,7 @@ export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolea
         </div>
         <div className="editor-shortcuts">
           <span>자동 저장</span>
-          <kbd>Ctrl</kbd>
-          <kbd>S</kbd>
+          <kbd>Ctrl + S</kbd>
           <span>즉시 저장</span>
           <span>모바일·태블릿 지원</span>
         </div>
@@ -107,6 +106,8 @@ function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: 
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveNote, setSaveNote] = useState("편집 내용을 불러오는 중입니다.");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(true);
+  const [showPreviewFullscreen, setShowPreviewFullscreen] = useState(false);
   const [draft, setDraft] = useState<AccountPageContent>(defaultAccountPageContent);
 
   const draftRef = useRef(draft);
@@ -251,7 +252,7 @@ function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: 
             마이페이지 편집기
           </span>
           <h2 id="account-editor-title">마이페이지의 문구와 안내를 바로 수정합니다</h2>
-          <p>로그인 안내, 요약 카드, 문의 목록 라벨을 모두 관리할 수 있습니다.</p>
+          <p>마이페이지 문구를 바로 수정합니다.</p>
           <div className="editor-save-state" aria-live="polite">
             <span data-state={saveState}>
               {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
@@ -261,6 +262,14 @@ function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: 
           </div>
         </div>
         <div className="editor-actions">
+          <button className="admin-ghost-button" type="button" onClick={() => setShowPreview((current) => !current)}>
+            {showPreview ? "미리보기 숨기기" : "미리보기 보기"}
+          </button>
+          {showPreview ? (
+            <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
+              {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
+            </button>
+          ) : null}
           <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
             <RotateCcw size={16} />
             기본값
@@ -281,7 +290,7 @@ function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: 
           편집 내용을 불러오는 중
         </div>
       ) : (
-        <div className="editor-workspace editor-workspace-single editor-workspace-with-preview">
+        <div className={showPreview ? "editor-workspace editor-workspace-with-preview" : "editor-workspace editor-workspace-single"}>
           <aside className="editor-inspector editor-inspector-full">
             <InspectorGroup title="상단 소개">
               <Field label="배지">
@@ -346,39 +355,52 @@ function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: 
             </InspectorGroup>
           </aside>
 
-          <aside className="editor-preview-panel" aria-label="마이페이지 실시간 미리보기">
-            <div className="editor-preview-head">
-              <span className="editor-preview-kicker">실시간 미리보기</span>
-              <strong>{draft.hero.title}</strong>
-              <p>{draft.hero.description}</p>
-            </div>
-            <div className="editor-preview-card">
-              <div className="editor-preview-chip-row">
-                <span>{draft.hero.kicker}</span>
-                {draft.hero.notes.slice(0, 3).map((note) => (
-                  <span key={note}>{note}</span>
-                ))}
+          {showPreview ? (
+            <aside
+              className={showPreviewFullscreen ? "editor-preview-panel editor-preview-panel-fullscreen" : "editor-preview-panel"}
+              aria-label="마이페이지 실시간 미리보기"
+            >
+              {showPreviewFullscreen ? (
+                <div className="editor-preview-toolbar">
+                  <span>전체 미리보기</span>
+                  <button type="button" className="admin-ghost-button" onClick={() => setShowPreviewFullscreen(false)}>
+                    닫기
+                  </button>
+                </div>
+              ) : null}
+              <div className="editor-preview-head">
+                <span className="editor-preview-kicker">실시간 미리보기</span>
+                <strong>{draft.hero.title}</strong>
+                <p>{draft.hero.description}</p>
               </div>
-              <div className="editor-preview-stat-grid">
-                {draft.summary.map((item) => (
-                  <article key={item.label} className="editor-preview-stat">
-                    <strong>{item.label || "제목"}</strong>
-                    <p>{item.description || "설명이 여기에 표시됩니다."}</p>
-                  </article>
-                ))}
+              <div className="editor-preview-card">
+                <div className="editor-preview-chip-row">
+                  <span>{draft.hero.kicker}</span>
+                  {draft.hero.notes.slice(0, 3).map((note) => (
+                    <span key={note}>{note}</span>
+                  ))}
+                </div>
+                <div className="editor-preview-stat-grid">
+                  {draft.summary.map((item) => (
+                    <article key={item.label} className="editor-preview-stat">
+                      <strong>{item.label || "제목"}</strong>
+                      <p>{item.description || "설명이 여기에 표시됩니다."}</p>
+                    </article>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="editor-preview-card editor-preview-card-soft">
-              <span className="editor-preview-muted">{draft.list.kicker}</span>
-              <strong>{draft.list.title}</strong>
-              <p>{draft.list.description}</p>
-              <div className="editor-preview-labels">
-                <span>{draft.list.detailToggleLabel}</span>
-                <span>{draft.list.editLabel}</span>
-                <span>{draft.list.saveLabel}</span>
+              <div className="editor-preview-card editor-preview-card-soft">
+                <span className="editor-preview-muted">{draft.list.kicker}</span>
+                <strong>{draft.list.title}</strong>
+                <p>{draft.list.description}</p>
+                <div className="editor-preview-labels">
+                  <span>{draft.list.detailToggleLabel}</span>
+                  <span>{draft.list.editLabel}</span>
+                  <span>{draft.list.saveLabel}</span>
+                </div>
               </div>
-            </div>
-          </aside>
+            </aside>
+          ) : null}
         </div>
       )}
     </section>
@@ -392,6 +414,8 @@ function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated:
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveNote, setSaveNote] = useState("편집 내용을 불러오는 중입니다.");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(true);
+  const [showPreviewFullscreen, setShowPreviewFullscreen] = useState(false);
   const [draft, setDraft] = useState<EstimatePageContent>(defaultEstimatePageContent);
   const [selectedStep, setSelectedStep] = useState(0);
 
@@ -580,7 +604,7 @@ function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated:
             견적상담 편집기
           </span>
           <h2 id="estimate-editor-title">상담 신청서의 문구와 선택지를 바로 수정합니다</h2>
-          <p>입력 안내, 선택지, 개인정보 문구, 업로드 안내까지 모두 편집할 수 있습니다.</p>
+          <p>견적상담 문구를 바로 수정합니다.</p>
           <div className="editor-save-state" aria-live="polite">
             <span data-state={saveState}>
               {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
@@ -590,6 +614,11 @@ function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated:
           </div>
         </div>
         <div className="editor-actions">
+          {showPreview ? (
+            <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
+              {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
+            </button>
+          ) : null}
           <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
             <RotateCcw size={16} />
             기본값
@@ -610,7 +639,7 @@ function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated:
           편집 내용을 불러오는 중
         </div>
       ) : (
-        <div className="editor-workspace editor-workspace-single editor-workspace-with-preview">
+        <div className={showPreview ? "editor-workspace editor-workspace-with-preview" : "editor-workspace editor-workspace-single"}>
           <aside className="editor-inspector editor-inspector-full">
             <InspectorGroup title="상단">
               <Field label="홈 링크 라벨">
@@ -716,39 +745,52 @@ function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated:
             </InspectorGroup>
           </aside>
 
-          <aside className="editor-preview-panel" aria-label="견적상담 실시간 미리보기">
-            <div className="editor-preview-head">
-              <span className="editor-preview-kicker">실시간 미리보기</span>
-              <strong>{draft.intro.title}</strong>
-              <p>{draft.intro.description}</p>
-            </div>
-            <div className="editor-preview-card">
-              <div className="editor-preview-chip-row">
-                <span>{draft.header.homeLinkLabel}</span>
-                <span>{draft.header.phoneLabel}</span>
-                <span>{draft.final.reviewKicker}</span>
+          {showPreview ? (
+            <aside
+              className={showPreviewFullscreen ? "editor-preview-panel editor-preview-panel-fullscreen" : "editor-preview-panel"}
+              aria-label="견적상담 실시간 미리보기"
+            >
+              {showPreviewFullscreen ? (
+                <div className="editor-preview-toolbar">
+                  <span>전체 미리보기</span>
+                  <button type="button" className="admin-ghost-button" onClick={() => setShowPreviewFullscreen(false)}>
+                    닫기
+                  </button>
+                </div>
+              ) : null}
+              <div className="editor-preview-head">
+                <span className="editor-preview-kicker">실시간 미리보기</span>
+                <strong>{draft.intro.title}</strong>
+                <p>{draft.intro.description}</p>
               </div>
-              <div className="editor-preview-step-grid">
-                {draft.steps.map((step, index) => (
-                  <article key={`${step.label}-${index}`} className={selectedStep === index ? "editor-preview-step active" : "editor-preview-step"}>
-                    <span>{step.count}</span>
-                    <strong>{step.label}</strong>
-                    <p>{step.question}</p>
-                  </article>
-                ))}
+              <div className="editor-preview-card">
+                <div className="editor-preview-chip-row">
+                  <span>{draft.header.homeLinkLabel}</span>
+                  <span>{draft.header.phoneLabel}</span>
+                  <span>{draft.final.reviewKicker}</span>
+                </div>
+                <div className="editor-preview-step-grid">
+                  {draft.steps.map((step, index) => (
+                    <article key={`${step.label}-${index}`} className={selectedStep === index ? "editor-preview-step active" : "editor-preview-step"}>
+                      <span>{step.count}</span>
+                      <strong>{step.label}</strong>
+                      <p>{step.question}</p>
+                    </article>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="editor-preview-card editor-preview-card-soft">
-              <span className="editor-preview-muted">{draft.final.reviewKicker}</span>
-              <strong>{draft.final.submitLabel}</strong>
-              <p>{draft.final.successMessage}</p>
-              <div className="editor-preview-labels">
-                <span>{draft.final.fileAddLabel}</span>
-                <span>{draft.final.fileReplaceLabel}</span>
-                <span>{draft.final.fileDeleteLabel}</span>
+              <div className="editor-preview-card editor-preview-card-soft">
+                <span className="editor-preview-muted">{draft.final.reviewKicker}</span>
+                <strong>{draft.final.submitLabel}</strong>
+                <p>{draft.final.successMessage}</p>
+                <div className="editor-preview-labels">
+                  <span>{draft.final.fileAddLabel}</span>
+                  <span>{draft.final.fileReplaceLabel}</span>
+                  <span>{draft.final.fileDeleteLabel}</span>
+                </div>
               </div>
-            </div>
-          </aside>
+            </aside>
+          ) : null}
         </div>
       )}
     </section>

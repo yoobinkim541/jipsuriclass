@@ -163,6 +163,7 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
       sourceServicePath: source?.servicePath ?? null,
       sourcePricingPath: source?.pricingPath ?? null,
       sourceServiceLabel: source?.serviceLabel ?? null,
+      confirmedAt: null,
       selectedWorks,
       selectedWorkIds,
       lineItems: resolvedItems.map((item, index) => createQuoteLineItem(item, index)),
@@ -206,18 +207,90 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   };
 }
 
+export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
+  const buffer = await input.file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: "array" });
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) {
+    throw new Error("엑셀 파일에 시트가 없습니다. 샘플 템플릿 형식으로 다시 저장해 주세요.");
+  }
+
+  const sheet = workbook.Sheets[sheetName];
+  if (!sheet) {
+    throw new Error("엑셀 시트를 읽지 못했습니다. 샘플 템플릿을 내려받아 같은 형식으로 작성해 주세요.");
+  }
+
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "", blankrows: false }) as Array<
+    Array<string | number>
+  >;
+
+  if (!rows.length) {
+    throw new Error("엑셀 시트가 비어 있습니다. 샘플 템플릿을 내려받아 작성한 뒤 업로드해 주세요.");
+  }
+
+  return normalizeQuoteSnapshot(parseQuoteRows(rows), input.inquiry);
+}
+
+export async function downloadQuoteTemplateAsXlsx() {
+  const workbook = XLSX.utils.book_new();
+  const rows: Array<Array<string | number>> = [
+    ["상담 견적서 템플릿"],
+    [],
+    ["작성 안내", "작업 항목 섹션의 헤더와 열 순서를 유지한 뒤 내용을 입력하세요."],
+    ["작성 안내", "견적 출처와 컨펌일은 선택 사항입니다."],
+    [],
+    ["고객명", ""],
+    ["연락처", ""],
+    ["지역", ""],
+    ["접수일시", ""],
+    ["견적 출처", "직접 작성"],
+    ["서비스 경로", ""],
+    ["가격표 경로", ""],
+    ["컨펌일", ""],
+    ["최종수정", ""],
+    [],
+    ["작업 항목", "단위", "수량", "단가", "금액", "비고"],
+    [],
+    ["자재비", "", "", "", "", ""],
+    [],
+    ["부대비용", "", "", "", "", ""],
+    [],
+    ["공급가액", "", "", "", "", ""],
+    ["부가세", "", "", "", "", ""],
+    ["합계", "", "", "", "", ""],
+    [],
+    ["메모", ""]
+  ];
+
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+  worksheet["!cols"] = [
+    { wch: 22 },
+    { wch: 20 },
+    { wch: 10 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 24 }
+  ];
+  XLSX.utils.book_append_sheet(workbook, worksheet, "상담견적");
+  XLSX.writeFile(workbook, "상담_견적서_템플릿.xlsx");
+}
+
 export async function downloadQuoteAsXlsx(input: QuoteDownloadContext) {
+  const documentTitle = buildQuoteDocumentTitle(input.quote);
   const workbook = XLSX.utils.book_new();
   const totals = input.totals;
   const generatedAt = formatDateTime(new Date().toISOString());
   const rows: Array<Array<string | number>> = [
-    ["견적서"],
+    [documentTitle],
     [],
     ["고객명", input.inquiry.name],
     ["연락처", input.inquiry.phone],
     ["지역", input.inquiry.service_area ?? "-"],
     ["접수일시", formatDateTime(input.inquiry.created_at)],
-    ["모의견적 출처", input.quote.sourceServiceLabel ?? input.quote.sourceServicePath ?? "-"],
+    ["견적 출처", input.quote.sourceServiceLabel ?? input.quote.sourceServicePath ?? "직접 작성"],
+    ["서비스 경로", input.quote.sourceServicePath ?? "-"],
+    ["가격표 경로", input.quote.sourcePricingPath ?? "-"],
+    ["컨펌일", input.quote.confirmedAt ? formatDateTime(input.quote.confirmedAt) : "-"],
     ["최종수정", input.quote.updatedAt ? formatDateTime(input.quote.updatedAt) : generatedAt],
     [],
     ["작업 항목", "단위", "수량", "단가", "금액", "비고"]
@@ -236,7 +309,7 @@ export async function downloadQuoteAsXlsx(input: QuoteDownloadContext) {
 
   rows.push([], ["자재비", "", "", "", "", ""]);
   input.quote.materialCharges.forEach((item) => {
-    rows.push([item.label, "", 1, item.amount, item.amount, ""]);
+    rows.push([item.label, "", item.qty, item.unitPrice, item.amount, ""]);
   });
 
   rows.push([], ["부대비용", "", "", "", "", ""]);
@@ -262,11 +335,12 @@ export async function downloadQuoteAsXlsx(input: QuoteDownloadContext) {
     { wch: 14 },
     { wch: 22 }
   ];
-  XLSX.utils.book_append_sheet(workbook, worksheet, "견적서");
-  XLSX.writeFile(workbook, buildQuoteFilename(input.inquiry.name, "xlsx"));
+  XLSX.utils.book_append_sheet(workbook, worksheet, buildQuoteSheetName(documentTitle));
+  XLSX.writeFile(workbook, buildQuoteFilename(input.inquiry.name, documentTitle, "xlsx"));
 }
 
 export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
+  const documentTitle = buildQuoteDocumentTitle(input.quote);
   const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
   await ensureKoreanFont(doc);
   const totals = input.totals;
@@ -275,7 +349,7 @@ export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
 
   doc.setFont("NotoSansKR", "bold");
   doc.setFontSize(18);
-  doc.text("견적서", margin, cursorY);
+  doc.text(documentTitle, margin, cursorY);
   cursorY += 22;
 
   doc.setFont("NotoSansKR", "normal");
@@ -286,7 +360,9 @@ export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
   cursorY += 14;
   doc.text(`지역: ${input.inquiry.service_area ?? "-"}`, margin, cursorY);
   cursorY += 14;
-  doc.text(`모의견적 출처: ${input.quote.sourceServiceLabel ?? input.quote.sourceServicePath ?? "-"}`, margin, cursorY);
+  doc.text(`견적 출처: ${input.quote.sourceServiceLabel ?? input.quote.sourceServicePath ?? "직접 작성"}`, margin, cursorY);
+  cursorY += 14;
+  doc.text(`컨펌일: ${input.quote.confirmedAt ? formatDateTime(input.quote.confirmedAt) : "-"}`, margin, cursorY);
   cursorY += 14;
   doc.text(`최종수정: ${input.quote.updatedAt ? formatDateTime(input.quote.updatedAt) : formatDateTime(new Date().toISOString())}`, margin, cursorY);
   cursorY += 18;
@@ -319,10 +395,16 @@ export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
 
   autoTable(doc, {
     startY: materialStart,
-    head: [["구분", "항목", "금액"]],
+    head: [["구분", "항목", "수량", "단가", "금액"]],
     body: [
-      ...input.quote.materialCharges.map((item) => ["자재비", item.label, formatCurrency(item.amount)]),
-      ...input.quote.extraCharges.map((item) => ["부대비용", item.label, formatCurrency(item.amount)])
+      ...input.quote.materialCharges.map((item) => [
+        "자재비",
+        item.label,
+        String(item.qty),
+        formatCurrency(item.unitPrice),
+        formatCurrency(item.amount)
+      ]),
+      ...input.quote.extraCharges.map((item) => ["부대비용", item.label, "", "", formatCurrency(item.amount)])
     ],
     styles: {
       font: "NotoSansKR",
@@ -346,11 +428,11 @@ export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
   doc.setFontSize(9);
   doc.text(`메모: ${input.quote.memo || "-"}`, margin, summaryY + 54);
 
-  doc.save(buildQuoteFilename(input.inquiry.name, "pdf"));
+  doc.save(buildQuoteFilename(input.inquiry.name, documentTitle, "pdf"));
 }
 
 export function buildQuoteSourceLabel(snapshot: InquiryQuoteSnapshot) {
-  return snapshot.sourceServiceLabel ?? snapshot.sourcePricingPath ?? snapshot.sourceServicePath ?? "모의견적";
+  return snapshot.sourceServiceLabel ?? snapshot.sourcePricingPath ?? snapshot.sourceServicePath ?? "직접 작성";
 }
 
 function normalizeCustomCategories(categories: Array<{ title: string; items: Array<{ id: string; name: string; unit: string; price: number; materialNote?: boolean; note?: string }> }>): QuoteSourceCategory[] {
@@ -495,6 +577,7 @@ function normalizeQuoteSnapshot(snapshot: InquiryQuoteSnapshot, inquiry: Inquiry
     sourceServicePath: snapshot.sourceServicePath ?? source?.servicePath ?? null,
     sourcePricingPath: snapshot.sourcePricingPath ?? source?.pricingPath ?? null,
     sourceServiceLabel: snapshot.sourceServiceLabel ?? source?.serviceLabel ?? null,
+    confirmedAt: typeof snapshot.confirmedAt === "string" ? snapshot.confirmedAt : null,
     selectedWorks: selectedWorks.length ? selectedWorks : resolvedItems.map((item) => item.name),
     selectedWorkIds: selectedWorkIds.length ? selectedWorkIds : resolvedItems.map((item) => item.sourceId ?? item.name),
     lineItems: resolvedLineItems,
@@ -511,8 +594,175 @@ function normalizeChargeList(list: InquiryQuoteCharge[], kind: "material" | "ext
   return list.map((item, index) => ({
     id: item.id || `${kind}-${index + 1}`,
     label: typeof item.label === "string" && item.label.trim() ? item.label.trim() : `${kind === "material" ? "자재" : "부대"} ${index + 1}`,
-    amount: normalizeNonNegativeNumber(item.amount, 0)
+    qty: kind === "material" ? normalizePositiveInt(item.qty, 1) : 1,
+    unitPrice: kind === "material"
+      ? normalizeNonNegativeNumber(item.unitPrice, normalizeNonNegativeNumber(item.amount, 0))
+      : normalizeNonNegativeNumber(item.unitPrice, normalizeNonNegativeNumber(item.amount, 0)),
+    amount:
+      kind === "material"
+        ? normalizeNonNegativeNumber(
+            item.amount,
+            normalizePositiveInt(item.qty, 1) * normalizeNonNegativeNumber(item.unitPrice, normalizeNonNegativeNumber(item.amount, 0))
+          )
+        : normalizeNonNegativeNumber(item.amount, 0)
   }));
+}
+
+function parseQuoteRows(rows: Array<Array<string | number>>): InquiryQuoteSnapshot {
+  const metadata = new Map<string, string>();
+  const lineItems: InquiryQuoteLineItem[] = [];
+  const materialCharges: InquiryQuoteCharge[] = [];
+  const extraCharges: InquiryQuoteCharge[] = [];
+  const selectedWorks: string[] = [];
+  const selectedWorkIds: string[] = [];
+  let sourceServiceLabel: string | null = null;
+  let sourceServicePath: string | null = null;
+  let sourcePricingPath: string | null = null;
+  let memo = "";
+  let section: "lineItems" | "materialCharges" | "extraCharges" | null = null;
+  let hasLineSection = false;
+  let expectingLineHeader = false;
+
+  for (const row of rows) {
+    const cells = row.map((cell) => normalizeCell(cell));
+    const [first, second, third, fourth, fifth, sixth] = cells;
+
+    if (!first) continue;
+
+    if (first === "작업 항목") {
+      section = "lineItems";
+      hasLineSection = true;
+      expectingLineHeader = true;
+      continue;
+    }
+    if (first === "자재비") {
+      section = "materialCharges";
+      continue;
+    }
+    if (first === "부대비용") {
+      section = "extraCharges";
+      continue;
+    }
+    if (first === "메모") {
+      memo = second ?? "";
+      section = null;
+      continue;
+    }
+    if (first === "공급가액" || first === "부가세" || first === "합계") {
+      section = null;
+      continue;
+    }
+
+    if (section === "lineItems") {
+      if (expectingLineHeader) {
+        if (first !== "항목" || second !== "단위") {
+          throw new Error("작업 항목 표 형식이 다릅니다. '항목, 단위, 수량, 단가, 금액, 비고' 헤더를 유지한 샘플 템플릿으로 업로드해 주세요.");
+        }
+        expectingLineHeader = false;
+        continue;
+      }
+      const qty = normalizePositiveInt(third, 1);
+      const unitPrice = normalizeNonNegativeNumber(fourth, 0);
+      lineItems.push({
+        id: `line-item-${lineItems.length + 1}`,
+        sourceId: null,
+        name: first,
+        unit: second ?? "-",
+        qty,
+        unitPrice,
+        categoryTitle: null,
+        note: sixth || null,
+        materialNote: null
+      });
+      continue;
+    }
+
+    if (section === "materialCharges") {
+      const qty = normalizePositiveInt(third, 1);
+      const unitPrice = normalizeNonNegativeNumber(fourth, normalizeNonNegativeNumber(fifth, 0) / Math.max(1, qty));
+      const amount = normalizeNonNegativeNumber(fifth, qty * unitPrice);
+      materialCharges.push({
+        id: `material-${materialCharges.length + 1}`,
+        label: first,
+        qty,
+        unitPrice,
+        amount
+      });
+      continue;
+    }
+
+    if (section === "extraCharges") {
+      const amount = normalizeNonNegativeNumber(fifth || third || fourth, 0);
+      extraCharges.push({
+        id: `extra-${extraCharges.length + 1}`,
+        label: first,
+        qty: 1,
+        unitPrice: amount,
+        amount
+      });
+      continue;
+    }
+
+    const label = first;
+    const value = second ?? "";
+    metadata.set(label, value);
+  }
+
+  if (!hasLineSection) {
+    throw new Error("견적서 형식을 찾지 못했습니다. 샘플 템플릿을 내려받아 같은 구조로 업로드해 주세요.");
+  }
+  if (expectingLineHeader) {
+    throw new Error("작업 항목 헤더가 없습니다. '항목, 단위, 수량, 단가, 금액, 비고' 줄이 있는 템플릿을 사용해 주세요.");
+  }
+
+  const sourceLabel = metadata.get("모의견적 출처") ?? metadata.get("견적 출처") ?? null;
+  if (sourceLabel) {
+    sourceServiceLabel = sourceLabel;
+  }
+  const sourceServiceValue = metadata.get("서비스 경로") ?? null;
+  if (sourceServiceValue) {
+    sourceServicePath = sourceServiceValue;
+  }
+  const sourcePricingValue = metadata.get("가격표 경로") ?? null;
+  if (sourcePricingValue) {
+    sourcePricingPath = sourcePricingValue;
+  }
+  const confirmedAt = parseDateTime(metadata.get("컨펌일"));
+
+  if (!selectedWorks.length && lineItems.length) {
+    selectedWorks.push(...lineItems.map((item) => item.name));
+  }
+  if (!selectedWorkIds.length && lineItems.length) {
+    selectedWorkIds.push(...lineItems.map((item) => item.sourceId ?? item.name));
+  }
+
+  return {
+    sourceServicePath,
+    sourcePricingPath,
+    sourceServiceLabel,
+    selectedWorks,
+    selectedWorkIds,
+    lineItems,
+    materialCharges,
+    extraCharges,
+    vatRate: 0.1,
+    memo,
+    confirmedAt,
+    updatedAt: metadata.get("최종수정") ?? new Date().toISOString()
+  };
+}
+
+function normalizeCell(value: string | number) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? String(value) : "";
+  }
+  return value.trim();
+}
+
+function parseDateTime(value: string | null | undefined) {
+  if (!value || value === "-") return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
 function isQuoteSnapshot(value: unknown): value is InquiryQuoteSnapshot {
@@ -558,10 +808,19 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
-function buildQuoteFilename(name: string, extension: "xlsx" | "pdf") {
+function buildQuoteDocumentTitle(snapshot: InquiryQuoteSnapshot) {
+  return snapshot.sourceServicePath || snapshot.sourcePricingPath ? "견적서" : "상담 견적서";
+}
+
+function buildQuoteSheetName(title: string) {
+  return title.replace(/\s+/g, "") || "견적서";
+}
+
+function buildQuoteFilename(name: string, documentTitle: string, extension: "xlsx" | "pdf") {
   const safeName = name.trim().replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, "_") || "견적서";
+  const safeTitle = documentTitle.trim().replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, "_") || "견적서";
   const date = new Date().toISOString().slice(0, 10);
-  return `${safeName}_${date}.${extension}`;
+  return `${safeTitle}_${safeName}_${date}.${extension}`;
 }
 
 async function ensureKoreanFont(doc: jsPDF) {
