@@ -1,5 +1,44 @@
 # Work Log
 
+## 2026-05-27 - 모의 견적 계산기 수량 조정
+
+Changed files:
+- `src/App.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Changed the service-page mock estimator from selected-only state to per-item quantity state.
+- Added plus/minus quantity controls for all selected estimator items, including `회`, `개`, `건`, `문짝당`, `평당`, and `식` units.
+- Updated the estimate summary and subtotal/VAT/total calculation to multiply each selected item by its quantity.
+- `식` items can now also be counted when the user needs multiple sets.
+- Improved the mobile estimator row layout so the item name uses the full row width and price/material/quantity controls sit below it instead of squeezing the name into many short lines.
+
+Verification:
+- `npm run build` passed.
+- Playwright mobile/tablet checks passed on `/service/door`; quantity controls worked for both `개` and `식` items, the expected total `363,000원~` appeared, and no horizontal overflow was detected.
+
+Follow-up:
+- None.
+
+## 2026-05-27 - 메인페이지 섹션 여백 균형 조정
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Restored laptop section alignment for services, representative cases, and blog from top-aligned back to vertically centered so compact cards do not sit too high in the viewport.
+- Added laptop-specific hero spacing that keeps bottom breathing room when the rotating hero title wraps to three lines.
+- Kept tablet and mobile layouts scroll-safe without horizontal overflow.
+
+Verification:
+- `npm run build` passed.
+- Playwright layout check passed at 1920x1080, 1440x900, 820x1180, and 390x844 with no console errors and no horizontal overflow.
+- Screenshot review confirmed the laptop hero, tablet hero, and mobile hero retain balanced vertical spacing.
+
+Follow-up:
+- None.
+
 ## 2026-05-26 - 서비스 섹션 압축 및 네비게이션 순서 조정
 
 Changed files:
