@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-28 - Admin Stack Rollout
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Applied the stacked preview-over-inspector layout to all admin editors at mobile and tablet sizes.
+- Added tablet preview scrolling and height limits so the preview stays readable without stretching the page excessively.
+- Kept the desktop split layout intact.
+
+Verification:
+- `npm run build` passed.
+- Browser verification at 390px, 820px, 1280px, and 1440px confirmed the admin editors keep preview above inspector on small screens and remain split on larger screens.
+
+Follow-up:
+- None.
+
 ## 2026-05-28 - All Admin Stack Unification
 
 Changed files:

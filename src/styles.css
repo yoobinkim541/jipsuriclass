@@ -8145,6 +8145,11 @@ textarea {
     order: 1;
     width: 100%;
     box-sizing: border-box;
+    max-height: min(72dvh, calc(100dvh - 260px));
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .editor-preview-panel * {
@@ -8160,6 +8165,11 @@ textarea {
     order: 1;
     width: 100%;
     box-sizing: border-box;
+    max-height: min(72dvh, calc(100dvh - 260px));
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   .editor-inspector {
