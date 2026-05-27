@@ -1,5 +1,19 @@
 # Work Log
 
+## 2026-05-27 - Estimate Works Handoff
+
+Changed files: `src/estimate/EstimatePage.tsx`, `src/styles.css`
+
+Implemented behavior:
+- Parsed `works=` from the calculator CTA and carried the selected items into the estimate page.
+- Added an intro summary card and a survey summary card so users can confirm the transferred items before continuing.
+- Included the transferred work list in the inquiry payload and submission message so the saved inquiry keeps the calculator context.
+- Added a visible "계산기로 돌아가기" / "작업 수정" escape hatch for users who want to revise the selected items.
+
+Verification:
+- `npm run build` passed.
+- Browser checks passed on mobile, tablet, laptop, and desktop viewport sizes with no console errors and no horizontal overflow in the estimate flow.
+
 ## 2026-05-27 - 모의 견적 계산기 수량 조정
 
 Changed files:

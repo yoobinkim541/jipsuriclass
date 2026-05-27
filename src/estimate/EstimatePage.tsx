@@ -53,6 +53,7 @@ export function EstimatePage() {
   const query = new URLSearchParams(window.location.search);
   const presetProject = query.get("project") ?? "";
   const presetIssue = query.get("issue") ?? "";
+  const presetWorks = parseQueryList(query.get("works"));
   const [content, setContent] = useState<EstimatePageContent>(defaultEstimatePageContent);
   const [stage, setStage] = useState<"intro" | "survey">("intro");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
@@ -186,8 +187,10 @@ export function EstimatePage() {
         files.length > 0 ? await Promise.all(files.map((file) => mediaService.uploadInquiryAttachment(file))) : [];
 
       const roomSummary = draft.selectedRooms.join(", ");
+      const worksSummary = presetWorks.join(", ");
       const addressLine = [draft.postalCode, draft.address, draft.detailAddress].filter(Boolean).join(" ").trim();
       const message = [
+        presetWorks.length ? `모의견적 선택 작업: ${worksSummary}` : null,
         `${content.reviewLabels.spaceType}: ${draft.spaceType || "-"}`,
         `${content.reviewLabels.areaBand}: ${draft.areaBand || "-"}`,
         `${content.reviewLabels.propertyStatus}: ${draft.propertyStatus || "-"}`,
@@ -218,6 +221,7 @@ export function EstimatePage() {
           otherRoomDetail: draft.otherRoomDetail,
           budget: draft.budget,
           startTiming: draft.startTiming,
+          selectedWorks: presetWorks,
           name: draft.name,
           phone: draft.phone,
           postalCode: draft.postalCode,
@@ -244,6 +248,15 @@ export function EstimatePage() {
 
   function movePrev() {
     setStep((current) => (current > 1 ? ((current - 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) : current));
+  }
+
+  function returnToCalculator() {
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+
+    window.location.href = "/";
   }
 
   function toggleRoom(option: string) {
@@ -332,6 +345,20 @@ export function EstimatePage() {
           <div className="estimate-intro-content">
             <h1 id="estimate-intro-title">{content.intro.title}</h1>
             <p>{content.intro.description}</p>
+            {presetWorks.length > 0 ? (
+              <div className="estimate-intro-summary" aria-label="모의견적에서 넘어온 작업">
+                <span className="estimate-intro-summary-label">모의견적 선택 항목</span>
+                <div className="estimate-summary">
+                  {presetWorks.map((work) => (
+                    <span key={work}>{work}</span>
+                  ))}
+                </div>
+                <p>선택한 작업이 상담 정보에 함께 전달됩니다. 필요하면 다시 계산기로 돌아가 수정할 수 있습니다.</p>
+                <button className="secondary-button estimate-intro-return" type="button" onClick={returnToCalculator}>
+                  계산기로 돌아가기
+                </button>
+              </div>
+            ) : null}
             <button
               className="primary-button estimate-intro-button"
               type="button"
@@ -356,6 +383,23 @@ export function EstimatePage() {
             <div className="estimate-progress" aria-hidden="true">
               <span style={{ width: `${(step / 8) * 100}%` }} />
             </div>
+
+            {presetWorks.length > 0 ? (
+              <div className="estimate-survey-summary" role="note" aria-label="모의견적 선택 작업">
+                <div className="estimate-survey-summary-head">
+                  <span className="admin-kicker">모의견적 연동</span>
+                  <button className="estimate-survey-summary-link" type="button" onClick={returnToCalculator}>
+                    작업 수정
+                  </button>
+                </div>
+                <div className="estimate-summary">
+                  {presetWorks.map((work) => (
+                    <span key={work}>{work}</span>
+                  ))}
+                </div>
+                <p>이 항목이 상담 신청서에 함께 저장됩니다.</p>
+              </div>
+            ) : null}
 
             <div className="estimate-panel-head estimate-consult-head">
               <span className="estimate-step-count">{currentStep.count}</span>
@@ -721,6 +765,15 @@ function buildReviewEntries(draft: EstimateState, labels: EstimatePageContent["r
     { label: labels.startTiming, value: draft.startTiming || "-" },
     { label: labels.requestNote, value: draft.requestNote || "-" }
   ];
+}
+
+function parseQueryList(value: string | null) {
+  if (!value) return [];
+
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function formatPhoneNumber(value: string) {
