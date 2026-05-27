@@ -1,8 +1,16 @@
 import { business, cases as defaultCases, navItems, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
 import { images } from "../assets/images";
 import { defaultLandingPageContent, getLandingPageDefaultContent, landingPageDefinitions, mergeLandingPageContent, type LandingPageContent } from "../landingPages";
+import { defaultHomepageSectionOrder, normalizeSectionOrder } from "../contentSections";
 import { supabase } from "../lib/supabaseClient";
-import type { AccountPageContent, EstimatePageContent, EstimateSurveyStepContent, HomepageContent } from "../types";
+import type {
+  AccountPageContent,
+  EstimatePageContent,
+  EstimateSurveyStepContent,
+  HomepageContent,
+  HomepageHeroProof,
+  HomepageHeroTrustItem
+} from "../types";
 
 type SiteContentRow = {
   payload: unknown;
@@ -23,6 +31,7 @@ export const defaultLandingPagesContent: LandingPagesContent = Object.fromEntrie
 );
 
 export const defaultHomepageContent: HomepageContent = {
+  sections: defaultHomepageSectionOrder,
   navLabels: navItems.map((item) => item.label),
   hero: {
     title: "클라쓰가 다른 종합집수리",
@@ -35,6 +44,17 @@ export const defaultHomepageContent: HomepageContent = {
     primaryActionLabel: "전화 상담",
     secondaryActionLabel: "카카오톡 상담",
     tertiaryActionLabel: "견적 상담",
+    rotatorWords: ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문"],
+    proofs: [
+      { label: "진행 과정", value: "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행" },
+      { label: "작업 범위", value: "부분수리부터 전체 리모델링까지" },
+      { label: "현장 기록", value: "네이버 블로그 포트폴리오" }
+    ],
+    trust: [
+      { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
+      { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
+      { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
+    ],
     slides: []
   },
   about: {
@@ -44,6 +64,7 @@ export const defaultHomepageContent: HomepageContent = {
     strengths: business.strengths
   },
   symptoms: defaultSymptoms,
+  specialties: business.specialties,
   services: defaultServices.map((service) => ({
     title: service.title,
     text: service.text
@@ -423,6 +444,14 @@ function isHeroSlide(value: unknown): value is HomepageContent["hero"]["slides"]
   return isRecord(value) && isString(value.image) && isString(value.position) && typeof value.scale === "number";
 }
 
+function isHeroProof(value: unknown): value is HomepageHeroProof {
+  return isRecord(value) && isString(value.label) && isString(value.value);
+}
+
+function isHeroTrustItem(value: unknown): value is HomepageHeroTrustItem {
+  return isRecord(value) && isString(value.num) && isString(value.label) && isString(value.sub);
+}
+
 function isHomepageContent(value: unknown): value is HomepageContent {
   if (!isRecord(value)) {
     return false;
@@ -441,6 +470,12 @@ function isHomepageContent(value: unknown): value is HomepageContent {
     isString(value.hero.primaryActionLabel) &&
     isString(value.hero.secondaryActionLabel) &&
     isString(value.hero.tertiaryActionLabel) &&
+    Array.isArray(value.hero.rotatorWords) &&
+    value.hero.rotatorWords.every((item) => typeof item === "string") &&
+    Array.isArray(value.hero.proofs) &&
+    value.hero.proofs.every(isHeroProof) &&
+    Array.isArray(value.hero.trust) &&
+    value.hero.trust.every(isHeroTrustItem) &&
     Array.isArray(value.hero.slides) &&
     value.hero.slides.every(isHeroSlide) &&
     isRecord(value.about) &&
@@ -448,8 +483,12 @@ function isHomepageContent(value: unknown): value is HomepageContent {
     isString(value.about.title) &&
     isString(value.about.description) &&
     isStringArray(value.about.strengths) &&
+    Array.isArray(value.sections) &&
+    value.sections.every((item) => typeof item === "string") &&
     Array.isArray(value.symptoms) &&
     value.symptoms.every((item) => typeof item === "string") &&
+    Array.isArray(value.specialties) &&
+    value.specialties.every((item) => typeof item === "string") &&
     Array.isArray(value.services) &&
     value.services.every(isServiceCard) &&
     Array.isArray(value.cases) &&
@@ -493,10 +532,16 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
   }
 
   return {
+    sections: normalizeSectionOrder(input.sections, base.sections),
     navLabels: Array.isArray(input.navLabels) ? input.navLabels.filter((item): item is string => typeof item === "string") : base.navLabels,
     hero: {
       ...base.hero,
       ...(input.hero ?? {}),
+      rotatorWords: Array.isArray(input.hero?.rotatorWords)
+        ? input.hero!.rotatorWords.filter((item): item is string => typeof item === "string")
+        : base.hero.rotatorWords,
+      proofs: Array.isArray(input.hero?.proofs) ? input.hero!.proofs.filter(isHeroProof) : base.hero.proofs,
+      trust: Array.isArray(input.hero?.trust) ? input.hero!.trust.filter(isHeroTrustItem) : base.hero.trust,
       slides: Array.isArray(input.hero?.slides)
         ? input.hero!.slides.filter(isHeroSlide)
         : base.hero.slides
@@ -507,6 +552,7 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
       strengths: Array.isArray(input.about?.strengths) ? input.about!.strengths : base.about.strengths
     },
     symptoms: Array.isArray(input.symptoms) ? input.symptoms.filter((item): item is string => typeof item === "string") : base.symptoms,
+    specialties: Array.isArray(input.specialties) ? input.specialties.filter((item): item is string => typeof item === "string") : base.specialties,
     services: Array.isArray(input.services) && input.services.length === base.services.length
       ? mergeTextArray(
           input.services,
@@ -782,6 +828,8 @@ function isLandingPageContent(value: unknown): value is LandingPageContent {
   }
 
   return (
+    Array.isArray(value.sections) &&
+    value.sections.every((item) => typeof item === "string") &&
     isString(value.title) &&
     isString(value.description) &&
     Array.isArray(value.searchTerms) &&
@@ -814,6 +862,15 @@ function mergeLandingPagesContent(base: LandingPagesContent, override: unknown):
 
   const input = override as Partial<Record<string, Partial<LandingPageContent>>>;
   return Object.fromEntries(
-    landingPageDefinitions.map((page) => [page.path, mergeLandingPageContent(page, input[page.path] ?? null)])
+    landingPageDefinitions.map((page) => {
+      const merged = mergeLandingPageContent(page, input[page.path] ?? null);
+      return [
+        page.path,
+        {
+          ...merged,
+          sections: merged.sections ?? page.sections ?? defaultLandingPageContent[page.path]?.sections ?? []
+        }
+      ];
+    })
   );
 }

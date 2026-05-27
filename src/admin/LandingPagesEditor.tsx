@@ -7,6 +7,31 @@ const siteContentService = new SiteContentService();
 const AUTOSAVE_DELAY = 1200;
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+type LandingFieldKey = "title" | "description" | "searchTerms" | "heroTitle" | "heroDescription" | "highlights" | "pointsTitle" | "points";
+type LandingFieldSchema = {
+  key: LandingFieldKey;
+  label: string;
+  kind: "text" | "multiline" | "list";
+  rows?: number;
+  hint?: string;
+};
+
+const landingFieldSchemas: Record<"summary" | "hero" | "points", LandingFieldSchema[]> = {
+  summary: [
+    { key: "title", label: "제목", kind: "text" },
+    { key: "description", label: "설명", kind: "multiline", rows: 3 },
+    { key: "searchTerms", label: "검색 키워드", kind: "list", hint: "줄 바꿈으로 구분" }
+  ],
+  hero: [
+    { key: "heroTitle", label: "히어로 제목", kind: "text" },
+    { key: "heroDescription", label: "히어로 설명", kind: "multiline", rows: 4 },
+    { key: "highlights", label: "핵심 안내", kind: "list", hint: "홈 화면의 포인트 카드에 노출됩니다." }
+  ],
+  points: [
+    { key: "pointsTitle", label: "섹션 제목", kind: "text" },
+    { key: "points", label: "본문 문장", kind: "list", hint: "줄 바꿈으로 구분" }
+  ]
+};
 
 const defaultPagePath = landingPageDefinitions[0]?.path ?? "/service/leak";
 
@@ -18,6 +43,8 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
   const [saveNote, setSaveNote] = useState("편집 내용을 불러오는 중입니다.");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
   const [selectedPath, setSelectedPath] = useState(defaultPagePath);
+  const [showPreview, setShowPreview] = useState(true);
+  const [showPreviewFullscreen, setShowPreviewFullscreen] = useState(false);
   const [draft, setDraft] = useState<LandingPagesContent>(defaultLandingPagesContent);
 
   const draftRef = useRef(draft);
@@ -125,6 +152,18 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
     markEdited();
   }
 
+  function updateLandingField(path: string, key: LandingFieldKey, value: string) {
+    updatePage(path, (page) => ({
+      ...page,
+      [key]: key === "searchTerms" || key === "highlights" || key === "points" ? normalizeLines(value, 1) : value
+    }));
+  }
+
+  function getLandingFieldValue(page: LandingPageContent, key: LandingFieldKey) {
+    const value = page[key];
+    return Array.isArray(value) ? value.join("\n") : value;
+  }
+
   function resetDraft() {
     setDraft(defaultLandingPagesContent);
     setSelectedPath(defaultPagePath);
@@ -145,7 +184,7 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
             랜딩페이지 편집기
           </span>
           <h2 id="landing-editor-title">서비스와 지역 랜딩페이지를 바로 수정합니다</h2>
-          <p>누수, 욕실수리, 도배, 문수리, 남양주, 구리, 하남, 서울, 경기 페이지를 각각 편집할 수 있습니다.</p>
+          <p>랜딩페이지를 바로 고칩니다.</p>
           <div className="editor-save-state" aria-live="polite">
             <span data-state={saveState}>
               {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
@@ -155,6 +194,14 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
           </div>
         </div>
         <div className="editor-actions">
+          <button className="admin-ghost-button" type="button" onClick={() => setShowPreview((current) => !current)}>
+            {showPreview ? "미리보기 숨기기" : "미리보기 보기"}
+          </button>
+          {showPreview ? (
+            <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
+              {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
+            </button>
+          ) : null}
           <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
             <RotateCcw size={16} />
             기본값
@@ -175,79 +222,92 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
           편집 내용을 불러오는 중
         </div>
       ) : (
-        <div className="editor-workspace editor-workspace-with-preview">
-          <aside className="editor-preview-panel" aria-label="랜딩페이지 실시간 미리보기">
-            <div className="editor-preview-head">
-              <span className="editor-preview-kicker">실시간 미리보기</span>
-              <strong>{selectedDefinition?.title.replace(" | 집수리클라쓰", "") ?? selectedPage.title}</strong>
-              <p>
-                {selectedDefinition?.categoryLabel ?? "랜딩"} · {selectedPath}
-              </p>
-            </div>
-
-            <div className="editor-preview-card">
-              <div className="editor-preview-chip-row">
-                <span>{selectedDefinition?.categoryLabel ?? "랜딩"}</span>
-                <span>{selectedDefinition?.pageType === "Service" ? "서비스" : "지역"}</span>
-                {selectedPage.searchTerms.slice(0, 3).map((term) => (
-                  <span key={term}>{term}</span>
-                ))}
+        <div className={showPreview ? "editor-workspace editor-workspace-with-preview" : "editor-workspace editor-workspace-single"}>
+          {showPreview ? (
+            <aside
+              className={showPreviewFullscreen ? "editor-preview-panel editor-preview-panel-fullscreen" : "editor-preview-panel"}
+              aria-label="랜딩페이지 실시간 미리보기"
+            >
+              {showPreviewFullscreen ? (
+                <div className="editor-preview-toolbar">
+                  <span>전체 미리보기</span>
+                  <button type="button" className="admin-ghost-button" onClick={() => setShowPreviewFullscreen(false)}>
+                    닫기
+                  </button>
+                </div>
+              ) : null}
+              <div className="editor-preview-head">
+                <span className="editor-preview-kicker">실시간 미리보기</span>
+                <strong>{selectedDefinition?.title.replace(" | 집수리클라쓰", "") ?? selectedPage.title}</strong>
+                <p>
+                  {selectedDefinition?.categoryLabel ?? "랜딩"} · {selectedPath}
+                </p>
               </div>
-              <strong>{selectedPage.title}</strong>
-              <p>{selectedPage.description}</p>
-            </div>
 
-            <section className="landing-preview-block">
-              <h4>히어로</h4>
-              <div className="editor-preview-card editor-preview-card-soft">
-                <strong>{selectedPage.heroTitle}</strong>
-                <p>{selectedPage.heroDescription}</p>
-                <ul className="landing-preview-list">
-                  {selectedPage.highlights.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </section>
-
-            <section className="landing-preview-block">
-              <h4>{selectedPage.pointsTitle}</h4>
               <div className="editor-preview-card">
-                <ol className="landing-preview-point-list">
-                  {selectedPage.points.map((point, index) => (
-                    <li key={point}>
-                      <span>{index + 1}</span>
-                      <p>{point}</p>
-                    </li>
+                <div className="editor-preview-chip-row">
+                  <span>{selectedDefinition?.categoryLabel ?? "랜딩"}</span>
+                  <span>{selectedDefinition?.pageType === "Service" ? "서비스" : "지역"}</span>
+                  {selectedPage.searchTerms.slice(0, 3).map((term) => (
+                    <span key={term}>{term}</span>
                   ))}
-                </ol>
+                </div>
+                <strong>{selectedPage.title}</strong>
+                <p>{selectedPage.description}</p>
               </div>
-            </section>
 
-            <section className="landing-preview-block">
-              <h4>FAQ</h4>
-              <div className="landing-preview-faq-grid">
-                {selectedPage.faq.map((item) => (
-                  <article className="landing-preview-faq-card" key={item.question}>
-                    <strong>{item.question}</strong>
-                    <p>{item.answer}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
+              <section className="landing-preview-block">
+                <h4>히어로</h4>
+                <div className="editor-preview-card editor-preview-card-soft">
+                  <strong>{selectedPage.heroTitle}</strong>
+                  <p>{selectedPage.heroDescription}</p>
+                  <ul className="landing-preview-list">
+                    {selectedPage.highlights.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </section>
 
-            <section className="landing-preview-block">
-              <h4>연결 페이지</h4>
-              <div className="landing-preview-link-grid">
-                {selectedPage.relatedLinks.map((item) => (
-                  <article className="landing-preview-link-card" key={item.label}>
-                    <strong>{item.label}</strong>
-                    <p>{item.href}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
-          </aside>
+              <section className="landing-preview-block">
+                <h4>{selectedPage.pointsTitle}</h4>
+                <div className="editor-preview-card">
+                  <ol className="landing-preview-point-list">
+                    {selectedPage.points.map((point, index) => (
+                      <li key={point}>
+                        <span>{index + 1}</span>
+                        <p>{point}</p>
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </section>
+
+              <section className="landing-preview-block">
+                <h4>FAQ</h4>
+                <div className="landing-preview-faq-grid">
+                  {selectedPage.faq.map((item) => (
+                    <article className="landing-preview-faq-card" key={item.question}>
+                      <strong>{item.question}</strong>
+                      <p>{item.answer}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
+              <section className="landing-preview-block">
+                <h4>연결 페이지</h4>
+                <div className="landing-preview-link-grid">
+                  {selectedPage.relatedLinks.map((item) => (
+                    <article className="landing-preview-link-card" key={item.label}>
+                      <strong>{item.label}</strong>
+                      <p>{item.href}</p>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            </aside>
+          ) : null}
 
           <aside className="editor-inspector editor-inspector-full">
             <section className="editor-group">
@@ -270,105 +330,51 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
             </section>
 
             <InspectorGroup title="기본 정보">
-              <Field label="제목">
-                <input
-                  value={selectedPage.title}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      title: event.target.value
-                    }))
-                  }
-                />
-              </Field>
-              <Field label="설명">
-                <textarea
-                  rows={3}
-                  value={selectedPage.description}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      description: event.target.value
-                    }))
-                  }
-                />
-              </Field>
-              <Field label="검색 키워드">
-                <textarea
-                  rows={3}
-                  value={selectedPage.searchTerms.join("\n")}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      searchTerms: normalizeLines(event.target.value, 1)
-                    }))
-                  }
-                />
-              </Field>
+              {landingFieldSchemas.summary.map((field) => (
+                <Field key={field.key} label={field.label}>
+                  {field.kind === "text" ? (
+                    <input value={String(getLandingFieldValue(selectedPage, field.key))} onChange={(event) => updateLandingField(selectedPath, field.key, event.target.value)} />
+                  ) : (
+                    <textarea
+                      rows={field.rows ?? 3}
+                      value={getLandingFieldValue(selectedPage, field.key)}
+                      onChange={(event) => updateLandingField(selectedPath, field.key, event.target.value)}
+                    />
+                  )}
+                </Field>
+              ))}
             </InspectorGroup>
 
             <InspectorGroup title="히어로">
-              <Field label="히어로 제목">
-                <input
-                  value={selectedPage.heroTitle}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      heroTitle: event.target.value
-                    }))
-                  }
-                />
-              </Field>
-              <Field label="히어로 설명">
-                <textarea
-                  rows={4}
-                  value={selectedPage.heroDescription}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      heroDescription: event.target.value
-                    }))
-                  }
-                />
-              </Field>
-              <Field label="핵심 안내">
-                <textarea
-                  rows={5}
-                  value={selectedPage.highlights.join("\n")}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      highlights: normalizeLines(event.target.value, 1)
-                    }))
-                  }
-                />
-              </Field>
+              {landingFieldSchemas.hero.map((field) => (
+                <Field key={field.key} label={field.label}>
+                  {field.kind === "text" ? (
+                    <input value={String(getLandingFieldValue(selectedPage, field.key))} onChange={(event) => updateLandingField(selectedPath, field.key, event.target.value)} />
+                  ) : (
+                    <textarea
+                      rows={field.rows ?? 4}
+                      value={getLandingFieldValue(selectedPage, field.key)}
+                      onChange={(event) => updateLandingField(selectedPath, field.key, event.target.value)}
+                    />
+                  )}
+                </Field>
+              ))}
             </InspectorGroup>
 
             <InspectorGroup title="본문">
-              <Field label="섹션 제목">
-                <input
-                  value={selectedPage.pointsTitle}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      pointsTitle: event.target.value
-                    }))
-                  }
-                />
-              </Field>
-              <Field label="본문 문장">
-                <textarea
-                  rows={6}
-                  value={selectedPage.points.join("\n")}
-                  onChange={(event) =>
-                    updatePage(selectedPath, (page) => ({
-                      ...page,
-                      points: normalizeLines(event.target.value, 1)
-                    }))
-                  }
-                />
-              </Field>
+              {landingFieldSchemas.points.map((field) => (
+                <Field key={field.key} label={field.label}>
+                  {field.kind === "text" ? (
+                    <input value={String(getLandingFieldValue(selectedPage, field.key))} onChange={(event) => updateLandingField(selectedPath, field.key, event.target.value)} />
+                  ) : (
+                    <textarea
+                      rows={field.rows ?? 6}
+                      value={getLandingFieldValue(selectedPage, field.key)}
+                      onChange={(event) => updateLandingField(selectedPath, field.key, event.target.value)}
+                    />
+                  )}
+                </Field>
+              ))}
             </InspectorGroup>
 
             <InspectorGroup title="FAQ">

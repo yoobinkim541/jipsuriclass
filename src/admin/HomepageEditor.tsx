@@ -10,7 +10,13 @@ import {
   RotateCcw,
   Save
 } from "lucide-react";
-import { business, navItems, process as defaultProcess, services as defaultServices } from "../data";
+import { business, navItems, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
+import {
+  homepageEditorFieldSchemas,
+  homepageRepeaterSectionDefinitions,
+  homepageSectionDefinitions,
+  homepageTupleGroupDefinitions
+} from "../contentSections";
 import { SiteContentService, defaultHomepageContent } from "../services/SiteContentService";
 import { MediaService } from "../services/MediaService";
 import type { HomepageContent } from "../types";
@@ -21,16 +27,19 @@ const AUTOSAVE_DELAY = 1200;
 
 const emptyStrengths = ["", "", ""];
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
-type EditorSection = "hero" | "about" | "services" | "cases" | "blog" | "process" | "contact";
+type SimpleEditorSection = keyof typeof homepageEditorFieldSchemas;
+type EditorSection = SimpleEditorSection | "services" | "cases" | "blog" | "process";
 
 const sectionLabels: Record<EditorSection, string> = {
-  hero: "히어로",
-  about: "소개",
-  services: "서비스",
-  cases: "사례",
-  blog: "블로그",
-  process: "작업 절차",
-  contact: "문의"
+  hero: homepageSectionDefinitions.find((item) => item.id === "hero")?.label ?? "히어로",
+  about: homepageSectionDefinitions.find((item) => item.id === "about")?.label ?? "소개",
+  symptoms: homepageSectionDefinitions.find((item) => item.id === "symptoms")?.label ?? "증상",
+  specialties: homepageSectionDefinitions.find((item) => item.id === "specialties")?.label ?? "가능 작업",
+  services: homepageSectionDefinitions.find((item) => item.id === "services")?.label ?? "서비스",
+  cases: homepageSectionDefinitions.find((item) => item.id === "cases")?.label ?? "사례",
+  blog: homepageSectionDefinitions.find((item) => item.id === "blog")?.label ?? "블로그",
+  process: homepageSectionDefinitions.find((item) => item.id === "process")?.label ?? "작업 절차",
+  contact: homepageSectionDefinitions.find((item) => item.id === "contact")?.label ?? "문의"
 };
 
 const imagePositionOptions = [
@@ -55,6 +64,8 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
   const [draft, setDraft] = useState<HomepageContent>(defaultHomepageContent);
   const [selectedSection, setSelectedSection] = useState<EditorSection>("hero");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showPreview, setShowPreview] = useState(true);
+  const [showPreviewFullscreen, setShowPreviewFullscreen] = useState(false);
   const [contactPreview, setContactPreview] = useState({
     name: "홍길동",
     phone: "010-0000-0000",
@@ -171,8 +182,23 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
     }
   }
 
-  function updateHero(field: keyof HomepageContent["hero"], value: string | number) {
+  function updateHero<K extends keyof HomepageContent["hero"]>(field: K, value: HomepageContent["hero"][K]) {
     setDraft((current) => ({ ...current, hero: { ...current.hero, [field]: value } }));
+    markEdited();
+  }
+
+  function updateTupleGroupField(group: "trust" | "proofs", index: number, field: string, value: string) {
+    setDraft((current) => {
+      if (group === "trust") {
+        const trust = current.hero.trust.slice();
+        trust[index] = { ...(trust[index] ?? { num: "", label: "", sub: "" }), [field]: value };
+        return { ...current, hero: { ...current.hero, trust } };
+      }
+
+      const proofs = current.hero.proofs.slice();
+      proofs[index] = { ...(proofs[index] ?? { label: "", value: "" }), [field]: value };
+      return { ...current, hero: { ...current.hero, proofs } };
+    });
     markEdited();
   }
 
@@ -185,76 +211,6 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
     markEdited();
   }
 
-  function updateHeroSlide(index: number, field: "image" | "position", value: string) {
-    setDraft((current) => {
-      const slides = current.hero.slides.slice();
-      slides[index] = { ...(slides[index] ?? { image: "", position: "center center", scale: 1 }), [field]: value };
-      return { ...current, hero: { ...current.hero, slides } };
-    });
-    markEdited();
-  }
-
-  function updateHeroSlideScale(index: number, value: number) {
-    setDraft((current) => {
-      const slides = current.hero.slides.slice();
-      slides[index] = { ...(slides[index] ?? { image: "", position: "center center", scale: 1 }), scale: value };
-      return { ...current, hero: { ...current.hero, slides } };
-    });
-    markEdited();
-  }
-
-  function updateHeroPosition(value: string) {
-    updateHero("imagePosition", value);
-  }
-
-  function addHeroSlide() {
-    setDraft((current) => ({
-      ...current,
-      hero: {
-        ...current.hero,
-        slides: [...current.hero.slides, { image: "", position: "center center", scale: 1 }]
-      }
-    }));
-    setSelectedSection("hero");
-    markEdited();
-  }
-
-  function removeHeroSlide(index: number) {
-    setDraft((current) => {
-      const slides = current.hero.slides.filter((_, slideIndex) => slideIndex !== index);
-      return { ...current, hero: { ...current.hero, slides } };
-    });
-    setSelectedSection("hero");
-    setSelectedIndex(0);
-    markEdited();
-  }
-
-  function updateAbout(field: keyof HomepageContent["about"], value: string) {
-    setDraft((current) => ({ ...current, about: { ...current.about, [field]: value } }));
-    markEdited();
-  }
-
-  function updateStrengths(value: string) {
-    setDraft((current) => ({
-      ...current,
-      about: {
-        ...current.about,
-        strengths: normalizeLines(value, current.about.strengths.length || emptyStrengths.length)
-      }
-    }));
-    markEdited();
-  }
-
-  function updateService(index: number, field: "title" | "text", value: string) {
-    setDraft((current) => {
-      const services = current.services.slice();
-      services[index] = { ...(services[index] ?? { title: "", text: "" }), [field]: value };
-      return { ...current, services };
-    });
-    setSelectedSection("services");
-    setSelectedIndex(index);
-    markEdited();
-  }
 
   function updateCase(index: number, field: keyof HomepageContent["cases"][number], value: string) {
     setDraft((current) => {
@@ -282,44 +238,6 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
     setSelectedSection("blog");
     setSelectedIndex(index);
     markEdited();
-  }
-
-  async function uploadHeroImage(file: File) {
-    setSaving(true);
-    setError(null);
-    setSaveNote("대표 이미지를 업로드 중입니다.");
-    setSaveState("saving");
-
-    try {
-      const uploaded = await mediaService.uploadHomepageImage(file);
-      updateHero("image", uploaded.url);
-      setSaveNote("대표 이미지를 업로드했습니다.");
-    } catch (uploadError) {
-      setSaveState("error");
-      setError(uploadError instanceof Error ? uploadError.message : "이미지를 업로드하지 못했습니다.");
-      setSaveNote("이미지 업로드에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function uploadHeroSlideImage(index: number, file: File) {
-    setSaving(true);
-    setError(null);
-    setSaveNote("캐러셀 이미지를 업로드 중입니다.");
-    setSaveState("saving");
-
-    try {
-      const uploaded = await mediaService.uploadHomepageImage(file);
-      updateHeroSlide(index, "image", uploaded.url);
-      setSaveNote("캐러셀 이미지를 업로드했습니다.");
-    } catch (uploadError) {
-      setSaveState("error");
-      setError(uploadError instanceof Error ? uploadError.message : "이미지를 업로드하지 못했습니다.");
-      setSaveNote("이미지 업로드에 실패했습니다.");
-    } finally {
-      setSaving(false);
-    }
   }
 
   async function uploadProcessImage(index: number, file: File) {
@@ -384,21 +302,142 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
     }
   }
 
-  function updateProcess(index: number, field: "title" | "text", value: string) {
+  function updateRepeaterField(section: "services" | "cases" | "blog" | "process", index: number, field: string, value: string) {
     setDraft((current) => {
-      const process = current.process.slice();
-      process[index] = { ...(process[index] ?? { title: "", text: "" }), [field]: value };
-      return { ...current, process };
+      switch (section) {
+        case "services": {
+          const services = current.services.slice();
+          services[index] = { ...(services[index] ?? { title: "", text: "" }), [field]: value };
+          return { ...current, services };
+        }
+        case "cases": {
+          const cases = current.cases.slice();
+          cases[index] = {
+            ...(cases[index] ?? { title: "", area: "", problem: "", solution: "", image: "", link: "" }),
+            [field]: value
+          };
+          return { ...current, cases };
+        }
+        case "blog": {
+          const blog = current.blog.slice();
+          blog[index] = {
+            ...(blog[index] ?? { title: "", description: "", date: "", link: "", image: "" }),
+            [field]: value
+          };
+          return { ...current, blog };
+        }
+        case "process": {
+          const process = current.process.slice();
+          process[index] = { ...(process[index] ?? { title: "", text: "", image: "" }), [field]: value };
+          return { ...current, process };
+        }
+      }
     });
-    setSelectedSection("process");
+    setSelectedSection(section);
     setSelectedIndex(index);
     markEdited();
   }
 
-  function updateContact(field: keyof HomepageContent["contact"], value: string) {
-    setDraft((current) => ({ ...current, contact: { ...current.contact, [field]: value } }));
-    setSelectedSection("contact");
+  function clearRepeaterImage(section: "services" | "cases" | "blog" | "process", index: number) {
+    setDraft((current) => {
+      switch (section) {
+        case "services":
+          return current;
+        case "cases": {
+          const cases = current.cases.slice();
+          cases[index] = { ...(cases[index] ?? { title: "", area: "", problem: "", solution: "", image: "", link: "" }), image: "" };
+          return { ...current, cases };
+        }
+        case "blog": {
+          const blog = current.blog.slice();
+          blog[index] = { ...(blog[index] ?? { title: "", description: "", date: "", link: "", image: "" }), image: "" };
+          return { ...current, blog };
+        }
+        case "process": {
+          const process = current.process.slice();
+          process[index] = { ...(process[index] ?? { title: "", text: "", image: "" }), image: "" };
+          return { ...current, process };
+        }
+      }
+    });
+    setSelectedSection(section);
+    setSelectedIndex(index);
     markEdited();
+  }
+
+  function updateSimpleSectionField(section: SimpleEditorSection, key: string, value: string) {
+    setDraft((current) => {
+      switch (section) {
+        case "hero":
+          if (key === "rotatorWords") {
+            return {
+              ...current,
+              hero: {
+                ...current.hero,
+                rotatorWords: normalizeLines(value, current.hero.rotatorWords.length || 4)
+              }
+            };
+          }
+          return {
+            ...current,
+            hero: {
+              ...current.hero,
+              [key as keyof HomepageContent["hero"]]: value
+            }
+          };
+        case "about":
+          if (key === "strengths") {
+            return {
+              ...current,
+              about: {
+                ...current.about,
+                strengths: normalizeLines(value, current.about.strengths.length || emptyStrengths.length)
+              }
+            };
+          }
+          return {
+            ...current,
+            about: {
+              ...current.about,
+              [key as keyof HomepageContent["about"]]: value
+            }
+          };
+        case "symptoms":
+          return {
+            ...current,
+            symptoms: normalizeLines(value, current.symptoms.length || defaultSymptoms.length)
+          };
+        case "specialties":
+          return {
+            ...current,
+            specialties: normalizeLines(value, current.specialties.length || business.specialties.length)
+          };
+        case "contact":
+          return {
+            ...current,
+            contact: {
+              ...current.contact,
+              [key as keyof HomepageContent["contact"]]: value
+            }
+          };
+      }
+    });
+    markEdited();
+  }
+
+  function getSimpleSectionFieldValue(section: SimpleEditorSection, key: string): string {
+    switch (section) {
+      case "hero":
+        return key === "rotatorWords" ? draft.hero.rotatorWords.join("\n") : String(draft.hero[key as keyof HomepageContent["hero"]] ?? "");
+      case "about":
+        return key === "strengths" ? strengthsText : String(draft.about[key as keyof HomepageContent["about"]] ?? "");
+      case "symptoms":
+        return draft.symptoms.join("\n");
+      case "specialties":
+        return draft.specialties.join("\n");
+      case "contact":
+        return String(draft.contact[key as keyof HomepageContent["contact"]] ?? "");
+    }
   }
 
   function resetDraft() {
@@ -411,22 +450,25 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
   }
 
   const strengthsText = useMemo(() => draft.about.strengths.join("\n"), [draft.about.strengths]);
-  const sectionNav: Array<{ key: EditorSection; label: string }> = useMemo(
-    () => [
-      { key: "hero", label: "히어로" },
-      { key: "about", label: "소개" },
-      { key: "services", label: "서비스" },
-      { key: "cases", label: "사례" },
-      { key: "blog", label: "블로그" },
-      { key: "process", label: "작업 절차" },
-      { key: "contact", label: "문의" }
-    ],
+  const sectionNav: Array<{ key: EditorSection; label: string; description: string }> = useMemo(
+    () =>
+      homepageSectionDefinitions
+        .filter((item) => item.id !== "location")
+        .map((item) => ({ key: item.id as EditorSection, label: item.label, description: item.description })),
     []
+  );
+  const activeSectionDefinition = useMemo(
+    () => homepageSectionDefinitions.find((item) => item.id === selectedSection) ?? homepageSectionDefinitions[0],
+    [selectedSection]
   );
 
   const currentItemCount =
     selectedSection === "services"
       ? draft.services.length
+      : selectedSection === "symptoms"
+        ? draft.symptoms.length
+      : selectedSection === "specialties"
+        ? draft.specialties.length
       : selectedSection === "cases"
         ? draft.cases.length
         : selectedSection === "blog"
@@ -434,6 +476,114 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
         : selectedSection === "process"
           ? draft.process.length
           : 0;
+
+  function renderRepeaterSection(section: "services" | "cases" | "blog" | "process") {
+    const config = homepageRepeaterSectionDefinitions[section];
+    const items = draft[section] as Array<Record<string, string>>;
+    const currentItem = items[selectedIndex] ?? {};
+    const imageField = config.fields.find((field) => field.kind === "image");
+    const uploadHandler =
+      section === "cases" ? uploadCaseImage : section === "blog" ? uploadBlogImage : section === "process" ? uploadProcessImage : null;
+    const clearImageHandler =
+      section === "cases"
+        ? () => clearRepeaterImage("cases", selectedIndex)
+        : section === "blog"
+          ? () => clearRepeaterImage("blog", selectedIndex)
+          : section === "process"
+            ? () => clearRepeaterImage("process", selectedIndex)
+            : null;
+
+    return (
+      <InspectorGroup title={config.label}>
+        <div className="editor-inspector-subgroup">
+          <h4>항목 목록</h4>
+          <p className="editor-inline-note">{config.description}</p>
+          {items.map((item, index) => (
+            <button
+              className={index === selectedIndex ? "preview-item-card active" : "preview-item-card"}
+              key={`${section}-${config.itemLabel(item, index)}-${index}`}
+              type="button"
+              onClick={() => setSelectedIndex(index)}
+            >
+              <strong>
+                {index + 1}. {config.itemLabel(item, index)}
+              </strong>
+              {config.itemSubtitle ? <span>{config.itemSubtitle(item, index)}</span> : null}
+            </button>
+          ))}
+        </div>
+        <div className="editor-inspector-subgroup">
+          <h4>항목 편집</h4>
+          {config.fields.map((field) => (
+            <Field key={field.key} label={field.label}>
+              {field.kind === "textarea" ? (
+                <textarea
+                  rows={field.rows ?? 4}
+                  value={String(currentItem[field.key] ?? "")}
+                  onChange={(event) => updateRepeaterField(section, selectedIndex, field.key, event.target.value)}
+                />
+              ) : field.kind === "image" ? (
+                <>
+                  <input
+                    value={String(currentItem[field.key] ?? "")}
+                    onChange={(event) => updateRepeaterField(section, selectedIndex, field.key, event.target.value)}
+                  />
+                  {imageField && uploadHandler ? (
+                    <ImageUploadField
+                      label={field.label}
+                      previewUrl={String(currentItem[field.key] ?? "")}
+                      previewLabel={config.itemLabel(currentItem, selectedIndex)}
+                      onFileSelect={(file) => void uploadHandler(selectedIndex, file)}
+                      onClear={() => clearImageHandler?.()}
+                    />
+                  ) : null}
+                </>
+              ) : (
+                <input
+                  value={String(currentItem[field.key] ?? "")}
+                  onChange={(event) => updateRepeaterField(section, selectedIndex, field.key, event.target.value)}
+                />
+              )}
+              {field.hint ? <span className="editor-inline-note">{field.hint}</span> : null}
+            </Field>
+          ))}
+        </div>
+      </InspectorGroup>
+    );
+  }
+
+  function renderTupleGroup(group: "trust" | "proofs" | "navLabels") {
+    const config = homepageTupleGroupDefinitions[group];
+    const items = group === "trust" ? draft.hero.trust : group === "proofs" ? draft.hero.proofs : draft.navLabels;
+
+    return (
+      <div className="editor-inspector-subgroup">
+        <h4>{config.label}</h4>
+        <p className="editor-inline-note">{config.description}</p>
+        {group === "navLabels"
+          ? navItems.map((item, index) => (
+              <Field key={item.href} label={item.label}>
+                <input
+                  value={String((items as string[])[index] ?? item.label)}
+                  onChange={(event) => updateNavLabel(index, event.target.value)}
+                />
+              </Field>
+            ))
+          : items.map((item, index) => (
+              <div className="editor-inline-card" key={`${group}-${index}`}>
+                {config.fields.map((field) => (
+                  <Field key={field.key} label={`${field.label} ${index + 1}`}>
+                    <input
+                      value={String((item as Record<string, string>)[field.key] ?? "")}
+                      onChange={(event) => updateTupleGroupField(group, index, field.key, event.target.value)}
+                    />
+                  </Field>
+                ))}
+              </div>
+            ))}
+      </div>
+    );
+  }
 
   return (
     <section className="editor-shell" aria-labelledby="homepage-editor-title">
@@ -444,7 +594,7 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
             홈페이지 편집기
           </span>
           <h2 id="homepage-editor-title">실제 화면을 보면서 바로 수정합니다</h2>
-          <p>왼쪽은 현재 홈페이지와 같은 구조의 미리보기, 오른쪽은 선택한 섹션의 편집기입니다.</p>
+          <p>미리보기에서 섹션을 바로 고릅니다.</p>
           <div className="editor-save-state" aria-live="polite">
             <span data-state={saveState}>
               {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
@@ -452,8 +602,26 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
             <p>{saveNote}</p>
             {lastSavedAt ? <em>최근 저장 {formatEditorTime(lastSavedAt)}</em> : null}
           </div>
+          <div className="editor-context-strip" aria-label="현재 편집 대상">
+            <span>
+              현재 섹션
+              <strong>{activeSectionDefinition?.label ?? sectionLabels[selectedSection]}</strong>
+            </span>
+            <span>
+              안내
+              <strong>{activeSectionDefinition?.description ?? ""}</strong>
+            </span>
+          </div>
         </div>
         <div className="editor-actions">
+          <button className="admin-ghost-button" type="button" onClick={() => setShowPreview((current) => !current)}>
+            {showPreview ? "미리보기 숨기기" : "미리보기 보기"}
+          </button>
+          {showPreview ? (
+            <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
+              {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
+            </button>
+          ) : null}
           <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
             <RotateCcw size={16} />
             기본값
@@ -474,6 +642,7 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
             key={item.key}
             className={selectedSection === item.key ? "editor-section-chip active" : "editor-section-chip"}
             type="button"
+            title={item.description}
             onClick={() => {
               setSelectedSection(item.key);
               if (item.key === "services" || item.key === "cases" || item.key === "blog" || item.key === "process") {
@@ -492,14 +661,35 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
           편집 내용을 불러오는 중
         </div>
       ) : (
-        <div className="editor-workspace">
-          <div className="editor-preview-panel">
+        <div className={showPreview ? "editor-workspace" : "editor-workspace editor-workspace-single"}>
+          {showPreview ? (
+            <div className={showPreviewFullscreen ? "editor-preview-panel editor-preview-panel-fullscreen" : "editor-preview-panel"}>
+            {showPreviewFullscreen ? (
+              <div className="editor-preview-toolbar">
+                <span>전체 미리보기</span>
+                <button type="button" className="admin-ghost-button" onClick={() => setShowPreviewFullscreen(false)}>
+                  닫기
+                </button>
+              </div>
+            ) : null}
             <div className="editor-preview-frame">
               <PreviewSectionLabel label="히어로" active={selectedSection === "hero"} onClick={() => setSelectedSection("hero")} />
               <HeroPreview content={draft.hero} cases={draft.cases} onSelect={() => setSelectedSection("hero")} />
 
               <PreviewSectionLabel label="소개" active={selectedSection === "about"} onClick={() => setSelectedSection("about")} />
               <AboutPreview content={draft.about} cases={draft.cases} onSelect={() => setSelectedSection("about")} />
+
+              <PreviewSectionLabel label="증상" active={selectedSection === "symptoms"} onClick={() => setSelectedSection("symptoms")} />
+              <SymptomsPreview symptoms={draft.symptoms} activeIndex={selectedSection === "symptoms" ? selectedIndex : -1} onSelect={(index) => {
+                setSelectedSection("symptoms");
+                setSelectedIndex(index);
+              }} />
+
+              <PreviewSectionLabel label="가능 작업" active={selectedSection === "specialties"} onClick={() => setSelectedSection("specialties")} />
+              <SpecialtiesPreview specialties={draft.specialties} activeIndex={selectedSection === "specialties" ? selectedIndex : -1} onSelect={(index) => {
+                setSelectedSection("specialties");
+                setSelectedIndex(index);
+              }} />
 
               <PreviewSectionLabel label="서비스" active={selectedSection === "services"} onClick={() => setSelectedSection("services")} />
               <ServicesPreview
@@ -549,12 +739,14 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
                 onSelect={() => setSelectedSection("contact")}
               />
             </div>
-          </div>
+            </div>
+          ) : null}
 
           <aside className="editor-inspector">
             <div className="editor-inspector-head">
               <span className="editor-inspector-label">선택됨</span>
               <strong>{sectionLabels[selectedSection]}</strong>
+              <span>{activeSectionDefinition?.description ?? ""}</span>
               {currentItemCount > 0 ? <span>{selectedIndex + 1} / {currentItemCount}</span> : null}
             </div>
 
@@ -575,9 +767,25 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
                     </div>
                   ))}
                 </div>
-                <Field label="설명 (lede 텍스트)">
-                  <textarea rows={5} value={draft.hero.description} onChange={(event) => updateHero("description", event.target.value)} />
-                </Field>
+                {homepageEditorFieldSchemas.hero.map((field) => (
+                  <Field key={field.key} label={field.label}>
+                    {field.kind === "textarea" || field.kind === "list" ? (
+                      <textarea
+                        rows={field.rows ?? 4}
+                        value={String(getSimpleSectionFieldValue("hero", field.key) ?? "")}
+                        onChange={(event) => updateSimpleSectionField("hero", field.key, event.target.value)}
+                      />
+                    ) : (
+                      <input
+                        value={String(getSimpleSectionFieldValue("hero", field.key) ?? "")}
+                        onChange={(event) => updateSimpleSectionField("hero", field.key, event.target.value)}
+                      />
+                    )}
+                    {field.hint ? <span className="editor-inline-note">{field.hint}</span> : null}
+                  </Field>
+                ))}
+                {renderTupleGroup("trust")}
+                {renderTupleGroup("proofs")}
                 <Field label="버튼 1 (전화 상담)">
                   <input value={draft.hero.primaryActionLabel} onChange={(event) => updateHero("primaryActionLabel", event.target.value)} />
                 </Field>
@@ -587,18 +795,7 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
                 <Field label="버튼 3 (견적상담)">
                   <input value={draft.hero.tertiaryActionLabel} onChange={(event) => updateHero("tertiaryActionLabel", event.target.value)} />
                 </Field>
-                <div className="editor-inspector-subgroup">
-                  <h4>메뉴 이름</h4>
-                  <p className="editor-inline-note">이동 경로는 그대로 유지되고 표시 텍스트만 바뀝니다.</p>
-                  {navItems.map((item, index) => (
-                    <Field key={item.href} label={item.label}>
-                      <input
-                        value={draft.navLabels[index] ?? item.label}
-                        onChange={(event) => updateNavLabel(index, event.target.value)}
-                      />
-                    </Field>
-                  ))}
-                </div>
+                {renderTupleGroup("navLabels")}
               </InspectorGroup>
             ) : null}
 
@@ -606,7 +803,7 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
               <InspectorGroup title="소개">
                 <div className="editor-inspector-subgroup">
                   <h4>섹션 이미지</h4>
-                  <p className="editor-inline-note">히어로 카드 덱과 소개 섹션에 함께 표시됩니다.</p>
+                  <p className="editor-inline-note">소개 섹션에서 함께 쓰는 공유 사례 이미지를 바꿉니다.</p>
                   {[0, 1, 2].map((idx) => (
                     <div key={idx} style={{ marginBottom: 8 }}>
                       <ImageUploadField
@@ -619,216 +816,85 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
                     </div>
                   ))}
                 </div>
-                <Field label="배지">
-                  <input value={draft.about.eyebrow} onChange={(event) => updateAbout("eyebrow", event.target.value)} />
-                </Field>
-                <Field label="제목">
-                  <input value={draft.about.title} onChange={(event) => updateAbout("title", event.target.value)} />
-                </Field>
-                <Field label="설명">
-                  <textarea rows={7} value={draft.about.description} onChange={(event) => updateAbout("description", event.target.value)} />
-                </Field>
-                <Field label="강점 항목 (줄 바꿈으로 구분)">
-                  <textarea rows={4} value={strengthsText} onChange={(event) => updateStrengths(event.target.value)} />
-                </Field>
+                {homepageEditorFieldSchemas.about.map((field) => (
+                  <Field key={field.key} label={field.label}>
+                    {field.kind === "textarea" || field.kind === "list" ? (
+                      <textarea
+                        rows={field.rows ?? 4}
+                        value={String(getSimpleSectionFieldValue("about", field.key) ?? "")}
+                        onChange={(event) => updateSimpleSectionField("about", field.key, event.target.value)}
+                      />
+                    ) : (
+                      <input
+                        value={String(getSimpleSectionFieldValue("about", field.key) ?? "")}
+                        onChange={(event) => updateSimpleSectionField("about", field.key, event.target.value)}
+                      />
+                    )}
+                    {field.hint ? <span className="editor-inline-note">{field.hint}</span> : null}
+                  </Field>
+                ))}
               </InspectorGroup>
             ) : null}
 
-            {selectedSection === "services" ? (
-              <InspectorGroup title="서비스 카드">
-                {draft.services.map((service, index) => (
-                  <button
-                    className={index === selectedIndex ? "preview-item-card active" : "preview-item-card"}
-                    key={`${service.title}-${index}`}
-                    type="button"
-                    onClick={() => setSelectedIndex(index)}
-                  >
-                    <strong>{index + 1}. {service.title}</strong>
-                    <span>{service.text}</span>
-                  </button>
+            {selectedSection === "symptoms" ? (
+              <InspectorGroup title="증상">
+                {homepageEditorFieldSchemas.symptoms.map((field) => (
+                  <Field key={field.key} label={field.label}>
+                    <textarea
+                      rows={field.rows ?? 6}
+                      value={String(getSimpleSectionFieldValue("symptoms", field.key) ?? "")}
+                      onChange={(event) => updateSimpleSectionField("symptoms", field.key, event.target.value)}
+                    />
+                    {field.hint ? <span className="editor-inline-note">{field.hint}</span> : null}
+                  </Field>
                 ))}
-                <Field label={`제목 (${selectedIndex + 1})`}>
-                  <input
-                    value={draft.services[selectedIndex]?.title ?? ""}
-                    onChange={(event) => updateService(selectedIndex, "title", event.target.value)}
-                  />
-                </Field>
-                <Field label="설명">
-                  <textarea
-                    rows={4}
-                    value={draft.services[selectedIndex]?.text ?? ""}
-                    onChange={(event) => updateService(selectedIndex, "text", event.target.value)}
-                  />
-                </Field>
+                <div className="editor-inspector-help">
+                  <p>홈 화면의 증상 빠른 진입 버튼 문구를 직접 수정합니다.</p>
+                </div>
               </InspectorGroup>
             ) : null}
 
-            {selectedSection === "cases" ? (
-              <InspectorGroup title="대표 사례">
-                {draft.cases.map((item, index) => (
-                  <button
-                    className={index === selectedIndex ? "preview-item-card active" : "preview-item-card"}
-                    key={`${item.title}-${index}`}
-                    type="button"
-                    onClick={() => setSelectedIndex(index)}
-                  >
-                    <strong>{index + 1}. {item.title}</strong>
-                    <span>{item.area}</span>
-                  </button>
+            {selectedSection === "specialties" ? (
+              <InspectorGroup title="가능 작업">
+                {homepageEditorFieldSchemas.specialties.map((field) => (
+                  <Field key={field.key} label={field.label}>
+                    <textarea
+                      rows={field.rows ?? 6}
+                      value={String(getSimpleSectionFieldValue("specialties", field.key) ?? "")}
+                      onChange={(event) => updateSimpleSectionField("specialties", field.key, event.target.value)}
+                    />
+                    {field.hint ? <span className="editor-inline-note">{field.hint}</span> : null}
+                  </Field>
                 ))}
-                <Field label={`제목 (${selectedIndex + 1})`}>
-                  <input
-                    value={draft.cases[selectedIndex]?.title ?? ""}
-                    onChange={(event) => updateCase(selectedIndex, "title", event.target.value)}
-                  />
-                </Field>
-                <Field label="공간">
-                  <input
-                    value={draft.cases[selectedIndex]?.area ?? ""}
-                    onChange={(event) => updateCase(selectedIndex, "area", event.target.value)}
-                  />
-                </Field>
-                <Field label="문제">
-                  <textarea
-                    rows={3}
-                    value={draft.cases[selectedIndex]?.problem ?? ""}
-                    onChange={(event) => updateCase(selectedIndex, "problem", event.target.value)}
-                  />
-                </Field>
-                <Field label="해결">
-                  <textarea
-                    rows={3}
-                    value={draft.cases[selectedIndex]?.solution ?? ""}
-                    onChange={(event) => updateCase(selectedIndex, "solution", event.target.value)}
-                  />
-                </Field>
-                <Field label="이미지 URL">
-                  <input
-                    value={draft.cases[selectedIndex]?.image ?? ""}
-                    onChange={(event) => updateCase(selectedIndex, "image", event.target.value)}
-                  />
-                </Field>
-                <ImageUploadField
-                  label="이미지 업로드"
-                  previewUrl={draft.cases[selectedIndex]?.image ?? ""}
-                  previewLabel={draft.cases[selectedIndex]?.title ?? `사례 ${selectedIndex + 1}`}
-                  onFileSelect={(file) => void uploadCaseImage(selectedIndex, file)}
-                  onClear={() => updateCase(selectedIndex, "image", "")}
-                />
-                <Field label="블로그 링크">
-                  <input
-                    value={draft.cases[selectedIndex]?.link ?? ""}
-                    onChange={(event) => updateCase(selectedIndex, "link", event.target.value)}
-                  />
-                </Field>
+                <div className="editor-inspector-help">
+                  <p>홈 화면의 가능 작업 필터와 선택 칩에 그대로 연결됩니다.</p>
+                </div>
               </InspectorGroup>
             ) : null}
 
-            {selectedSection === "blog" ? (
-              <InspectorGroup title="블로그 포스트">
-                {draft.blog.map((post, index) => (
-                  <button
-                    className={index === selectedIndex ? "preview-item-card active" : "preview-item-card"}
-                    key={`${post.title}-${index}`}
-                    type="button"
-                    onClick={() => setSelectedIndex(index)}
-                  >
-                    <strong>{index + 1}. {post.title}</strong>
-                    <span>{post.date}</span>
-                  </button>
-                ))}
-                <Field label={`제목 (${selectedIndex + 1})`}>
-                  <input
-                    value={draft.blog[selectedIndex]?.title ?? ""}
-                    onChange={(event) => updateBlog(selectedIndex, "title", event.target.value)}
-                  />
-                </Field>
-                <Field label="설명">
-                  <textarea
-                    rows={4}
-                    value={draft.blog[selectedIndex]?.description ?? ""}
-                    onChange={(event) => updateBlog(selectedIndex, "description", event.target.value)}
-                  />
-                </Field>
-                <Field label="날짜">
-                  <input
-                    value={draft.blog[selectedIndex]?.date ?? ""}
-                    onChange={(event) => updateBlog(selectedIndex, "date", event.target.value)}
-                  />
-                </Field>
-                <Field label="링크">
-                  <input
-                    value={draft.blog[selectedIndex]?.link ?? ""}
-                    onChange={(event) => updateBlog(selectedIndex, "link", event.target.value)}
-                  />
-                </Field>
-                <Field label="이미지 URL">
-                  <input
-                    value={draft.blog[selectedIndex]?.image ?? ""}
-                    onChange={(event) => updateBlog(selectedIndex, "image", event.target.value)}
-                  />
-                </Field>
-                <ImageUploadField
-                  label="이미지 업로드"
-                  previewUrl={draft.blog[selectedIndex]?.image ?? ""}
-                  previewLabel={draft.blog[selectedIndex]?.title ?? `블로그 ${selectedIndex + 1}`}
-                  onFileSelect={(file) => void uploadBlogImage(selectedIndex, file)}
-                  onClear={() => updateBlog(selectedIndex, "image", "")}
-                />
-              </InspectorGroup>
-            ) : null}
-
-            {selectedSection === "process" ? (
-              <InspectorGroup title="작업 절차">
-                {draft.process.map((item, index) => (
-                  <button
-                    className={index === selectedIndex ? "preview-item-card active" : "preview-item-card"}
-                    key={`${item.title}-${index}`}
-                    type="button"
-                    onClick={() => setSelectedIndex(index)}
-                  >
-                    <strong>{index + 1}. {item.title}</strong>
-                    <span>{item.text}</span>
-                  </button>
-                ))}
-                <Field label={`제목 (${selectedIndex + 1})`}>
-                  <input
-                    value={draft.process[selectedIndex]?.title ?? ""}
-                    onChange={(event) => updateProcess(selectedIndex, "title", event.target.value)}
-                  />
-                </Field>
-                <Field label="설명">
-                  <textarea
-                    rows={3}
-                    value={draft.process[selectedIndex]?.text ?? ""}
-                    onChange={(event) => updateProcess(selectedIndex, "text", event.target.value)}
-                  />
-                </Field>
-                <ImageUploadField
-                  label="단계 이미지"
-                  previewUrl={draft.process[selectedIndex]?.image ?? ""}
-                  previewLabel={draft.process[selectedIndex]?.title ?? `절차 ${selectedIndex + 1}`}
-                  onFileSelect={(file) => void uploadProcessImage(selectedIndex, file)}
-                  onClear={() => {
-                    setDraft((current) => {
-                      const proc = current.process.slice();
-                      proc[selectedIndex] = { ...(proc[selectedIndex] ?? { title: "", text: "" }), image: "" };
-                      return { ...current, process: proc };
-                    });
-                    markEdited();
-                  }}
-                />
-              </InspectorGroup>
-            ) : null}
+            {selectedSection === "services" || selectedSection === "cases" || selectedSection === "blog" || selectedSection === "process"
+              ? renderRepeaterSection(selectedSection)
+              : null}
 
             {selectedSection === "contact" ? (
               <InspectorGroup title="문의 영역">
-                <Field label="제목">
-                  <input value={draft.contact.title} onChange={(event) => updateContact("title", event.target.value)} />
-                </Field>
-                <Field label="설명">
-                  <textarea rows={6} value={draft.contact.description} onChange={(event) => updateContact("description", event.target.value)} />
-                </Field>
+                {homepageEditorFieldSchemas.contact.map((field) => (
+                  <Field key={field.key} label={field.label}>
+                    {field.kind === "textarea" ? (
+                      <textarea
+                        rows={field.rows ?? 6}
+                        value={String(getSimpleSectionFieldValue("contact", field.key) ?? "")}
+                        onChange={(event) => updateSimpleSectionField("contact", field.key, event.target.value)}
+                      />
+                    ) : (
+                      <input
+                        value={String(getSimpleSectionFieldValue("contact", field.key) ?? "")}
+                        onChange={(event) => updateSimpleSectionField("contact", field.key, event.target.value)}
+                      />
+                    )}
+                    {field.hint ? <span className="editor-inline-note">{field.hint}</span> : null}
+                  </Field>
+                ))}
               </InspectorGroup>
             ) : null}
 
@@ -868,6 +934,17 @@ function HeroPreview({
   onSelect: () => void;
 }) {
   const caseImages = useMemo(() => cases.filter((c) => c.image).slice(0, 3), [cases]);
+  const rotatorWords = content.rotatorWords.length > 0 ? content.rotatorWords : ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문"];
+  const proofs = content.proofs.length > 0 ? content.proofs : [
+    { label: "진행 과정", value: "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행" },
+    { label: "작업 범위", value: "부분수리부터 전체 리모델링까지" },
+    { label: "현장 기록", value: "네이버 블로그 포트폴리오" }
+  ];
+  const trustItems = content.trust.length > 0 ? content.trust : [
+    { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
+    { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
+    { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
+  ];
 
   return (
     <section className="hero editor-preview-section" aria-label="히어로 미리보기" style={{ padding: "clamp(24px,4vw,48px) clamp(18px,5vw,64px)" }}>
@@ -877,9 +954,9 @@ function HeroPreview({
       <div className="hero__grid">
         <div>
           <h1 className="hero__title" style={{ fontSize: "clamp(28px,3.5vw,52px)" }}>
-            집의 모든 불편을
+            {content.title || "집의 모든 불편을"}{" "}
             <br />
-            <span className="hero__rotator"><em>한 통의 전화</em></span>으로 끝냅니다.
+            <span className="hero__rotator"><em>{rotatorWords[0]}</em></span>으로 끝냅니다.
           </h1>
           <p className="hero__lede">{content.description || "설명 텍스트를 입력하세요."}</p>
           <div className="hero__cta" style={{ marginBottom: 0 }}>
@@ -896,6 +973,14 @@ function HeroPreview({
               {content.tertiaryActionLabel || "견적상담"}
             </span>
           </div>
+          <dl className="hero__proof" style={{ marginTop: 20 }}>
+            {proofs.map((item) => (
+              <div key={item.label}>
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
         {caseImages.length > 0 && (
           <div className="hero__deck">
@@ -917,6 +1002,19 @@ function HeroPreview({
             )}
           </div>
         )}
+      </div>
+      <div className="trust trust--embedded" aria-label="신뢰 지표">
+        <div className="trust__inner">
+          {trustItems.map((item) => (
+            <div className="trust__item" key={item.label}>
+              <span className="trust__num">{item.num}</span>
+              <div className="trust__label">
+                <strong>{item.label}</strong>
+                <span>{item.sub}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -975,6 +1073,82 @@ function AboutPreview({
         <div className="about-visual__note">
           <strong>현장 사진 우선 상담</strong>
           <span>사례 섹션 이미지를 변경하면 이 사진도 함께 바뀝니다.</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SymptomsPreview({
+  symptoms,
+  activeIndex,
+  onSelect
+}: {
+  symptoms: string[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <section className="editor-preview-section" aria-labelledby="symptoms-preview-title">
+      <button className="preview-edit-trigger" type="button" onClick={() => onSelect(0)}>
+        편집
+      </button>
+      <div className="section-heading row-heading" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(24px,4vw,48px) clamp(18px,5vw,64px) clamp(12px,2vw,20px)" }}>
+        <div>
+          <h2 id="symptoms-preview-title">증상별 빠른 진입</h2>
+          <p>홈 화면에서 고객이 가장 먼저 누르는 증상 버튼입니다.</p>
+        </div>
+      </div>
+      <div className="editor-preview-card" style={{ padding: 16, margin: "0 clamp(18px,5vw,64px) clamp(24px,3vw,40px)" }}>
+        <div className="editor-preview-labels">
+          {symptoms.map((symptom, index) => (
+            <button
+              key={`${symptom}-${index}`}
+              type="button"
+              className={index === activeIndex ? "editor-chip active" : "editor-chip"}
+              onClick={() => onSelect(index)}
+            >
+              {symptom}
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SpecialtiesPreview({
+  specialties,
+  activeIndex,
+  onSelect
+}: {
+  specialties: string[];
+  activeIndex: number;
+  onSelect: (index: number) => void;
+}) {
+  return (
+    <section className="editor-preview-section" aria-labelledby="specialties-preview-title">
+      <button className="preview-edit-trigger" type="button" onClick={() => onSelect(0)}>
+        편집
+      </button>
+      <div className="section-heading row-heading" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(24px,4vw,48px) clamp(18px,5vw,64px) clamp(12px,2vw,20px)" }}>
+        <div>
+          <h2 id="specialties-preview-title">가능 작업</h2>
+          <p>홈 화면의 작업 필터와 선택 칩을 구성합니다.</p>
+        </div>
+      </div>
+      <div className="editor-preview-card" style={{ padding: 16, margin: "0 clamp(18px,5vw,64px) clamp(24px,3vw,40px)" }}>
+        <div className="editor-preview-labels">
+          {specialties.map((specialty, index) => (
+            <button
+              key={`${specialty}-${index}`}
+              type="button"
+              className={index === activeIndex ? "editor-chip active" : "editor-chip"}
+              onClick={() => onSelect(index)}
+            >
+              {specialty}
+            </button>
+          ))}
         </div>
       </div>
     </section>

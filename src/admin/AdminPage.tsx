@@ -483,14 +483,18 @@ export function AdminPage() {
                       </p>
                       {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
                       <p className="admin-message">{item.message}</p>
-                      {item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
-                        <div className="admin-quote-badge-row">
-                          <span className="admin-quote-badge">모의견적 연동</span>
-                          <span className="admin-quote-badge admin-quote-badge--muted">
-                            {item.intake?.selectedWorks?.length ?? 0}개 항목
-                          </span>
-                        </div>
-                      ) : null}
+                      <div className="admin-quote-badge-row">
+                        {item.intake?.quoteSnapshot?.confirmedAt ? (
+                          <span className="admin-quote-badge">견적 컨펌됨</span>
+                        ) : item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
+                          <span className="admin-quote-badge">견적 작성됨</span>
+                        ) : (
+                          <span className="admin-quote-badge admin-quote-badge--muted">견적 없음</span>
+                        )}
+                        <span className="admin-quote-badge admin-quote-badge--muted">
+                          {item.intake?.selectedWorks?.length ?? 0}개 항목
+                        </span>
+                      </div>
                       {isExpanded ? (
                         <div className="admin-row-detail">
                           <div className="admin-detail-grid">
@@ -505,9 +509,7 @@ export function AdminPage() {
                             <DetailItem label="예산" value={stringField(item.intake?.budget)} />
                             <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
                           </div>
-                          {item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
-                            <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
-                          ) : null}
+                          <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
                           {item.attachments?.length ? (
                             <div className="inquiry-attachment-grid" aria-label="첨부 사진">
                               {item.attachments.map((attachment) => (

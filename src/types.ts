@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { HomepageSectionId, LandingSectionId } from "./contentSections";
 
 export type BusinessProfile = {
   name: string;
@@ -101,7 +102,19 @@ export type HomepageHeroSlide = {
   scale: number;
 };
 
+export type HomepageHeroProof = {
+  label: string;
+  value: string;
+};
+
+export type HomepageHeroTrustItem = {
+  num: string;
+  label: string;
+  sub: string;
+};
+
 export type HomepageContent = {
+  sections: HomepageSectionId[];
   navLabels: string[];
   hero: {
     title: string;
@@ -113,6 +126,9 @@ export type HomepageContent = {
     primaryActionLabel: string;
     secondaryActionLabel: string;
     tertiaryActionLabel: string;
+    rotatorWords: string[];
+    proofs: HomepageHeroProof[];
+    trust: HomepageHeroTrustItem[];
     slides: HomepageHeroSlide[];
   };
   about: {
@@ -122,6 +138,7 @@ export type HomepageContent = {
     strengths: string[];
   };
   symptoms: string[];
+  specialties: string[];
   services: EditableServiceCard[];
   cases: EditableCaseCard[];
   blog: EditableBlogPost[];
@@ -290,6 +307,8 @@ export type InquiryQuoteLineItem = {
 export type InquiryQuoteCharge = {
   id: string;
   label: string;
+  qty: number;
+  unitPrice: number;
   amount: number;
 };
 
@@ -297,6 +316,7 @@ export type InquiryQuoteSnapshot = {
   sourceServicePath: string | null;
   sourcePricingPath: string | null;
   sourceServiceLabel: string | null;
+  confirmedAt: string | null;
   selectedWorks: string[];
   selectedWorkIds: string[];
   lineItems: InquiryQuoteLineItem[];
