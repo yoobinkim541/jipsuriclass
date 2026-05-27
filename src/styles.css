@@ -1210,10 +1210,41 @@ textarea {
 }
 
 @media (min-width: 1100px) and (max-width: 1599px) {
+  main.home-page .hero {
+    justify-content: center;
+  }
+
+  main.home-page .hero__grid {
+    flex: 0 1 auto;
+    padding-block: clamp(18px, 3vh, 32px);
+  }
+
+  main.home-page .hero__title {
+    font-size: clamp(48px, 4.2vw, 62px);
+    margin-bottom: clamp(30px, 4vh, 44px);
+  }
+
+  main.home-page .hero__lede {
+    font-size: clamp(16px, 1.25vw, 18px);
+    margin-bottom: 24px;
+  }
+
+  main.home-page .hero__cta {
+    margin-bottom: 30px;
+  }
+
+  main.home-page .hero__proof {
+    padding-top: 18px;
+  }
+
+  main.home-page .trust--embedded {
+    margin-top: clamp(22px, 3vh, 36px);
+  }
+
   main.home-page .services,
   main.home-page .cases,
   main.home-page .blog {
-    justify-content: flex-start;
+    justify-content: center;
   }
 
   main.home-page .services .sec-head {
@@ -1292,10 +1323,6 @@ textarea {
     margin-bottom: 12px;
   }
 
-  main.home-page .cases {
-    padding-top: clamp(14px, 1.8vh, 24px);
-  }
-
   main.home-page .cases__rail {
     gap: 12px;
     padding-top: 0;
@@ -1351,7 +1378,6 @@ textarea {
   main.home-page .blog-card-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
-    margin-top: clamp(12px, 2vh, 22px);
   }
 
   main.home-page .blog-card,
@@ -2809,8 +2835,15 @@ textarea {
 
 .landing-hero-panel {
   display: grid;
-  gap: 14px;
-  padding: 24px;
+  gap: 16px;
+  padding: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(253, 251, 246, 0.98)),
+    radial-gradient(circle at 100% 0%, rgba(215, 174, 107, 0.18), transparent 36%);
+  border-color: rgba(16, 40, 74, 0.14);
+  box-shadow: 0 14px 40px rgba(8, 22, 40, 0.08);
+  overflow: hidden;
+  position: relative;
 }
 
 .landing-hero-copy h1 {
@@ -2819,6 +2852,9 @@ textarea {
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin: 0;
+  max-width: 12em;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 
 .landing-hero-copy p {
@@ -2827,39 +2863,104 @@ textarea {
   line-height: 1.75;
   margin: 16px 0 0;
   max-width: 60ch;
+  word-break: keep-all;
+}
+
+.landing-hero-copy .hero-actions {
+  align-items: center;
+  gap: 10px;
+}
+
+.landing-hero-copy .hero-actions .primary-button,
+.landing-hero-copy .hero-actions .secondary-button {
+  min-width: 132px;
+  white-space: nowrap;
 }
 
 .landing-panel-label {
-  color: var(--gold-500, #d7ae6b);
-  font-size: 12px;
+  align-items: center;
+  color: var(--gold-700, #a77a2a);
+  display: inline-flex;
+  font-size: 11px;
   font-weight: 900;
+  gap: 8px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
+.landing-panel-label::before {
+  background: var(--gold-500, #d7ae6b);
+  border-radius: 999px;
+  content: "";
+  height: 7px;
+  width: 7px;
+}
+
 .landing-highlight-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .landing-highlight-list li {
-  color: var(--ink-2, #2a3a55);
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.6;
-  padding-left: 16px;
+  align-items: center;
+  background: rgba(16, 40, 74, 0.04);
+  border: 1px solid rgba(16, 40, 74, 0.08);
+  border-radius: 10px;
+  color: var(--ink, #0b1a30);
+  display: grid;
+  font-size: 14px;
+  font-weight: 800;
+  gap: 10px;
+  grid-template-columns: 24px minmax(0, 1fr);
+  line-height: 1.45;
+  padding: 10px 12px;
   position: relative;
 }
 
 .landing-highlight-list li::before {
-  color: var(--gold-500, #d7ae6b);
-  content: "—";
+  align-items: center;
+  background: var(--ink, #0b1a30);
+  border-radius: 999px;
+  color: #ffffff;
+  content: "✓";
+  display: inline-flex;
+  font-size: 12px;
   font-weight: 900;
-  left: 0;
-  position: absolute;
+  height: 24px;
+  justify-content: center;
+  position: static;
+  width: 24px;
+}
+
+.landing-hero-panel .business-list {
+  border-top: 1px solid rgba(16, 40, 74, 0.1);
+  display: grid;
+  gap: 8px;
+  margin: 2px 0 0;
+  padding-top: 14px;
+}
+
+.landing-hero-panel .business-list li {
+  align-items: flex-start;
+  background: #ffffff;
+  border: 1px solid rgba(16, 40, 74, 0.08);
+  border-radius: 10px;
+  color: var(--ink-2, #2a3a55);
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  line-height: 1.55;
+  padding: 9px 10px;
+}
+
+.landing-hero-panel .business-list li::before {
+  color: var(--gold-700, #a77a2a);
+  content: "•";
+  margin-right: 0;
 }
 
 .landing-price-quick {
@@ -8001,6 +8102,10 @@ textarea {
     padding-bottom: calc(132px + env(safe-area-inset-bottom));
   }
 
+  .landing-section:last-of-type {
+    padding-bottom: calc(132px + env(safe-area-inset-bottom));
+  }
+
   .admin-actions {
     gap: 6px;
   }
@@ -8645,6 +8750,44 @@ textarea {
   }
 }
 
+@media (max-width: 720px) {
+  .landing-hero {
+    padding-top: clamp(34px, 9vw, 48px);
+  }
+
+  .landing-hero-grid {
+    gap: 24px;
+    margin-top: 16px;
+  }
+
+  .landing-hero-copy h1 {
+    font-size: clamp(28px, 7.4vw, 34px);
+    line-height: 1.16;
+    max-width: 11em;
+  }
+
+  .landing-hero-copy p {
+    font-size: 15px;
+    line-height: 1.75;
+    margin-top: 14px;
+  }
+
+  .landing-hero-copy .hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .landing-hero-copy .hero-actions .primary-button,
+  .landing-hero-copy .hero-actions .secondary-button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 10px;
+    width: 100%;
+  }
+}
+
 /* ============================================================
    Electric Price Page
    ============================================================ */
@@ -9069,5 +9212,49 @@ textarea {
     flex: none;
     width: 100%;
     position: static;
+  }
+
+  .estimator-item-row {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    gap: 8px 10px;
+    align-items: center;
+    padding: 12px 14px;
+  }
+
+  .estimator-item-row .estimator-checkbox {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .estimator-item-row > div:nth-child(2) {
+    grid-column: 2 / 4;
+    grid-row: 1;
+    line-height: 1.35;
+  }
+
+  .estimator-item-row > div:nth-child(2) > span:first-child {
+    font-size: 13px !important;
+    font-weight: 700;
+  }
+
+  .estimator-item-row > span:nth-child(3) {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+  }
+
+  .estimator-item-row > span:nth-child(4) {
+    grid-column: 2;
+    grid-row: 3;
+    width: auto !important;
+    justify-self: start;
+  }
+
+  .estimator-item-row .estimator-qty-control {
+    grid-column: 3;
+    grid-row: 2 / 4;
+    justify-self: end;
+    align-self: center;
   }
 }

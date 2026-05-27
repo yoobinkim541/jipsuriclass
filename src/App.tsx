@@ -1805,23 +1805,37 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
 }
 
 function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Record<string, number>>({});
 
   const toggle = useCallback((name: string) => {
     setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
+      if (prev[name]) {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      }
+      return { ...prev, [name]: 1 };
+    });
+  }, []);
+
+  const setItemQty = useCallback((name: string, qty: number) => {
+    setSelected((prev) => {
+      if (!prev[name]) return prev;
+      return { ...prev, [name]: Math.max(1, Math.min(99, qty)) };
     });
   }, []);
 
   const selectedItems = useMemo(
-    () => config.categories.flatMap((cat) => cat.items).filter((item) => selected.has(item.name)),
+    () => config.categories.flatMap((cat) => cat.items).filter((item) => selected[item.name]),
     [selected, config]
   );
 
-  const total = useMemo(() => selectedItems.reduce((sum, item) => sum + item.price, 0), [selectedItems]);
+  const selectedCount = selectedItems.length;
+  const canAdjustQuantity = (_unit: string) => true;
+  const total = useMemo(
+    () => selectedItems.reduce((sum, item) => sum + item.price * (selected[item.name] ?? 1), 0),
+    [selectedItems, selected]
+  );
   const hasCallout = selectedItems.some((i) => i.name.includes("출장"));
   const hasMaterial = selectedItems.some((i) => i.materialNote === "별도");
   const fmt = (n: number) => n.toLocaleString("ko-KR") + "원";
@@ -1841,9 +1855,9 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
             <span style={{ fontSize: 13, color: "var(--ink-3,#5b6781)" }}>
               항목 클릭으로 선택 · 복수 항목 동시 선택 가능
             </span>
-            {selected.size > 0 && (
+            {selectedCount > 0 && (
               <button
-                onClick={() => setSelected(new Set())}
+                onClick={() => setSelected({})}
                 style={{ background: "none", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 6, cursor: "pointer", fontSize: 12, color: "var(--ink-3,#5b6781)", padding: "3px 10px", display: "flex", alignItems: "center", gap: 4 }}
               >
                 <RefreshCw size={12} />
@@ -1861,7 +1875,9 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
                 </div>
 
                 {cat.items.map((item) => {
-                  const isSelected = selected.has(item.name);
+                  const qty = selected[item.name] ?? 0;
+                  const isSelected = qty > 0;
+                  const isQuantityItem = canAdjustQuantity(item.unit);
                   return (
                     <div
                       key={item.name}
@@ -1898,6 +1914,33 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
                       ) : (
                         <span style={{ width: 44, flexShrink: 0 }} />
                       )}
+
+                      {isSelected && isQuantityItem && (
+                        <div
+                          className="estimator-qty-control"
+                          aria-label={`${item.name} 수량`}
+                          onClick={(event) => event.stopPropagation()}
+                          style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, border: "1px solid var(--hair,#e6dfd0)", borderRadius: 999, padding: 2, background: "#fff" }}
+                        >
+                          <button
+                            type="button"
+                            aria-label={`${item.name} 수량 줄이기`}
+                            onClick={() => setItemQty(item.name, qty - 1)}
+                            style={{ width: 22, height: 22, border: 0, borderRadius: 999, background: "var(--cream-2,#f1ece1)", color: "var(--ink,#0b1a30)", cursor: "pointer", fontWeight: 800, lineHeight: 1 }}
+                          >
+                            -
+                          </button>
+                          <span style={{ minWidth: 18, textAlign: "center", fontSize: 12, fontWeight: 800, color: "var(--ink,#0b1a30)" }}>{qty}</span>
+                          <button
+                            type="button"
+                            aria-label={`${item.name} 수량 늘리기`}
+                            onClick={() => setItemQty(item.name, qty + 1)}
+                            style={{ width: 22, height: 22, border: 0, borderRadius: 999, background: "var(--navy-700,#10284a)", color: "#fff", cursor: "pointer", fontWeight: 800, lineHeight: 1 }}
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1912,9 +1955,9 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
             <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--hair,#e6dfd0)", display: "flex", alignItems: "center", gap: 8 }}>
               <Calculator size={16} style={{ color: "var(--ink-2,#2a3a55)" }} />
               <span style={{ fontWeight: 700, fontSize: 14, color: "var(--ink,#0b1a30)" }}>견적 요약</span>
-              {selected.size > 0 && (
+              {selectedCount > 0 && (
                 <span style={{ marginLeft: "auto", background: "#3b5bdb", color: "#fff", borderRadius: 10, fontSize: 11, fontWeight: 700, padding: "1px 7px" }}>
-                  {selected.size}
+                  {selectedCount}
                 </span>
               )}
             </div>
@@ -1927,12 +1970,18 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
               ) : (
                 <div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-                    {selectedItems.map((item) => (
-                      <div key={item.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, fontSize: 13 }}>
-                        <span style={{ color: "var(--ink-2,#2a3a55)", flex: 1, lineHeight: 1.4 }}>{item.name}</span>
-                        <span style={{ fontWeight: 600, color: "var(--ink,#0b1a30)", whiteSpace: "nowrap" }}>{fmt(item.price)}~</span>
-                      </div>
-                    ))}
+                    {selectedItems.map((item) => {
+                      const qty = selected[item.name] ?? 1;
+                      return (
+                        <div key={item.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, fontSize: 13 }}>
+                          <span style={{ color: "var(--ink-2,#2a3a55)", flex: 1, lineHeight: 1.4 }}>
+                            {item.name}
+                            {qty > 1 && <span style={{ color: "var(--ink-4,#94a0b8)", fontWeight: 700 }}> ×{qty}</span>}
+                          </span>
+                          <span style={{ fontWeight: 600, color: "var(--ink,#0b1a30)", whiteSpace: "nowrap" }}>{fmt(item.price * qty)}~</span>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {!hasCallout && (
