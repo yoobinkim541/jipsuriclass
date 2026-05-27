@@ -54,6 +54,9 @@ export function EstimatePage() {
   const presetProject = query.get("project") ?? "";
   const presetIssue = query.get("issue") ?? "";
   const presetWorks = parseQueryList(query.get("works"));
+  const presetWorkIds = parseQueryList(query.get("workIds"));
+  const presetSourceServicePath = query.get("sourceService") ?? "";
+  const presetSourcePricingPath = query.get("sourcePricing") ?? "";
   const [content, setContent] = useState<EstimatePageContent>(defaultEstimatePageContent);
   const [stage, setStage] = useState<"intro" | "survey">("intro");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8>(1);
@@ -228,7 +231,14 @@ export function EstimatePage() {
           address: draft.address,
           detailAddress: draft.detailAddress,
           requestNote: draft.requestNote,
-          consent: draft.consent
+          consent: draft.consent,
+          selectedWorkIds: presetWorkIds,
+          quoteSource: {
+            servicePath: presetSourceServicePath || null,
+            pricingPath: presetSourcePricingPath || null,
+            works: presetWorks,
+            workIds: presetWorkIds
+          }
         }
       });
 

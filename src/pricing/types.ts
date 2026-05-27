@@ -14,6 +14,7 @@ export type PricingCategory = {
 };
 
 export type ServicePricingConfig = {
+  servicePath: string;
   serviceName: string;
   pricingPagePath: string;
   categories: PricingCategory[];

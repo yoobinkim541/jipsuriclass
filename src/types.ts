@@ -268,6 +268,70 @@ export type EstimatePageContent = {
   };
 };
 
+export type InquiryQuoteSource = {
+  servicePath: string | null;
+  pricingPath: string | null;
+  works: string[];
+  workIds: string[];
+};
+
+export type InquiryQuoteLineItem = {
+  id: string;
+  sourceId: string | null;
+  name: string;
+  unit: string;
+  qty: number;
+  unitPrice: number;
+  categoryTitle: string | null;
+  note: string | null;
+  materialNote: string | null;
+};
+
+export type InquiryQuoteCharge = {
+  id: string;
+  label: string;
+  amount: number;
+};
+
+export type InquiryQuoteSnapshot = {
+  sourceServicePath: string | null;
+  sourcePricingPath: string | null;
+  sourceServiceLabel: string | null;
+  selectedWorks: string[];
+  selectedWorkIds: string[];
+  lineItems: InquiryQuoteLineItem[];
+  materialCharges: InquiryQuoteCharge[];
+  extraCharges: InquiryQuoteCharge[];
+  vatRate: number;
+  memo: string;
+  updatedAt: string | null;
+};
+
+export type InquiryIntake = {
+  spaceType?: string;
+  areaBand?: string;
+  propertyStatus?: string;
+  reason?: string;
+  selectedRooms?: string[];
+  otherRoomDetail?: string;
+  budget?: string;
+  startTiming?: string;
+  name?: string;
+  phone?: string;
+  postalCode?: string;
+  address?: string;
+  detailAddress?: string;
+  requestNote?: string;
+  consent?: boolean;
+  propertyType?: string;
+  projectType?: string;
+  preferredTime?: string;
+  selectedWorks?: string[];
+  selectedWorkIds?: string[];
+  quoteSource?: InquiryQuoteSource | null;
+  quoteSnapshot?: InquiryQuoteSnapshot | null;
+};
+
 export type InquiryAttachment = {
   name: string;
   url: string;
@@ -283,7 +347,7 @@ export type InquiryRow = {
   service_area: string | null;
   message: string;
   attachments: InquiryAttachment[] | null;
-  intake: Record<string, unknown> | null;
+  intake: InquiryIntake | null;
   status: InquiryStatus;
   source: string;
   user_id: string | null;

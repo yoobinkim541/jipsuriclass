@@ -1,5 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
-import type { InquiryRow, InquiryStatus } from "../types";
+import type { InquiryIntake, InquiryRow, InquiryStatus } from "../types";
 
 export class AdminService {
   async signOut() {
@@ -47,6 +47,17 @@ export class AdminService {
     }
 
     const { error } = await supabase.from("inquiries").update({ status }).eq("id", id);
+    if (error) {
+      throw error;
+    }
+  }
+
+  async updateInquiryIntake(id: string, intake: InquiryIntake) {
+    if (!supabase) {
+      throw new Error("Supabase environment variables are not configured");
+    }
+
+    const { error } = await supabase.from("inquiries").update({ intake }).eq("id", id);
     if (error) {
       throw error;
     }

@@ -14,6 +14,7 @@ import { exteriorPricingCategories } from "./exteriorPricing";
 
 export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
   "/service/plumbing": {
+    servicePath: "/service/plumbing",
     serviceName: "종합 설비",
     pricingPagePath: "/service/plumbing/pricing",
     categories: plumbingPricingCategories,
@@ -21,6 +22,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "배관 공사·막힘 보수·분배기·동파해빙을 다룹니다. 누수 탐지·보수는 누수 탐지·보수 서비스를 이용해 주세요. 부속자재(배관 자재, 밸브, 피팅 등) 비용은 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/electric": {
+    servicePath: "/service/electric",
     serviceName: "전기",
     pricingPagePath: "/service/electric/pricing",
     categories: electricPricingCategories,
@@ -28,6 +30,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "LED·스마트 제품 등 자재 비용은 별도입니다. 출장비(평일 25,000원, 주말 35,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/leak": {
+    servicePath: "/service/leak",
     serviceName: "누수 탐지·보수",
     pricingPagePath: "/service/leak/pricing",
     categories: leakPricingCategories,
@@ -35,6 +38,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "누수 탐지비(진단비)는 출장비와 별도로 청구됩니다. 보수 후 마감 복구 비용은 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/bathroom": {
+    servicePath: "/service/bathroom",
     serviceName: "욕실 수리",
     pricingPagePath: "/service/bathroom/pricing",
     categories: bathroomPricingCategories,
@@ -42,6 +46,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "세면기·양변기·욕조 등 제품 비용은 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/door": {
+    servicePath: "/service/door",
     serviceName: "도어 수리",
     pricingPagePath: "/service/door/pricing",
     categories: doorPricingCategories,
@@ -49,6 +54,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "경첩·손잡이·도어락 등 부속자재 비용은 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/window": {
+    servicePath: "/service/window",
     serviceName: "창문·방충망",
     pricingPagePath: "/service/window/pricing",
     categories: windowPricingCategories,
@@ -56,6 +62,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "롤러·모헤어·방충망 망 등 자재 비용은 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/carpentry": {
+    servicePath: "/service/carpentry",
     serviceName: "목공·인테리어",
     pricingPagePath: "/service/carpentry/pricing",
     categories: carpentryPricingCategories,
@@ -63,6 +70,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "마루·단열재·도배지 등 자재 비용은 별도입니다. 제품(후드, 수전 등) 가격도 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/wallpaper": {
+    servicePath: "/service/wallpaper",
     serviceName: "도배",
     pricingPagePath: "/service/wallpaper/pricing",
     categories: wallpaperPricingCategories,
@@ -70,6 +78,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "벽지 자재(소합·광합·실크지 등) 비용은 시공비와 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/wallpaper-floor": {
+    servicePath: "/service/wallpaper-floor",
     serviceName: "도배·바닥",
     pricingPagePath: "/service/wallpaper-floor/pricing",
     categories: wallpaperFloorPricingCategories,
@@ -77,6 +86,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "벽지·마루·데코타일 등 자재 비용은 시공비와 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/tile": {
+    servicePath: "/service/tile",
     serviceName: "타일",
     pricingPagePath: "/service/tile/pricing",
     categories: tilePricingCategories,
@@ -84,6 +94,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "타일 자재 비용은 시공비와 별도입니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/paint": {
+    servicePath: "/service/paint",
     serviceName: "페인트",
     pricingPagePath: "/service/paint/pricing",
     categories: paintPricingCategories,
@@ -91,6 +102,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
       "페인트 자재 비용은 시공비와 별도입니다. 고층 작업 시 장비 사용료가 추가됩니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
   "/service/exterior": {
+    servicePath: "/service/exterior",
     serviceName: "외부 부분보수",
     pricingPagePath: "/service/exterior/pricing",
     categories: exteriorPricingCategories,

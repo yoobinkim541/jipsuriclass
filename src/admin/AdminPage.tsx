@@ -16,7 +16,8 @@ import { business } from "../data";
 import { supabase } from "../lib/supabaseClient";
 import { AuthService } from "../services/AuthService";
 import { AdminService } from "../services/AdminService";
-import type { InquiryRow, InquiryStatus } from "../types";
+import type { InquiryIntake, InquiryRow, InquiryStatus } from "../types";
+import { InquiryQuoteEditor } from "./InquiryQuoteEditor";
 import { SiteContentEditor } from "./SiteContentEditor";
 
 const authService = new AuthService();
@@ -130,6 +131,11 @@ export function AdminPage() {
     } finally {
       setActionId(null);
     }
+  }
+
+  async function handleInquiryIntakeSave(id: string, intake: InquiryIntake) {
+    await adminService.updateInquiryIntake(id, intake);
+    setInquiries((current) => current.map((item) => (item.id === id ? { ...item, intake } : item)));
   }
 
   async function handleCopy(text: string, label: string) {
@@ -477,6 +483,14 @@ export function AdminPage() {
                       </p>
                       {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
                       <p className="admin-message">{item.message}</p>
+                      {item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
+                        <div className="admin-quote-badge-row">
+                          <span className="admin-quote-badge">모의견적 연동</span>
+                          <span className="admin-quote-badge admin-quote-badge--muted">
+                            {item.intake?.selectedWorks?.length ?? 0}개 항목
+                          </span>
+                        </div>
+                      ) : null}
                       {isExpanded ? (
                         <div className="admin-row-detail">
                           <div className="admin-detail-grid">
@@ -491,6 +505,9 @@ export function AdminPage() {
                             <DetailItem label="예산" value={stringField(item.intake?.budget)} />
                             <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
                           </div>
+                          {item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
+                            <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
+                          ) : null}
                           {item.attachments?.length ? (
                             <div className="inquiry-attachment-grid" aria-label="첨부 사진">
                               {item.attachments.map((attachment) => (

@@ -1316,3 +1316,36 @@ Verification:
 
 Follow-up:
 - None.
+
+## 2026-05-27 - Admin Quote Editor and Export Flow
+
+Changed files:
+- `src/services/QuoteService.ts`
+- `src/admin/InquiryQuoteEditor.tsx`
+- `src/admin/AdminPage.tsx`
+- `src/estimate/EstimatePage.tsx`
+- `src/App.tsx`
+- `src/services/AdminService.ts`
+- `src/pricing/registry.ts`
+- `src/pricing/types.ts`
+- `src/types.ts`
+- `src/styles.css`
+- `package.json`
+- `package-lock.json`
+
+Implemented behavior:
+- Added mock-estimate source context to the estimate intake so the selected works and source paths are preserved in inquiry data.
+- Added an admin quote editor that loads the inquiry into an editable spreadsheet-style quote draft with line items, material charges, extra charges, memo, totals, and save support.
+- Added XLSX and PDF download actions for the admin quote draft.
+- Added runtime Korean font loading for PDF generation.
+- Fixed quote item resolution so a source-specific `workIds` selection maps to one source instead of duplicating across all catalog sources.
+
+Verification:
+- `npm run build` passed.
+- Browser verified `/service/electric/price` selection -> `/estimate` transfer on mobile and desktop.
+- Browser verified estimate intro summary renders the selected work list.
+- Browser verified XLSX/PDF download generation from the quote service helpers.
+- Browser verified quote draft resolution returns a single source-specific line item for a source-matched work ID.
+
+Follow-up:
+- None.
