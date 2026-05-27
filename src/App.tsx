@@ -2222,27 +2222,18 @@ function filterLandingPosts(
 }
 
 function buildLandingSearchTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
-  const extraTerms = page.pageType === "Service"
-    ? [page.serviceType, page.serviceType, page.title]
-    : [page.areaLabel, page.areaLabel, page.title];
+  const terms = page.pageType === "Service"
+    ? (page.blogTerms ?? page.searchTerms)
+    : [page.areaLabel, ...page.searchTerms];
 
-  const relatedTerms = page.pageType === "Service" ? (page.relatedLinks?.map((link) => link.label) ?? []) : [];
-
-  return [...page.searchTerms, ...extraTerms, ...relatedTerms]
+  return terms
     .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
     .map((term) => term.toLowerCase())
     .filter((term, index, array) => array.indexOf(term) === index);
 }
 
 function buildLandingQueryTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
-  const coreTerms = page.pageType === "Service"
-    ? [page.serviceType, ...page.searchTerms]
-    : [page.areaLabel, ...page.searchTerms];
-
-  return coreTerms
-    .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
-    .map((term) => term.toLowerCase())
-    .filter((term, index, array) => array.indexOf(term) === index);
+  return buildLandingSearchTerms(page);
 }
 
 function buildPriceSelectionHref(
@@ -2296,7 +2287,7 @@ function scoreLandingPost(
     score += term.length >= 3 ? 2 : 1;
   }
 
-  const primaryTerm = normalizeSearchText(page.pageType === "Service" ? page.serviceType ?? page.title : page.areaLabel ?? page.title);
+  const primaryTerm = terms[0] ?? "";
   if (primaryTerm && haystack.includes(primaryTerm)) {
     score += page.pageType === "Service" ? 24 : 20;
   }
@@ -2441,6 +2432,60 @@ function buildInitialPriceSelection(categories: PriceCategory[], itemIds: string
   }, {});
 }
 
+const PRICE_SELECTION_STORAGE_PREFIX = "jipsuri.priceSelection.v1";
+
+function buildPriceSelectionStorageKey(pricingPath: string) {
+  return `${PRICE_SELECTION_STORAGE_PREFIX}:${pricingPath}`;
+}
+
+function readPersistedPriceSelection(pricingPath: string, categories: PriceCategory[]) {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  const raw = window.localStorage.getItem(buildPriceSelectionStorageKey(pricingPath));
+  if (!raw) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const allowed = new Set(categories.flatMap((category) => category.items.map((item) => item.id)));
+
+    return Object.entries(parsed).reduce<Record<string, number>>((selection, [itemId, qty]) => {
+      const nextQty = Number(qty);
+      if (allowed.has(itemId) && Number.isFinite(nextQty) && nextQty > 0) {
+        selection[itemId] = Math.max(1, Math.round(nextQty));
+      }
+      return selection;
+    }, {});
+  } catch {
+    return {};
+  }
+}
+
+function persistPriceSelection(pricingPath: string, categories: PriceCategory[], selection: Record<string, number>) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  const allowed = new Set(categories.flatMap((category) => category.items.map((item) => item.id)));
+  const nextSelection = Object.entries(selection).reduce<Record<string, number>>((acc, [itemId, qty]) => {
+    if (allowed.has(itemId) && Number.isFinite(qty) && qty > 0) {
+      acc[itemId] = Math.max(1, Math.round(qty));
+    }
+    return acc;
+  }, {});
+  const storageKey = buildPriceSelectionStorageKey(pricingPath);
+
+  if (!Object.keys(nextSelection).length) {
+    window.localStorage.removeItem(storageKey);
+    return;
+  }
+
+  window.localStorage.setItem(storageKey, JSON.stringify(nextSelection));
+}
+
 type ServicePricePageProps = {
   kicker: string;
   title: string;
@@ -2466,7 +2511,18 @@ function ServicePricePage({
 }: ServicePricePageProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const initialQuery = useMemo(() => getPricePageQuery(), []);
-  const [selected, setSelected] = useState<Record<string, number>>(() => buildInitialPriceSelection(categories, initialQuery.itemIds));
+  const [selected, setSelected] = useState<Record<string, number>>(() => {
+    const querySelection = buildInitialPriceSelection(categories, initialQuery.itemIds);
+    if (Object.keys(querySelection).length > 0) {
+      return querySelection;
+    }
+
+    return readPersistedPriceSelection(pricingPath, categories);
+  });
+
+  useEffect(() => {
+    persistPriceSelection(pricingPath, categories, selected);
+  }, [categories, pricingPath, selected]);
 
   useEffect(() => {
     if (!initialQuery.focus) return;

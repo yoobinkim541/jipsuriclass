@@ -1,5 +1,17 @@
 # Work Log
 
+## 2026-05-27 - Landing Blog Matching Refinement
+
+Changed files: `src/landingPages.ts`, `src/App.tsx`
+
+Implemented behavior:
+- Split service-page blog matching from the broader SEO search terms by adding per-service `blogTerms` anchors.
+- Narrowed landing-page blog fetching/filtering so service pages use service-specific anchors instead of broad shared terms like `방수`, `외벽`, or `코킹`.
+- Kept area-page matching on the existing area-focused terms.
+
+Verification:
+- `npm run build` passed.
+
 ## 2026-05-27 - Estimate Works Handoff
 
 Changed files: `src/estimate/EstimatePage.tsx`, `src/styles.css`
@@ -1346,6 +1358,26 @@ Verification:
 - Browser verified estimate intro summary renders the selected work list.
 - Browser verified XLSX/PDF download generation from the quote service helpers.
 - Browser verified quote draft resolution returns a single source-specific line item for a source-matched work ID.
+
+Follow-up:
+- None.
+
+## 2026-05-27 - Price Calculator Selection Persistence
+
+Changed files:
+- `src/App.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Persisted the service price-page mock estimate selection in `localStorage` by pricing page path.
+- Restored selected items and quantities when the user returns from the estimate page or refreshes the calculator.
+- Kept query-string preselection working while letting stored selections resume the last calculator state.
+
+Verification:
+- `npm run build` passed.
+- Browser verified mobile and desktop restore flow.
+- Verified the selected checkbox stays checked after returning from `/estimate`.
+- Verified quantity changes are restored as well.
 
 Follow-up:
 - None.
