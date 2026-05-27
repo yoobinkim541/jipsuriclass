@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-28 - Homepage Rotator Copy Fix
+
+Changed files:
+- `src/App.tsx`
+- `src/admin/HomepageEditor.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Changed the homepage hero rotator copy from `으로 끝냅니다` to `로 끝냅니다`.
+- Kept the homepage editor preview in sync with the public hero text.
+
+Verification:
+- `npm run build` passed.
+- Browser verification confirmed the homepage hero now reads `집의 모든 불편을 한 통의 전화로 끝냅니다.`
+
+Follow-up:
+- None.
+
 ## 2026-05-28 - Admin Stack Rollout
 
 Changed files:
