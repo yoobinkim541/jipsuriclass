@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-05-28 - Admin Inquiry Dashboard Improvement
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a compact inquiry dashboard panel with pending, today, 7-day, and last refresh summaries.
+- Added quick action chips for pending, new, done, CSV export, and refresh on the inquiry management view.
+- Replaced the first insight card set with a clearer pending status summary so the queue reads faster at a glance.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked `/admin/inquiries` at 1440px and confirmed the new dashboard panel, quick actions, and filtered summary render correctly.
+
+Follow-up:
+- None.
+
 ## 2026-05-28 - Homepage Rotator Copy Fix
 
 Changed files:

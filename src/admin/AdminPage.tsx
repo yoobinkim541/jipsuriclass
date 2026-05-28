@@ -22,7 +22,7 @@ import { SiteContentEditor } from "./SiteContentEditor";
 
 const authService = new AuthService();
 const adminService = new AdminService();
-const statusOrder: Array<"all" | InquiryStatus> = ["all", "new", "contacted", "done", "spam"];
+const statusOrder: Array<InquiryFilter> = ["all", "pending", "new", "contacted", "done", "spam"];
 const sortOrder: Array<{ value: SortMode; label: string }> = [
   { value: "newest", label: "최신순" },
   { value: "oldest", label: "오래된순" },
@@ -32,6 +32,7 @@ const sortOrder: Array<{ value: SortMode; label: string }> = [
 
 type AdminView = "editor" | "inquiries";
 type SortMode = "newest" | "oldest" | "status" | "name";
+type InquiryFilter = "all" | "pending" | InquiryStatus;
 
 export function AdminPage() {
   const view = getAdminView();
@@ -41,7 +42,7 @@ export function AdminPage() {
   const [inquiriesLoading, setInquiriesLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"all" | InquiryStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<InquiryFilter>("all");
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionId, setActionId] = useState<string | null>(null);
@@ -190,7 +191,10 @@ export function AdminPage() {
   const visibleInquiries = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const filtered = inquiries.filter((item) => {
-      const statusMatch = statusFilter === "all" || item.status === statusFilter;
+      const statusMatch =
+        statusFilter === "all" ||
+        (statusFilter === "pending" && (item.status === "new" || item.status === "contacted")) ||
+        item.status === statusFilter;
       const searchMatch =
         !normalizedQuery ||
         [item.name, item.phone, item.service_area, item.message, item.user_email]
@@ -227,6 +231,8 @@ export function AdminPage() {
           title: "문의 흐름과 추이를 한 번에 확인합니다",
           description: "검색, 필터, 상태 변경을 한 화면에서 끝낼 수 있게 정리했습니다."
         };
+
+  const pendingCount = analytics.byStatus.new + analytics.byStatus.contacted;
 
   return (
     <main className="admin-shell">
@@ -325,6 +331,48 @@ export function AdminPage() {
         )
       ) : (
         <>
+          <section className="admin-queue-panel" aria-label="문의 작업 요약">
+            <div className="admin-queue-grid">
+              <article className="admin-queue-card admin-queue-card--highlight">
+                <span>미처리</span>
+                <strong>{pendingCount}</strong>
+                <p>신규와 처리중 문의를 합쳐서 바로 확인합니다.</p>
+              </article>
+              <article className="admin-queue-card">
+                <span>오늘 문의</span>
+                <strong>{analytics.today}</strong>
+                <p>오늘 들어온 상담 수를 먼저 확인합니다.</p>
+              </article>
+              <article className="admin-queue-card">
+                <span>최근 7일</span>
+                <strong>{analytics.last7Days}</strong>
+                <p>주간 흐름과 반응 속도를 살펴봅니다.</p>
+              </article>
+              <article className="admin-queue-card">
+                <span>최근 갱신</span>
+                <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
+                <p>마지막으로 목록을 불러온 시각입니다.</p>
+              </article>
+            </div>
+            <div className="admin-queue-actions" aria-label="빠른 문의 작업">
+              <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("pending")}>
+                미처리 보기
+              </button>
+              <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("new")}>
+                신규만 보기
+              </button>
+              <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("done")}>
+                완료만 보기
+              </button>
+              <button className="admin-queue-action" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
+                CSV 내보내기
+              </button>
+              <button className="admin-queue-action admin-queue-action--primary" type="button" onClick={() => void handleRefresh()}>
+                새로고침
+              </button>
+            </div>
+          </section>
+
           <section className="admin-insight-grid" aria-label="문의 요약">
             <InsightCard
               label="전체 문의"
@@ -334,18 +382,11 @@ export function AdminPage() {
               active={statusFilter === "all"}
             />
             <InsightCard
-              label="새 문의"
-              value={analytics.byStatus.new}
-              caption="응답 대기 중"
-              onClick={() => setStatusFilter("new")}
-              active={statusFilter === "new"}
-            />
-            <InsightCard
-              label="처리중"
-              value={analytics.byStatus.contacted}
-              caption="후속 연락 필요"
-              onClick={() => setStatusFilter("contacted")}
-              active={statusFilter === "contacted"}
+              label="미처리"
+              value={pendingCount}
+              caption="신규 + 처리중"
+              onClick={() => setStatusFilter("pending")}
+              active={statusFilter === "pending"}
             />
             <InsightCard
               label="완료"
@@ -764,9 +805,10 @@ function InquiryChart({
   );
 }
 
-function statusLabel(status: InquiryStatus | "all") {
-  const map: Record<InquiryStatus | "all", string> = {
+function statusLabel(status: InquiryFilter) {
+  const map: Record<InquiryFilter, string> = {
     all: "전체",
+    pending: "미처리",
     new: "신규",
     contacted: "연락",
     done: "완료",
