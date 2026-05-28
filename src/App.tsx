@@ -1184,7 +1184,7 @@ function CasesSection({
 
   return (
     <section className="cases" id="cases" aria-labelledby="cases-title">
-      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(20px,2.5vw,32px)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(24px,4vw,56px) clamp(18px,5vw,64px) clamp(20px,2.5vw,32px)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
         <div>
           <h2 id="cases-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>대표 현장사례</h2>
           <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>실제 현장 사진과 작업 내용을 확인하세요.</p>
@@ -1426,17 +1426,17 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
   const processSignals = [
     {
       label: "사진 우선",
-      text: "방문 전에 범위를 먼저 좁혀 불필요한 동선을 줄입니다.",
+      text: "방문 전에 사진으로 범위를 먼저 좁힙니다.",
       icon: MessageCircle
     },
     {
       label: "대표 직접 확인",
-      text: "대표가 현장을 직접 보고 필요한 작업만 추립니다.",
+      text: "대표가 현장을 직접 보고 필요한 작업만 고릅니다.",
       icon: User
     },
     {
       label: "투명 안내",
-      text: "작업 범위, 비용, 일정은 한 번에 정리해서 안내합니다.",
+      text: "비용·범위·일정을 한 번에 정리해 안내합니다.",
       icon: Phone
     }
   ];
@@ -1545,9 +1545,12 @@ function ContactSection({
 }) {
   return (
     <section className="contact section" id="contact" aria-labelledby="contact-title">
-      <div className="contact-copy">
+      <div className="contact-header">
         <h2 id="contact-title">{content.title}</h2>
         <p>{content.description}</p>
+      </div>
+      <div className="contact-layout">
+        <div className="contact-copy">
         <div className="contact-actions">
           <a className="primary-button" href={business.phoneHref}>
             <Phone size={20} />
@@ -1560,17 +1563,18 @@ function ContactSection({
         </div>
         <p className="contact-actions-note">빠른 문의는 전화·카카오톡으로, 상세 상담은 아래 견적상담 카드에서 이어집니다.</p>
         <BusinessInfoList />
-      </div>
-      <div className="contact-estimate-card">
-        <span className="admin-kicker">
-          <ArrowUpRight size={16} />
-          상세 상담
-        </span>
-        <h3>상세한 상담은 견적상담 페이지에서 이어집니다</h3>
-        <p>사진 첨부와 단계별 질문으로 더 정확하게 상담을 받을 수 있습니다.</p>
-        <a className="primary-button" href="/estimate">
-          견적상담 페이지로 이동
-        </a>
+        </div>
+        <div className="contact-estimate-card">
+          <span className="admin-kicker">
+            <ArrowUpRight size={16} />
+            상세 상담
+          </span>
+          <h3>상세한 상담은 견적상담 페이지에서 이어집니다</h3>
+          <p>사진 첨부와 단계별 질문으로 더 정확하게 상담을 받을 수 있습니다.</p>
+          <a className="primary-button" href="/estimate">
+            견적상담 페이지로 이동
+          </a>
+        </div>
       </div>
     </section>
   );

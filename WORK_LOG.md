@@ -15,6 +15,90 @@ Verification:
 - `npm run build` passed.
 - Browser verification confirmed the homepage hero now reads `집의 모든 불편을 한 통의 전화로 끝냅니다.`
 
+## 2026-05-28 - Contact Section Reflow
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Split the contact section into a full-width header block and a lower two-column content row.
+- Moved the detailed consultation card below the header so the main title can use the upper page width.
+- Tightened the consultation card title so it reads in two lines instead of stacking into a narrow column.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the rebuilt preview at `http://127.0.0.1:4175/` and confirmed the contact title spans the upper area and the consultation card sits lower with a wider title line.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Process Signal Card Tightening
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Shortened the three process signal descriptions so they read as concise labels instead of long paragraphs.
+- Tightened the signal card typography and clamped the descriptions to two lines on the homepage desktop layout.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the local homepage layout and confirmed the process signal cards are shorter and less vertically stretched.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Blog Header Lift
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the homepage blog section title and description higher by reducing the section top padding.
+- Tightened the blog heading block spacing so the section starts earlier on wide screens.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the local homepage at `http://127.0.0.1:5173/` and confirmed the blog heading sits higher on the page.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Cases Header Lift
+
+Changed files:
+- `src/App.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the homepage `대표 현장사례` heading and description higher by reducing the section header's top padding.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the local homepage at `http://127.0.0.1:5173/` and confirmed the cases header sits higher on the page.
+
+Follow-up:
+- None.
+
+## 2026-05-28 - Homepage Services Spacing
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the homepage services section title higher by reducing the top padding on the section header.
+- Increased the spacing between service cards on medium and large desktop layouts.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the local homepage layout at `http://127.0.0.1:5173/` and confirmed the service cards render with wider gaps.
+
 Follow-up:
 - None.
 

@@ -294,7 +294,7 @@ textarea {
   }
 
   main.home-page .bento {
-    gap: 18px;
+    gap: 24px;
   }
 
   main.home-page .bento__card {
@@ -304,6 +304,14 @@ textarea {
 
   main.home-page .bento__card h3 {
     font-size: clamp(18px, 1.35vw, 26px);
+  }
+
+  main.home-page .blog.section {
+    padding-top: clamp(8px, 1.2vh, 18px);
+  }
+
+  main.home-page .blog .section-heading {
+    margin-bottom: 14px;
   }
 
   main.home-page .blog-card-grid {
@@ -983,15 +991,24 @@ textarea {
     width: 100%;
   }
 
-  /* ── Contact: 2열 그리드 복원 ── */
+  /* ── Contact: 상단 헤더 + 하단 상담 카드 ── */
   main.home-page .contact {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+    grid-template-columns: 1fr;
     align-items: start;
     align-content: center;
+    gap: clamp(24px, 3vw, 44px);
     max-width: var(--max, 1320px);
     margin-inline: auto;
     width: 100%;
+  }
+
+  main.home-page .contact-header {
+    max-width: 1160px;
+  }
+
+  main.home-page .contact-layout {
+    grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
   }
 
   /* ── Symptoms: 너비 cap ── */
@@ -1130,6 +1147,17 @@ textarea {
     padding: 18px 20px;
   }
 
+  main.home-page .process__signal-card h3 {
+    font-size: 15px;
+  }
+
+  main.home-page .process__signal-card p {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
   main.home-page .process__content {
     gap: 20px;
   }
@@ -1248,8 +1276,8 @@ textarea {
   }
 
   main.home-page .services .sec-head {
-    padding-top: clamp(18px, 2.4vh, 28px) !important;
-    padding-bottom: 14px !important;
+    padding-top: clamp(8px, 1.2vh, 16px) !important;
+    padding-bottom: 18px !important;
   }
 
   main.home-page .services .sec-head h2 {
@@ -1265,7 +1293,7 @@ textarea {
   }
 
   main.home-page .bento {
-    gap: 12px;
+    gap: 18px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     grid-auto-rows: minmax(136px, 1fr);
   }
@@ -1320,7 +1348,7 @@ textarea {
 
   main.home-page .cases .section-heading,
   main.home-page .blog .section-heading {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   main.home-page .cases__rail {
@@ -1748,7 +1776,8 @@ textarea {
 }
 
 .hero h1,
-.contact-copy h2 {
+.contact-copy h2,
+.contact-header h2 {
   font-size: clamp(38px, 6vw, 72px);
   letter-spacing: 0;
   line-height: 1.04;
@@ -1785,6 +1814,50 @@ textarea {
   line-height: 1.6;
   margin: 14px 0 0;
   max-width: 760px;
+}
+
+.contact-header {
+  display: grid;
+  gap: 18px;
+  max-width: 1120px;
+}
+
+.contact-layout {
+  display: grid;
+  gap: clamp(20px, 4vw, 44px);
+  grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  align-items: start;
+}
+
+.contact-copy {
+  min-width: 0;
+}
+
+.contact-estimate-card {
+  background: #ffffff;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 24px;
+  box-shadow: 0 10px 28px rgba(8, 22, 40, 0.06);
+  display: grid;
+  gap: 14px;
+  padding: clamp(20px, 2.5vw, 32px);
+  align-content: start;
+}
+
+.contact-estimate-card h3 {
+  color: var(--ink, #0b1a30);
+  font-family: var(--f-display, sans-serif);
+  font-size: clamp(20px, 2.2vw, 30px);
+  line-height: 1.12;
+  margin: 0;
+  max-width: none;
+}
+
+.contact-estimate-card p {
+  color: var(--ink-2, #2a3a55);
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 0;
 }
 
 .hero-carousel-controls {
@@ -2539,12 +2612,13 @@ textarea {
   font-size: 16px;
   font-weight: 800;
   color: var(--ink, #0b1a30);
+  line-height: 1.2;
 }
 
 .process__signal-card p {
   margin: 0;
   color: var(--ink-2, #2a3a55);
-  line-height: 1.65;
+  line-height: 1.5;
   font-size: 14px;
 }
 
