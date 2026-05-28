@@ -50,6 +50,7 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
   const draftRef = useRef(draft);
   const lastSavedRef = useRef(JSON.stringify(defaultLandingPagesContent));
   const autosaveTimerRef = useRef<number | null>(null);
+  const changedPageCount = countChangedTopLevelSections(draft, lastSavedRef.current);
 
   useEffect(() => {
     draftRef.current = draft;
@@ -190,6 +191,7 @@ export function LandingPagesEditor({ isAuthenticated, isActive = true }: { isAut
               {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
             </span>
             <p>{saveNote}</p>
+            <strong className="editor-save-count">변경 페이지 {changedPageCount}개</strong>
             {lastSavedAt ? <em>최근 저장 {formatEditorTime(lastSavedAt)}</em> : null}
           </div>
         </div>
@@ -504,4 +506,15 @@ function useEditorSaveShortcut(onSave: () => void, enabled: boolean) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [enabled, onSave]);
+}
+
+function countChangedTopLevelSections<T extends Record<string, unknown>>(current: T, previousSnapshot: string) {
+  try {
+    const previous = JSON.parse(previousSnapshot) as T;
+    return Object.keys(current).reduce((count, key) => {
+      return JSON.stringify(current[key]) === JSON.stringify(previous[key]) ? count : count + 1;
+    }, 0);
+  } catch {
+    return 0;
+  }
 }

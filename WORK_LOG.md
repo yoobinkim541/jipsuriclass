@@ -1,5 +1,25 @@
 # Work Log
 
+## 2026-05-28 - Editor Change Summary
+
+Changed files:
+- `src/admin/HomepageEditor.tsx`
+- `src/admin/LandingPagesEditor.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a top-level changed section counter to the homepage editor save state.
+- Added a top-level changed page counter to the landing page editor save state.
+- Styled the new save summary so it fits the existing editor status block.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked `/admin` in a local preview and confirmed the homepage editor shows the change counter in the save state block.
+
+Follow-up:
+- None.
+
 ## 2026-05-28 - Admin Inquiry Bulk Actions
 
 Changed files:

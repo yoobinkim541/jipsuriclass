@@ -5955,6 +5955,12 @@ textarea {
   font-weight: 700;
 }
 
+.editor-save-count {
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .site-content-editor {
   display: grid;
   gap: 18px;
