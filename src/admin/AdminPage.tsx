@@ -32,6 +32,7 @@ const sortOrder: Array<{ value: SortMode; label: string }> = [
 
 type AdminView = "editor" | "inquiries";
 type SortMode = "newest" | "oldest" | "status" | "name";
+type TimeFilter = "all" | "today" | "7d" | "30d";
 type InquiryFilter = "all" | "pending" | InquiryStatus;
 
 export function AdminPage() {
@@ -43,8 +44,10 @@ export function AdminPage() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<InquiryFilter>("all");
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedInquiryIds, setSelectedInquiryIds] = useState<string[]>([]);
   const [actionId, setActionId] = useState<string | null>(null);
   const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null);
   const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
@@ -134,6 +137,23 @@ export function AdminPage() {
     }
   }
 
+  async function handleBulkStatusChange(status: InquiryStatus) {
+    if (!selectedVisibleInquiryIds.length) return;
+
+    setActionId(`bulk-${status}`);
+    setError(null);
+
+    try {
+      await Promise.all(selectedVisibleInquiryIds.map((id) => adminService.updateInquiryStatus(id, status)));
+      setInquiries((current) => current.map((item) => (selectedVisibleInquiryIds.includes(item.id) ? { ...item, status } : item)));
+      setSelectedInquiryIds((current) => current.filter((id) => !selectedVisibleInquiryIds.includes(id)));
+    } catch (statusError) {
+      setError(statusError instanceof Error ? statusError.message : "상태를 바꾸지 못했습니다.");
+    } finally {
+      setActionId(null);
+    }
+  }
+
   async function handleInquiryIntakeSave(id: string, intake: InquiryIntake) {
     await adminService.updateInquiryIntake(id, intake);
     setInquiries((current) => current.map((item) => (item.id === id ? { ...item, intake } : item)));
@@ -190,18 +210,31 @@ export function AdminPage() {
 
   const visibleInquiries = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
+    const now = new Date();
+    const todayKey = now.toDateString();
+    const sevenDaysAgo = new Date(now);
+    sevenDaysAgo.setDate(now.getDate() - 7);
+    const thirtyDaysAgo = new Date(now);
+    thirtyDaysAgo.setDate(now.getDate() - 30);
+
     const filtered = inquiries.filter((item) => {
       const statusMatch =
         statusFilter === "all" ||
         (statusFilter === "pending" && (item.status === "new" || item.status === "contacted")) ||
         item.status === statusFilter;
+      const createdAt = new Date(item.created_at);
+      const timeMatch =
+        timeFilter === "all" ||
+        (timeFilter === "today" && createdAt.toDateString() === todayKey) ||
+        (timeFilter === "7d" && createdAt >= sevenDaysAgo) ||
+        (timeFilter === "30d" && createdAt >= thirtyDaysAgo);
       const searchMatch =
         !normalizedQuery ||
         [item.name, item.phone, item.service_area, item.message, item.user_email]
           .filter((value): value is string => Boolean(value))
           .some((value) => value.toLowerCase().includes(normalizedQuery));
 
-      return statusMatch && searchMatch;
+      return statusMatch && timeMatch && searchMatch;
     });
 
     return filtered.slice().sort((left, right) => {
@@ -217,7 +250,20 @@ export function AdminPage() {
       const timeDiff = new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
       return sortMode === "oldest" ? timeDiff : -timeDiff;
     });
-  }, [inquiries, searchQuery, sortMode, statusFilter]);
+  }, [inquiries, searchQuery, sortMode, statusFilter, timeFilter]);
+
+  const selectedInquirySet = useMemo(() => new Set(selectedInquiryIds), [selectedInquiryIds]);
+  const selectedVisibleInquiryIds = useMemo(
+    () => visibleInquiries.filter((item) => selectedInquirySet.has(item.id)).map((item) => item.id),
+    [selectedInquirySet, visibleInquiries]
+  );
+
+  useEffect(() => {
+    setSelectedInquiryIds((current) => {
+      const next = current.filter((id) => inquiries.some((item) => item.id === id));
+      return next.length === current.length ? current : next;
+    });
+  }, [inquiries]);
 
   const pageMeta =
     view === "editor"
@@ -233,6 +279,21 @@ export function AdminPage() {
         };
 
   const pendingCount = analytics.byStatus.new + analytics.byStatus.contacted;
+  const selectedCount = selectedVisibleInquiryIds.length;
+
+  function toggleInquirySelection(id: string) {
+    setSelectedInquiryIds((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
+    );
+  }
+
+  function selectVisibleInquiries() {
+    setSelectedInquiryIds(visibleInquiries.map((item) => item.id));
+  }
+
+  function clearSelection() {
+    setSelectedInquiryIds([]);
+  }
 
   return (
     <main className="admin-shell">
@@ -469,6 +530,23 @@ export function AdminPage() {
               ))}
             </div>
             <div className="admin-toolbar-group">
+              {([
+                ["all", "전체"],
+                ["today", "오늘"],
+                ["7d", "7일"],
+                ["30d", "30일"]
+              ] as Array<[TimeFilter, string]>).map(([value, label]) => (
+                <button
+                  key={value}
+                  className={timeFilter === value ? "admin-filter active" : "admin-filter"}
+                  type="button"
+                  onClick={() => setTimeFilter(value)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="admin-toolbar-group">
               <SortAsc size={16} className="admin-toolbar-icon" />
               <select
                 aria-label="문의 정렬"
@@ -486,6 +564,7 @@ export function AdminPage() {
             <div className="admin-spacer" />
             <div className="admin-toolbar-meta">
               <span className="admin-count">{visibleInquiries.length}건</span>
+              {selectedCount > 0 ? <span className="admin-sync">선택 {selectedCount}건</span> : null}
               <span className="admin-sync">
                 <Clock3 size={14} />
                 {lastRefreshedAt ? `마지막 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
@@ -503,6 +582,56 @@ export function AdminPage() {
           {error ? <p className="admin-error">{error}</p> : null}
 
           <section className="admin-list" aria-label="문의 목록">
+            {selectedCount > 0 ? (
+              <div className="admin-bulk-bar" aria-label="선택 문의 작업">
+                <div className="admin-bulk-copy">
+                  <strong>선택 {selectedCount}건</strong>
+                  <p>선택한 문의를 한 번에 처리합니다.</p>
+                </div>
+                <div className="admin-bulk-actions">
+                  <button
+                    className="admin-bulk-button"
+                    type="button"
+                    onClick={selectVisibleInquiries}
+                    disabled={!visibleInquiries.length || Boolean(actionId)}
+                  >
+                    전체 선택
+                  </button>
+                  <button
+                    className="admin-bulk-button"
+                    type="button"
+                    onClick={clearSelection}
+                    disabled={Boolean(actionId)}
+                  >
+                    선택 해제
+                  </button>
+                  <button
+                    className="admin-bulk-button"
+                    type="button"
+                    onClick={() => void handleBulkStatusChange("contacted")}
+                    disabled={Boolean(actionId)}
+                  >
+                    연락 처리
+                  </button>
+                  <button
+                    className="admin-bulk-button"
+                    type="button"
+                    onClick={() => void handleBulkStatusChange("done")}
+                    disabled={Boolean(actionId)}
+                  >
+                    완료 처리
+                  </button>
+                  <button
+                    className="admin-bulk-button"
+                    type="button"
+                    onClick={() => void handleBulkStatusChange("spam")}
+                    disabled={Boolean(actionId)}
+                  >
+                    스팸 처리
+                  </button>
+                </div>
+              </div>
+            ) : null}
             {inquiriesLoading ? (
               <div className="admin-empty">
                 <LoaderCircle size={18} className="spin" />
@@ -516,6 +645,16 @@ export function AdminPage() {
                   <article className="admin-row" key={item.id}>
                     <div className="admin-row-main">
                       <div className="admin-row-top">
+                        <label className="admin-row-select">
+                          <input
+                            type="checkbox"
+                            checked={selectedInquirySet.has(item.id)}
+                            onChange={() => toggleInquirySelection(item.id)}
+                            disabled={Boolean(actionId)}
+                            aria-label={`${item.name} 선택`}
+                          />
+                          <span>선택</span>
+                        </label>
                         <strong>{item.name}</strong>
                         <span className={`status-badge status-${item.status}`}>{item.status}</span>
                       </div>
@@ -582,16 +721,16 @@ export function AdminPage() {
                       {(["new", "contacted", "done", "spam"] as InquiryStatus[])
                         .filter((status) => status !== item.status)
                         .map((status) => (
-                          <button
-                            key={status}
-                            className="admin-status-button"
-                            type="button"
-                            disabled={actionId === item.id}
-                            onClick={() => void handleStatusChange(item.id, status)}
-                          >
-                            {actionId === item.id ? <LoaderCircle size={12} className="spin" /> : statusLabel(status)}
-                          </button>
-                        ))}
+                        <button
+                          key={status}
+                          className="admin-status-button"
+                          type="button"
+                          disabled={Boolean(actionId)}
+                          onClick={() => void handleStatusChange(item.id, status)}
+                        >
+                          {actionId === item.id ? <LoaderCircle size={12} className="spin" /> : statusLabel(status)}
+                        </button>
+                      ))}
                       <button className="admin-link admin-copy-button" type="button" onClick={() => void handleCopy(item.phone, "연락처")}>
                         <Copy size={14} />
                         복사

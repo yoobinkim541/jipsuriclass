@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-05-28 - Admin Inquiry Bulk Actions
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added inquiry time filters for today, 7 days, and 30 days on the admin inquiry view.
+- Added checkbox-based multi-select and a bulk action bar for selected inquiries.
+- Added bulk status updates and tightened the row selection layout so the list stays readable.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked `/admin/inquiries` in a local preview; the new time filter chips rendered and the page stayed stable, but the preview had no inquiry rows to exercise the bulk bar.
+
+Follow-up:
+- None.
+
 ## 2026-05-28 - Admin Inquiry Dashboard Improvement
 
 Changed files:

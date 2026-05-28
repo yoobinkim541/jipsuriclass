@@ -6385,6 +6385,69 @@ textarea {
   padding: 0 clamp(18px, 5vw, 64px);
 }
 
+.admin-bulk-bar {
+  align-items: center;
+  background: rgba(16, 40, 74, 0.04);
+  border: 1px solid rgba(16, 40, 74, 0.12);
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+.admin-bulk-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-bulk-copy strong {
+  color: var(--ink, #0b1a30);
+  font-size: 15px;
+}
+
+.admin-bulk-copy p {
+  color: var(--ink-3, #5b6781);
+  font-size: 13px;
+  margin: 0;
+}
+
+.admin-bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-bulk-button {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 999px;
+  color: var(--ink, #0b1a30);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 14px;
+  transition: all 180ms ease;
+}
+
+.admin-bulk-button:hover {
+  border-color: var(--navy-700, #10284a);
+  box-shadow: 0 8px 20px rgba(8, 22, 40, 0.06);
+  transform: translateY(-1px);
+}
+
+.admin-bulk-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
 .admin-row {
   align-items: start;
   background: #ffffff;
@@ -6399,8 +6462,33 @@ textarea {
 .admin-row-top {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
-  justify-content: space-between;
+}
+
+.admin-row-top strong {
+  min-width: 0;
+}
+
+.admin-row-top .status-badge {
+  margin-left: auto;
+}
+
+.admin-row-select {
+  align-items: center;
+  color: var(--ink-3, #5b6781);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 6px;
+  letter-spacing: 0.02em;
+}
+
+.admin-row-select input {
+  accent-color: var(--navy-700, #10284a);
+  height: 16px;
+  width: 16px;
 }
 
 .admin-row-main p {
@@ -8994,6 +9082,19 @@ textarea {
 
   .admin-toolbar-meta {
     justify-content: flex-start;
+  }
+
+  .admin-bulk-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-bulk-actions {
+    width: 100%;
+  }
+
+  .admin-bulk-button {
+    flex: 1 1 140px;
   }
 
   .admin-row-actions {
