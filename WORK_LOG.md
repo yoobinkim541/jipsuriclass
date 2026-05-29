@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-05-29 - Mobile Contact Section Fix
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added mobile-only spacing so the homepage contact section clears the fixed bottom CTA.
+- Forced the contact layout into a single column on phones so the estimate card and copy no longer collapse into a narrow vertical column.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the mobile viewport at `390px` width and confirmed the contact copy and estimate card render in a normal single-column layout.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Restore Services Section Scale
 
 Changed files:

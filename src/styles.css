@@ -9082,6 +9082,14 @@ textarea {
     width: 100%;
   }
 
+  main.home-page .contact-layout {
+    grid-template-columns: 1fr;
+  }
+
+  main.home-page .contact {
+    padding-bottom: calc(132px + env(safe-area-inset-bottom));
+  }
+
   .hero-carousel-controls {
     background: rgba(15, 23, 42, 0.24);
     bottom: 12px;
