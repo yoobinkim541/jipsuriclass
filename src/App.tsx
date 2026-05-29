@@ -1444,8 +1444,8 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
     <section className="process" id="process" aria-labelledby="process-title">
       <div className="process__shell">
         <div className="process__intro">
-          <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(32px,5vw,64px) clamp(18px,5vw,64px) 0" }}>
-            <h2 id="process-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>작업 절차</h2>
+          <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(12px,2vw,24px) clamp(18px,5vw,64px) 0" }}>
+            <h2 id="process-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 6px", color: "var(--ink,#0b1a30)" }}>작업 절차</h2>
             <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
           </div>
           <div className="process__signal-grid">

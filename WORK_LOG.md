@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-05-29 - Process Section Refinement
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the process section title block higher and reduced the vertical offset before the three signal cards.
+- Increased the contrast of the signal cards with a stronger background, border, and shadow.
+- Tightened the card spacing and typography so the three cards read more clearly at desktop size.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the local preview and confirmed the process card background, border, and shadow styles are present.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Desktop Service And Blog Tightening
 
 Changed files:

@@ -1187,21 +1187,22 @@ textarea {
 
   main.home-page .process__intro {
     position: sticky;
-    top: 104px;
+    top: 72px;
     align-self: start;
   }
 
   main.home-page .process__signal-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
   }
 
   main.home-page .process__signal-card {
     min-height: 100%;
-    padding: 18px 20px;
+    padding: 14px 16px;
   }
 
   main.home-page .process__signal-card h3 {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   main.home-page .process__signal-card p {
@@ -2654,7 +2655,7 @@ textarea {
 
 .process__intro {
   display: grid;
-  gap: 18px;
+  gap: 12px;
 }
 
 .process__signal-grid {
@@ -2667,9 +2668,10 @@ textarea {
   align-items: flex-start;
   gap: 14px;
   padding: 16px 18px;
-  border: 1px solid var(--hair, #e6dfd0);
+  border: 1px solid rgba(16, 40, 74, 0.14);
   border-radius: 18px;
-  background: #fff;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7ef 100%);
+  box-shadow: 0 10px 24px rgba(11, 26, 48, 0.06);
 }
 
 .process__signal-icon {
@@ -2679,8 +2681,8 @@ textarea {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  background: rgba(215, 174, 107, 0.14);
-  color: var(--gold-700, #a77a2a);
+  background: rgba(16, 40, 74, 0.08);
+  color: var(--navy-700, #10284a);
 }
 
 .process__signal-card h3 {
@@ -2694,8 +2696,8 @@ textarea {
 .process__signal-card p {
   margin: 0;
   color: var(--ink-2, #2a3a55);
-  line-height: 1.5;
-  font-size: 14px;
+  line-height: 1.45;
+  font-size: 13px;
 }
 
 .process__content {
