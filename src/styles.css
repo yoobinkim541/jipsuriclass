@@ -182,6 +182,7 @@ textarea {
   padding: 9px 14px;
   border-radius: 999px;
   border: 1px solid var(--ink, #0b1a30);
+  white-space: nowrap;
   transition: background 240ms, color 240ms;
 }
 
@@ -214,6 +215,7 @@ textarea {
   gap: 6px;
   padding: 8px 12px;
   border-radius: 8px;
+  white-space: nowrap;
   transition: background 160ms, color 160ms;
 }
 
@@ -461,6 +463,30 @@ textarea {
 
   main.home-page .cases__card {
     flex-basis: min(44vw, 580px);
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .nav__inner {
+    gap: 18px;
+  }
+
+  .nav__links {
+    gap: 16px;
+    font-size: 13px;
+  }
+
+  .nav__phone,
+  .nav__login {
+    font-size: 13px;
+  }
+
+  .nav__phone {
+    padding: 9px 12px;
+  }
+
+  .nav__login {
+    padding: 8px 10px;
   }
 }
 

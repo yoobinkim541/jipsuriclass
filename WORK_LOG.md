@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-05-29 - 1440px Nav Fix
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Prevented the 1440px desktop navigation actions from wrapping vertically.
+- Reduced mid-desktop nav spacing slightly so the logo, menu, login, and phone CTA fit on a single line.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the header at `1440px` width and confirmed the right-side actions stay in one row.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Mobile Section Top Spacing
 
 Changed files:
