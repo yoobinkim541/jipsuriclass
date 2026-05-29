@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-29 - Homepage Self-Diagnosis Link
+
+Changed files:
+- `src/App.tsx`
+- `src/data.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Linked the homepage `자가진단` nav item to the homepage symptoms section (`#symptoms`).
+- Added an explicit `id="symptoms"` anchor to the homepage symptoms block so the link can jump to it directly.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the homepage and confirmed the `자가진단` nav item resolves to `#symptoms`.
+
+Follow-up:
+- Diagnosis page active-state behavior can be revisited if you want that nav item to keep a special highlight there as well.
+
 ## 2026-05-29 - Homepage Title Typography Unify
 
 Changed files:

@@ -566,7 +566,7 @@ function SiteHeader({
       return activeHref;
     }
 
-    if (window.location.pathname.startsWith("/diagnosis")) return "/diagnosis";
+    if (window.location.pathname.startsWith("/diagnosis")) return "/#symptoms";
     if (window.location.pathname.startsWith("/estimate")) return "/estimate";
     return "";
   };
@@ -883,11 +883,13 @@ function AboutSection({
 /** 증상 기반 진입 영역: 고객이 전문 공종명을 몰라도 문의할 수 있게 돕습니다. */
 function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categories: typeof symptomCategories }) {
   return (
-    <section className="symptoms section" aria-labelledby="symptoms-title">
-      <SectionHeading
+    <section className="symptoms section" id="symptoms" aria-labelledby="symptoms-title">
+      <RowHeading
         id="symptoms-title"
         title="고객이 말하는 증상부터 간편 자가진단을 시작합니다"
         description="전문 용어를 몰라도 괜찮습니다. 지금 보이는 문제를 클릭하면 바로 원인과 다음 행동이 나옵니다."
+        linkLabel="자가진단 페이지로 이동"
+        href="/diagnosis"
       />
 
       {/* 데스크탑: 2단 — 카테고리 + 세부 증상 칩 */}
