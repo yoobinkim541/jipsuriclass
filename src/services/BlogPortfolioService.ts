@@ -30,7 +30,7 @@ export class BlogPortfolioService {
       return result;
     }
 
-    return { source: "fallback", posts: [] };
+    return this.fallbackResult();
   }
 
   async loadPortfolioPosts(

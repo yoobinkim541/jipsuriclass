@@ -60,6 +60,26 @@ Verification:
 Follow-up:
 - Wait for the Vercel deployment to pick up `main`; after that the production blog reference sections should stop showing empty states.
 
+## 2026-05-30 - Blog Empty-State Fallback Fix
+
+Changed files:
+- `src/App.tsx`
+- `src/services/BlogPortfolioService.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Homepage blog now renders fallback posts when the latest Naver fetch fails instead of showing an empty block.
+- Landing-page blog reference sections now fall back to the cached representative posts when the matching filter produces nothing after an API failure.
+- This keeps blog areas populated even while the production Naver fetch is unstable.
+
+Verification:
+- `npm run build` passed.
+- Local browser check on `/` showed 6 rendered blog cards.
+- Local browser check on `/service/door` showed 10 rendered blog cards in the reference area.
+
+Follow-up:
+- Production still depends on the current Vercel deployment picking up this commit, but the UI no longer needs the remote blog API to succeed in order to avoid blank sections.
+
 ## 2026-05-30 - Blog Latest Fallback Removal
 
 Changed files:

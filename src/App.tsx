@@ -506,7 +506,7 @@ function HomePage() {
               return (
                 <BlogSection
                   key={sectionId}
-                  posts={blogSource === "naver" ? blogPosts : []}
+                  posts={blogPosts}
                   source={blogSource}
                 />
               );
@@ -1746,7 +1746,11 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   }, [landingSearchKey]);
 
   // Reference: dynamically matched blog posts (only shown when they actually match keywords)
-  const referencePosts = useMemo(() => filterLandingPosts(landingPosts, content, landingMatchTerms), [content, landingPosts, landingMatchTerms]);
+  const referencePosts = useMemo(() => {
+    const matchedPosts = filterLandingPosts(landingPosts, content, landingMatchTerms);
+    if (matchedPosts.length) return matchedPosts;
+    return landingSource === "fallback" ? landingPosts.slice(0, 6) : matchedPosts;
+  }, [content, landingPosts, landingMatchTerms, landingSource]);
   // Portfolio: fixed curated posts managed via admin editor — never changes automatically
   const portfolioPosts = pinnedPosts.slice(0, 5);
   const landingSectionOrder = content.sections ?? defaultLandingSectionOrder;
