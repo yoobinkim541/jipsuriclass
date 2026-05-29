@@ -308,10 +308,13 @@ textarea {
 
   main.home-page .blog.section {
     padding-top: clamp(8px, 1.2vh, 18px);
+    height: auto;
+    min-height: 0;
+    justify-content: flex-start;
   }
 
   main.home-page .blog .section-heading {
-    margin-bottom: 14px;
+    margin-bottom: 10px;
   }
 
   main.home-page .blog-card-grid {
@@ -320,33 +323,33 @@ textarea {
   }
 
   main.home-page .blog-card-featured {
-    grid-column: span 2;
+    grid-column: span 1;
   }
 
   main.home-page .blog-card-image {
-    aspect-ratio: 16 / 8;
+    aspect-ratio: 16 / 9;
   }
 
   main.home-page .blog-card-featured .blog-card-image {
-    aspect-ratio: 16 / 7;
+    aspect-ratio: 16 / 9;
   }
 
   main.home-page .blog-card-body {
-    padding: 14px;
-    gap: 8px;
+    padding: 12px;
+    gap: 6px;
   }
 
   main.home-page .blog-card h3 {
-    font-size: 15px;
-    line-height: 1.3;
+    font-size: 14px;
+    line-height: 1.32;
   }
 
   main.home-page .blog-card-featured h3 {
-    font-size: 17px;
+    font-size: 14px;
   }
 
   main.home-page .blog-card-summary p {
-    font-size: 13px;
+    font-size: 12px;
     -webkit-line-clamp: 1;
   }
 
@@ -1292,29 +1295,36 @@ textarea {
     margin-inline: auto;
   }
 
+  main.home-page > section.services,
+  main.home-page > section.blog.section {
+    height: auto !important;
+    min-height: 0 !important;
+    justify-content: flex-start;
+  }
+
   main.home-page .bento {
-    gap: 18px;
+    gap: 14px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    grid-auto-rows: minmax(136px, 1fr);
+    grid-auto-rows: minmax(136px, auto);
   }
 
   main.home-page .bento__card {
-    min-height: 136px;
-    padding: 16px;
+    min-height: 150px;
+    padding: clamp(16px, 1.5vw, 24px);
     gap: 8px;
   }
 
   main.home-page .bento__card:nth-child(1) {
-    grid-column: span 1;
-    grid-row: span 1;
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
   }
 
   main.home-page .bento__card h3 {
-    font-size: clamp(15px, 1.2vw, 18px);
+    font-size: clamp(16px, 1.2vw, 22px);
   }
 
   main.home-page .bento__card:nth-child(1) h3 {
-    font-size: clamp(16px, 1.3vw, 19px);
+    font-size: clamp(17px, 1.4vw, 24px);
   }
 
   main.home-page .bento__card p {
@@ -1327,13 +1337,13 @@ textarea {
   }
 
   main.home-page .bento__card:nth-child(1) p {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   main.home-page .bento__card svg,
   main.home-page .bento__card:nth-child(1) svg {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
   }
 
   main.home-page .bento__num {
@@ -1401,6 +1411,22 @@ textarea {
   main.home-page .cases__carousel-button {
     width: 34px;
     height: 34px;
+  }
+
+  main.home-page .services .sec-head {
+    padding-top: 0 !important;
+    padding-bottom: 12px !important;
+  }
+
+  main.home-page .services .sec-head h2 {
+    font-size: clamp(22px, 2vw, 32px) !important;
+    margin-bottom: 4px !important;
+  }
+
+  main.home-page .services .sec-head p {
+    font-size: 13px !important;
+    line-height: 1.45;
+    max-width: 54ch;
   }
 
   main.home-page .blog-card-grid {
@@ -2136,24 +2162,24 @@ textarea {
 
 @media (min-width: 1024px) {
   .bento__card:nth-child(1) {
-    grid-column: span 2;
-    grid-row: span 2;
+    grid-column: span 1;
+    grid-row: span 1;
     background: linear-gradient(150deg, #0b1a30 0%, #10284a 100%);
     color: #ffffff;
     border-color: #10284a;
   }
   .bento__card:nth-child(1) h3 {
     color: #ffffff;
-    font-size: clamp(22px, 2vw, 30px);
+    font-size: clamp(18px, 1.5vw, 22px);
   }
   .bento__card:nth-child(1) p {
     color: rgba(255, 255, 255, 0.75);
-    font-size: 16px;
+    font-size: 13px;
   }
   .bento__card:nth-child(1) svg {
     color: var(--gold-500, #d7ae6b);
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
   }
   .bento__card:nth-child(1) .bento__num {
     color: rgba(255,255,255,.4);

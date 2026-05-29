@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-29 - Desktop Section Density Reduction
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reduced the desktop prominence of the homepage service bento cards so the first card no longer dominates the whole section.
+- Tightened desktop blog card sizing and removed the oversized featured treatment.
+- Kept the changes desktop-only so tablet and mobile layouts stay intact.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the local preview and confirmed the first service card now renders as a normal-size card instead of a 2x2 block.
+
+Follow-up:
+- None.
+
 ## 2026-05-28 - Editor Change Summary
 
 Changed files:
