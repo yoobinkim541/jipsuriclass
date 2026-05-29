@@ -115,12 +115,15 @@ function parseCategoryNos(value: string | string[] | undefined) {
 }
 
 async function loadLatestBlogItems(blogId: string, terms: string[], categoryNos: number[], latestMode: boolean) {
-  const items = await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: PORTFOLIO_LIMIT });
-  if (latestMode) {
-    return items;
-  }
+  try {
+    return await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: PORTFOLIO_LIMIT });
+  } catch {
+    if (latestMode || !categoryNos.length) {
+      return [];
+    }
 
-  return await enrichItemsWithSummary(items, blogId);
+    return await loadNaverBlogCandidates({ blogId, terms, categoryNos: [], limit: PORTFOLIO_LIMIT });
+  }
 }
 
 

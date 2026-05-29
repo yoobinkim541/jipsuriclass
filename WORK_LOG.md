@@ -40,6 +40,26 @@ Verification:
 Follow-up:
 - Production deployment still needs to pick up this commit, then `https://www.jipsuriclass.kr/api/naver-blog?mode=latest` should stop returning 500 and the homepage blog carousel should repopulate.
 
+## 2026-05-30 - Blog Feed Resilience For Landing Pages
+
+Changed files:
+- `api/naver-blog.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the brittle enrichment step from the blog API path that was failing the service-page blog reference sections.
+- Kept the API on RSS/category candidate ranking only, with a fallback to RSS-only candidates if category fetching fails.
+- This makes both homepage latest feed and service/area blog reference sections depend on the same lightweight, serverless-safe flow.
+
+Verification:
+- `npm run build` passed.
+- Local API checks returned `source: "naver"` for both `mode=latest` and a service-page `mode=matching` query.
+- Browser/Playwright check on `/service/door` showed 10 rendered blog cards in the reference section, and the first card title matched the matching API first item.
+- Browser/Playwright check on `/` showed 6 rendered latest blog cards, with the first card title matching the latest API first item.
+
+Follow-up:
+- Wait for the Vercel deployment to pick up `main`; after that the production blog reference sections should stop showing empty states.
+
 ## 2026-05-30 - Blog Latest Fallback Removal
 
 Changed files:
