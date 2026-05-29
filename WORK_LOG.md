@@ -1,5 +1,21 @@
 # Work Log
 
+## 2026-05-29 - Mobile Section Top Spacing
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Increased the mobile homepage section top spacing so section titles no longer sit too close to the previous block.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the mobile homepage layout and confirmed the main section headings have more breathing room.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Mobile Contact Section Fix
 
 Changed files:
