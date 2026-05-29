@@ -24,17 +24,31 @@ export class BlogPortfolioService {
     private readonly maxPosts = 6
   ) {}
 
-  async loadPortfolioPosts(
-    terms: string[] = [],
-    categoryNos: number[] = []
-  ): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
-    const cacheKey = this.buildCacheKey(terms, categoryNos);
+  async loadLatestPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+    const cacheKey = this.buildCacheKey("latest");
     const cached = this.readCache(cacheKey);
     if (cached) {
       return { posts: cached, source: "naver" };
     }
 
-    const result = await this.fetchFromApi(terms, categoryNos);
+    const result = await this.fetchFromApi("latest");
+    if (result.source === "naver" && result.posts.length) {
+      this.writeCache(cacheKey, result.posts);
+    }
+    return result;
+  }
+
+  async loadPortfolioPosts(
+    terms: string[] = [],
+    categoryNos: number[] = []
+  ): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+    const cacheKey = this.buildCacheKey("matching", terms, categoryNos);
+    const cached = this.readCache(cacheKey);
+    if (cached) {
+      return { posts: cached, source: "naver" };
+    }
+
+    const result = await this.fetchFromApi("matching", terms, categoryNos);
     if (result.source === "naver" && result.posts.length) {
       this.writeCache(cacheKey, result.posts);
     }
@@ -42,11 +56,13 @@ export class BlogPortfolioService {
   }
 
   private async fetchFromApi(
+    mode: "latest" | "matching",
     terms?: string[],
     categoryNos?: number[]
   ): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
     try {
       const url = new URL(this.endpoint, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+      url.searchParams.set("mode", mode);
       if (Array.isArray(terms) && terms.length) {
         url.searchParams.set("terms", terms.join(","));
       }
@@ -72,7 +88,10 @@ export class BlogPortfolioService {
     }
   }
 
-  private buildCacheKey(terms: string[], categoryNos: number[]) {
+  private buildCacheKey(mode: "latest" | "matching", terms: string[] = [], categoryNos: number[] = []) {
+    if (mode === "latest") {
+      return "blog-cache:latest";
+    }
     const normalizedTerms = terms.slice().sort().join(",");
     const normalizedCategories = categoryNos.slice().sort((left, right) => left - right).join(",");
     return `blog-cache:${normalizedTerms}|${normalizedCategories}`;

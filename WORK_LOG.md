@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-05-29 - Homepage Blog Latest Posts
+
+Changed files:
+- `src/App.tsx`
+- `src/services/BlogPortfolioService.ts`
+- `api/naver-blog.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a dedicated latest-posts fetch path for the homepage blog portfolio.
+- Kept landing-page blog matching behavior unchanged.
+- Removed the homepage's initial fallback display of pinned case-like posts and replaced it with a loading state until latest blog posts arrive.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Process Section Refinement
 
 Changed files:

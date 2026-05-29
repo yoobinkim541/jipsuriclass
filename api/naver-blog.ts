@@ -39,16 +39,22 @@ const ALLOWED_IMAGE_HOSTS = ["pstatic.net", "naver.net", "naver.com"];
  */
 export default async function handler(_request: VercelRequest, response: VercelResponse) {
   const blogId = process.env.NAVER_BLOG_ID || "it77khy";
+  const mode = parseMode(_request.query.mode);
   const terms = parseTerms(_request.query.terms);
   const categoryNos = parseCategoryNos(_request.query.categoryNos);
 
   try {
-    const items = await loadLatestBlogItems(blogId, terms, categoryNos);
+    const items = await loadLatestBlogItems(blogId, mode === "latest" ? [] : terms, mode === "latest" ? [] : categoryNos);
     response.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=86400");
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });
   }
+}
+
+function parseMode(value: string | string[] | undefined) {
+  const raw = Array.isArray(value) ? value[0] : value ?? "";
+  return raw === "latest" ? "latest" : "matching";
 }
 
 function parseRssItems(xml: string): NaverBlogItem[] {

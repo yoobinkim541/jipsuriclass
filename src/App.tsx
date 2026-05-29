@@ -439,7 +439,7 @@ function setStructuredData(jsonLd?: Record<string, unknown>[]) {
 
 function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [blogPosts, setBlogPosts] = useState<PortfolioPost[]>(pinnedPosts);
+  const [blogPosts, setBlogPosts] = useState<PortfolioPost[]>([]);
   const [blogSource, setBlogSource] = useState<"loading" | "naver" | "fallback">("loading");
   const [homeContent, setHomeContent] = useState(defaultHomepageContent);
   const [contentReady, setContentReady] = useState(false);
@@ -466,7 +466,7 @@ function HomePage() {
       setContentReady(true);
     });
 
-    blogPortfolioService.loadPortfolioPosts().then(({ posts, source }) => {
+    blogPortfolioService.loadLatestPortfolioPosts().then(({ posts, source }) => {
       if (!mounted) return;
       setBlogPosts(posts);
       setBlogSource(source);
@@ -1278,6 +1278,22 @@ function BlogSection({
       ? "최근 현장 시공 사례를 블로그에서 가져옵니다."
       : "대표 시공 포트폴리오입니다.";
   const displayPosts = posts.slice(0, 5);
+
+  if (source === "loading" && !displayPosts.length) {
+    return (
+      <section className="blog section" id="blog" aria-labelledby="blog-title">
+        <RowHeading
+          id="blog-title"
+          title="네이버 블로그 포트폴리오"
+          description="최근 현장 시공 사례를 블로그에서 가져옵니다."
+          linkLabel="N 블로그"
+          href={business.naverBlogUrl}
+          className="naver-link"
+        />
+        <div className="admin-empty">최신 블로그 글을 불러오는 중</div>
+      </section>
+    );
+  }
 
   function scrollToIndex(index: number) {
     const rail = railRef.current;
