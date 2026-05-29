@@ -1,5 +1,27 @@
 # Work Log
 
+## 2026-05-30 - Process Image Reassignment
+
+Changed files:
+- `src/data.ts`
+- `src/services/SiteContentService.ts`
+
+Implemented behavior:
+- Reordered the existing process images so the step visuals follow the intended flow more closely.
+- Forced homepage process images to use the base image mapping even when stored homepage content exists, so older saved content no longer keeps stale process photos.
+
+Verification:
+- `npm run build` passed.
+- Verified in Playwright that the process detail panel now uses:
+  - 사진 상담 -> `/assets/consult-hero.png`
+  - 증상 확인 -> `/assets/cases/bathroom-leak.png`
+  - 현장 방문 -> `/assets/cases/wall-repair.png`
+  - 견적 안내 -> `/assets/process-completion.png`
+  - 시공·확인 -> `/assets/cases/kitchen-repair.png`
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Blog Latest Fallback Removal
 
 Changed files:

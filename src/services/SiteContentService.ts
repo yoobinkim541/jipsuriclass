@@ -585,7 +585,7 @@ export function mergeHomepageContent(base: HomepageContent, override: unknown): 
       (item, index) => ({
         title: typeof item.title === "string" ? item.title : base.process[index]?.title ?? "",
         text: typeof item.text === "string" ? item.text : base.process[index]?.text ?? "",
-        image: typeof item.image === "string" && item.image.trim() ? item.image : base.process[index]?.image ?? ""
+        image: base.process[index]?.image ?? ""
       }),
       (value): value is Record<string, unknown> => typeof value === "object" && value !== null
     ),
