@@ -467,8 +467,8 @@ textarea {
 @media (min-width: 1100px) {
   main.home-page section.services {
     justify-content: flex-start !important;
-    padding-top: 8px !important;
-    padding-bottom: 8px !important;
+    padding-top: 22px !important;
+    padding-bottom: 18px !important;
   }
 
   main.home-page section.blog.section {
@@ -478,17 +478,20 @@ textarea {
   }
 
   main.home-page section.services .bento {
-    grid-auto-rows: minmax(112px, auto);
+    gap: 16px;
+    grid-auto-rows: minmax(140px, auto);
   }
 
   main.home-page section.services .bento__card {
-    min-height: 112px;
-    padding: 14px;
+    min-height: 140px;
+    padding: 18px;
   }
 
   main.home-page section.services .bento__card:nth-child(1) {
-    grid-column: span 1 !important;
-    grid-row: span 1 !important;
+    grid-column: span 2 !important;
+    grid-row: span 2 !important;
+    min-height: 300px;
+    padding: clamp(24px, 2.2vw, 32px);
   }
 
   main.home-page section.blog .blog__rail {
@@ -1501,18 +1504,18 @@ textarea {
 
   main.home-page .services .sec-head {
     padding-top: 0 !important;
-    padding-bottom: 6px !important;
+    padding-bottom: 18px !important;
   }
 
   main.home-page .services .sec-head h2 {
-    font-size: clamp(22px, 2vw, 32px) !important;
-    margin-bottom: 2px !important;
+    font-size: clamp(30px, 3.8vw, 54px) !important;
+    margin-bottom: 10px !important;
   }
 
   main.home-page .services .sec-head p {
-    font-size: 13px !important;
-    line-height: 1.45;
-    max-width: 54ch;
+    font-size: clamp(15px, 1.5vw, 19px) !important;
+    line-height: 1.5;
+    max-width: 56ch;
   }
 
   main.home-page .blog__rail {

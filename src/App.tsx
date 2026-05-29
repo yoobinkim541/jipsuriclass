@@ -937,11 +937,32 @@ function ServicesSection({
 }) {
   return (
     <section className="services" id="services" aria-labelledby="services-title">
-      <SectionHeading
-        id="services-title"
-        title="생활 집수리 서비스"
-        description="큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다."
-      />
+      <div className="sec-head services-head" style={{ textAlign: "center" }}>
+        <h2
+          id="services-title"
+          style={{
+            fontFamily: "var(--f-display,sans-serif)",
+            fontWeight: 800,
+            fontSize: "clamp(30px, 3.8vw, 54px)",
+            letterSpacing: "-0.04em",
+            margin: "0 0 12px",
+            color: "var(--ink,#0b1a30)"
+          }}
+        >
+          생활 집수리 서비스
+        </h2>
+        <p
+          style={{
+            fontSize: "clamp(15px, 1.5vw, 19px)",
+            color: "var(--ink-2,#2a3a55)",
+            margin: 0,
+            lineHeight: 1.5,
+            maxWidth: "56ch"
+          }}
+        >
+          큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.
+        </p>
+      </div>
       <div className="bento">
         {services.map((service, index) => {
           const item = editableServices[index] ?? { title: service.title, text: service.text };

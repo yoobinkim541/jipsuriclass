@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-05-29 - Restore Services Section Scale
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Restored the homepage services section to a larger, more readable layout.
+- Brought back a larger services heading block and expanded the first service card into a prominent feature card.
+- Increased the desktop service grid spacing and card sizing so the section no longer feels compressed.
+
+Verification:
+- `npm run build` passed.
+- Browser checked `http://127.0.0.1:4174/` and confirmed the services section renders with a larger heading and a 2-column/2-row featured first card.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Homepage Blog Latest Posts
 
 Changed files:
