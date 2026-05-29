@@ -22,6 +22,24 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-30 - Homepage Blog Latest Feed Fix
+
+Changed files:
+- `api/naver-blog.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Made the `mode=latest` API path return RSS-ranked items directly instead of running the heavier post-page enrichment and summary pass.
+- Kept the richer enrichment flow only for matching/search mode so the homepage latest feed can respond faster and avoid serverless failures.
+
+Verification:
+- `npm run build` passed.
+- Local API check on `http://127.0.0.1:4183/api/naver-blog?mode=latest` returned 6 latest posts with the expected newest title.
+- Browser check on `http://127.0.0.1:4183/` showed the homepage blog section rendering as a carousel with 6 cards at mobile, tablet, and desktop widths.
+
+Follow-up:
+- Production deployment still needs to pick up this commit, then `https://www.jipsuriclass.kr/api/naver-blog?mode=latest` should stop returning 500 and the homepage blog carousel should repopulate.
+
 ## 2026-05-30 - Blog Latest Fallback Removal
 
 Changed files:

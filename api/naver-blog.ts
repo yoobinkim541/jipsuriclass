@@ -44,10 +44,16 @@ export default async function handler(_request: VercelRequest, response: VercelR
   const categoryNos = parseCategoryNos(_request.query.categoryNos);
 
   try {
-    const items = await loadLatestBlogItems(blogId, mode === "latest" ? [] : terms, mode === "latest" ? [] : categoryNos);
+    const latestMode = mode === "latest";
+    const items = await loadLatestBlogItems(
+      blogId,
+      latestMode ? [] : terms,
+      latestMode ? [] : categoryNos,
+      latestMode
+    );
     response.setHeader(
       "Cache-Control",
-      mode === "latest"
+      latestMode
         ? "no-store"
         : "s-maxage=86400, stale-while-revalidate=86400"
     );
@@ -108,8 +114,12 @@ function parseCategoryNos(value: string | string[] | undefined) {
     .slice(0, 8);
 }
 
-async function loadLatestBlogItems(blogId: string, terms: string[], categoryNos: number[]) {
+async function loadLatestBlogItems(blogId: string, terms: string[], categoryNos: number[], latestMode: boolean) {
   const items = await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: PORTFOLIO_LIMIT });
+  if (latestMode) {
+    return items;
+  }
+
   return await enrichItemsWithSummary(items, blogId);
 }
 
