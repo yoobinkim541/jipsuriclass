@@ -98,6 +98,26 @@ Verification:
 Follow-up:
 - The remaining service and area pages are still indexable; if Search Console continues to report `crawled - currently not indexed`, the next pass should focus on making those pages more distinctive and less template-heavy.
 
+## 2026-05-30 - Static Landing Snapshots For Indexing
+
+Changed files:
+- `vercel.json`
+- `public/service/*/index.html`
+- `public/area/*/index.html`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Generated prerendered HTML snapshots for all service and area landing pages, including the price pages, so Google receives page-specific HTML instead of only the SPA shell.
+- Updated Vercel rewrites so `/service/:path*` and `/area/:path*` resolve to the matching static snapshot files.
+- Kept the app behavior unchanged for users, but gave crawlers a much stronger HTML entrypoint per route.
+
+Verification:
+- `npm run build` passed.
+- Confirmed the build output includes route-specific HTML files such as `/service/film/index.html`, `/service/electric/price/index.html`, and `/area/seoul/index.html`.
+
+Follow-up:
+- Monitor Search Console after the next deploy. If `crawled - currently not indexed` still persists, the remaining work is content differentiation rather than routing.
+
 ## 2026-05-30 - Blog Latest Fallback Removal
 
 Changed files:

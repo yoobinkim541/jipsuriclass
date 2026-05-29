@@ -217,7 +217,7 @@
     },
     {
       "source": "/service/:path*",
-      "destination": "/"
+      "destination": "/service/:path*/index.html"
     },
     {
       "source": "/area",
@@ -225,7 +225,7 @@
     },
     {
       "source": "/area/:path*",
-      "destination": "/"
+      "destination": "/area/:path*/index.html"
     }
   ]
 }
