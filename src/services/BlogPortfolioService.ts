@@ -21,7 +21,7 @@ export class BlogPortfolioService {
   constructor(
     private readonly endpoint: string,
     private readonly fallbackPosts: PortfolioPost[],
-    private readonly maxPosts = 6
+    private readonly maxPosts = 8
   ) {}
 
   async loadLatestPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {

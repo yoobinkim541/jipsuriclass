@@ -28,7 +28,7 @@ type EnrichedBlogItem = NaverBlogItem & {
   contentText?: string;
 };
 
-const PORTFOLIO_LIMIT = 6;
+const PORTFOLIO_LIMIT = 8;
 const RSS_FETCH_LIMIT = 30;
 const FALLBACK_BLOG_IMAGE = "/assets/consult-hero.png";
 const ALLOWED_IMAGE_HOSTS = ["pstatic.net", "naver.net", "naver.com"];

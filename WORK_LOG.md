@@ -22,6 +22,27 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-29 - Homepage Blog Carousel Expansion
+
+Changed files:
+- `src/App.tsx`
+- `src/services/BlogPortfolioService.ts`
+- `api/naver-blog.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reworked the homepage blog section into a horizontal carousel matching the cases section layout.
+- Increased the homepage blog fetch target to 8 posts and widened the blog data pipeline to allow 8 items.
+- Filled the homepage carousel to 8 cards by combining the latest API posts with curated fallback blog posts when the live feed returns fewer than 8 items.
+
+Verification:
+- `npm run build` passed.
+- Playwright verified the homepage blog section renders as a flex carousel with 8 cards.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Homepage Nav and Section Alignment
 
 Changed files:

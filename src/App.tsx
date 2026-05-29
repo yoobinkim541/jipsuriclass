@@ -503,7 +503,13 @@ function HomePage() {
             case "cases":
               return <CasesSection key={sectionId} cases={homeContent.cases} />;
             case "blog":
-              return <BlogSection key={sectionId} posts={blogSource === "naver" ? blogPosts : homeContent.blog} source={blogSource} />;
+              return (
+                <BlogSection
+                  key={sectionId}
+                  posts={blogSource === "loading" ? [] : mergeBlogPortfolioPosts(blogPosts, homeContent.blog)}
+                  source={blogSource}
+                />
+              );
             case "location":
               return <OfficeSection key={sectionId} />;
             case "contact":
@@ -1318,13 +1324,13 @@ function BlogSection({
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollFrameRef = useRef<number | null>(null);
 
-  useAutoCarousel(railRef, { enabled: true });
-
   const description =
     source === "naver"
       ? "최근 현장 시공 사례를 블로그에서 가져옵니다."
       : "대표 시공 포트폴리오입니다.";
-  const displayPosts = posts.slice(0, 5);
+  const displayPosts = posts.slice(0, 8);
+
+  useAutoCarousel(railRef, { enabled: displayPosts.length > 1 });
 
   if (source === "loading" && !displayPosts.length) {
     return (
@@ -1387,13 +1393,14 @@ function BlogSection({
         href={business.naverBlogUrl}
         className="naver-link"
       />
-      <div className="blog-card-grid blog-card-carousel-mobile" ref={railRef} onScroll={handleScroll}>
-        {displayPosts.map((post, index) => (
-          <a
-            className={index === 0 ? "blog-card blog-card-featured" : "blog-card"}
-            href={post.link}
-            target="_blank"
-            rel="noreferrer"
+      <div className="blog__carousel">
+        <div className="blog__rail" ref={railRef} onScroll={handleScroll}>
+          {displayPosts.map((post, index) => (
+            <a
+              className={index === 0 ? "blog-card blog-card-featured blog__card" : "blog-card blog__card"}
+              href={post.link}
+              target="_blank"
+              rel="noreferrer"
             key={post.title}
             ref={(el) => { cardRefs.current[index] = el; }}
           >
@@ -1434,7 +1441,8 @@ function BlogSection({
               </span>
             </div>
           </a>
-        ))}
+          ))}
+        </div>
       </div>
       <div className="blog-carousel-controls" aria-label="블로그 포트폴리오 캐러셀 컨트롤">
         <button className="cases__carousel-button" type="button" onClick={() => goToIndex(activeIndex - 1)} aria-label="이전 글">
@@ -1471,6 +1479,21 @@ function buildSummaryLines(description: string) {
 
   if (!sentences.length) return [cleaned.slice(0, 120)];
   return sentences.slice(0, 3).map((sentence) => sentence.slice(0, 80));
+}
+
+function mergeBlogPortfolioPosts(primary: PortfolioPost[], fallback: PortfolioPost[]) {
+  const merged: PortfolioPost[] = [];
+  const seen = new Set<string>();
+
+  for (const post of [...primary, ...fallback]) {
+    const key = `${post.link}::${post.title}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    merged.push(post);
+    if (merged.length >= 8) break;
+  }
+
+  return merged;
 }
 
 const processIllustrations = [
