@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-05-30 - Blog Latest Fallback Removal
+
+Changed files:
+- `src/App.tsx`
+- `src/services/BlogPortfolioService.ts`
+
+Implemented behavior:
+- Homepage blog now shows latest Naver posts only.
+- If the latest fetch fails, it no longer falls back to older curated cards; it shows an empty-state message instead.
+
+Verification:
+- `npm run build` passed.
+- Browser verification pending.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Blog Section Freshness
 
 Changed files:

@@ -506,7 +506,7 @@ function HomePage() {
               return (
                 <BlogSection
                   key={sectionId}
-                  posts={blogSource === "loading" ? [] : (blogSource === "naver" ? blogPosts : homeContent.blog)}
+                  posts={blogSource === "naver" ? blogPosts : []}
                   source={blogSource}
                 />
               );
@@ -1345,6 +1345,22 @@ function BlogSection({
           className="naver-link"
         />
         <div className="admin-empty">최신 블로그 글을 불러오는 중</div>
+      </section>
+    );
+  }
+
+  if (!displayPosts.length) {
+    return (
+      <section className="blog section" id="blog" aria-labelledby="blog-title">
+        <RowHeading
+          id="blog-title"
+          title="네이버 블로그 포트폴리오"
+          description={description}
+          linkLabel="N 블로그"
+          href={business.naverBlogUrl}
+          className="naver-link"
+        />
+        <div className="admin-empty">최신 블로그 글을 불러오지 못했습니다. N 블로그에서 직접 확인해 주세요.</div>
       </section>
     );
   }

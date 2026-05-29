@@ -26,7 +26,11 @@ export class BlogPortfolioService {
 
   async loadLatestPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
     const result = await this.fetchFromApi("latest");
-    return result;
+    if (result.source === "naver") {
+      return result;
+    }
+
+    return { source: "fallback", posts: [] };
   }
 
   async loadPortfolioPosts(
