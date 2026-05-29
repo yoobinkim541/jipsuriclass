@@ -443,6 +443,8 @@ function HomePage() {
   const [blogSource, setBlogSource] = useState<"loading" | "naver" | "fallback">("loading");
   const [homeContent, setHomeContent] = useState(defaultHomepageContent);
   const [contentReady, setContentReady] = useState(false);
+  const homepageSections = homeContent.sections?.length ? homeContent.sections : defaultHomepageSectionOrder;
+  const homepageSectionOrder = defaultHomepageSectionOrder.filter((sectionId) => homepageSections.includes(sectionId));
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -486,7 +488,7 @@ function HomePage() {
         onCloseMenu={() => setMenuOpen(false)}
       />
       <main className="home-page" id="top">
-        {(homeContent.sections ?? defaultHomepageSectionOrder).map((sectionId) => {
+        {homepageSectionOrder.map((sectionId) => {
           switch (sectionId) {
             case "hero":
               return <HeroSection key={sectionId} content={homeContent.hero} cases={homeContent.cases} />;
@@ -538,22 +540,56 @@ function SiteHeader({
   brandHref?: string;
 }) {
   const menuItems = navItems;
-  const desktopMenuItems = menuItems.filter((item) => item.href.startsWith("#"));
+  const desktopMenuItems = menuItems;
   const isHome = window.location.pathname === "/";
-  const resolveHref = (href: string) => href.startsWith("#") && !isHome ? `/${href}` : href;
+  const resolveHref = (href: string) => (href.startsWith("#") && !isHome ? `/${href}` : href);
+  const resolveActiveHref = () => {
+    if (isHome) {
+      const anchorItems = menuItems.filter((item) => item.href.startsWith("#"));
+      let activeHref = anchorItems[0]?.href ?? "";
+      const scrollTop = window.scrollY + 140;
+
+      for (const item of anchorItems) {
+        const target = document.getElementById(item.href.slice(1));
+        if (!target) continue;
+        if (target.offsetTop <= scrollTop) {
+          activeHref = item.href;
+        }
+      }
+
+      return activeHref;
+    }
+
+    if (window.location.pathname.startsWith("/diagnosis")) return "/diagnosis";
+    if (window.location.pathname.startsWith("/estimate")) return "/estimate";
+    return "";
+  };
 
   const [scrollPct, setScrollPct] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const [activeHref, setActiveHref] = useState(resolveActiveHref);
 
   useEffect(() => {
     const handleScroll = () => {
       const max = document.body.scrollHeight - window.innerHeight;
       setScrollPct(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
       setScrolled(window.scrollY > 10);
+      if (isHome) {
+        setActiveHref(resolveActiveHref());
+      }
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    window.addEventListener("resize", handleScroll);
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [isHome]);
+
+  useEffect(() => {
+    setActiveHref(resolveActiveHref());
+  }, [isHome]);
 
   return (
     <>
@@ -570,7 +606,12 @@ function SiteHeader({
           </a>
           <nav className="nav__links" aria-label="주요 메뉴">
             {desktopMenuItems.map((item) => (
-              <a href={resolveHref(item.href)} key={item.href}>
+              <a
+                href={resolveHref(item.href)}
+                key={item.href}
+                data-active={activeHref === item.href ? "true" : undefined}
+                aria-current={activeHref === item.href ? "page" : undefined}
+              >
                 {item.label}
               </a>
             ))}
@@ -598,7 +639,13 @@ function SiteHeader({
             <X size={24} />
           </button>
           {menuItems.map((item) => (
-            <a href={resolveHref(item.href)} key={item.href} onClick={onCloseMenu}>
+            <a
+              href={resolveHref(item.href)}
+              key={item.href}
+              onClick={onCloseMenu}
+              data-active={activeHref === item.href ? "true" : undefined}
+              aria-current={activeHref === item.href ? "page" : undefined}
+            >
               {item.label}
             </a>
           ))}
@@ -884,10 +931,11 @@ function ServicesSection({
 }) {
   return (
     <section className="services" id="services" aria-labelledby="services-title">
-      <div className="sec-head" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(48px,8vw,96px) clamp(18px,5vw,64px) clamp(24px,3vw,36px)" }}>
-        <h2 id="services-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>생활 집수리 서비스</h2>
-        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.</p>
-      </div>
+      <SectionHeading
+        id="services-title"
+        title="생활 집수리 서비스"
+        description="큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다."
+      />
       <div className="bento">
         {services.map((service, index) => {
           const item = editableServices[index] ?? { title: service.title, text: service.text };
@@ -963,7 +1011,7 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
 
   return (
     <section className="specialties" id="specialties" aria-labelledby="specialties-title">
-      <div className="sec-head" style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(28px,4vw,52px) clamp(18px,5vw,64px) clamp(16px,2vw,24px)", textAlign: "center" }}>
+      <div className="sec-head">
         <h2 id="specialties-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>가능 작업</h2>
         <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>집 안팎에서 필요한 수리, 설비, 마감, 리모델링 작업을 폭넓게 상담합니다.</p>
       </div>
@@ -1184,15 +1232,14 @@ function CasesSection({
 
   return (
     <section className="cases" id="cases" aria-labelledby="cases-title">
-      <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(24px,4vw,56px) clamp(18px,5vw,64px) clamp(20px,2.5vw,32px)", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h2 id="cases-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>대표 현장사례</h2>
-          <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>실제 현장 사진과 작업 내용을 확인하세요.</p>
-        </div>
-        <a href={business.naverBlogUrl} target="_blank" rel="noreferrer" style={{ fontSize: 14, fontWeight: 600, color: "var(--navy-700,#10284a)", display: "inline-flex", alignItems: "center", gap: 6, borderBottom: "1px solid var(--ink,#0b1a30)", paddingBottom: 2 }}>
-          전체 사례 보기 <ExternalLink size={14} />
-        </a>
-      </div>
+      <RowHeading
+        id="cases-title"
+        title="대표 현장사례"
+        description="실제 현장 사진과 작업 내용을 확인하세요."
+        linkLabel="전체 사례 보기"
+        href={business.naverBlogUrl}
+        className="naver-link"
+      />
       <div className="cases__carousel">
         <div
           className="cases__rail"
@@ -1460,10 +1507,11 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
     <section className="process" id="process" aria-labelledby="process-title">
       <div className="process__shell">
         <div className="process__intro">
-          <div style={{ maxWidth: "var(--max,1320px)", margin: "0 auto", padding: "clamp(12px,2vw,24px) clamp(18px,5vw,64px) 0" }}>
-            <h2 id="process-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 6px", color: "var(--ink,#0b1a30)" }}>작업 절차</h2>
-            <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다.</p>
-          </div>
+          <SectionHeading
+            id="process-title"
+            title="작업 절차"
+            description="불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다."
+          />
           <div className="process__signal-grid">
             {processSignals.map((signal) => {
               const SignalIcon = signal.icon;

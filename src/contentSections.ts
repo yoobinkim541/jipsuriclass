@@ -69,8 +69,8 @@ export const homepageSectionDefinitions: Array<SectionDefinition<HomepageSection
   { id: "services", label: "서비스", description: "생활 집수리 카드" },
   { id: "specialties", label: "가능 작업", description: "세부 작업 키워드" },
   { id: "cases", label: "사례", description: "대표 현장 사례" },
-  { id: "blog", label: "블로그", description: "고정 글과 최신 글" },
   { id: "process", label: "작업 절차", description: "문의부터 완료까지" },
+  { id: "blog", label: "블로그", description: "고정 글과 최신 글" },
   { id: "location", label: "오시는 길", description: "사무실과 지도" },
   { id: "contact", label: "문의", description: "빠른 연락과 상담" }
 ];

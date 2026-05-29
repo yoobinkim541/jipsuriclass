@@ -156,6 +156,15 @@ textarea {
   transform: scaleX(1);
 }
 
+.nav__links a[data-active="true"] {
+  color: var(--navy-700, #10284a);
+  background: rgba(215, 174, 107, 0.12);
+}
+
+.nav__links a[data-active="true"]::after {
+  transform: scaleX(1);
+}
+
 .nav__actions {
   display: flex;
   align-items: center;
@@ -656,6 +665,10 @@ textarea {
   font-size: 20px;
   font-weight: 800;
   padding: 14px 0;
+}
+
+.mobile-menu a[data-active="true"] {
+  color: var(--navy-700, #10284a);
 }
 
 .login-shell {
@@ -1324,26 +1337,29 @@ textarea {
   }
 
   main.home-page .services,
+  main.home-page .specialties,
   main.home-page .cases,
-  main.home-page .blog {
-    justify-content: center;
+  main.home-page .process,
+  main.home-page .blog,
+  main.home-page .office,
+  main.home-page .contact {
+    justify-content: flex-start;
   }
 
-  main.home-page .services .sec-head {
-    padding-top: clamp(4px, 0.8vh, 10px) !important;
-    padding-bottom: 6px !important;
+  main.home-page .services .section-heading,
+  main.home-page .specialties .sec-head,
+  main.home-page .cases .section-heading,
+  main.home-page .process .section-heading,
+  main.home-page .blog .section-heading,
+  main.home-page .office .section-heading,
+  main.home-page .contact .contact-header {
+    max-width: var(--max, 1320px);
+    margin: 0 auto 18px;
+    padding: clamp(24px, 3vw, 40px) clamp(18px, 5vw, 64px) 0;
   }
 
-  main.home-page .services .sec-head h2 {
-    font-size: clamp(20px, 1.8vw, 30px) !important;
-    margin-bottom: 4px !important;
-  }
-
-  main.home-page .services .sec-head p {
-    font-size: 12px !important;
-    line-height: 1.45;
-    max-width: 52ch;
-    margin-inline: auto;
+  main.home-page .specialties .sec-head {
+    text-align: center;
   }
 
   main.home-page > section.services,
@@ -1405,11 +1421,6 @@ textarea {
 
   main.home-page .bento__link-label {
     font-size: 11px;
-  }
-
-  main.home-page .cases .section-heading,
-  main.home-page .blog .section-heading {
-    margin-bottom: 10px;
   }
 
   main.home-page .cases__rail {

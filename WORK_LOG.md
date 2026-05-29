@@ -15,6 +15,29 @@ Implemented behavior:
 
 Verification:
 - `npm run build` passed.
+- Playwright checked the home page nav labels and confirmed `자가진단` and `견적상담` are present in the desktop menu.
+- Playwright confirmed the home page renders the section order with `작업 절차` before `블로그`.
+- Playwright scrolled to `#blog` and confirmed the nav underline moves to `블로그`.
+
+Follow-up:
+- None.
+
+## 2026-05-29 - Homepage Nav and Section Alignment
+
+Changed files:
+- `src/App.tsx`
+- `src/contentSections.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added `자가진단` and `견적상담` to the desktop navigation and marked the current nav item with an active underline bar.
+- Kept the home-page section order aligned with the nav order by rendering the canonical homepage section sequence.
+- Moved the home-page `작업 절차` section ahead of `블로그` to match the top navigation.
+- Standardized the non-hero, non-about section titles to a shared header rhythm so the home page feels more consistent.
+
+Verification:
+- `npm run build` passed.
 
 Follow-up:
 - None.
