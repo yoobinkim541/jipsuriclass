@@ -939,7 +939,7 @@ function ServicesSection({
 }) {
   return (
     <section className="services" id="services" aria-labelledby="services-title">
-      <div className="sec-head services-head" style={{ textAlign: "center" }}>
+      <div className="sec-head services-head">
         <h2 id="services-title">생활 집수리 서비스</h2>
         <p>큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.</p>
       </div>

@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-29 - Homepage Header Center Alignment
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Center-aligned the homepage service and specialty section titles/subtitles.
+- Centered the case and blog heading blocks while keeping the action links on the right.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the homepage and confirmed the requested sections use centered heading alignment.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Homepage Self-Diagnosis Link
 
 Changed files:

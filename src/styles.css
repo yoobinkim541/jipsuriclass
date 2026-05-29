@@ -3831,6 +3831,36 @@ textarea {
   text-align: left;
 }
 
+main.home-page .services .sec-head,
+main.home-page .specialties .sec-head {
+  text-align: center;
+}
+
+main.home-page .services .sec-head p,
+main.home-page .specialties .sec-head p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+main.home-page .cases .row-heading,
+main.home-page .blog .row-heading {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  width: 100%;
+}
+
+main.home-page .cases .row-heading > div,
+main.home-page .blog .row-heading > div {
+  text-align: center;
+}
+
+main.home-page .cases .row-heading a,
+main.home-page .blog .row-heading a {
+  justify-self: end;
+}
+
 .row-heading a {
   align-items: center;
   color: var(--navy-700);
