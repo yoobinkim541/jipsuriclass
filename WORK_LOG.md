@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-05-29 - Homepage Title Typography Unify
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Unified homepage section title typography across services, specialties, cases, blog, and contact blocks.
+- Removed per-section inline title sizing so the shared CSS rules now control font family, size, weight, and spacing.
+- Kept the hero typography unchanged.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the homepage at mobile and desktop widths and confirmed non-hero titles now share the same 30px / 48px sizing scale and 800 weight.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Blog Carousel Restore
 
 Changed files:

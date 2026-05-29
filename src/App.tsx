@@ -938,30 +938,8 @@ function ServicesSection({
   return (
     <section className="services" id="services" aria-labelledby="services-title">
       <div className="sec-head services-head" style={{ textAlign: "center" }}>
-        <h2
-          id="services-title"
-          style={{
-            fontFamily: "var(--f-display,sans-serif)",
-            fontWeight: 800,
-            fontSize: "clamp(30px, 3.8vw, 54px)",
-            letterSpacing: "-0.04em",
-            margin: "0 0 12px",
-            color: "var(--ink,#0b1a30)"
-          }}
-        >
-          생활 집수리 서비스
-        </h2>
-        <p
-          style={{
-            fontSize: "clamp(15px, 1.5vw, 19px)",
-            color: "var(--ink-2,#2a3a55)",
-            margin: 0,
-            lineHeight: 1.5,
-            maxWidth: "56ch"
-          }}
-        >
-          큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.
-        </p>
+        <h2 id="services-title">생활 집수리 서비스</h2>
+        <p>큰 공사보다 당장 불편한 문제를 해결하는 실용적인 작업을 중심으로 합니다.</p>
       </div>
       <div className="bento">
         {services.map((service, index) => {
@@ -1039,8 +1017,8 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
   return (
     <section className="specialties" id="specialties" aria-labelledby="specialties-title">
       <div className="sec-head">
-        <h2 id="specialties-title" style={{ fontFamily: "var(--f-display,sans-serif)", fontWeight: 800, fontSize: "clamp(26px,3.5vw,44px)", letterSpacing: "-0.03em", margin: "0 0 10px", color: "var(--ink,#0b1a30)" }}>가능 작업</h2>
-        <p style={{ fontSize: "clamp(15px,1.4vw,18px)", color: "var(--ink-2,#2a3a55)", margin: 0 }}>집 안팎에서 필요한 수리, 설비, 마감, 리모델링 작업을 폭넓게 상담합니다.</p>
+        <h2 id="specialties-title">가능 작업</h2>
+        <p>집 안팎에서 필요한 수리, 설비, 마감, 리모델링 작업을 폭넓게 상담합니다.</p>
       </div>
       <div className="specs__controls">
         <div className="specs__filters">

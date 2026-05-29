@@ -431,10 +431,11 @@ textarea {
   }
 
   main.home-page .section-heading h2,
+  main.home-page .sec-head h2,
+  main.home-page .contact-header h2,
+  main.home-page .row-heading h2,
   main.home-page .about-copy h2,
-  main.home-page .contact-copy h2,
-  main.home-page .estimate-hero h1,
-  main.home-page .admin-hero h1 {
+  main.home-page .contact-copy h2 {
     font-size: clamp(34px, 2.8vw, 56px);
   }
 }
@@ -1331,7 +1332,12 @@ textarea {
   }
 
   /* ── Section headings ── */
-  main.home-page .section-heading h2 {
+  main.home-page .section-heading h2,
+  main.home-page .sec-head h2,
+  main.home-page .contact-header h2,
+  main.home-page .row-heading h2,
+  main.home-page .about-copy h2,
+  main.home-page .contact-copy h2 {
     font-size: clamp(32px, 3.2vw, 50px);
   }
 
@@ -1531,11 +1537,6 @@ textarea {
   main.home-page .services .sec-head {
     padding-top: 0 !important;
     padding-bottom: 18px !important;
-  }
-
-  main.home-page .services .sec-head h2 {
-    font-size: clamp(30px, 3.8vw, 54px) !important;
-    margin-bottom: 10px !important;
   }
 
   main.home-page .services .sec-head p {
@@ -4153,6 +4154,21 @@ textarea {
 
 .blog-card-featured h3 {
   font-size: 22px;
+}
+
+main.home-page .section-heading h2,
+main.home-page .sec-head h2,
+main.home-page .contact-header h2,
+main.home-page .row-heading h2,
+main.home-page .about-copy h2,
+main.home-page .contact-copy h2 {
+  color: var(--ink, #0b1a30);
+  font-family: var(--f-display, sans-serif);
+  font-size: clamp(30px, 4vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  margin: 0;
 }
 
 main.home-page .blog.section {
