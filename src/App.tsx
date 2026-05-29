@@ -506,7 +506,7 @@ function HomePage() {
               return (
                 <BlogSection
                   key={sectionId}
-                  posts={blogSource === "loading" ? [] : mergeBlogPortfolioPosts(blogPosts, homeContent.blog)}
+                  posts={blogSource === "loading" ? [] : (blogSource === "naver" ? blogPosts : homeContent.blog)}
                   source={blogSource}
                 />
               );
@@ -1480,21 +1480,6 @@ function buildSummaryLines(description: string) {
 
   if (!sentences.length) return [cleaned.slice(0, 120)];
   return sentences.slice(0, 3).map((sentence) => sentence.slice(0, 80));
-}
-
-function mergeBlogPortfolioPosts(primary: PortfolioPost[], fallback: PortfolioPost[]) {
-  const merged: PortfolioPost[] = [];
-  const seen = new Set<string>();
-
-  for (const post of [...primary, ...fallback]) {
-    const key = `${post.link}::${post.title}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    merged.push(post);
-    if (merged.length >= 8) break;
-  }
-
-  return merged;
 }
 
 const processIllustrations = [

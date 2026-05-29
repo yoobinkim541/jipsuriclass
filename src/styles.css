@@ -2856,7 +2856,12 @@ textarea {
 }
 
 .blog-carousel-controls {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 16px 16px;
 }
 
 .process__detail {
@@ -4209,18 +4214,17 @@ main.home-page .blog.section {
 
 main.home-page .blog__carousel {
   margin-top: 4px;
-  max-width: var(--max, 1320px);
-  margin-inline: auto;
+  max-width: none;
   width: 100%;
 }
 
 main.home-page .blog__rail {
   display: flex;
-  gap: 14px;
+  gap: 18px;
   overflow-x: auto;
-  padding: 6px clamp(18px, 5vw, 64px) 16px;
+  padding: 6px clamp(18px, 4vw, 56px) 16px;
   scroll-snap-type: x mandatory;
-  scroll-padding-inline: clamp(18px, 5vw, 64px);
+  scroll-padding-inline: clamp(18px, 4vw, 56px);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -4230,12 +4234,12 @@ main.home-page .blog__rail::-webkit-scrollbar {
 }
 
 main.home-page .blog__rail > .blog__card {
-  flex: 0 0 min(28vw, 360px);
+  flex: 0 0 min(30vw, 380px);
   scroll-snap-align: center;
 }
 
 main.home-page .blog__rail > .blog__card.blog-card-featured {
-  flex-basis: min(32vw, 420px);
+  flex-basis: min(34vw, 440px);
 }
 
 main.home-page .blog__rail .blog-card-image,

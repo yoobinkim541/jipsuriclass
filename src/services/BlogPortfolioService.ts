@@ -25,16 +25,7 @@ export class BlogPortfolioService {
   ) {}
 
   async loadLatestPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
-    const cacheKey = this.buildCacheKey("latest");
-    const cached = this.readCache(cacheKey);
-    if (cached) {
-      return { posts: cached, source: "naver" };
-    }
-
     const result = await this.fetchFromApi("latest");
-    if (result.source === "naver" && result.posts.length) {
-      this.writeCache(cacheKey, result.posts);
-    }
     return result;
   }
 

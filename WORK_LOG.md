@@ -1,5 +1,25 @@
 # Work Log
 
+## 2026-05-29 - Blog Section Freshness
+
+Changed files:
+- `src/App.tsx`
+- `src/services/BlogPortfolioService.ts`
+- `api/naver-blog.ts`
+- `src/styles.css`
+
+Implemented behavior:
+- Made the homepage blog section render latest Naver posts directly when available instead of merging in older fallback cards.
+- Removed client-side caching from the latest blog fetch path and disabled server caching for `mode=latest` so the feed stays fresh.
+- Showed blog carousel controls on desktop and widened the rail so the section uses more of the screen.
+
+Verification:
+- `npm run build` passed.
+- Verified in Playwright at 390px, 820px, 1366px, and 1440px that the homepage blog rail is horizontal, the controls are visible, and the first card matches the latest Naver API title.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Homepage Header Center Alignment
 
 Changed files:

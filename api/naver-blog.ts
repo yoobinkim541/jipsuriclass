@@ -45,7 +45,12 @@ export default async function handler(_request: VercelRequest, response: VercelR
 
   try {
     const items = await loadLatestBlogItems(blogId, mode === "latest" ? [] : terms, mode === "latest" ? [] : categoryNos);
-    response.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=86400");
+    response.setHeader(
+      "Cache-Control",
+      mode === "latest"
+        ? "no-store"
+        : "s-maxage=86400, stale-while-revalidate=86400"
+    );
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });
