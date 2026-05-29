@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-29 - Blog Carousel Restore
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Restored the homepage blog portfolio to a horizontal carousel across tablet and desktop widths.
+- Removed the layout collapse that was stacking blog cards vertically on wider screens.
+- Kept the blog section auto-height so the section no longer balloons to several viewport heights.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the blog section at `820px` and `1440px` widths and confirmed the rail displays horizontally with normal card heights.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - 1440px Nav Fix
 
 Changed files:
