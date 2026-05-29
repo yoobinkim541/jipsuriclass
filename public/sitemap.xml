@@ -97,28 +97,6 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- 가격표 페이지 -->
-  <url>
-    <loc>https://www.jipsuriclass.kr/service/electric/price</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.jipsuriclass.kr/service/waterproofing/price</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.jipsuriclass.kr/service/waterproofing-tile/price</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.jipsuriclass.kr/service/tile/price</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
   <!-- 지역 랜딩 페이지 -->
   <url>
     <loc>https://www.jipsuriclass.kr/area/namyangju</loc>

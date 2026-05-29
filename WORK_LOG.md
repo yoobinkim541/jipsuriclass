@@ -80,6 +80,24 @@ Verification:
 Follow-up:
 - Production still depends on the current Vercel deployment picking up this commit, but the UI no longer needs the remote blog API to succeed in order to avoid blank sections.
 
+## 2026-05-30 - Price Pages Noindex Cleanup
+
+Changed files:
+- `src/App.tsx`
+- `public/sitemap.xml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Marked the four `/service/*/price` utility pages as `noindex,nofollow`.
+- Removed those price pages from the sitemap so Google stops spending crawl budget on pages that are not meant to rank.
+
+Verification:
+- `npm run build` passed.
+- Local browser check on `/service/electric/price` showed `meta robots = noindex,nofollow` and the correct canonical URL.
+
+Follow-up:
+- The remaining service and area pages are still indexable; if Search Console continues to report `crawled - currently not indexed`, the next pass should focus on making those pages more distinctive and less template-heavy.
+
 ## 2026-05-30 - Blog Latest Fallback Removal
 
 Changed files:

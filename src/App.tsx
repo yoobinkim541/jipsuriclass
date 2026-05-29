@@ -219,6 +219,7 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
       title: `전기공사 가격표 | ${siteName}`,
       description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
       image: defaultImage,
+      noindex: true,
       jsonLd: [
         {
           "@context": "https://schema.org",
@@ -237,6 +238,7 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
       title: `방수·타일 가격표 | ${siteName}`,
       description: "집수리클라쓰 방수·타일 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
       image: defaultImage,
+      noindex: true,
       jsonLd: [
         {
           "@context": "https://schema.org",
@@ -255,6 +257,7 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
       title: `방수 보수 가격표 | ${siteName}`,
       description: "집수리클라쓰 방수 보수 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
       image: defaultImage,
+      noindex: true,
       jsonLd: [
         {
           "@context": "https://schema.org",
@@ -273,6 +276,7 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
       title: `타일 시공·보수 가격표 | ${siteName}`,
       description: "집수리클라쓰 타일 시공·보수 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
       image: defaultImage,
+      noindex: true,
       jsonLd: [
         {
           "@context": "https://schema.org",
