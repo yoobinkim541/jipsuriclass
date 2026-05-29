@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-29 - Desktop Service And Blog Tightening
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reduced the desktop service section density again so the first bento card no longer dominates the layout.
+- Tightened the desktop blog section by forcing a 4-column, smaller-card layout with reduced image and body spacing.
+- Added a final desktop-only override block to force service and blog sections to align from the top instead of centering their content.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked the local preview at 1920px and confirmed `justify-content` is now `flex-start` for both sections, with a smaller blog card height and smaller service card height.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Desktop Section Density Reduction
 
 Changed files:

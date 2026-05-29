@@ -435,6 +435,54 @@ textarea {
   }
 }
 
+@media (min-width: 1100px) {
+  main.home-page section.services {
+    justify-content: flex-start !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  main.home-page section.blog.section {
+    justify-content: flex-start !important;
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+  }
+
+  main.home-page section.services .bento {
+    grid-auto-rows: minmax(112px, auto);
+  }
+
+  main.home-page section.services .bento__card {
+    min-height: 112px;
+    padding: 14px;
+  }
+
+  main.home-page section.services .bento__card:nth-child(1) {
+    grid-column: span 1 !important;
+    grid-row: span 1 !important;
+  }
+
+  main.home-page section.blog .blog-card-grid {
+    gap: 8px;
+  }
+
+  main.home-page section.blog .blog-card,
+  main.home-page section.blog .blog-card-featured {
+    grid-column: span 1;
+  }
+
+  main.home-page section.blog .blog-card-image,
+  main.home-page section.blog .blog-card-featured .blog-card-image {
+    aspect-ratio: 16 / 10;
+  }
+
+  main.home-page section.blog .blog-card-body,
+  main.home-page section.blog .blog-card-featured .blog-card-body {
+    padding: 10px;
+    gap: 4px;
+  }
+}
+
 /* Keep the old .site-header class as alias for non-home pages that might still use it */
 .site-header {
   align-items: center;
@@ -1068,19 +1116,21 @@ textarea {
 
   /* ── Bento ── */
   main.home-page .bento {
-    grid-auto-rows: minmax(200px, 1fr);
+    grid-auto-rows: minmax(150px, auto);
+    gap: 12px;
   }
 
   main.home-page .bento__card {
-    padding: clamp(22px, 2vw, 30px);
+    min-height: 150px;
+    padding: clamp(16px, 1.6vw, 24px);
   }
 
   main.home-page .bento__card h3 {
-    font-size: clamp(18px, 1.4vw, 24px);
+    font-size: clamp(16px, 1.2vw, 22px);
   }
 
   main.home-page .bento__card p {
-    font-size: 15px;
+    font-size: 13px;
   }
 
   /* ── Blog: 4열, 카드 크기 축소 ── */
@@ -1279,19 +1329,19 @@ textarea {
   }
 
   main.home-page .services .sec-head {
-    padding-top: clamp(8px, 1.2vh, 16px) !important;
-    padding-bottom: 18px !important;
+    padding-top: clamp(4px, 0.8vh, 10px) !important;
+    padding-bottom: 6px !important;
   }
 
   main.home-page .services .sec-head h2 {
-    font-size: clamp(24px, 2.4vw, 36px) !important;
-    margin-bottom: 6px !important;
+    font-size: clamp(20px, 1.8vw, 30px) !important;
+    margin-bottom: 4px !important;
   }
 
   main.home-page .services .sec-head p {
-    font-size: 14px !important;
+    font-size: 12px !important;
     line-height: 1.45;
-    max-width: 58ch;
+    max-width: 52ch;
     margin-inline: auto;
   }
 
@@ -1299,19 +1349,19 @@ textarea {
   main.home-page > section.blog.section {
     height: auto !important;
     min-height: 0 !important;
-    justify-content: flex-start;
+    justify-content: flex-start !important;
   }
 
   main.home-page .bento {
     gap: 14px;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    grid-auto-rows: minmax(136px, auto);
+    grid-auto-rows: minmax(120px, auto);
   }
 
   main.home-page .bento__card {
-    min-height: 150px;
-    padding: clamp(16px, 1.5vw, 24px);
-    gap: 8px;
+    min-height: 120px;
+    padding: clamp(14px, 1.2vw, 20px);
+    gap: 6px;
   }
 
   main.home-page .bento__card:nth-child(1) {
@@ -1320,30 +1370,30 @@ textarea {
   }
 
   main.home-page .bento__card h3 {
-    font-size: clamp(16px, 1.2vw, 22px);
+    font-size: clamp(15px, 1.05vw, 20px);
   }
 
   main.home-page .bento__card:nth-child(1) h3 {
-    font-size: clamp(17px, 1.4vw, 24px);
+    font-size: clamp(15px, 1.1vw, 20px);
   }
 
   main.home-page .bento__card p {
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 11px;
+    line-height: 1.4;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     overflow: hidden;
   }
 
   main.home-page .bento__card:nth-child(1) p {
-    font-size: 13px;
+    font-size: 11px;
   }
 
   main.home-page .bento__card svg,
   main.home-page .bento__card:nth-child(1) svg {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
   }
 
   main.home-page .bento__num {
@@ -1415,12 +1465,12 @@ textarea {
 
   main.home-page .services .sec-head {
     padding-top: 0 !important;
-    padding-bottom: 12px !important;
+    padding-bottom: 6px !important;
   }
 
   main.home-page .services .sec-head h2 {
     font-size: clamp(22px, 2vw, 32px) !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
   }
 
   main.home-page .services .sec-head p {
@@ -1430,8 +1480,8 @@ textarea {
   }
 
   main.home-page .blog-card-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
   }
 
   main.home-page .blog-card,
@@ -1441,13 +1491,13 @@ textarea {
 
   main.home-page .blog-card-image,
   main.home-page .blog-card-featured .blog-card-image {
-    aspect-ratio: 16 / 8.5;
+    aspect-ratio: 16 / 10;
   }
 
   main.home-page .blog-card-body,
   main.home-page .blog-card-featured .blog-card-body {
-    gap: 8px;
-    padding: 13px;
+    gap: 6px;
+    padding: 10px;
   }
 
   main.home-page .naver-mark {
@@ -1459,18 +1509,18 @@ textarea {
 
   main.home-page .blog-card h3,
   main.home-page .blog-card-featured h3 {
-    font-size: 14px;
-    line-height: 1.35;
+    font-size: 13px;
+    line-height: 1.28;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     overflow: hidden;
   }
 
   main.home-page .blog-card-summary p {
-    font-size: 12px;
-    line-height: 1.55;
-    -webkit-line-clamp: 2;
+    font-size: 11px;
+    line-height: 1.45;
+    -webkit-line-clamp: 1;
   }
 
   main.home-page .blog-card-keywords {
