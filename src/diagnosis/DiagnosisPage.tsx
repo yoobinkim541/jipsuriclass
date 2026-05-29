@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, CheckCircle2, ChevronLeft, MessageCircle, Phone } from "lucide-react";
-import { business } from "../data";
+import { ArrowUpRight, CheckCircle2, ChevronLeft, Menu, MessageCircle, Phone, User, X } from "lucide-react";
+import { business, navItems } from "../data";
 import { symptomCategories, type SymptomCategory } from "../data";
 import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
 
 export function DiagnosisPage() {
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrollPct, setScrollPct] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
+  const activeHref = "/diagnosis";
 
   const initialCategory = useMemo<SymptomCategory | null>(() => {
     const catId = query.get("category");
@@ -42,6 +46,19 @@ export function DiagnosisPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const max = document.body.scrollHeight - window.innerHeight;
+      setScrollPct(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0);
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const resolveHref = (href: string) => (href.startsWith("#") ? `/${href}` : href);
+
   function pickCategory(cat: SymptomCategory) {
     setSelectedCategory(cat);
     const first = diagnosisTopics.find((t) => t.id === cat.symptoms[0]?.id);
@@ -58,20 +75,72 @@ export function DiagnosisPage() {
 
   return (
     <>
-      <header className="site-header diagnosis-header">
-        <a className="brand" href="/" aria-label="집수리클라쓰 홈">
-          <img className="brand-mark" src="/icons/brand-icon.png" alt="" aria-hidden="true" />
-          <span>{business.name}</span>
-        </a>
-        <a className="header-call" href={business.phoneHref}>
-          <Phone size={18} />
-          {business.phone}
-        </a>
+      <header className="nav diagnosis-header" data-elevated={menuOpen || scrolled ? "true" : "false"}>
+        <div className="nav__progress">
+          <span className="nav__progress-bar" style={{ width: `${scrollPct}%` }} />
+        </div>
+        <div className="nav__inner">
+          <a className="brand" href="/" aria-label="집수리클라쓰 홈">
+            <img className="brand__mark" src="/icons/brand-icon.png" alt="" aria-hidden="true" />
+            <span className="brand__name">
+              집수리<em>클라쓰</em>
+            </span>
+          </a>
+          <nav className="nav__links" aria-label="주요 메뉴">
+            {navItems.map((item) => (
+              <a
+                href={resolveHref(item.href)}
+                key={item.href}
+                data-active={activeHref === item.href ? "true" : undefined}
+                aria-current={activeHref === item.href ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+          <div className="nav__actions">
+            <a className="nav__login" href="/login" aria-label="마이페이지">
+              <User size={17} />
+              <span>마이페이지</span>
+            </a>
+            <a className="nav__phone" href={business.phoneHref}>
+              {business.phone}
+            </a>
+            <button className="nav__menu" onClick={() => setMenuOpen((value) => !value)} aria-label={menuOpen ? "사이드바 닫기" : "사이드바 열기"}>
+              <Menu size={22} />
+            </button>
+          </div>
+        </div>
       </header>
+
+      {menuOpen && (
+        <>
+          <div className="mobile-menu-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+          <div className="mobile-menu">
+            <button onClick={() => setMenuOpen(false)} aria-label="메뉴 닫기">
+              <X size={24} />
+            </button>
+            {navItems.map((item) => (
+              <a
+                href={resolveHref(item.href)}
+                key={item.href}
+                onClick={() => setMenuOpen(false)}
+                data-active={activeHref === item.href ? "true" : undefined}
+                aria-current={activeHref === item.href ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            ))}
+            <a href="/login" onClick={() => setMenuOpen(false)}>
+              로그인
+            </a>
+          </div>
+        </>
+      )}
 
       <main className="diagnosis-page" id="top">
         <section className="diagnosis-hero section" aria-labelledby="diagnosis-title">
-          <span className="landing-kicker">간편 자기진단</span>
+          <span className="landing-kicker">간편 자가진단</span>
           <div className="diagnosis-hero-grid">
             <div className="diagnosis-hero-copy">
               <h1 id="diagnosis-title">증상을 클릭하면 바로 원인과 다음 행동이 보입니다</h1>

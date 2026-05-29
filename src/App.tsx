@@ -325,7 +325,7 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
   if (pathname.startsWith("/diagnosis")) {
     return {
       path: "/diagnosis",
-      title: `간편 자기진단 | ${siteName}`,
+      title: `간편 자가진단 | ${siteName}`,
       description: "문이 뻑뻑하거나 물이 새는 등 생활 집수리 증상을 클릭하면 원인과 다음 행동을 바로 확인할 수 있습니다.",
       image: defaultImage,
       jsonLd: [
@@ -886,7 +886,7 @@ function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categor
     <section className="symptoms section" aria-labelledby="symptoms-title">
       <SectionHeading
         id="symptoms-title"
-        title="고객이 말하는 증상부터 간편 자기진단을 시작합니다"
+        title="고객이 말하는 증상부터 간편 자가진단을 시작합니다"
         description="전문 용어를 몰라도 괜찮습니다. 지금 보이는 문제를 클릭하면 바로 원인과 다음 행동이 나옵니다."
       />
 

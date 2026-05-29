@@ -22,6 +22,26 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-29 - Diagnosis Page Nav Sync
+
+Changed files:
+- `src/diagnosis/DiagnosisPage.tsx`
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Renamed the diagnosis wording from `자기진단` to `자가진단` in the page SEO and visible labels.
+- Added the global navigation bar to the diagnosis page so the current `자가진단` item shows the active underline bar.
+- Kept the diagnosis page header behavior aligned with the homepage navigation styles.
+
+Verification:
+- `npm run build` passed.
+- Playwright verified that `/diagnosis` shows `자가진단` as the active nav item and the diagnosis kicker now reads `간편 자가진단`.
+
+Follow-up:
+- None.
+
 ## 2026-05-29 - Homepage Blog Carousel Expansion
 
 Changed files:
