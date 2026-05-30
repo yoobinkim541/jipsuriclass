@@ -97,6 +97,23 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-30 - Landing Blog Layout Selector Fix
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the blog showcase spacing and card-size overrides from `main.home-page` to `main.landing-page`.
+- This applies the larger blog card layout to service and area landing pages where the blog showcase actually renders.
+
+Verification:
+- `npm run build` passed.
+- Local browser check on `/service/bathroom` confirmed blog card width is `760px` and the section sits lower than before.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Naver Mobile Blog Post List Source
 
 Changed files:
