@@ -36,6 +36,24 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-30 - Blog Snapshot Asset Fix
+
+Changed files:
+- `package.json`
+- `scripts/patch-static-html.mjs`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a `postbuild` step that rewrites every generated service/area snapshot HTML file to the current Vite JS and CSS asset filenames.
+- This keeps `/service/*` and `/area/*` pages from pointing at stale hashed bundles after new builds.
+
+Verification:
+- `npm run build` passed.
+- Local Playwright checks passed on `http://127.0.0.1:4178/service/bathroom` and `http://127.0.0.1:4178/area/namyangju`.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Naver Mobile Blog Post List Source
 
 Changed files:
