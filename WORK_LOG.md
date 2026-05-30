@@ -79,6 +79,24 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-30 - Blog Showcase Layout Tuning
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Increased the top spacing above the blog showcase section.
+- Resized landing blog cards to match the visual scale of the case cards more closely.
+- Kept the carousel behavior intact while changing the layout density only for the home-page blog section.
+
+Verification:
+- `npm run build` passed.
+- Local browser check on `/service/bathroom` confirmed the blog card width is ~789px and the section sits lower than before.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Naver Mobile Blog Post List Source
 
 Changed files:
