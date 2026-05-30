@@ -1728,7 +1728,6 @@ function SiteFooter() {
 function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLandingPageDefinition>> }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [landingPosts, setLandingPosts] = useState<PortfolioPost[]>([]);
-  const [landingSource, setLandingSource] = useState<"loading" | "naver" | "fallback">("loading");
 
   const landingSearchTerms = buildLandingSearchTerms(content);
   const landingMatchTerms = buildLandingMatchTerms(content);
@@ -1736,25 +1735,18 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   const landingSearchKey = `${landingQueryTerms.join("|")}::${(content.blogCategoryNos ?? []).join(",")}`;
 
   useEffect(() => {
-    let mounted = true;
-
-    blogPortfolioService.loadPortfolioPosts(landingQueryTerms, content.blogCategoryNos ?? []).then(({ posts, source }) => {
-      if (!mounted) return;
+    blogPortfolioService.loadPortfolioPosts(landingQueryTerms, content.blogCategoryNos ?? []).then(({ posts }) => {
       setLandingPosts(posts);
-      setLandingSource(source);
     });
-
-    return () => {
-      mounted = false;
-    };
   }, [landingSearchKey]);
 
-  // Reference: dynamically matched blog posts (only shown when they actually match keywords)
+  // Reference: prefer keyword matches, but keep the latest fetched posts visible when the client-side
+  // matcher is too strict. That keeps the blog reference section from going blank.
   const referencePosts = useMemo(() => {
     const matchedPosts = filterLandingPosts(landingPosts, content, landingMatchTerms);
     if (matchedPosts.length) return matchedPosts;
-    return landingSource === "fallback" ? landingPosts.slice(0, 6) : matchedPosts;
-  }, [content, landingPosts, landingMatchTerms, landingSource]);
+    return landingPosts.slice(0, 6);
+  }, [content, landingPosts, landingMatchTerms]);
   // Portfolio: fixed curated posts managed via admin editor — never changes automatically
   const portfolioPosts = pinnedPosts.slice(0, 5);
   const landingSectionOrder = content.sections ?? defaultLandingSectionOrder;

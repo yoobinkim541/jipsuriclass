@@ -7,11 +7,11 @@ export default defineConfig({
     timeout: 120_000
   },
   use: {
-    baseURL: "http://127.0.0.1:4175"
+    baseURL: "http://127.0.0.1:4178"
   },
   webServer: {
-    command: "npm run dev -- --host 127.0.0.1 --port 4175",
-    url: "http://127.0.0.1:4175",
+    command: "npm run dev -- --host 127.0.0.1 --port 4178",
+    url: "http://127.0.0.1:4178",
     reuseExistingServer: true,
     timeout: 120_000
   }

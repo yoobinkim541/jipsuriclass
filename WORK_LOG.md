@@ -1,5 +1,42 @@
 # Work Log
 
+## 2026-05-30 - Blog Reference Async Sync Fix
+
+Changed files:
+- `src/App.tsx`
+- `playwright.config.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the service landing-page mounted guard so the blog reference section keeps the fetched latest posts even when the Naver request resolves late.
+- Kept the reference section fallback to fetched posts when keyword matching is too strict.
+- Moved Playwright to a dedicated dev-server port so tests stop attaching to the existing static preview server.
+
+Verification:
+- `npm run build` passed.
+- Browser verification on `/service/bathroom` now shows 5 cards in the `블로그 레퍼런스` showcase and 5 in `포트폴리오`.
+- Browser verification on `/area/namyangju` still shows 10 blog cards.
+
+Follow-up:
+- None.
+
+## 2026-05-30 - Blog Reference Latest-Post Fallback
+
+Changed files:
+- `src/App.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Changed the landing-page blog reference section so it keeps the latest fetched posts visible when the client-side keyword matcher produces no results.
+- Removed the extra branch that only fell back on API failure, which could leave the section blank even when current blog posts had already been fetched.
+
+Verification:
+- `npm run build` passed.
+- Browser smoke tests for the service and area landing pages still render blog cards.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Process Image Reassignment
 
 Changed files:
