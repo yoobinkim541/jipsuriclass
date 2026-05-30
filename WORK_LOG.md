@@ -12,10 +12,11 @@ Implemented behavior:
 - Scored posts with both the original Naver title and the generated card title so keyword matches are less likely to be lost during summarization.
 
 Verification:
-- Pending.
+- `npm run build` passed.
+- `npm run test:blog` passed, including service-page API and browser smoke checks.
 
 Follow-up:
-- Run `npm run build` and the blog regression checks.
+- None.
 
 ## 2026-05-30 - Naver Mobile Blog Post List Source
 
