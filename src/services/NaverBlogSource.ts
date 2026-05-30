@@ -9,11 +9,34 @@ export type NaverBlogSourceOptions = {
 
 type RankedBlogCandidate = {
   item: NaverBlogItem;
-  sources: Set<"rss" | "category">;
+  sources: Set<"mobile" | "mobile-category" | "rss" | "category">;
+};
+
+type MobilePostListResponse = {
+  isSuccess?: boolean;
+  result?: {
+    items?: MobilePostItem[];
+  };
+};
+
+type MobilePostItem = {
+  logNo?: number;
+  titleWithInspectMessage?: string;
+  briefContents?: string;
+  thumbnailUrl?: string;
+  addDate?: number;
+  categoryNo?: number;
+  categoryName?: string;
+  thumbnailList?: Array<{
+    encodedThumbnailUrl?: string;
+    thumbnailUrl?: string;
+    type?: string;
+  }>;
 };
 
 const RSS_FETCH_LIMIT = 30;
 const CATEGORY_FETCH_LIMIT = 30;
+const MOBILE_FETCH_LIMIT = 24;
 
 export async function loadNaverBlogCandidates({
   blogId,
@@ -23,26 +46,37 @@ export async function loadNaverBlogCandidates({
 }: NaverBlogSourceOptions): Promise<NaverBlogItem[]> {
   const candidates = new Map<string, RankedBlogCandidate>();
 
+  const mobileItems = await fetchMobileItems(blogId, categoryNos);
+  for (const item of mobileItems) {
+    addCandidate(candidates, item.item, item.source);
+  }
+
+  if (candidates.size) {
+    const ranked = rankCandidates([...candidates.values()], terms, true);
+    return ranked.slice(0, limit).map((entry) => entry.item);
+  }
+
+  const rssCandidates = new Map<string, RankedBlogCandidate>();
   const rssItems = await fetchRssItems(blogId);
   for (const item of rssItems) {
-    addCandidate(candidates, item, "rss");
+    addCandidate(rssCandidates, item, "rss");
   }
 
   if (categoryNos.length) {
     const categoryItems = await fetchCategoryItems(blogId, categoryNos);
     for (const item of categoryItems) {
-      addCandidate(candidates, item, "category");
+      addCandidate(rssCandidates, item, "category");
     }
   }
 
-  const ranked = rankCandidates([...candidates.values()], terms, false);
+  const ranked = rankCandidates([...rssCandidates.values()], terms, true);
   return ranked.slice(0, limit).map((entry) => entry.item);
 }
 
 function addCandidate(
   map: Map<string, RankedBlogCandidate>,
   item: NaverBlogItem,
-  source: "rss" | "category"
+  source: "mobile" | "mobile-category" | "rss" | "category"
 ) {
   const key = item.link.trim();
   if (!key) return;
@@ -94,7 +128,7 @@ function rankCandidates(
 
 function scoreCandidate(
   item: NaverBlogItem,
-  sources: Set<"rss" | "category">,
+  sources: Set<"mobile" | "mobile-category" | "rss" | "category">,
   terms: string[],
   allowUnmatched: boolean
 ) {
@@ -128,10 +162,96 @@ function scoreCandidate(
   return baseScore + score;
 }
 
-function getSourcePriority(sources: Set<"rss" | "category">) {
+function getSourcePriority(sources: Set<"mobile" | "mobile-category" | "rss" | "category">) {
+  if (sources.has("mobile-category")) return 3;
+  if (sources.has("mobile")) return 2;
   if (sources.has("category")) return 2;
   if (sources.has("rss")) return 1;
   return 0;
+}
+
+async function fetchMobileItems(blogId: string, categoryNos: number[]) {
+  const results: Array<{ item: NaverBlogItem; source: "mobile" | "mobile-category" }> = [];
+
+  const latestItems = await fetchMobilePostList(blogId, 0, MOBILE_FETCH_LIMIT);
+  for (const item of latestItems) {
+    results.push({ item, source: "mobile" });
+  }
+
+  const uniqueCategoryNos = [...new Set(categoryNos.filter((value) => Number.isInteger(value) && value > 0))];
+  for (const categoryNo of uniqueCategoryNos) {
+    const categoryItems = await fetchMobilePostList(blogId, categoryNo, MOBILE_FETCH_LIMIT);
+    for (const item of categoryItems) {
+      results.push({ item, source: "mobile-category" });
+    }
+  }
+
+  return results;
+}
+
+async function fetchMobilePostList(blogId: string, categoryNo: number, itemCount: number) {
+  try {
+    const response = await fetch(
+      `https://m.blog.naver.com/api/blogs/${encodeURIComponent(blogId)}/post-list?categoryNo=${categoryNo}&itemCount=${itemCount}&page=1&userId=`,
+      {
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          Referer: `https://m.blog.naver.com/${encodeURIComponent(blogId)}?tab=1`,
+          "User-Agent": "Mozilla/5.0"
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Naver mobile post list returned ${response.status}`);
+    }
+
+    const data = (await response.json()) as MobilePostListResponse;
+    const items = Array.isArray(data.result?.items) ? data.result?.items : [];
+
+    return items.flatMap((item) => {
+      const normalized = normalizeMobilePostItem(blogId, item);
+      return normalized ? [normalized] : [];
+    });
+  } catch {
+    return [];
+  }
+}
+
+function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlogItem | null {
+  const logNo = Number(item.logNo);
+  if (!Number.isInteger(logNo) || logNo <= 0) return null;
+
+  const title = sanitizeText(item.titleWithInspectMessage || "");
+  const description = sanitizeText(item.briefContents || "");
+  const image =
+    buildBlogImageUrl(item.thumbnailUrl) ??
+    buildBlogImageUrl(item.thumbnailList?.[0]?.encodedThumbnailUrl) ??
+    buildBlogImageUrl(item.thumbnailList?.[0]?.thumbnailUrl);
+
+  return {
+    title,
+    description,
+    link: `https://m.blog.naver.com/PostView.naver?blogId=${encodeURIComponent(blogId)}&logNo=${logNo}`,
+    postdate: formatMobileDate(item.addDate),
+    image
+  };
+}
+
+function buildBlogImageUrl(value?: string) {
+  const image = typeof value === "string" ? value.trim() : "";
+  if (!image) return undefined;
+  return `/api/blog-image?url=${encodeURIComponent(image)}`;
+}
+
+function formatMobileDate(value?: number) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  const year = String(parsed.getFullYear());
+  const month = String(parsed.getMonth() + 1).padStart(2, "0");
+  const day = String(parsed.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
 }
 
 async function fetchRssItems(blogId: string) {

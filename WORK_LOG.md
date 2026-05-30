@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-05-30 - Naver Mobile Blog Post List Source
+
+Changed files:
+- `src/services/NaverBlogSource.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Switched the blog data source to the mobile Naver blog `post-list` API at `m.blog.naver.com` so homepage and landing-page references use the actual latest posts from the blog.
+- Kept the older RSS/category scraping path only as a fallback.
+- Normalized the mobile blog thumbnails through the existing image proxy and preserved the term-based ranking logic.
+
+Verification:
+- `npm run build` passed.
+- Local API checks returned the latest mobile blog title for both `mode=latest` and `mode=matching`.
+- Browser verification showed the homepage and service landing pages rendering the newest mobile blog titles instead of the old representative fallback posts.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Blog Reference Async Sync Fix
 
 Changed files:
