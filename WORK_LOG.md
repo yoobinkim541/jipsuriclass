@@ -54,6 +54,31 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-05-30 - Blog Image Candidate Retry
+
+Changed files:
+- `src/App.tsx`
+- `src/services/BlogPortfolioService.ts`
+- `src/services/NaverBlogSource.ts`
+- `src/types.ts`
+- `api/naver-blog-source.ts`
+- `api/naver-blog.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Stopped routing blog images through the Vercel image proxy and now use direct Naver image URLs.
+- Added `referrerPolicy="no-referrer"` on blog images so Naver hotlink checks do not block the browser request.
+- Added `imageCandidates` support so a card can retry multiple image URLs until one loads.
+- Reused the same source logic in both the Vite dev API path and the Vercel function path.
+
+Verification:
+- `npm run build` passed.
+- Local dev browser check on `/service/bathroom` loaded a `postfiles.pstatic.net` image successfully.
+- Local dev browser check on `/area/namyangju` also loaded a blog image successfully.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Naver Mobile Blog Post List Source
 
 Changed files:

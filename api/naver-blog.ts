@@ -290,8 +290,10 @@ async function loadBlogPage(link: string) {
     }
 
     const html = await blogResponse.text();
+    const imageCandidates = extractImageCandidates(html);
     return {
-      image: pickBestBlogImage(extractImageCandidates(html)),
+      image: pickBestBlogImage(imageCandidates),
+      imageCandidates,
       text: extractReadableText(html)
     };
   } catch {
@@ -637,7 +639,7 @@ function normalizeImageUrl(value?: string) {
     }
 
     const upgraded = upgradeNaverBlogImageUrl(url.toString());
-    return `/api/blog-image?url=${encodeURIComponent(upgraded)}`;
+    return upgraded;
   } catch {
     return undefined;
   }

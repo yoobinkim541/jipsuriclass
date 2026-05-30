@@ -53,7 +53,7 @@ export async function loadNaverBlogCandidates({
 
   if (candidates.size) {
     const ranked = rankCandidates([...candidates.values()], terms, true);
-    return ranked.slice(0, limit).map((entry) => entry.item);
+    return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
   }
 
   const rssCandidates = new Map<string, RankedBlogCandidate>();
@@ -70,7 +70,7 @@ export async function loadNaverBlogCandidates({
   }
 
   const ranked = rankCandidates([...rssCandidates.values()], terms, true);
-  return ranked.slice(0, limit).map((entry) => entry.item);
+  return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
 }
 
 function addCandidate(
@@ -103,6 +103,26 @@ function mergeCandidateItem(existing: NaverBlogItem, incoming: NaverBlogItem) {
     postdate: incoming.postdate || existing.postdate,
     image: incoming.image || existing.image
   };
+}
+
+async function enrichImages(items: NaverBlogItem[]) {
+  return await Promise.all(
+    items.map(async (item) => {
+      const resolved = await loadBlogPost(resolveDesktopPostUrl(item.link));
+      return {
+        ...item,
+        image: resolved.image || item.image,
+        imageCandidates: [...new Set([...(item.imageCandidates ?? []), ...(resolved.imageCandidates ?? [])])]
+      };
+    })
+  );
+}
+
+function resolveDesktopPostUrl(link: string) {
+  return link.replace(
+    /^https:\/\/m\.blog\.naver\.com\/PostView\.naver\?/i,
+    "https://blog.naver.com/PostView.naver?"
+  );
 }
 
 function rankCandidates(
@@ -234,14 +254,19 @@ function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlo
     description,
     link: `https://m.blog.naver.com/PostView.naver?blogId=${encodeURIComponent(blogId)}&logNo=${logNo}`,
     postdate: formatMobileDate(item.addDate),
-    image
+    image,
+    imageCandidates: buildImageCandidates([item.thumbnailUrl, item.thumbnailList?.[0]?.encodedThumbnailUrl, item.thumbnailList?.[0]?.thumbnailUrl])
   };
 }
 
 function buildBlogImageUrl(value?: string) {
   const image = typeof value === "string" ? value.trim() : "";
   if (!image) return undefined;
-  return `/api/blog-image?url=${encodeURIComponent(image)}`;
+  return upgradeNaverBlogImageUrl(image) || undefined;
+}
+
+function buildImageCandidates(values: Array<string | undefined>) {
+  return [...new Set(values.map((value) => buildBlogImageUrl(value)).filter((value): value is string => Boolean(value)))];
 }
 
 function formatMobileDate(value?: number) {
@@ -339,7 +364,8 @@ async function loadBlogPost(link: string) {
       description,
       link,
       postdate,
-      image
+      image,
+      imageCandidates: extractImageCandidates(html)
     };
   } catch {
     return {} as NaverBlogItem;

@@ -1283,6 +1283,7 @@ function BlogPreview({
               src={post.image}
               alt={post.title}
               loading="lazy"
+              referrerPolicy="no-referrer"
               style={{ aspectRatio: "16/8" }}
               onError={(event) => {
                 const image = event.currentTarget;

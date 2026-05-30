@@ -1425,18 +1425,7 @@ function BlogSection({
             key={post.title}
             ref={(el) => { cardRefs.current[index] = el; }}
           >
-            <img
-              className="blog-card-image"
-              src={post.image}
-              alt={post.title}
-              loading="lazy"
-              onError={(event) => {
-                const image = event.currentTarget;
-                if (image.dataset.fallbackApplied === "true") return;
-                image.dataset.fallbackApplied = "true";
-                image.src = "/assets/consult-hero.png";
-              }}
-            />
+            <BlogCardImage post={post} />
             <div className="blog-card-body">
               <div className="blog-card-meta">
                 <span className="naver-mark">N</span>
@@ -2185,6 +2174,45 @@ const LandingBackButton = ({ fallbackHref = "/" }: { fallbackHref?: string }) =>
   );
 };
 
+function BlogCardImage({
+  post
+}: {
+  post: PortfolioPost;
+}) {
+  const candidates = useMemo(() => {
+    const values = [post.image, ...(post.imageCandidates ?? [])].map((candidate) => candidate.trim()).filter(Boolean);
+    return [...new Set(values)];
+  }, [post.image, post.imageCandidates]);
+  const [candidateIndex, setCandidateIndex] = useState(0);
+
+  useEffect(() => {
+    setCandidateIndex(0);
+  }, [post.link, post.title, candidates.join("|")]);
+
+  const currentImage = candidates[candidateIndex] ?? "/assets/consult-hero.png";
+
+  return (
+    <img
+      className="blog-card-image"
+      src={currentImage}
+      alt={post.title}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={(event) => {
+        if (candidateIndex < candidates.length - 1) {
+          setCandidateIndex((index) => index + 1);
+          return;
+        }
+
+        const image = event.currentTarget;
+        if (image.dataset.fallbackApplied === "true") return;
+        image.dataset.fallbackApplied = "true";
+        image.src = "/assets/consult-hero.png";
+      }}
+    />
+  );
+}
+
 function BlogShowcase({
   label,
   posts,
@@ -2256,18 +2284,7 @@ function BlogShowcase({
                 key={`${label}-${post.link}-${post.title}`}
                 ref={(el) => { cardRefs.current[index] = el; }}
               >
-                <img
-                  className="blog-card-image"
-                  src={post.image}
-                  alt={post.title}
-                  loading="lazy"
-                  onError={(event) => {
-                    const image = event.currentTarget;
-                    if (image.dataset.fallbackApplied === "true") return;
-                    image.dataset.fallbackApplied = "true";
-                    image.src = "/assets/consult-hero.png";
-                  }}
-                />
+                <BlogCardImage post={post} />
                 <div className="blog-card-body">
                   <div className="blog-card-meta">
                     <span className="naver-mark">N</span>

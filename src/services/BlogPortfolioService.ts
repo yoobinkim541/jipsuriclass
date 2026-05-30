@@ -131,6 +131,9 @@ export class BlogPortfolioService {
         this.fallbackPosts[index % this.fallbackPosts.length]?.image ??
         this.fallbackPosts[0]?.image ??
         "/assets/consult-hero.png",
+      imageCandidates: Array.isArray(item.imageCandidates)
+        ? item.imageCandidates.map((candidate) => this.normalizeImage(candidate)).filter((candidate): candidate is string => Boolean(candidate))
+        : undefined,
       cardTitle: item.cardTitle ? this.stripHtml(item.cardTitle) : undefined,
       summary: Array.isArray(item.summary) ? item.summary.map((line) => this.stripHtml(line)).filter(Boolean) : undefined,
       keywords: Array.isArray(item.keywords) ? item.keywords.map((keyword) => this.stripHtml(keyword)).filter(Boolean) : undefined
