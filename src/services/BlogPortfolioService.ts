@@ -65,7 +65,7 @@ export class BlogPortfolioService {
         url.searchParams.set("categoryNos", categoryNos.join(","));
       }
 
-      const response = await fetch(url.toString());
+      const response = await fetch(url.toString(), { cache: "no-store" });
       if (!response.ok) throw new Error("Naver blog endpoint unavailable");
 
       const data = (await response.json()) as NaverBlogResponse;

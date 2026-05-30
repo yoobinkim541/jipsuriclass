@@ -1,4 +1,4 @@
-const CACHE_NAME = "jipsuri-class-v4";
+const CACHE_NAME = "jipsuri-class-v6";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.svg", "/icons/icon-192.svg", "/icons/icon-512.svg"];
 
 self.addEventListener("install", (event) => {
@@ -36,6 +36,11 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (!isHttpRequest) {
+    return;
+  }
+
+  if (requestUrl.pathname.startsWith("/api/")) {
+    event.respondWith(fetch(event.request));
     return;
   }
 

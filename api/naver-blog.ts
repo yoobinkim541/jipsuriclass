@@ -51,12 +51,7 @@ export default async function handler(_request: VercelRequest, response: VercelR
       latestMode ? [] : categoryNos,
       latestMode
     );
-    response.setHeader(
-      "Cache-Control",
-      latestMode
-        ? "no-store"
-        : "s-maxage=86400, stale-while-revalidate=86400"
-    );
+    response.setHeader("Cache-Control", "no-store");
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
     response.status(502).json({ items: [], source: "fallback", reason: String(error) });

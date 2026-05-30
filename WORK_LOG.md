@@ -2649,3 +2649,21 @@ Verification:
 
 Follow-up:
 - None.
+
+## 2026-05-30 - Blog Image Cache Bypass
+
+Changed files:
+- `public/service-worker.js`
+- `src/services/BlogPortfolioService.ts`
+- `api/naver-blog.ts`
+
+Implemented behavior:
+- Excluded `/api/*` requests from the service worker cache path so blog API responses are always fetched fresh.
+- Forced the blog portfolio client fetch to use `cache: "no-store"`.
+- Set the blog API response cache header to `no-store` so the latest post/image URLs are not held by edge or browser caches.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Verify `/service/bathroom` and `/area/namyangju` in the browser after deployment to confirm the cards use live blog images.

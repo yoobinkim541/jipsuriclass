@@ -114,9 +114,12 @@ async function enrichImages(items: NaverBlogItem[]) {
   return await Promise.all(
     items.map(async (item) => {
       const resolved = await loadBlogPost(resolveDesktopPostUrl(item.link));
+      const imageCandidates = [...new Set([...(item.imageCandidates ?? []), ...(resolved.imageCandidates ?? [])])];
+      const liveImage = await resolveFirstLiveImage([resolved.image, item.image, ...imageCandidates].filter((value): value is string => Boolean(value)));
       return {
         ...item,
-        image: resolved.image || item.image
+        image: liveImage || resolved.image || item.image,
+        imageCandidates
       };
     })
   );
@@ -127,6 +130,33 @@ function resolveDesktopPostUrl(link: string) {
     /^https:\/\/m\.blog\.naver\.com\/PostView\.naver\?/i,
     "https://blog.naver.com/PostView.naver?"
   );
+}
+
+async function resolveFirstLiveImage(candidates: string[]) {
+  for (const candidate of candidates) {
+    if (await isLiveImage(candidate)) {
+      return candidate;
+    }
+  }
+  return undefined;
+}
+
+async function isLiveImage(url: string) {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+        Referer: "https://blog.naver.com/",
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+
+    if (!response.ok) return false;
+    const contentType = response.headers.get("content-type") || "";
+    return contentType.startsWith("image/");
+  } catch {
+    return false;
+  }
 }
 
 function rankCandidates(
