@@ -9,6 +9,7 @@ Changed files:
 
 Implemented behavior:
 - Moved the production-only blog source loader into the `api/` directory so Vercel can bundle it without trying to resolve `src/` at runtime.
+- Used an explicit `.js` import path so the serverless bundle can resolve the helper module after transpilation.
 - Kept the matching and latest mobile Naver blog logic unchanged.
 
 Verification:
