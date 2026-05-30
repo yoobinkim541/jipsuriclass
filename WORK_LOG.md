@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-05-30 - Vercel API Bundle Fix
+
+Changed files:
+- `api/naver-blog.ts`
+- `api/naver-blog-source.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved the production-only blog source loader into the `api/` directory so Vercel can bundle it without trying to resolve `src/` at runtime.
+- Kept the matching and latest mobile Naver blog logic unchanged.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Re-deploy to production and confirm `/api/naver-blog` stops returning `500`.
+
 ## 2026-05-30 - Service Blog Keyword Match Tightening
 
 Changed files:

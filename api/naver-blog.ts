@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { loadNaverBlogCandidates } from "../src/services/NaverBlogSource";
+import { loadNaverBlogCandidates } from "./naver-blog-source";
 
 type NaverBlogItem = {
   title: string;
