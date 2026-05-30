@@ -1730,7 +1730,6 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
   const [landingPosts, setLandingPosts] = useState<PortfolioPost[]>([]);
 
   const landingSearchTerms = buildLandingSearchTerms(content);
-  const landingMatchTerms = buildLandingMatchTerms(content);
   const landingQueryTerms = buildLandingQueryTerms(content);
   const landingSearchKey = `${landingQueryTerms.join("|")}::${(content.blogCategoryNos ?? []).join(",")}`;
 
@@ -1740,13 +1739,14 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
     });
   }, [landingSearchKey]);
 
-  // Reference: prefer keyword matches, but keep the latest fetched posts visible when the client-side
-  // matcher is too strict. That keeps the blog reference section from going blank.
   const referencePosts = useMemo(() => {
-    const matchedPosts = filterLandingPosts(landingPosts, content, landingMatchTerms);
+    const matchedPosts = filterLandingPosts(landingPosts, content, landingSearchTerms);
+    if (content.pageType === "Service") {
+      return matchedPosts;
+    }
     if (matchedPosts.length) return matchedPosts;
     return landingPosts.slice(0, 6);
-  }, [content, landingPosts, landingMatchTerms]);
+  }, [content, landingPosts, landingSearchTerms]);
   // Portfolio: fixed curated posts managed via admin editor — never changes automatically
   const portfolioPosts = pinnedPosts.slice(0, 5);
   const landingSectionOrder = content.sections ?? defaultLandingSectionOrder;
@@ -2351,17 +2351,6 @@ function buildLandingSearchTerms(page: NonNullable<ReturnType<typeof getLandingP
     .filter((term, index, array) => array.indexOf(term) === index);
 }
 
-function buildLandingMatchTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
-  const terms = page.pageType === "Service"
-    ? (page.blogMatchTerms ?? page.blogQueryTerms ?? page.blogTerms ?? page.searchTerms)
-    : [page.areaLabel, ...page.searchTerms];
-
-  return terms
-    .filter((term): term is string => typeof term === "string" && term.trim().length > 0)
-    .map((term) => term.toLowerCase())
-    .filter((term, index, array) => array.indexOf(term) === index);
-}
-
 function buildLandingQueryTerms(page: NonNullable<ReturnType<typeof getLandingPageDefinition>>) {
   const terms = page.pageType === "Service"
     ? (page.blogQueryTerms ?? page.blogTerms ?? page.searchTerms)
@@ -2397,7 +2386,7 @@ function scoreLandingPost(
   terms: string[],
   page: NonNullable<ReturnType<typeof getLandingPageDefinition>>
 ) {
-  const title = normalizeSearchText(post.cardTitle ?? post.title);
+  const title = normalizeSearchText([post.title, post.cardTitle].filter(Boolean).join(" "));
   const description = normalizeSearchText(post.description);
   const summary = normalizeSearchText((post.summary ?? []).join(" "));
   const keywords = normalizeSearchText((post.keywords ?? []).join(" "));

@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-05-30 - Service Blog Keyword Match Tightening
+
+Changed files:
+- `src/App.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Made service landing pages use the broader service keyword set when filtering blog references, instead of the narrower match-only list.
+- Kept the existing area-page fallback behavior unchanged.
+- Scored posts with both the original Naver title and the generated card title so keyword matches are less likely to be lost during summarization.
+
+Verification:
+- Pending.
+
+Follow-up:
+- Run `npm run build` and the blog regression checks.
+
 ## 2026-05-30 - Naver Mobile Blog Post List Source
 
 Changed files:
