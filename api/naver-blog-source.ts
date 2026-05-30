@@ -4,6 +4,7 @@ type NaverBlogItem = {
   link: string;
   postdate?: string;
   image?: string;
+  imageCandidates?: string[];
 };
 
 type RankedBlogCandidate = {
