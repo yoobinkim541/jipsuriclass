@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
   ArrowUpRight,
   Calculator,
@@ -19,13 +19,13 @@ import { business, cases, navItems, pinnedPosts, process, services, symptoms, sy
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import type { HomepageContent, PortfolioPost } from "./types";
-import { AdminPage } from "./admin/AdminPage";
-import { AdminLoginPage } from "./admin/AdminLoginPage";
-import { AccountPage } from "./account/AccountPage";
-import { LoginPage } from "./login/LoginPage";
-import { PrivacyPolicyPage } from "./privacy/PrivacyPolicyPage";
-import { EstimatePage } from "./estimate/EstimatePage";
-import { DiagnosisPage } from "./diagnosis/DiagnosisPage";
+const AdminPage = lazy(() => import("./admin/AdminPage").then((m) => ({ default: m.AdminPage })));
+const AdminLoginPage = lazy(() => import("./admin/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
+const AccountPage = lazy(() => import("./account/AccountPage").then((m) => ({ default: m.AccountPage })));
+const LoginPage = lazy(() => import("./login/LoginPage").then((m) => ({ default: m.LoginPage })));
+const PrivacyPolicyPage = lazy(() => import("./privacy/PrivacyPolicyPage").then((m) => ({ default: m.PrivacyPolicyPage })));
+const EstimatePage = lazy(() => import("./estimate/EstimatePage").then((m) => ({ default: m.EstimatePage })));
+const DiagnosisPage = lazy(() => import("./diagnosis/DiagnosisPage").then((m) => ({ default: m.DiagnosisPage })));
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 import { buildLandingPageJsonLd, getLandingPageDefinition, mergeLandingPageContent } from "./landingPages";
 import { defaultLandingPagesContent, type LandingPagesContent } from "./services/SiteContentService";
@@ -75,25 +75,25 @@ function App() {
   usePageSeo(getSeoConfigForPath(window.location.pathname, mergedLandingPage ?? undefined));
 
   if (window.location.pathname.startsWith("/admin/login")) {
-    return <AdminLoginPage />;
+    return <Suspense fallback={null}><AdminLoginPage /></Suspense>;
   }
   if (window.location.pathname.startsWith("/admin")) {
-    return <AdminPage />;
+    return <Suspense fallback={null}><AdminPage /></Suspense>;
   }
   if (window.location.pathname.startsWith("/mypage") || window.location.pathname.startsWith("/account")) {
-    return <AccountPage />;
+    return <Suspense fallback={null}><AccountPage /></Suspense>;
   }
   if (window.location.pathname.startsWith("/login")) {
-    return <LoginPage />;
+    return <Suspense fallback={null}><LoginPage /></Suspense>;
   }
   if (window.location.pathname.startsWith("/privacy")) {
-    return <PrivacyPolicyPage />;
+    return <Suspense fallback={null}><PrivacyPolicyPage /></Suspense>;
   }
   if (window.location.pathname.startsWith("/diagnosis")) {
-    return <DiagnosisPage />;
+    return <Suspense fallback={null}><DiagnosisPage /></Suspense>;
   }
   if (window.location.pathname.startsWith("/estimate")) {
-    return <EstimatePage />;
+    return <Suspense fallback={null}><EstimatePage /></Suspense>;
   }
   const pricingPageConfig = getServicePricingConfigByPricingPath(window.location.pathname);
   if (pricingPageConfig) {
