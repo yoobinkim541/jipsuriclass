@@ -953,7 +953,7 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
   const itemCatMap: Record<string, string> = {
     "수도 배관": "utility", "전기 배선": "utility", "온수기 설치/수리": "utility",
     "환풍기": "utility", "주방후드": "utility", "조명": "utility",
-    "도배": "finish", "바닥재": "finish", "페인트": "finish", "필름": "finish",
+    "도배": "finish", "바닥재": "finish", "페인트": "finish",
     "타일": "finish", "줄눈": "finish", "실리콘 시공": "finish", "탄성코트 시공": "finish",
     "인테리어 필름": "finish",
     "문 설치/수리": "wood", "중문": "wood", "창문/샷시": "wood", "방충망": "wood",

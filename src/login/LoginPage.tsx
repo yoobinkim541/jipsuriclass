@@ -1,4 +1,4 @@
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { business } from "../data";
 import { EmailPasswordAuthPanel } from "../components/EmailPasswordAuthPanel";
 
@@ -10,10 +10,6 @@ export function LoginPage() {
         <a className="admin-home" href="/">
           <ArrowLeft size={18} />
           {business.name}
-        </a>
-        <a className="admin-corner-link login-admin-link" href="/admin/login">
-          <ShieldCheck size={14} />
-          관리자 로그인
         </a>
       </header>
 

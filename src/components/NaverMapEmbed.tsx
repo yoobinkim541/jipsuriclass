@@ -45,7 +45,7 @@ export function NaverMapEmbed({ address, title }: NaverMapEmbedProps) {
             src={naverPlaceEmbedUrl}
             title={`${title} 네이버 지도`}
             loading="lazy"
-            referrerPolicy="unsafe-url"
+            referrerPolicy="no-referrer-when-downgrade"
           />
           <div className="office-map-footer office-map-embed-footer">
             <small>{address}</small>
