@@ -78,12 +78,15 @@ function toPagePath(filePath) {
 }
 
 function replaceTitleAndDescription(html, meta) {
+  const t = escapeHtml(meta.title);
+  const d = escapeHtml(meta.description);
   return html
-    .replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeHtml(meta.title)}</title>`)
-    .replace(
-      /<meta name="description" content="[^"]*" \/>/,
-      `<meta name="description" content="${escapeHtml(meta.description)}" />`
-    );
+    .replace(/<title>[\s\S]*?<\/title>/, `<title>${t}</title>`)
+    .replace(/<meta name="description" content="[^"]*"\s*\/>/, `<meta name="description" content="${d}" />`)
+    .replace(/(<meta property="og:title" content=")[^"]*(")/g, `$1${t}$2`)
+    .replace(/(<meta property="og:description" content=")[^"]*(")/g, `$1${d}$2`)
+    .replace(/(<meta name="twitter:title" content=")[^"]*(")/g, `$1${t}$2`)
+    .replace(/(<meta name="twitter:description" content=")[^"]*(")/g, `$1${d}$2`);
 }
 
 function decodeStringLiteral(value) {
