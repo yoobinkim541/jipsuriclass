@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-05-31 - Pricing Page Pre-rendered HTML
+
+Changed files:
+- `scripts/patch-static-html.mjs`
+- `vercel.json`
+
+Implemented behavior:
+- 12 pricing pages (`/service/*/pricing`) were in the sitemap but served via SPA rewrite, so crawlers saw only the generic site title/description.
+- Added `generatePricingPages()` to `patch-static-html.mjs`: generates `dist/service/*/pricing/index.html` with page-specific `<title>`, `<meta name="description">`, OG tags, Twitter tags, and canonical URL for each service.
+- Removed the `/service/:name/pricing` → `/` rewrite from `vercel.json`; Vercel now serves the static HTML via the general `/service/:path*` rule.
+
+Verification:
+- `npm run build` passed.
+- All 12 pricing pages confirmed: correct `og:title`, `og:description`, `og:url`, `twitter:title`, `twitter:description`, `canonical`, `<title>` in generated HTML.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Vercel API Bundle Fix
 
 Changed files:
