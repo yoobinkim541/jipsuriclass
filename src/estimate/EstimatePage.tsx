@@ -762,19 +762,24 @@ function PrivacyModal({
 
 function buildReviewEntries(draft: EstimateState, labels: EstimatePageContent["reviewLabels"], otherRoomLabel: string) {
   const rooms = draft.selectedRooms.length ? draft.selectedRooms.join(", ") : "-";
-  const roomDetail = draft.selectedRooms.includes(otherRoomLabel) && draft.otherRoomDetail ? draft.otherRoomDetail : "-";
+  const hasOtherRoom = draft.selectedRooms.includes(otherRoomLabel);
 
-  return [
+  const entries = [
     { label: labels.spaceType, value: draft.spaceType || "-" },
     { label: labels.areaBand, value: draft.areaBand || "-" },
     { label: labels.propertyStatus, value: draft.propertyStatus || "-" },
     { label: labels.reason, value: draft.reason || "-" },
     { label: labels.selectedRooms, value: rooms },
-    { label: labels.otherRoomDetail, value: roomDetail },
     { label: labels.budget, value: draft.budget || "-" },
     { label: labels.startTiming, value: draft.startTiming || "-" },
     { label: labels.requestNote, value: draft.requestNote || "-" }
   ];
+
+  if (hasOtherRoom) {
+    entries.splice(5, 0, { label: labels.otherRoomDetail, value: draft.otherRoomDetail || "-" });
+  }
+
+  return entries;
 }
 
 function parseQueryList(value: string | null) {

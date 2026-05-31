@@ -44,7 +44,6 @@ export const business: BusinessProfile = {
     "중문",
     "바닥재",
     "도배",
-    "필름",
     "페인트",
     "타일",
     "방풍시공",
@@ -67,7 +66,7 @@ export const business: BusinessProfile = {
   ],
   phone: "010-3323-9677",
   phoneHref: "tel:010-3323-9677",
-  kakaoUrl: "http://pf.kakao.com/_xmygxmxb/chat",
+  kakaoUrl: "https://pf.kakao.com/_xmygxmxb/chat",
   naverBlogUrl: "https://m.blog.naver.com/it77khy?tab=1",
   area: "서울·경기 및 수도권 협의",
   hours: "08:00 - 21:00 / 매주 일요일 휴무",
@@ -243,7 +242,7 @@ export const pinnedPosts: PortfolioPost[] = [
     title: "누수 흔적이 남은 욕실 천장 복구 사례",
     description: "사진 상담 후 현장 확인, 손상 부위 철거와 마감 복구까지 진행한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224246606297",
     image: cases[0].image
   },
   {
@@ -257,21 +256,21 @@ export const pinnedPosts: PortfolioPost[] = [
     title: "노후 조명·스위치 LED 교체 사례",
     description: "리모컨 제어 LED 조명과 스위치로 교체해 밝기와 안전성을 확보한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224244962003",
     image: cases[2].image
   },
   {
     title: "주방 싱크볼 교체 사례",
     description: "위생 불량 싱크볼을 새 제품으로 교체하고 수평·실리콘 마감까지 완료한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224237946902",
     image: cases[3].image
   },
   {
     title: "베란다 천장 누수 피해 복구 사례",
     description: "손상된 석고보드를 교체하고 탄성코트로 마감 복구한 사례입니다.",
     date: "대표 사례",
-    link: business.naverBlogUrl,
+    link: "https://blog.naver.com/it77khy/224246265335",
     image: cases[4].image
   }
 ];

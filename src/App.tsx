@@ -11,6 +11,7 @@ import {
   Phone,
   ReceiptText,
   RefreshCw,
+  Search,
   User,
   X
 } from "lucide-react";
@@ -26,12 +27,11 @@ import { PrivacyPolicyPage } from "./privacy/PrivacyPolicyPage";
 import { EstimatePage } from "./estimate/EstimatePage";
 import { DiagnosisPage } from "./diagnosis/DiagnosisPage";
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
-import { buildLandingPageJsonLd, getLandingPageDefinition, getLandingPageIndexLinks, mergeLandingPageContent } from "./landingPages";
+import { buildLandingPageJsonLd, getLandingPageDefinition, mergeLandingPageContent } from "./landingPages";
 import { defaultLandingPagesContent, type LandingPagesContent } from "./services/SiteContentService";
 import { defaultHomepageSectionOrder, defaultLandingSectionOrder } from "./contentSections";
-import { electricPriceCategories, type PriceCategory, type PriceItem } from "./electricPriceData";
+import { type PriceCategory, type PriceItem } from "./electricPriceData";
 import {
-  tilePriceCategories,
   waterproofingPriceCategories,
   waterproofingTilePriceCategories
 } from "./waterproofingTilePriceData";
@@ -46,61 +46,13 @@ const siteUrl = "https://www.jipsuriclass.kr";
 const siteName = business.name;
 const defaultDescription = "서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 빠르게 안내합니다.";
 const defaultImage = `${siteUrl}/og-image.png`;
-type PricePageConfig = {
-  path: string;
-  servicePath: string;
-  serviceLabel: string;
-  title: string;
-  description: string;
-  note: string;
-  backHref: string;
-  backLabel: string;
-  categories: PriceCategory[];
-};
-const electricPricePage: PricePageConfig = {
-  path: "/service/electric/price",
-  servicePath: "/service/electric",
-  serviceLabel: "전기공사 서비스",
-  title: "전기공사 가격표",
-  description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-  note: "※ 출장비는 별도이며, 실제 현장 상태에 따라 달라질 수 있습니다.",
-  backHref: "/service/electric",
-  backLabel: "전기공사 서비스 보기",
-  categories: electricPriceCategories
-};
-const waterproofingPricePage: PricePageConfig = {
-  path: "/service/waterproofing/price",
-  servicePath: "/service/waterproofing",
-  serviceLabel: "방수 서비스",
-  title: "방수 가격표",
-  description: "방수, 누수 진단, 배관 보수, 동파·해빙 작업의 기준 금액을 한눈에 볼 수 있는 가격표입니다.",
-  note: "※ 제품·부속자재는 별도이며, 진단 장비나 현장 조건에 따라 실제 금액은 달라질 수 있습니다.",
-  backHref: "/service/waterproofing",
-  backLabel: "방수 보수 서비스 보기",
-  categories: waterproofingPriceCategories
-};
-const tilePricePage: PricePageConfig = {
-  path: "/service/tile/price",
-  servicePath: "/service/tile",
-  serviceLabel: "타일 서비스",
-  title: "타일 가격표",
-  description: "타일 부분 교체, 줄눈 보수, 욕실 마감과 샤워부스 보수의 기준 금액을 정리한 가격표입니다.",
-  note: "※ 타일, 줄눈재, 실리콘, 부속자재는 별도이며, 현장 상태와 동일 자재 수급 여부에 따라 실제 금액은 달라질 수 있습니다.",
-  backHref: "/service/tile",
-  backLabel: "타일 시공·보수 서비스 보기",
-  categories: tilePriceCategories
-};
-const waterproofingTilePricePage: PricePageConfig = {
-  path: "/service/waterproofing-tile/price",
-  servicePath: "/service/waterproofing-tile",
-  serviceLabel: "방수·타일 서비스",
-  title: "방수·타일 가격표",
-  description: "방수 보수와 타일 보수의 기준 금액을 한 페이지에서 확인하고, 필요한 항목을 골라 모의 견적을 계산해보세요.",
-  note: "※ 제품·부속자재는 별도이며, 실제 견적은 현장 상태와 마감 범위에 따라 달라질 수 있습니다.",
-  backHref: "/service/waterproofing-tile",
-  backLabel: "방수·타일 서비스 보기",
-  categories: waterproofingTilePriceCategories
-};
+function Redirect({ to }: { to: string }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+}
+
 function App() {
   const [landingPageOverrides, setLandingPageOverrides] = useState<LandingPagesContent>(defaultLandingPagesContent);
 
@@ -149,7 +101,7 @@ function App() {
   }
 
   if (window.location.pathname === "/service/electric/price") {
-    return <ElectricPricePage />;
+    return <Redirect to="/service/electric/pricing" />;
   }
   if (window.location.pathname === "/service/waterproofing-tile/price") {
     return <WaterproofingTilePricePage />;
@@ -158,7 +110,7 @@ function App() {
     return <WaterproofingPricePage />;
   }
   if (window.location.pathname === "/service/tile/price") {
-    return <TilePricePage />;
+    return <Redirect to="/service/tile/pricing" />;
   }
 
   if (mergedLandingPage) {
@@ -284,6 +236,26 @@ function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof g
           name: `타일 시공·보수 가격표 | ${siteName}`,
           url: `${siteUrl}/service/tile/price`,
           description: "집수리클라쓰 타일 시공·보수 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
+        }
+      ]
+    };
+  }
+
+  const registryPricingConfig = getServicePricingConfigByPricingPath(pathname);
+  if (registryPricingConfig) {
+    return {
+      path: pathname,
+      title: `${registryPricingConfig.serviceName} 가격표 | ${siteName}`,
+      description: `집수리클라쓰 ${registryPricingConfig.serviceName} 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.`,
+      image: defaultImage,
+      noindex: true,
+      jsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: `${registryPricingConfig.serviceName} 가격표 | ${siteName}`,
+          url: `${siteUrl}${pathname}`,
+          description: `집수리클라쓰 ${registryPricingConfig.serviceName} 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다.`
         }
       ]
     };
@@ -660,7 +632,7 @@ function SiteHeader({
             </a>
           ))}
           <a href="/login" onClick={onCloseMenu}>
-            로그인
+            마이페이지
           </a>
         </div>
         </>
@@ -957,7 +929,7 @@ function ServicesSection({
               <h3>{item.title}</h3>
               <p>{item.text}</p>
               <span className="bento__link-label">
-                {index === 0 ? "견적상담으로 이동" : "랜딩페이지로 이동"}
+                {index === 0 ? "견적상담으로 이동" : "자세히 보기"}
               </span>
             </a>
           );
@@ -1039,7 +1011,7 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
           ))}
         </div>
         <div className="specs__search">
-          <ArrowUpRight size={16} style={{ color: "var(--ink-3,#5b6781)" }} />
+          <Search size={16} style={{ color: "var(--ink-3,#5b6781)" }} />
           <input
             type="search"
             placeholder="작업 검색..."
@@ -1091,45 +1063,6 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
   );
 }
 
-function SearchLandingSection() {
-  const { services: servicePages, areas: areaPages } = getLandingPageIndexLinks();
-
-  return (
-    <section className="landing-links section" id="landing-pages" aria-labelledby="landing-pages-title">
-      <SectionHeading
-        id="landing-pages-title"
-        title="서비스·지역별 안내"
-        description="서비스 유형과 지역별로 정리한 상담 안내 페이지입니다."
-      />
-      <div className="landing-link-groups">
-        <div className="landing-link-group">
-          <h3>서비스</h3>
-          <div className="landing-link-grid">
-            {servicePages.map((page) => (
-              <a className="landing-link-card" href={page.path} key={page.path}>
-                <span>{page.categoryLabel}</span>
-                <strong>{page.title.replace(" | 집수리클라쓰", "")}</strong>
-                <p>{page.description}</p>
-              </a>
-            ))}
-          </div>
-        </div>
-        <div className="landing-link-group">
-          <h3>지역</h3>
-          <div className="landing-link-grid">
-            {areaPages.map((page) => (
-              <a className="landing-link-card" href={page.path} key={page.path}>
-                <span>{page.categoryLabel}</span>
-                <strong>{page.title.replace(" | 집수리클라쓰", "")}</strong>
-                <p>{page.description}</p>
-              </a>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /** 수동 대표 사례 영역: 가로 스크롤 레일 */
 function CasesSection({
@@ -2879,22 +2812,6 @@ function ServicePricePage({
   );
 }
 
-function ElectricPricePage() {
-  return (
-    <ServicePricePage
-      kicker="전기공사 서비스"
-      title="전기공사 가격표"
-      description="항목을 선택하면 아래 모의 견적 계산기에 자동으로 반영됩니다."
-      note="※ 출장비는 별도이며, 실제 현장 상태에 따라 달라질 수 있습니다."
-      servicePath="/service/electric"
-      pricingPath="/service/electric/price"
-      categories={electricPriceCategories}
-      backHref="/service/electric"
-      backLabel="전기공사 서비스 보기"
-    />
-  );
-}
-
 function WaterproofingPricePage() {
   return (
     <ServicePricePage
@@ -2907,22 +2824,6 @@ function WaterproofingPricePage() {
       categories={waterproofingPriceCategories}
       backHref="/service/waterproofing"
       backLabel="방수 보수 서비스 보기"
-    />
-  );
-}
-
-function TilePricePage() {
-  return (
-    <ServicePricePage
-      kicker="타일 시공·보수 서비스"
-      title="타일 시공·보수 가격표"
-      description="항목을 선택하면 아래 모의 견적 계산기에 자동으로 반영됩니다."
-      note="※ 제품·부속자재와 출장비는 별도이며, 실제 견적은 현장 상태에 따라 달라질 수 있습니다."
-      servicePath="/service/tile"
-      pricingPath="/service/tile/price"
-      categories={tilePriceCategories}
-      backHref="/service/tile"
-      backLabel="타일 시공·보수 서비스 보기"
     />
   );
 }
