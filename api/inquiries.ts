@@ -145,14 +145,20 @@ function buildEmailHtml(input: {
 }
 
 function formatIntakeSummary(intake: Record<string, unknown>) {
+  const addressParts = [intake.postalCode, intake.address, intake.detailAddress]
+    .filter((part): part is string => typeof part === "string" && part.trim().length > 0);
+  const address = addressParts.join(" ").trim();
+
   const entries = [
-    ["집 환경", intake.propertyType],
-    ["공사 유형", intake.projectType],
-    ["상담 가능 시간", intake.preferredTime],
+    ["공간 유형", intake.spaceType],
+    ["면적", intake.areaBand],
+    ["거주 상태", intake.propertyStatus],
+    ["수리 이유", intake.reason],
     ["예산", intake.budget],
-    ["주소", intake.address]
+    ["착수 시기", intake.startTiming],
+    ["주소", address || undefined]
   ]
-    .filter(([, value]) => typeof value === "string" && value.trim())
+    .filter(([, value]) => typeof value === "string" && (value as string).trim())
     .map(([label, value]) => `${label}: ${escapeHtml(String(value))}`);
 
   return entries.join("<br />");
