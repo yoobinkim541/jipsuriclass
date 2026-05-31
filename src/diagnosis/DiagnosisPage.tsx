@@ -132,7 +132,7 @@ export function DiagnosisPage() {
               </a>
             ))}
             <a href="/login" onClick={() => setMenuOpen(false)}>
-              로그인
+              마이페이지
             </a>
           </div>
         </>
