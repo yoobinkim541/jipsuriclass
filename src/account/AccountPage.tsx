@@ -16,6 +16,7 @@ import { AuthService } from "../services/AuthService";
 import { buildQuoteSourceLabel, calculateQuoteTotals, downloadQuoteAsPdf, downloadQuoteAsXlsx } from "../services/QuoteService";
 import { SiteContentService, defaultAccountPageContent } from "../services/SiteContentService";
 import type { InquiryQuoteSnapshot, InquiryRow } from "../types";
+import "../auth-panel.css";
 
 const authService = new AuthService();
 const siteContentService = new SiteContentService();
@@ -197,22 +198,30 @@ export function AccountPage() {
   const ownInquiries = inquiries;
 
   return (
-    <main className="admin-shell">
-      <header className="admin-header">
-        <a className="admin-home" href="/">
+    <div className="mypage-shell">
+      <header className="mypage-header">
+        <a className="mypage-brand" href="/">
           <ArrowLeft size={18} />
-          {business.name}
+          집수리<em>클라쓰</em>
         </a>
-        <div className="admin-actions">
-          {sessionEmail ? <span className="admin-email">{sessionEmail}</span> : null}
-          <button className="admin-ghost-button" onClick={() => void loadInquiries()} type="button" aria-label="새로고침">
-            <RefreshCcw size={16} />
-            <span className="admin-btn-label">새로고침</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {sessionEmail ? (
+            <span style={{ fontSize: 13, color: "var(--ink-3)", fontFamily: "var(--f-mono)" }}>
+              {sessionEmail}
+            </span>
+          ) : null}
+          <button
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 999, border: "1px solid var(--hair)", background: "var(--cream)", fontSize: 13, fontWeight: 600, color: "var(--ink-2)", cursor: "pointer" }}
+            onClick={() => void loadInquiries()} type="button" aria-label="새로고침"
+          >
+            <RefreshCcw size={15} />새로고침
           </button>
           {sessionEmail ? (
-            <button className="admin-ghost-button" onClick={() => void handleSignOut()} type="button" aria-label="로그아웃">
-              <LogOut size={16} />
-              <span className="admin-btn-label">로그아웃</span>
+            <button
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 999, border: "1px solid var(--hair)", background: "var(--cream)", fontSize: 13, fontWeight: 600, color: "var(--ink-2)", cursor: "pointer" }}
+              onClick={() => void handleSignOut()} type="button" aria-label="로그아웃"
+            >
+              <LogOut size={15} />로그아웃
             </button>
           ) : null}
         </div>
@@ -468,7 +477,7 @@ export function AccountPage() {
           )}
         </div>
       </section>
-    </main>
+    </div>
   );
 }
 

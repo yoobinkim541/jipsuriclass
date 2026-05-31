@@ -83,14 +83,7 @@ export function EmailPasswordAuthPanel({
   }
 
   return (
-    <form className="auth-panel" onSubmit={handleSubmit}>
-      <span className="auth-panel-kicker">
-        <LogIn size={16} />
-        로그인
-      </span>
-      <h1>{title}</h1>
-      <p>{description}</p>
-
+    <form className="auth-form" onSubmit={handleSubmit}>
       <label className="auth-field">
         <span>이메일</span>
         <input
@@ -121,17 +114,20 @@ export function EmailPasswordAuthPanel({
       {error ? <p className="auth-error">{error}</p> : null}
 
       <button className="auth-submit" type="submit" disabled={loading}>
-        {loading ? <LoaderCircle size={18} className="spin" /> : <LogIn size={18} />}
+        {loading ? <LoaderCircle size={18} className="spin" /> : null}
         {loading ? "로그인 중" : submitLabel}
       </button>
 
       {googleLabel ? (
         <>
-          <div className="auth-divider">
-            <span>또는</span>
-          </div>
-          <button className="auth-secondary" type="button" onClick={() => void handleGoogleSignIn()} disabled={loading}>
-            <Globe size={18} />
+          <div className="auth-divider"><span>또는</span></div>
+          <button className="auth-google" type="button" onClick={() => void handleGoogleSignIn()} disabled={loading}>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path fill="#4285F4" d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.8 3.2-7.9z"/>
+              <path fill="#34A853" d="M12 23c2.9 0 5.4-1 7.2-2.6l-3.6-2.7c-1 .7-2.3 1.1-3.6 1.1-2.8 0-5.1-1.9-6-4.4H2.3v2.8A11 11 0 0 0 12 23z"/>
+              <path fill="#FBBC05" d="M6 14.3a6.6 6.6 0 0 1 0-4.2V7.3H2.3a11 11 0 0 0 0 9.8z"/>
+              <path fill="#EA4335" d="M12 5.4c1.6 0 3 .5 4.1 1.6l3.1-3.1A11 11 0 0 0 2.3 7.3L6 10.1c.9-2.6 3.2-4.4 6-4.4z"/>
+            </svg>
             {googleLabel}
           </button>
         </>
