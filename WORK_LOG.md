@@ -1,5 +1,40 @@
 # Work Log
 
+## 2026-05-31 - Admin Responsive And Backend Verification
+
+Changed files:
+- `WORK_LOG.md`
+
+Verified behavior:
+- Checked `/admin`, `/admin/editor`, and `/admin/login` at mobile, tablet, laptop, and desktop viewports with Playwright.
+- Confirmed the admin routes render without console or page errors across those viewports.
+- Confirmed the Supabase-related environment variables required for inquiry storage/auth are present in `.env.local`.
+- Confirmed the admin editor route and login route still render after the redesign.
+
+Follow-up:
+- Ready for commit, push, and deploy.
+
+## 2026-05-31 - Admin UI Mockup Redesign
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `src/admin/AdminLoginPage.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reworked the admin shell into a left sidebar + sticky top bar layout that follows the provided mockup’s cream/navy visual system.
+- Made `/admin` open the inquiry dashboard by default and moved the content editor entry to `/admin/editor`.
+- Added the reference-style KPI cards, pill filters, rounded inquiry rows, and status badges while keeping the existing search, filters, bulk actions, CSV export, and status updates intact.
+- Restyled the admin login page into a two-column hero + form layout that matches the provided mockup more closely.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked `/admin` at desktop and mobile sizes, plus `/admin/login` at desktop and tablet sizes.
+
+Follow-up:
+- None.
+
 ## 2026-05-30 - Vercel API Bundle Fix
 
 Changed files:

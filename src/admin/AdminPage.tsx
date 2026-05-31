@@ -2,15 +2,21 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpRight,
+  BarChart3,
+  Bell,
   Clock3,
   Copy,
   Download,
+  ExternalLink,
   LoaderCircle,
   LogOut,
+  LayoutDashboard,
+  MessageSquare,
   RefreshCcw,
   Search,
   ShieldCheck,
   SortAsc,
+  UserRound,
 } from "lucide-react";
 import { business } from "../data";
 import { supabase } from "../lib/supabaseClient";
@@ -34,6 +40,14 @@ type AdminView = "editor" | "inquiries";
 type SortMode = "newest" | "oldest" | "status" | "name";
 type TimeFilter = "all" | "today" | "7d" | "30d";
 type InquiryFilter = "all" | "pending" | InquiryStatus;
+type SidebarItem = {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  badge?: string | number;
+  active: boolean;
+  hint?: string;
+};
 
 export function AdminPage() {
   const view = getAdminView();
@@ -268,18 +282,75 @@ export function AdminPage() {
   const pageMeta =
     view === "editor"
       ? {
-          kicker: "페이지 편집",
-          title: "홈페이지, 마이페이지, 상담 신청서를 바로 고칩니다",
-          description: "관리자만 수정할 수 있으며, 입력한 내용은 자동으로 저장됩니다."
+          kicker: "콘텐츠 · 핵심 페이지",
+          title: "홈·자기진단·상담신청 등 핵심 6장을 바로 고칩니다.",
+          description: "각 페이지를 편집 모드로 열어 텍스트를 바꾸면 자동으로 저장되고 편집 이력에 남습니다."
         }
       : {
-          kicker: "문의 관리",
-          title: "문의 흐름과 추이를 한 번에 확인합니다",
-          description: "검색, 필터, 상태 변경을 한 화면에서 끝낼 수 있게 정리했습니다."
+          kicker: "대시보드 · 상담 요청",
+          title: "들어온 상담을 확인하고 응대 상태를 정리해요.",
+          description: "상담신청 폼 (/estimate) · 전화 · 카카오톡으로 들어온 요청이 한 곳에 모입니다. 사진은 카카오톡에서 함께 받습니다."
         };
 
   const pendingCount = analytics.byStatus.new + analytics.byStatus.contacted;
   const selectedCount = selectedVisibleInquiryIds.length;
+  const topbarSearchPlaceholder =
+    view === "inquiries" ? "이름·연락처·지역으로 검색" : "상담요청·페이지·블로그 글 검색";
+  const sidebarGroups: Array<{ title: string; items: SidebarItem[] }> = [
+    {
+      title: "대시보드",
+      items: [
+        {
+          label: "상담 요청",
+          href: "/admin/inquiries",
+          icon: MessageSquare,
+          badge: analytics.total,
+          active: view === "inquiries",
+          hint: "접수와 상태"
+        },
+        {
+          label: "유입 분석",
+          href: "/admin/inquiries#inquiry-chart",
+          icon: BarChart3,
+          badge: analytics.last7Days,
+          active: false,
+          hint: "최근 7일 추이"
+        }
+      ]
+    },
+    {
+      title: "콘텐츠",
+      items: [
+        {
+          label: "페이지 편집",
+          href: "/admin/editor",
+          icon: LayoutDashboard,
+          badge: 4,
+          active: view === "editor",
+          hint: "홈·랜딩·계정·견적"
+        }
+      ]
+    },
+    {
+      title: "사이트",
+      items: [
+        {
+          label: "사이트 확인",
+          href: "/",
+          icon: ExternalLink,
+          active: false,
+          hint: "공개 페이지 열기"
+        },
+        {
+          label: "로그인",
+          href: "/admin/login",
+          icon: UserRound,
+          active: false,
+          hint: "관리자 로그인"
+        }
+      ]
+    }
+  ];
 
   function toggleInquirySelection(id: string) {
     setSelectedInquiryIds((current) =>
@@ -297,291 +368,363 @@ export function AdminPage() {
 
   return (
     <main className="admin-shell">
-      <header className="admin-header">
-        <a className="admin-home" href="/">
-          <ArrowLeft size={18} />
-          {business.name}
-        </a>
-        <nav className="admin-nav">
-          <a
-            className={`admin-nav-tab${view === "editor" ? " active" : ""}`}
-            href="/admin"
-          >
-            페이지 편집
-          </a>
-          <a
-            className={`admin-nav-tab${view === "inquiries" ? " active" : ""}`}
-            href="/admin/inquiries"
-          >
-            문의 관리
-          </a>
-        </nav>
-        <div className="admin-actions">
-          {sessionEmail ? <span className="admin-email">{sessionEmail}</span> : null}
-          <button className="admin-ghost-button" onClick={() => void handleRefresh()} type="button" aria-label="새로고침">
-            <RefreshCcw size={16} />
-            <span className="admin-btn-label">새로고침</span>
-          </button>
-          {sessionEmail ? (
-            <button className="admin-ghost-button" onClick={() => void handleSignOut()} type="button" aria-label="로그아웃">
-              <LogOut size={16} />
-              <span className="admin-btn-label">로그아웃</span>
-            </button>
-          ) : null}
-        </div>
-      </header>
-
-      <section className="admin-hero">
-        <div>
-          <span className="admin-kicker">
-            <ShieldCheck size={16} />
-            관리자
+      <aside className="admin-sidebar" aria-label="관리자 내비게이션">
+        <a className="admin-brand" href="/">
+          <span className="admin-brand__mark" aria-hidden="true">
+            <ShieldCheck size={18} />
           </span>
-          <h1>{pageMeta.title}</h1>
-          <p>{pageMeta.description}</p>
-        </div>
-        <div className="admin-login-card">
-          {sessionLoading ? (
-            <p className="admin-muted">세션 확인 중</p>
-          ) : sessionEmail ? (
-            <div className="admin-session-card">
-              <strong>로그인됨</strong>
-              <p>{sessionEmail}</p>
+          <span className="admin-brand__text">
+            <strong>{business.name}</strong>
+            <em>관리자 콘솔</em>
+          </span>
+        </a>
+
+        <nav className="admin-sidebar__nav">
+          {sidebarGroups.map((group) => (
+            <div className="admin-sidebar__group" key={group.title}>
+              <span className="admin-sidebar__group-label">{group.title}</span>
+              <div className="admin-sidebar__list">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <a
+                      className={item.active ? "admin-sidebar__item active" : "admin-sidebar__item"}
+                      href={item.href}
+                      key={item.label}
+                    >
+                      <span className="admin-sidebar__item-icon">
+                        <Icon size={18} />
+                      </span>
+                      <span className="admin-sidebar__item-copy">
+                        <strong>{item.label}</strong>
+                        {item.hint ? <em>{item.hint}</em> : null}
+                      </span>
+                      {item.badge !== undefined ? <span className="admin-sidebar__badge">{item.badge}</span> : null}
+                    </a>
+                  );
+                })}
+              </div>
             </div>
-          ) : (
-            <>
-              <strong>관리자 로그인 필요</strong>
-              <p>관리자 이메일과 비밀번호, 또는 Google로 로그인하세요.</p>
-              <a className="admin-primary-button" href="/admin/login">
-                관리자 로그인
+          ))}
+        </nav>
+
+        <div className="admin-sidebar__status">
+          <span className="admin-sidebar__status-dot" />
+          <div>
+            <strong>모든 시스템 정상</strong>
+            <p>BUILD · {new Date().toISOString().slice(0, 10)}</p>
+          </div>
+        </div>
+      </aside>
+
+      <div className="admin-frame">
+        <header className="admin-topbar">
+          <a className="admin-topbar__home" href="/">
+            <ArrowLeft size={18} />
+            <span>{business.name}</span>
+          </a>
+
+          <label className="admin-topbar__search" aria-label="관리자 전역 검색">
+            <Search size={18} />
+            <input
+              aria-label="관리자 검색"
+              className="admin-topbar__search-input"
+              placeholder={topbarSearchPlaceholder}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+            <kbd>⌘K</kbd>
+          </label>
+
+          <div className="admin-topbar__actions">
+            <button className="admin-topbar__icon-button" type="button" aria-label="알림">
+              <Bell size={18} />
+            </button>
+            <a className="admin-topbar__icon-button" href="/" aria-label="공개 사이트 열기" target="_blank" rel="noreferrer">
+              <ExternalLink size={18} />
+            </a>
+            {sessionEmail ? (
+              <button className="admin-user-chip" type="button" onClick={() => void handleSignOut()} aria-label="로그아웃">
+                <span className="admin-user-chip__avatar">{business.owner.slice(-1)}</span>
+                <span className="admin-user-chip__copy">
+                  <strong>{business.owner}</strong>
+                  <em>대표 · 관리자</em>
+                </span>
+                <LogOut size={16} />
+              </button>
+            ) : (
+              <a className="admin-user-chip admin-user-chip--login" href="/admin/login">
+                <span className="admin-user-chip__avatar">{business.owner.slice(-1)}</span>
+                <span className="admin-user-chip__copy">
+                  <strong>로그인 필요</strong>
+                  <em>관리자 입장</em>
+                </span>
+                <ArrowUpRight size={16} />
               </a>
-            </>
-          )}
-        </div>
-      </section>
-
-      {view === "inquiries" && (
-        <section className="admin-mobile-overview" aria-label="모바일 문의 요약">
-          <div className="admin-mobile-metric">
-            <span>전체 문의</span>
-            <strong>{analytics.total}</strong>
+            )}
           </div>
-          <div className="admin-mobile-metric">
-            <span>새 문의</span>
-            <strong>{analytics.byStatus.new}</strong>
-          </div>
-          <div className="admin-mobile-metric">
-            <span>처리중</span>
-            <strong>{analytics.byStatus.contacted}</strong>
-          </div>
-          <div className="admin-mobile-metric">
-            <span>새로고침</span>
-            <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
-          </div>
-        </section>
-      )}
+        </header>
 
-      {view === "editor" ? (
-        sessionLoading ? (
-          <div className="admin-empty">
-            <LoaderCircle size={18} className="spin" />
-            세션 확인 중
-          </div>
-        ) : (
-          <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} />
-        )
-      ) : (
-        <>
-          <section className="admin-queue-panel" aria-label="문의 작업 요약">
-            <div className="admin-queue-grid">
-              <article className="admin-queue-card admin-queue-card--highlight">
-                <span>미처리</span>
-                <strong>{pendingCount}</strong>
-                <p>신규와 처리중 문의를 합쳐서 바로 확인합니다.</p>
-              </article>
-              <article className="admin-queue-card">
-                <span>오늘 문의</span>
-                <strong>{analytics.today}</strong>
-                <p>오늘 들어온 상담 수를 먼저 확인합니다.</p>
-              </article>
-              <article className="admin-queue-card">
-                <span>최근 7일</span>
-                <strong>{analytics.last7Days}</strong>
-                <p>주간 흐름과 반응 속도를 살펴봅니다.</p>
-              </article>
-              <article className="admin-queue-card">
-                <span>최근 갱신</span>
-                <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
-                <p>마지막으로 목록을 불러온 시각입니다.</p>
-              </article>
-            </div>
-            <div className="admin-queue-actions" aria-label="빠른 문의 작업">
-              <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("pending")}>
-                미처리 보기
-              </button>
-              <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("new")}>
-                신규만 보기
-              </button>
-              <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("done")}>
-                완료만 보기
-              </button>
-              <button className="admin-queue-action" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
-                CSV 내보내기
-              </button>
-              <button className="admin-queue-action admin-queue-action--primary" type="button" onClick={() => void handleRefresh()}>
-                새로고침
-              </button>
-            </div>
-          </section>
-
-          <section className="admin-insight-grid" aria-label="문의 요약">
-            <InsightCard
-              label="전체 문의"
-              value={analytics.total}
-              caption="누적 문의 수"
-              onClick={() => setStatusFilter("all")}
-              active={statusFilter === "all"}
-            />
-            <InsightCard
-              label="미처리"
-              value={pendingCount}
-              caption="신규 + 처리중"
-              onClick={() => setStatusFilter("pending")}
-              active={statusFilter === "pending"}
-            />
-            <InsightCard
-              label="완료"
-              value={analytics.byStatus.done}
-              caption="처리 완료"
-              onClick={() => setStatusFilter("done")}
-              active={statusFilter === "done"}
-            />
-          </section>
-
-          <section className="admin-insight-grid admin-insight-grid-secondary" aria-label="설문 선택 요약">
-            <article className="admin-insight-card">
-              <span>가장 많은 집 환경</span>
-              <strong>{intakeStats.topPropertyType.label}</strong>
-              <p>{intakeStats.topPropertyType.count}건</p>
-            </article>
-            <article className="admin-insight-card">
-              <span>가장 많은 공사 유형</span>
-              <strong>{intakeStats.topProjectType.label}</strong>
-              <p>{intakeStats.topProjectType.count}건</p>
-            </article>
-            <article className="admin-insight-card">
-              <span>가장 많은 예산대</span>
-              <strong>{intakeStats.topBudget.label}</strong>
-              <p>{intakeStats.topBudget.count}건</p>
-            </article>
-            <article className="admin-insight-card">
-              <span>가장 많은 상담 시간</span>
-              <strong>{intakeStats.topTime.label}</strong>
-              <p>{intakeStats.topTime.count}건</p>
-            </article>
-          </section>
-
-          <section className="admin-breakdown-section" aria-labelledby="intake-breakdown-title">
-            <div className="section-heading row-heading">
-              <div>
-                <h2 id="intake-breakdown-title">설문 선택 분포</h2>
-                <p>고객이 실제로 많이 고르는 집 환경과 공사 유형을 한눈에 확인합니다.</p>
-              </div>
-            </div>
-            <div className="admin-breakdown-grid">
-              <BreakdownCard title="집 환경" items={intakeStats.propertyTypes} />
-              <BreakdownCard title="공사 유형" items={intakeStats.projectTypes} />
-              <BreakdownCard title="상담 가능 시간" items={intakeStats.times} />
-              <BreakdownCard title="예산" items={intakeStats.budgets} />
-            </div>
-          </section>
-
-          <section className="admin-chart-section" aria-labelledby="inquiry-chart-title">
-            <div className="section-heading row-heading">
-              <div>
-                <h2 id="inquiry-chart-title">최근 7일 문의 추이</h2>
-                <p>일자별 문의가 얼마나 들어왔는지 바로 확인할 수 있습니다.</p>
-              </div>
-            </div>
-            <InquiryChart series={analytics.series} />
-          </section>
-
-          <section className="admin-toolbar" aria-label="문의 검색 및 필터">
-            <div className="admin-search-wrap">
-              <Search size={16} />
-              <input
-                aria-label="문의 검색"
-                className="admin-search"
-                placeholder="이름, 연락처, 메시지 검색"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-              />
-            </div>
-            <div className="admin-toolbar-group">
-              {statusOrder.map((status) => (
-                <button
-                  key={status}
-                  className={statusFilter === status ? "admin-filter active" : "admin-filter"}
-                  type="button"
-                  onClick={() => setStatusFilter(status)}
-                >
-                  {statusLabel(status)}
-                </button>
-              ))}
-            </div>
-            <div className="admin-toolbar-group">
-              {([
-                ["all", "전체"],
-                ["today", "오늘"],
-                ["7d", "7일"],
-                ["30d", "30일"]
-              ] as Array<[TimeFilter, string]>).map(([value, label]) => (
-                <button
-                  key={value}
-                  className={timeFilter === value ? "admin-filter active" : "admin-filter"}
-                  type="button"
-                  onClick={() => setTimeFilter(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="admin-toolbar-group">
-              <SortAsc size={16} className="admin-toolbar-icon" />
-              <select
-                aria-label="문의 정렬"
-                className="admin-sort"
-                value={sortMode}
-                onChange={(event) => setSortMode(event.target.value as SortMode)}
-              >
-                {sortOrder.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="admin-spacer" />
-            <div className="admin-toolbar-meta">
-              <span className="admin-count">{visibleInquiries.length}건</span>
-              {selectedCount > 0 ? <span className="admin-sync">선택 {selectedCount}건</span> : null}
-              <span className="admin-sync">
-                <Clock3 size={14} />
-                {lastRefreshedAt ? `마지막 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
+        <div className="admin-content">
+          <section className="admin-hero">
+            <div className="admin-hero__copy">
+              <span className="admin-kicker">
+                <ShieldCheck size={16} />
+                {view === "inquiries" ? "대시보드 · 상담 요청" : "콘텐츠 · 핵심 페이지"}
               </span>
-              {visibleInquiries.length > 0 && (
-                <button className="admin-ghost-button admin-export-button" type="button" onClick={handleExport} aria-label="CSV 내보내기">
-                  <Download size={14} />
-                  <span className="admin-btn-label">내보내기</span>
-                </button>
+              <h1>{pageMeta.title}</h1>
+              <p>{pageMeta.description}</p>
+            </div>
+            <div className="admin-hero__actions">
+              {view === "inquiries" ? (
+                <>
+                  <button className="admin-ghost-button" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
+                    <Download size={16} />
+                    CSV 내보내기
+                  </button>
+                  <button className="admin-primary-button" type="button" onClick={() => void handleRefresh()}>
+                    <RefreshCcw size={16} />
+                    새로고침
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="admin-ghost-button" type="button" onClick={() => void handleRefresh()}>
+                    <RefreshCcw size={16} />
+                    동기화
+                  </button>
+                  <a className="admin-primary-button" href="/admin/login">
+                    <ArrowUpRight size={16} />
+                    관리자 로그인
+                  </a>
+                </>
               )}
             </div>
           </section>
 
-          {authError ? <p className="admin-banner">{authError}</p> : null}
-          {error ? <p className="admin-error">{error}</p> : null}
+          {view === "inquiries" && (
+            <section className="admin-metrics" aria-label="문의 요약">
+              <button className="admin-metric-card admin-metric-card--active" type="button" onClick={() => setStatusFilter("all")}>
+                <span>전체 문의</span>
+                <strong>{analytics.total}</strong>
+                <p>누적 문의 수</p>
+              </button>
+              <button className="admin-metric-card" type="button" onClick={() => setStatusFilter("pending")}>
+                <span>미처리</span>
+                <strong>{pendingCount}</strong>
+                <p>신규 + 처리중</p>
+              </button>
+              <article className="admin-metric-card">
+                <span>오늘 문의</span>
+                <strong>{analytics.today}</strong>
+                <p>금일 접수</p>
+              </article>
+              <article className="admin-metric-card">
+                <span>최근 갱신</span>
+                <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
+                <p>마지막 새로고침</p>
+              </article>
+            </section>
+          )}
 
-          <section className="admin-list" aria-label="문의 목록">
+          {view === "editor" ? (
+            sessionLoading ? (
+              <div className="admin-empty">
+                <LoaderCircle size={18} className="spin" />
+                세션 확인 중
+              </div>
+            ) : (
+              <section className="admin-panel admin-panel--editor" aria-label="페이지 편집">
+                <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} />
+              </section>
+            )
+          ) : (
+            <>
+              <section className="admin-queue-panel" aria-label="문의 작업 요약">
+                <div className="admin-queue-grid">
+                  <article className="admin-queue-card admin-queue-card--highlight">
+                    <span>미처리</span>
+                    <strong>{pendingCount}</strong>
+                    <p>신규와 처리중 문의를 합쳐서 바로 확인합니다.</p>
+                  </article>
+                  <article className="admin-queue-card">
+                    <span>오늘 문의</span>
+                    <strong>{analytics.today}</strong>
+                    <p>오늘 들어온 상담 수를 먼저 확인합니다.</p>
+                  </article>
+                  <article className="admin-queue-card">
+                    <span>최근 7일</span>
+                    <strong>{analytics.last7Days}</strong>
+                    <p>주간 흐름과 반응 속도를 살펴봅니다.</p>
+                  </article>
+                  <article className="admin-queue-card">
+                    <span>최근 갱신</span>
+                    <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
+                    <p>마지막으로 목록을 불러온 시각입니다.</p>
+                  </article>
+                </div>
+                <div className="admin-queue-actions" aria-label="빠른 문의 작업">
+                  <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("pending")}>
+                    미처리 보기
+                  </button>
+                  <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("new")}>
+                    신규만 보기
+                  </button>
+                  <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("done")}>
+                    완료만 보기
+                  </button>
+                  <button className="admin-queue-action" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
+                    CSV 내보내기
+                  </button>
+                  <button className="admin-queue-action admin-queue-action--primary" type="button" onClick={() => void handleRefresh()}>
+                    새로고침
+                  </button>
+                </div>
+              </section>
+
+              <section className="admin-insight-grid" aria-label="문의 요약">
+                <InsightCard
+                  label="전체 문의"
+                  value={analytics.total}
+                  caption="누적 문의 수"
+                  onClick={() => setStatusFilter("all")}
+                  active={statusFilter === "all"}
+                />
+                <InsightCard
+                  label="미처리"
+                  value={pendingCount}
+                  caption="신규 + 처리중"
+                  onClick={() => setStatusFilter("pending")}
+                  active={statusFilter === "pending"}
+                />
+                <InsightCard
+                  label="완료"
+                  value={analytics.byStatus.done}
+                  caption="처리 완료"
+                  onClick={() => setStatusFilter("done")}
+                  active={statusFilter === "done"}
+                />
+              </section>
+
+              <section className="admin-insight-grid admin-insight-grid-secondary" aria-label="설문 선택 요약">
+                <article className="admin-insight-card">
+                  <span>가장 많은 집 환경</span>
+                  <strong>{intakeStats.topPropertyType.label}</strong>
+                  <p>{intakeStats.topPropertyType.count}건</p>
+                </article>
+                <article className="admin-insight-card">
+                  <span>가장 많은 공사 유형</span>
+                  <strong>{intakeStats.topProjectType.label}</strong>
+                  <p>{intakeStats.topProjectType.count}건</p>
+                </article>
+                <article className="admin-insight-card">
+                  <span>가장 많은 예산대</span>
+                  <strong>{intakeStats.topBudget.label}</strong>
+                  <p>{intakeStats.topBudget.count}건</p>
+                </article>
+                <article className="admin-insight-card">
+                  <span>가장 많은 상담 시간</span>
+                  <strong>{intakeStats.topTime.label}</strong>
+                  <p>{intakeStats.topTime.count}건</p>
+                </article>
+              </section>
+
+              <section className="admin-breakdown-section" aria-labelledby="intake-breakdown-title">
+                <div className="section-heading row-heading">
+                  <div>
+                    <h2 id="intake-breakdown-title">설문 선택 분포</h2>
+                    <p>고객이 실제로 많이 고르는 집 환경과 공사 유형을 한눈에 확인합니다.</p>
+                  </div>
+                </div>
+                <div className="admin-breakdown-grid">
+                  <BreakdownCard title="집 환경" items={intakeStats.propertyTypes} />
+                  <BreakdownCard title="공사 유형" items={intakeStats.projectTypes} />
+                  <BreakdownCard title="상담 가능 시간" items={intakeStats.times} />
+                  <BreakdownCard title="예산" items={intakeStats.budgets} />
+                </div>
+              </section>
+
+              <section className="admin-chart-section" id="inquiry-chart" aria-labelledby="inquiry-chart-title">
+                <div className="section-heading row-heading">
+                  <div>
+                    <h2 id="inquiry-chart-title">최근 7일 문의 추이</h2>
+                    <p>일자별 문의가 얼마나 들어왔는지 바로 확인할 수 있습니다.</p>
+                  </div>
+                </div>
+                <InquiryChart series={analytics.series} />
+              </section>
+
+              <section className="admin-toolbar" aria-label="문의 검색 및 필터">
+                <div className="admin-toolbar-group">
+                  {statusOrder.map((status) => (
+                    <button
+                      key={status}
+                      className={statusFilter === status ? "admin-filter active" : "admin-filter"}
+                      type="button"
+                      onClick={() => setStatusFilter(status)}
+                    >
+                      {statusLabel(status)}
+                    </button>
+                  ))}
+                </div>
+                <div className="admin-toolbar-group">
+                  {([
+                    ["all", "전체"],
+                    ["today", "오늘"],
+                    ["7d", "7일"],
+                    ["30d", "30일"]
+                  ] as Array<[TimeFilter, string]>).map(([value, label]) => (
+                    <button
+                      key={value}
+                      className={timeFilter === value ? "admin-filter active" : "admin-filter"}
+                      type="button"
+                      onClick={() => setTimeFilter(value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="admin-toolbar-group">
+                  <SortAsc size={16} className="admin-toolbar-icon" />
+                  <select
+                    aria-label="문의 정렬"
+                    className="admin-sort"
+                    value={sortMode}
+                    onChange={(event) => setSortMode(event.target.value as SortMode)}
+                  >
+                    {sortOrder.map((item) => (
+                      <option key={item.value} value={item.value}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-spacer" />
+                <div className="admin-toolbar-meta">
+                  <span className="admin-count">{visibleInquiries.length}건</span>
+                  {selectedCount > 0 ? <span className="admin-sync">선택 {selectedCount}건</span> : null}
+                  <span className="admin-sync">
+                    <Clock3 size={14} />
+                    {lastRefreshedAt ? `마지막 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
+                  </span>
+                  {visibleInquiries.length > 0 && (
+                    <button
+                      className="admin-ghost-button admin-export-button"
+                      type="button"
+                      onClick={handleExport}
+                      aria-label="CSV 내보내기"
+                    >
+                      <Download size={14} />
+                      <span className="admin-btn-label">내보내기</span>
+                    </button>
+                  )}
+                </div>
+              </section>
+
+              {authError ? <p className="admin-banner">{authError}</p> : null}
+              {error ? <p className="admin-error">{error}</p> : null}
+
+              <section className="admin-list" aria-label="문의 목록">
             {selectedCount > 0 ? (
               <div className="admin-bulk-bar" aria-label="선택 문의 작업">
                 <div className="admin-bulk-copy">
@@ -747,15 +890,18 @@ export function AdminPage() {
               <div className="admin-empty">표시할 문의가 없습니다.</div>
             )}
           </section>
-        </>
-      )}
+            </>
+          )}
+        </div>
+      </div>
       {copyFeedback ? <div className="admin-toast" role="status">{copyFeedback}</div> : null}
     </main>
   );
 }
 
 function getAdminView(): AdminView {
-  return window.location.pathname.startsWith("/admin/inquiries") ? "inquiries" : "editor";
+  const pathname = window.location.pathname;
+  return pathname.startsWith("/admin/editor") ? "editor" : "inquiries";
 }
 
 function buildAnalytics(inquiries: InquiryRow[]) {
