@@ -2689,3 +2689,25 @@ Verification:
 
 Follow-up:
 - None.
+
+## 2026-05-31 - xlsx Lazy Loading + QA Scripts
+
+Changed files:
+- `src/services/QuoteService.ts`
+- `scripts/admin-responsive-qa.mjs` (new)
+- `scripts/admin-account-responsive-qa.mjs` (new)
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed top-level `import * as XLSX from "xlsx"` from QuoteService.ts.
+- Added `const XLSX = await import("xlsx")` inside each of the three XLSX functions: `importQuoteFromXlsx`, `downloadQuoteTemplateAsXlsx`, `downloadQuoteAsXlsx`.
+- xlsx is now a separate lazy chunk (424 kB) loaded only when admin uses xlsx import/export.
+- Main bundle reduced from 849 kB → 427 kB (50% reduction, gzip: 261 → 120 kB).
+- Committed two QA scripts for admin and account responsive testing.
+
+Verification:
+- `npm run build` passed.
+- Main chunk: 427 kB (was 849 kB). xlsx: 424 kB lazy chunk.
+
+Follow-up:
+- None.
