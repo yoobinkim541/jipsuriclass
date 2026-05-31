@@ -149,19 +149,29 @@ function formatIntakeSummary(intake: Record<string, unknown>) {
     .filter((part): part is string => typeof part === "string" && part.trim().length > 0);
   const address = addressParts.join(" ").trim();
 
-  const entries = [
-    ["공간 유형", intake.spaceType],
-    ["면적", intake.areaBand],
-    ["거주 상태", intake.propertyStatus],
-    ["수리 이유", intake.reason],
-    ["예산", intake.budget],
-    ["착수 시기", intake.startTiming],
-    ["주소", address || undefined]
-  ]
-    .filter(([, value]) => typeof value === "string" && (value as string).trim())
-    .map(([label, value]) => `${label}: ${escapeHtml(String(value))}`);
+  const selectedRooms = Array.isArray(intake.selectedRooms)
+    ? (intake.selectedRooms as unknown[])
+        .filter((r): r is string => typeof r === "string" && r.trim().length > 0)
+        .join(", ")
+    : "";
+  const otherDetail = typeof intake.otherRoomDetail === "string" ? intake.otherRoomDetail.trim() : "";
 
-  return entries.join("<br />");
+  const entries: [string, string | undefined][] = [
+    ["공간 유형", typeof intake.spaceType === "string" ? intake.spaceType : undefined],
+    ["면적", typeof intake.areaBand === "string" ? intake.areaBand : undefined],
+    ["거주 상태", typeof intake.propertyStatus === "string" ? intake.propertyStatus : undefined],
+    ["수리 이유", typeof intake.reason === "string" ? intake.reason : undefined],
+    ["수리 항목", selectedRooms || undefined],
+    ["기타 상세", otherDetail || undefined],
+    ["예산", typeof intake.budget === "string" ? intake.budget : undefined],
+    ["착수 시기", typeof intake.startTiming === "string" ? intake.startTiming : undefined],
+    ["주소", address || undefined]
+  ];
+
+  return entries
+    .filter(([, value]) => value !== undefined && value.trim() !== "")
+    .map(([label, value]) => `${label}: ${escapeHtml(value!)}`)
+    .join("<br />");
 }
 
 function escapeHtml(value: string) {
