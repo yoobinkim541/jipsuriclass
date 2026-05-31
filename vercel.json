@@ -166,6 +166,18 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/service/electric/price",
+      "destination": "/service/electric/pricing",
+      "permanent": false
+    },
+    {
+      "source": "/service/tile/price",
+      "destination": "/service/tile/pricing",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/admin",
@@ -213,6 +225,10 @@
     },
     {
       "source": "/service",
+      "destination": "/"
+    },
+    {
+      "source": "/service/:name/pricing",
       "destination": "/"
     },
     {
