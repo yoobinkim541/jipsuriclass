@@ -44,6 +44,10 @@ export class BlogPortfolioService {
     }
 
     const result = await this.fetchFromApi("matching", terms, categoryNos);
+    if (result.source === "naver" && result.posts.length === 0) {
+      return this.loadLatestPortfolioPosts();
+    }
+
     if (result.source === "naver" && result.posts.length) {
       this.writeCache(cacheKey, result.posts);
     }
@@ -71,6 +75,10 @@ export class BlogPortfolioService {
       const data = (await response.json()) as NaverBlogResponse;
       const naverItems = Array.isArray(data.items) ? data.items.slice(0, this.maxPosts) : [];
       if (!naverItems.length) {
+        if (mode === "matching") {
+          return { source: "naver", posts: [] };
+        }
+
         return this.fallbackResult();
       }
 

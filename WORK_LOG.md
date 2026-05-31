@@ -2667,3 +2667,25 @@ Verification:
 
 Follow-up:
 - Verify `/service/bathroom` and `/area/namyangju` in the browser after deployment to confirm the cards use live blog images.
+
+## 2026-05-31 - Remaining Tasks A-D
+
+Changed files:
+- `src/services/BlogPortfolioService.ts`
+- `scripts/patch-static-html.mjs`
+- `src/services/QuoteService.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added latest-post fallback when service/area blog keyword matching returns no Naver posts.
+- Updated the static HTML patch step to apply landing page title and description metadata after build.
+- Moved jsPDF and jspdf-autotable loading into the PDF download path.
+- Removed unused legacy CSS blocks for old login, service/case/process, estimate, and admin layouts.
+
+Verification:
+- `npm run build` passed.
+- Checked built `/service/leak/` and `/area/namyangju/` HTML for page-specific title and description output.
+
+Follow-up:
+- None.

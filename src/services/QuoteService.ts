@@ -1,6 +1,5 @@
 import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import type jsPDF from "jspdf";
 import { electricPriceCategories } from "../electricPriceData";
 import { servicePricingRegistry } from "../pricing/registry";
 import { waterproofingTilePriceCategories, waterproofingPriceCategories, tilePriceCategories } from "../waterproofingTilePriceData";
@@ -340,8 +339,9 @@ export async function downloadQuoteAsXlsx(input: QuoteDownloadContext) {
 }
 
 export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
+  const [{ default: JsPDF }, { default: autoTable }] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
   const documentTitle = buildQuoteDocumentTitle(input.quote);
-  const doc = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+  const doc = new JsPDF({ orientation: "p", unit: "pt", format: "a4" });
   await ensureKoreanFont(doc);
   const totals = input.totals;
   const margin = 40;
