@@ -19,7 +19,9 @@ import { business, cases, navItems, pinnedPosts, process, services, symptoms, sy
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import type { HomepageContent, PortfolioPost } from "./types";
-const AdminPage = lazy(() => import("./admin/AdminPage").then((m) => ({ default: m.AdminPage })));
+const AdminInquiriesPage = lazy(() => import("./admin/AdminInquiriesPage").then((m) => ({ default: m.AdminInquiriesPage })));
+const AdminAnalyticsPage = lazy(() => import("./admin/AdminAnalyticsPage").then((m) => ({ default: m.AdminAnalyticsPage })));
+const AdminEditorPage = lazy(() => import("./admin/AdminEditorPage").then((m) => ({ default: m.AdminEditorPage })));
 const AdminLoginPage = lazy(() => import("./admin/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
 const AccountPage = lazy(() => import("./account/AccountPage").then((m) => ({ default: m.AccountPage })));
 const LoginPage = lazy(() => import("./login/LoginPage").then((m) => ({ default: m.LoginPage })));
@@ -74,11 +76,23 @@ function App() {
 
   usePageSeo(getSeoConfigForPath(window.location.pathname, mergedLandingPage ?? undefined));
 
+  if (window.location.pathname === "/admin" || window.location.pathname === "/admin/") {
+    return <Redirect to="/admin/inquiries" />;
+  }
   if (window.location.pathname.startsWith("/admin/login")) {
     return <Suspense fallback={null}><AdminLoginPage /></Suspense>;
   }
+  if (window.location.pathname.startsWith("/admin/inquiries")) {
+    return <Suspense fallback={null}><AdminInquiriesPage /></Suspense>;
+  }
+  if (window.location.pathname.startsWith("/admin/analytics")) {
+    return <Suspense fallback={null}><AdminAnalyticsPage /></Suspense>;
+  }
+  if (window.location.pathname.startsWith("/admin/editor")) {
+    return <Suspense fallback={null}><AdminEditorPage /></Suspense>;
+  }
   if (window.location.pathname.startsWith("/admin")) {
-    return <Suspense fallback={null}><AdminPage /></Suspense>;
+    return <Redirect to="/admin/inquiries" />;
   }
   if (window.location.pathname.startsWith("/mypage") || window.location.pathname.startsWith("/account")) {
     return <Suspense fallback={null}><AccountPage /></Suspense>;

@@ -220,7 +220,6 @@ export function AdminPage() {
   }, [expandedInquiryId]);
 
   const analytics = useMemo(() => buildAnalytics(inquiries), [inquiries]);
-  const intakeStats = useMemo(() => buildIntakeStats(inquiries), [inquiries]);
 
   const visibleInquiries = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -283,19 +282,19 @@ export function AdminPage() {
     view === "editor"
       ? {
           kicker: "콘텐츠 · 핵심 페이지",
-          title: "홈·자기진단·상담신청 등 핵심 6장을 바로 고칩니다.",
-          description: "각 페이지를 편집 모드로 열어 텍스트를 바꾸면 자동으로 저장되고 편집 이력에 남습니다."
+          title: "핵심 페이지를 바로 수정하세요.",
+          description: "홈, 자기진단, 상담신청 같은 자주 쓰는 페이지를 한 번에 관리합니다."
         }
       : {
           kicker: "대시보드 · 상담 요청",
-          title: "들어온 상담을 확인하고 응대 상태를 정리해요.",
-          description: "상담신청 폼 (/estimate) · 전화 · 카카오톡으로 들어온 요청이 한 곳에 모입니다. 사진은 카카오톡에서 함께 받습니다."
+          title: "들어온 상담을 빠르게 확인하고 상태를 정리하세요.",
+          description: "상담신청, 전화, 카카오톡으로 들어온 요청을 한 화면에서 검색하고 처리할 수 있습니다."
         };
 
   const pendingCount = analytics.byStatus.new + analytics.byStatus.contacted;
   const selectedCount = selectedVisibleInquiryIds.length;
   const topbarSearchPlaceholder =
-    view === "inquiries" ? "이름·연락처·지역으로 검색" : "상담요청·페이지·블로그 글 검색";
+    view === "inquiries" ? "이름·연락처·지역으로 검색" : "홈·랜딩·마이·견적 편집 항목 검색";
   const sidebarGroups: Array<{ title: string; items: SidebarItem[] }> = [
     {
       title: "대시보드",
@@ -305,16 +304,14 @@ export function AdminPage() {
           href: "/admin/inquiries",
           icon: MessageSquare,
           badge: analytics.total,
-          active: view === "inquiries",
-          hint: "접수와 상태"
+          active: view === "inquiries"
         },
         {
           label: "유입 분석",
-          href: "/admin/inquiries#inquiry-chart",
+          href: "/admin/inquiries#inquiry-summary",
           icon: BarChart3,
           badge: analytics.last7Days,
-          active: false,
-          hint: "최근 7일 추이"
+          active: false
         }
       ]
     },
@@ -326,8 +323,7 @@ export function AdminPage() {
           href: "/admin/editor",
           icon: LayoutDashboard,
           badge: 4,
-          active: view === "editor",
-          hint: "홈·랜딩·계정·견적"
+          active: view === "editor"
         }
       ]
     },
@@ -338,15 +334,13 @@ export function AdminPage() {
           label: "사이트 확인",
           href: "/",
           icon: ExternalLink,
-          active: false,
-          hint: "공개 페이지 열기"
+          active: false
         },
         {
           label: "로그인",
           href: "/admin/login",
           icon: UserRound,
-          active: false,
-          hint: "관리자 로그인"
+          active: false
         }
       ]
     }
@@ -470,7 +464,7 @@ export function AdminPage() {
             <div className="admin-hero__copy">
               <span className="admin-kicker">
                 <ShieldCheck size={16} />
-                {view === "inquiries" ? "대시보드 · 상담 요청" : "콘텐츠 · 핵심 페이지"}
+                {pageMeta.kicker}
               </span>
               <h1>{pageMeta.title}</h1>
               <p>{pageMeta.description}</p>
@@ -502,31 +496,6 @@ export function AdminPage() {
             </div>
           </section>
 
-          {view === "inquiries" && (
-            <section className="admin-metrics" aria-label="문의 요약">
-              <button className="admin-metric-card admin-metric-card--active" type="button" onClick={() => setStatusFilter("all")}>
-                <span>전체 문의</span>
-                <strong>{analytics.total}</strong>
-                <p>누적 문의 수</p>
-              </button>
-              <button className="admin-metric-card" type="button" onClick={() => setStatusFilter("pending")}>
-                <span>미처리</span>
-                <strong>{pendingCount}</strong>
-                <p>신규 + 처리중</p>
-              </button>
-              <article className="admin-metric-card">
-                <span>오늘 문의</span>
-                <strong>{analytics.today}</strong>
-                <p>금일 접수</p>
-              </article>
-              <article className="admin-metric-card">
-                <span>최근 갱신</span>
-                <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
-                <p>마지막 새로고침</p>
-              </article>
-            </section>
-          )}
-
           {view === "editor" ? (
             sessionLoading ? (
               <div className="admin-empty">
@@ -535,123 +504,32 @@ export function AdminPage() {
               </div>
             ) : (
               <section className="admin-panel admin-panel--editor" aria-label="페이지 편집">
-                <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} />
+                <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} searchQuery={searchQuery} />
               </section>
             )
           ) : (
             <>
-              <section className="admin-queue-panel" aria-label="문의 작업 요약">
-                <div className="admin-queue-grid">
-                  <article className="admin-queue-card admin-queue-card--highlight">
-                    <span>미처리</span>
-                    <strong>{pendingCount}</strong>
-                    <p>신규와 처리중 문의를 합쳐서 바로 확인합니다.</p>
-                  </article>
-                  <article className="admin-queue-card">
-                    <span>오늘 문의</span>
-                    <strong>{analytics.today}</strong>
-                    <p>오늘 들어온 상담 수를 먼저 확인합니다.</p>
-                  </article>
-                  <article className="admin-queue-card">
-                    <span>최근 7일</span>
-                    <strong>{analytics.last7Days}</strong>
-                    <p>주간 흐름과 반응 속도를 살펴봅니다.</p>
-                  </article>
-                  <article className="admin-queue-card">
-                    <span>최근 갱신</span>
-                    <strong>{lastRefreshedAt ? formatTime(lastRefreshedAt) : "-"}</strong>
-                    <p>마지막으로 목록을 불러온 시각입니다.</p>
-                  </article>
-                </div>
-                <div className="admin-queue-actions" aria-label="빠른 문의 작업">
-                  <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("pending")}>
-                    미처리 보기
-                  </button>
-                  <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("new")}>
-                    신규만 보기
-                  </button>
-                  <button className="admin-queue-action" type="button" onClick={() => setStatusFilter("done")}>
-                    완료만 보기
-                  </button>
-                  <button className="admin-queue-action" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
-                    CSV 내보내기
-                  </button>
-                  <button className="admin-queue-action admin-queue-action--primary" type="button" onClick={() => void handleRefresh()}>
-                    새로고침
-                  </button>
-                </div>
-              </section>
-
-              <section className="admin-insight-grid" aria-label="문의 요약">
-                <InsightCard
-                  label="전체 문의"
-                  value={analytics.total}
-                  caption="누적 문의 수"
-                  onClick={() => setStatusFilter("all")}
-                  active={statusFilter === "all"}
-                />
-                <InsightCard
-                  label="미처리"
-                  value={pendingCount}
-                  caption="신규 + 처리중"
-                  onClick={() => setStatusFilter("pending")}
-                  active={statusFilter === "pending"}
-                />
-                <InsightCard
-                  label="완료"
-                  value={analytics.byStatus.done}
-                  caption="처리 완료"
-                  onClick={() => setStatusFilter("done")}
-                  active={statusFilter === "done"}
-                />
-              </section>
-
-              <section className="admin-insight-grid admin-insight-grid-secondary" aria-label="설문 선택 요약">
-                <article className="admin-insight-card">
-                  <span>가장 많은 집 환경</span>
-                  <strong>{intakeStats.topPropertyType.label}</strong>
-                  <p>{intakeStats.topPropertyType.count}건</p>
+              <section className="admin-metrics" id="inquiry-summary" aria-label="문의 요약">
+                <button className="admin-metric-card admin-metric-card--active" type="button" onClick={() => setStatusFilter("all")}>
+                  <span>전체 문의</span>
+                  <strong>{analytics.total}</strong>
+                  <p>누적 문의 수</p>
+                </button>
+                <button className="admin-metric-card" type="button" onClick={() => setStatusFilter("pending")}>
+                  <span>미처리</span>
+                  <strong>{pendingCount}</strong>
+                  <p>신규 + 처리중</p>
+                </button>
+                <article className="admin-metric-card">
+                  <span>오늘 문의</span>
+                  <strong>{analytics.today}</strong>
+                  <p>금일 접수</p>
                 </article>
-                <article className="admin-insight-card">
-                  <span>가장 많은 공사 유형</span>
-                  <strong>{intakeStats.topProjectType.label}</strong>
-                  <p>{intakeStats.topProjectType.count}건</p>
+                <article className="admin-metric-card">
+                  <span>최근 7일</span>
+                  <strong>{analytics.last7Days}</strong>
+                  <p>주간 접수</p>
                 </article>
-                <article className="admin-insight-card">
-                  <span>가장 많은 예산대</span>
-                  <strong>{intakeStats.topBudget.label}</strong>
-                  <p>{intakeStats.topBudget.count}건</p>
-                </article>
-                <article className="admin-insight-card">
-                  <span>가장 많은 상담 시간</span>
-                  <strong>{intakeStats.topTime.label}</strong>
-                  <p>{intakeStats.topTime.count}건</p>
-                </article>
-              </section>
-
-              <section className="admin-breakdown-section" aria-labelledby="intake-breakdown-title">
-                <div className="section-heading row-heading">
-                  <div>
-                    <h2 id="intake-breakdown-title">설문 선택 분포</h2>
-                    <p>고객이 실제로 많이 고르는 집 환경과 공사 유형을 한눈에 확인합니다.</p>
-                  </div>
-                </div>
-                <div className="admin-breakdown-grid">
-                  <BreakdownCard title="집 환경" items={intakeStats.propertyTypes} />
-                  <BreakdownCard title="공사 유형" items={intakeStats.projectTypes} />
-                  <BreakdownCard title="상담 가능 시간" items={intakeStats.times} />
-                  <BreakdownCard title="예산" items={intakeStats.budgets} />
-                </div>
-              </section>
-
-              <section className="admin-chart-section" id="inquiry-chart" aria-labelledby="inquiry-chart-title">
-                <div className="section-heading row-heading">
-                  <div>
-                    <h2 id="inquiry-chart-title">최근 7일 문의 추이</h2>
-                    <p>일자별 문의가 얼마나 들어왔는지 바로 확인할 수 있습니다.</p>
-                  </div>
-                </div>
-                <InquiryChart series={analytics.series} />
               </section>
 
               <section className="admin-toolbar" aria-label="문의 검색 및 필터">
@@ -707,17 +585,10 @@ export function AdminPage() {
                     <Clock3 size={14} />
                     {lastRefreshedAt ? `마지막 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
                   </span>
-                  {visibleInquiries.length > 0 && (
-                    <button
-                      className="admin-ghost-button admin-export-button"
-                      type="button"
-                      onClick={handleExport}
-                      aria-label="CSV 내보내기"
-                    >
-                      <Download size={14} />
-                      <span className="admin-btn-label">내보내기</span>
-                    </button>
-                  )}
+                  <button className="admin-ghost-button admin-export-button" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
+                    <Download size={14} />
+                    <span className="admin-btn-label">내보내기</span>
+                  </button>
                 </div>
               </section>
 
@@ -725,171 +596,151 @@ export function AdminPage() {
               {error ? <p className="admin-error">{error}</p> : null}
 
               <section className="admin-list" aria-label="문의 목록">
-            {selectedCount > 0 ? (
-              <div className="admin-bulk-bar" aria-label="선택 문의 작업">
-                <div className="admin-bulk-copy">
-                  <strong>선택 {selectedCount}건</strong>
-                  <p>선택한 문의를 한 번에 처리합니다.</p>
-                </div>
-                <div className="admin-bulk-actions">
-                  <button
-                    className="admin-bulk-button"
-                    type="button"
-                    onClick={selectVisibleInquiries}
-                    disabled={!visibleInquiries.length || Boolean(actionId)}
-                  >
-                    전체 선택
-                  </button>
-                  <button
-                    className="admin-bulk-button"
-                    type="button"
-                    onClick={clearSelection}
-                    disabled={Boolean(actionId)}
-                  >
-                    선택 해제
-                  </button>
-                  <button
-                    className="admin-bulk-button"
-                    type="button"
-                    onClick={() => void handleBulkStatusChange("contacted")}
-                    disabled={Boolean(actionId)}
-                  >
-                    연락 처리
-                  </button>
-                  <button
-                    className="admin-bulk-button"
-                    type="button"
-                    onClick={() => void handleBulkStatusChange("done")}
-                    disabled={Boolean(actionId)}
-                  >
-                    완료 처리
-                  </button>
-                  <button
-                    className="admin-bulk-button"
-                    type="button"
-                    onClick={() => void handleBulkStatusChange("spam")}
-                    disabled={Boolean(actionId)}
-                  >
-                    스팸 처리
-                  </button>
-                </div>
-              </div>
-            ) : null}
-            {inquiriesLoading ? (
-              <div className="admin-empty">
-                <LoaderCircle size={18} className="spin" />
-                문의를 불러오는 중
-              </div>
-            ) : visibleInquiries.length ? (
-              visibleInquiries.map((item) => {
-                const isExpanded = expandedInquiryId === item.id;
+                {selectedCount > 0 ? (
+                  <div className="admin-bulk-bar" aria-label="선택 문의 작업">
+                    <div className="admin-bulk-copy">
+                      <strong>선택 {selectedCount}건</strong>
+                      <p>선택한 문의를 한 번에 처리합니다.</p>
+                    </div>
+                    <div className="admin-bulk-actions">
+                      <button
+                        className="admin-bulk-button"
+                        type="button"
+                        onClick={selectVisibleInquiries}
+                        disabled={!visibleInquiries.length || Boolean(actionId)}
+                      >
+                        전체 선택
+                      </button>
+                      <button className="admin-bulk-button" type="button" onClick={clearSelection} disabled={Boolean(actionId)}>
+                        선택 해제
+                      </button>
+                      <button className="admin-bulk-button" type="button" onClick={() => void handleBulkStatusChange("contacted")} disabled={Boolean(actionId)}>
+                        연락 처리
+                      </button>
+                      <button className="admin-bulk-button" type="button" onClick={() => void handleBulkStatusChange("done")} disabled={Boolean(actionId)}>
+                        완료 처리
+                      </button>
+                      <button className="admin-bulk-button" type="button" onClick={() => void handleBulkStatusChange("spam")} disabled={Boolean(actionId)}>
+                        스팸 처리
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                {inquiriesLoading ? (
+                  <div className="admin-empty">
+                    <LoaderCircle size={18} className="spin" />
+                    문의를 불러오는 중
+                  </div>
+                ) : visibleInquiries.length ? (
+                  visibleInquiries.map((item) => {
+                    const isExpanded = expandedInquiryId === item.id;
 
-                return (
-                  <article className="admin-row" key={item.id}>
-                    <div className="admin-row-main">
-                      <div className="admin-row-top">
-                        <label className="admin-row-select">
-                          <input
-                            type="checkbox"
-                            checked={selectedInquirySet.has(item.id)}
-                            onChange={() => toggleInquirySelection(item.id)}
-                            disabled={Boolean(actionId)}
-                            aria-label={`${item.name} 선택`}
-                          />
-                          <span>선택</span>
-                        </label>
-                        <strong>{item.name}</strong>
-                        <span className={`status-badge status-${item.status}`}>{item.status}</span>
-                      </div>
-                      <p>
-                        {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
-                      </p>
-                      {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
-                      <p className="admin-message">{item.message}</p>
-                      <div className="admin-quote-badge-row">
-                        {item.intake?.quoteSnapshot?.confirmedAt ? (
-                          <span className="admin-quote-badge">견적 컨펌됨</span>
-                        ) : item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
-                          <span className="admin-quote-badge">견적 작성됨</span>
-                        ) : (
-                          <span className="admin-quote-badge admin-quote-badge--muted">견적 없음</span>
-                        )}
-                        <span className="admin-quote-badge admin-quote-badge--muted">
-                          {item.intake?.selectedWorks?.length ?? 0}개 항목
-                        </span>
-                      </div>
-                      {isExpanded ? (
-                        <div className="admin-row-detail">
-                          <div className="admin-detail-grid">
-                            <DetailItem label="연락처" value={item.phone} />
-                            <DetailItem label="지역" value={item.service_area || "지역 미입력"} />
-                            <DetailItem label="고객 이메일" value={item.user_email || "-"} />
-                            <DetailItem label="접수 경로" value={item.source} />
+                    return (
+                      <article className="admin-row" key={item.id}>
+                        <div className="admin-row-main">
+                          <div className="admin-row-top">
+                            <label className="admin-row-select">
+                              <input
+                                type="checkbox"
+                                checked={selectedInquirySet.has(item.id)}
+                                onChange={() => toggleInquirySelection(item.id)}
+                                disabled={Boolean(actionId)}
+                                aria-label={`${item.name} 선택`}
+                              />
+                              <span>선택</span>
+                            </label>
+                            <strong>{item.name}</strong>
+                            <span className={`status-badge status-${item.status}`}>{item.status}</span>
                           </div>
-                          <div className="admin-detail-grid">
-                            <DetailItem label="집 환경" value={stringField(item.intake?.propertyType)} />
-                            <DetailItem label="공사 유형" value={stringField(item.intake?.projectType)} />
-                            <DetailItem label="예산" value={stringField(item.intake?.budget)} />
-                            <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
+                          <p>
+                            {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
+                          </p>
+                          {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
+                          <p className="admin-message">{item.message}</p>
+                          <div className="admin-quote-badge-row">
+                            {item.intake?.quoteSnapshot?.confirmedAt ? (
+                              <span className="admin-quote-badge">견적 컨펌됨</span>
+                            ) : item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
+                              <span className="admin-quote-badge">견적 작성됨</span>
+                            ) : (
+                              <span className="admin-quote-badge admin-quote-badge--muted">견적 없음</span>
+                            )}
+                            <span className="admin-quote-badge admin-quote-badge--muted">
+                              {item.intake?.selectedWorks?.length ?? 0}개 항목
+                            </span>
                           </div>
-                          <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
-                          {item.attachments?.length ? (
-                            <div className="inquiry-attachment-grid" aria-label="첨부 사진">
-                              {item.attachments.map((attachment) => (
-                                <a
-                                  className="inquiry-attachment"
-                                  href={attachment.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  key={attachment.url}
-                                >
-                                  <img src={attachment.url} alt={attachment.name} />
-                                  <span>{attachment.name}</span>
-                                </a>
-                              ))}
+                          {isExpanded ? (
+                            <div className="admin-row-detail">
+                              <div className="admin-detail-grid">
+                                <DetailItem label="연락처" value={item.phone} />
+                                <DetailItem label="지역" value={item.service_area || "지역 미입력"} />
+                                <DetailItem label="고객 이메일" value={item.user_email || "-"} />
+                                <DetailItem label="접수 경로" value={item.source} />
+                              </div>
+                              <div className="admin-detail-grid">
+                                <DetailItem label="집 환경" value={stringField(item.intake?.propertyType)} />
+                                <DetailItem label="공사 유형" value={stringField(item.intake?.projectType)} />
+                                <DetailItem label="예산" value={stringField(item.intake?.budget)} />
+                                <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
+                              </div>
+                              <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
+                              {item.attachments?.length ? (
+                                <div className="inquiry-attachment-grid" aria-label="첨부 사진">
+                                  {item.attachments.map((attachment) => (
+                                    <a
+                                      className="inquiry-attachment"
+                                      href={attachment.url}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      key={attachment.url}
+                                    >
+                                      <img src={attachment.url} alt={attachment.name} />
+                                      <span>{attachment.name}</span>
+                                    </a>
+                                  ))}
+                                </div>
+                              ) : null}
                             </div>
                           ) : null}
                         </div>
-                      ) : null}
-                    </div>
-                    <div className="admin-row-actions">
-                      <button
-                        className="admin-status-button admin-detail-toggle"
-                        type="button"
-                        onClick={() => setExpandedInquiryId((current) => (current === item.id ? null : item.id))}
-                        aria-expanded={isExpanded}
-                      >
-                        {isExpanded ? "접기" : "상세"}
-                      </button>
-                      {(["new", "contacted", "done", "spam"] as InquiryStatus[])
-                        .filter((status) => status !== item.status)
-                        .map((status) => (
-                        <button
-                          key={status}
-                          className="admin-status-button"
-                          type="button"
-                          disabled={Boolean(actionId)}
-                          onClick={() => void handleStatusChange(item.id, status)}
-                        >
-                          {actionId === item.id ? <LoaderCircle size={12} className="spin" /> : statusLabel(status)}
-                        </button>
-                      ))}
-                      <button className="admin-link admin-copy-button" type="button" onClick={() => void handleCopy(item.phone, "연락처")}>
-                        <Copy size={14} />
-                        복사
-                      </button>
-                      <a className="admin-link" href={`tel:${item.phone}`}>
-                        <ArrowUpRight size={14} />
-                        전화
-                      </a>
-                    </div>
-                  </article>
-                );
-              })
-            ) : (
-              <div className="admin-empty">표시할 문의가 없습니다.</div>
-            )}
-          </section>
+                        <div className="admin-row-actions">
+                          <button
+                            className="admin-status-button admin-detail-toggle"
+                            type="button"
+                            onClick={() => setExpandedInquiryId((current) => (current === item.id ? null : item.id))}
+                            aria-expanded={isExpanded}
+                          >
+                            {isExpanded ? "접기" : "상세"}
+                          </button>
+                          {(["new", "contacted", "done", "spam"] as InquiryStatus[])
+                            .filter((status) => status !== item.status)
+                            .map((status) => (
+                              <button
+                                key={status}
+                                className="admin-status-button"
+                                type="button"
+                                disabled={Boolean(actionId)}
+                                onClick={() => void handleStatusChange(item.id, status)}
+                              >
+                                {actionId === item.id ? <LoaderCircle size={12} className="spin" /> : statusLabel(status)}
+                              </button>
+                            ))}
+                          <button className="admin-link admin-copy-button" type="button" onClick={() => void handleCopy(item.phone, "연락처")}>
+                            <Copy size={14} />
+                            복사
+                          </button>
+                          <a className="admin-link" href={`tel:${item.phone}`}>
+                            <ArrowUpRight size={14} />
+                            전화
+                          </a>
+                        </div>
+                      </article>
+                    );
+                  })
+                ) : (
+                  <div className="admin-empty">표시할 문의가 없습니다.</div>
+                )}
+              </section>
             </>
           )}
         </div>
@@ -941,41 +792,6 @@ function buildAnalytics(inquiries: InquiryRow[]) {
   return { total, byStatus, series, last7Days, today };
 }
 
-function buildIntakeStats(inquiries: InquiryRow[]) {
-  const propertyTypes = countField(inquiries, (item) => stringField(item.intake?.propertyType));
-  const projectTypes = countField(inquiries, (item) => stringField(item.intake?.projectType));
-  const times = countField(inquiries, (item) => stringField(item.intake?.preferredTime));
-  const budgets = countField(inquiries, (item) => stringField(item.intake?.budget));
-
-  return {
-    propertyTypes,
-    projectTypes,
-    times,
-    budgets,
-    topPropertyType: propertyTypes[0] ?? { label: "-", count: 0 },
-    topProjectType: projectTypes[0] ?? { label: "-", count: 0 },
-    topTime: times[0] ?? { label: "-", count: 0 },
-    topBudget: budgets[0] ?? { label: "-", count: 0 }
-  };
-}
-
-function countField(
-  inquiries: InquiryRow[],
-  selector: (item: InquiryRow) => string | null
-): Array<{ label: string; count: number }> {
-  const counts = new Map<string, number>();
-  inquiries.forEach((item) => {
-    const value = selector(item);
-    if (!value) return;
-    counts.set(value, (counts.get(value) ?? 0) + 1);
-  });
-
-  return Array.from(counts.entries())
-    .map(([label, count]) => ({ label, count }))
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "ko-KR"))
-    .slice(0, 6);
-}
-
 function stringField(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
@@ -1007,85 +823,6 @@ function DetailItem({ label, value }: { label: string; value: string | null }) {
     <div className="admin-detail-item">
       <span>{label}</span>
       <strong>{value || "-"}</strong>
-    </div>
-  );
-}
-
-function InsightCard({
-  label,
-  value,
-  caption,
-  onClick,
-  active
-}: {
-  label: string;
-  value: number;
-  caption: string;
-  onClick: () => void;
-  active: boolean;
-}) {
-  return (
-    <button
-      className={active ? "admin-insight-card admin-insight-card-button active" : "admin-insight-card admin-insight-card-button"}
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-    >
-      <span>{label}</span>
-      <strong>{value}</strong>
-      <p>{caption}</p>
-    </button>
-  );
-}
-
-function BreakdownCard({
-  title,
-  items
-}: {
-  title: string;
-  items: Array<{ label: string; count: number }>;
-}) {
-  return (
-    <article className="admin-breakdown-card">
-      <strong>{title}</strong>
-      <div className="admin-breakdown-list">
-        {items.length ? (
-          items.map((item) => (
-            <div className="admin-breakdown-item" key={item.label}>
-              <span>{item.label}</span>
-              <strong>{item.count}</strong>
-            </div>
-          ))
-        ) : (
-          <p className="admin-muted">데이터가 없습니다.</p>
-        )}
-      </div>
-    </article>
-  );
-}
-
-function InquiryChart({
-  series
-}: {
-  series: Array<{ label: string; dateLabel: string; count: number }>;
-}) {
-  const max = Math.max(1, ...series.map((item) => item.count));
-
-  return (
-    <div className="inquiry-chart">
-      {series.map((item) => (
-        <div className="inquiry-chart-bar" key={`${item.dateLabel}-${item.label}`}>
-          <div className="inquiry-chart-column">
-            <span style={{ height: `${Math.max(8, (item.count / max) * 100)}%` }} />
-          </div>
-          <strong>{item.count}</strong>
-          <small>
-            {item.label}
-            <br />
-            {item.dateLabel}
-          </small>
-        </div>
-      ))}
     </div>
   );
 }

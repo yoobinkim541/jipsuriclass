@@ -54,7 +54,15 @@ const imagePositionOptions = [
   { label: "우하", value: "right bottom" }
 ] as const;
 
-export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthenticated: boolean; isActive?: boolean }) {
+export function HomepageEditor({
+  isAuthenticated,
+  isActive = true,
+  searchQuery = ""
+}: {
+  isAuthenticated: boolean;
+  isActive?: boolean;
+  searchQuery?: string;
+}) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -462,6 +470,19 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
     () => homepageSectionDefinitions.find((item) => item.id === selectedSection) ?? homepageSectionDefinitions[0],
     [selectedSection]
   );
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+
+  useEffect(() => {
+    if (!normalizedSearch) return;
+
+    const target = findHomepageSearchTarget(normalizedSearch, draft);
+    if (!target) return;
+
+    setSelectedSection(target.section);
+    if (typeof target.index === "number") {
+      setSelectedIndex(target.index);
+    }
+  }, [draft, searchQuery]);
 
   const currentItemCount =
     selectedSection === "services"
@@ -474,9 +495,88 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
         ? draft.cases.length
         : selectedSection === "blog"
           ? draft.blog.length
-        : selectedSection === "process"
-          ? draft.process.length
+          : selectedSection === "process"
+            ? draft.process.length
           : 0;
+
+  function renderFocusedPreview() {
+    switch (selectedSection) {
+      case "hero":
+        return <HeroPreview content={draft.hero} cases={draft.cases} onSelect={() => setSelectedSection("hero")} />;
+      case "about":
+        return <AboutPreview content={draft.about} cases={draft.cases} onSelect={() => setSelectedSection("about")} />;
+      case "symptoms":
+        return (
+          <SymptomsPreview
+            symptoms={draft.symptoms}
+            activeIndex={selectedIndex}
+            onSelect={(index) => {
+              setSelectedSection("symptoms");
+              setSelectedIndex(index);
+            }}
+          />
+        );
+      case "specialties":
+        return (
+          <SpecialtiesPreview
+            specialties={draft.specialties}
+            activeIndex={selectedIndex}
+            onSelect={(index) => {
+              setSelectedSection("specialties");
+              setSelectedIndex(index);
+            }}
+          />
+        );
+      case "services":
+        return (
+          <ServicesPreview
+            services={draft.services}
+            activeIndex={selectedSection === "services" ? selectedIndex : -1}
+            onSelect={(index) => {
+              setSelectedSection("services");
+              setSelectedIndex(index);
+            }}
+          />
+        );
+      case "cases":
+        return (
+          <CasesPreview
+            cases={draft.cases}
+            activeIndex={selectedSection === "cases" ? selectedIndex : -1}
+            onSelect={(index) => {
+              setSelectedSection("cases");
+              setSelectedIndex(index);
+            }}
+          />
+        );
+      case "blog":
+        return (
+          <BlogPreview
+            posts={draft.blog}
+            activeIndex={selectedSection === "blog" ? selectedIndex : -1}
+            onSelect={(index) => {
+              setSelectedSection("blog");
+              setSelectedIndex(index);
+            }}
+          />
+        );
+      case "process":
+        return (
+          <ProcessPreview
+            steps={draft.process}
+            activeIndex={selectedSection === "process" ? selectedIndex : -1}
+            onSelect={(index) => {
+              setSelectedSection("process");
+              setSelectedIndex(index);
+            }}
+          />
+        );
+      case "contact":
+        return <ContactPreview content={draft.contact} preview={contactPreview} setPreview={setContactPreview} onSelect={() => setSelectedSection("contact")} />;
+      default:
+        return null;
+    }
+  }
 
   function renderRepeaterSection(section: "services" | "cases" | "blog" | "process") {
     const config = homepageRepeaterSectionDefinitions[section];
@@ -587,23 +687,46 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
   }
 
   return (
-    <section className="editor-shell" aria-labelledby="homepage-editor-title">
-      <div className="editor-header">
-        <div>
-          <span className="admin-kicker">
-            <PencilLine size={16} />
-            홈페이지 편집기
-          </span>
-          <h2 id="homepage-editor-title">실제 화면을 보면서 바로 수정합니다</h2>
-          <p>미리보기에서 섹션을 바로 고릅니다.</p>
-          <div className="editor-save-state" aria-live="polite">
-            <span data-state={saveState}>
-              {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
+    <section className="editor-shell editor-shell--studio" aria-labelledby="homepage-editor-title">
+      <div className="editor-studio-hero">
+        <div className="editor-header">
+          <div>
+            <span className="admin-kicker">
+              <PencilLine size={16} />
+              홈페이지 편집기
             </span>
-            <p>{saveNote}</p>
-            <strong className="editor-save-count">변경 섹션 {changedSectionCount}개</strong>
-            {lastSavedAt ? <em>최근 저장 {formatEditorTime(lastSavedAt)}</em> : null}
+            <h2 id="homepage-editor-title">실제 화면을 보면서 바로 수정합니다</h2>
+            <p>미리보기에서 섹션을 바로 고르고, 우측 콘솔에서 세부 항목을 다듬습니다.</p>
+            <div className="editor-save-state" aria-live="polite">
+              <span data-state={saveState}>
+                {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
+              </span>
+              <p>{saveNote}</p>
+              <strong className="editor-save-count">변경 섹션 {changedSectionCount}개</strong>
+              {lastSavedAt ? <em>최근 저장 {formatEditorTime(lastSavedAt)}</em> : null}
+            </div>
           </div>
+          <div className="editor-actions">
+            <button className="admin-ghost-button" type="button" onClick={() => setShowPreview((current) => !current)}>
+              {showPreview ? "미리보기 숨기기" : "미리보기 보기"}
+            </button>
+            {showPreview ? (
+              <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
+                {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
+              </button>
+            ) : null}
+            <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
+              <RotateCcw size={16} />
+              기본값
+            </button>
+            <button className="admin-primary-button" type="button" onClick={() => void handleSave()} disabled={!isAuthenticated || loading || saving}>
+              {saving ? <LoaderCircle size={16} className="spin" /> : <Save size={16} />}
+              {saving ? "저장 중" : "즉시 저장"}
+            </button>
+          </div>
+        </div>
+
+        <div className="editor-studio-hero__meta">
           <div className="editor-context-strip" aria-label="현재 편집 대상">
             <span>
               현재 섹션
@@ -614,143 +737,107 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
               <strong>{activeSectionDefinition?.description ?? ""}</strong>
             </span>
           </div>
-        </div>
-        <div className="editor-actions">
-          <button className="admin-ghost-button" type="button" onClick={() => setShowPreview((current) => !current)}>
-            {showPreview ? "미리보기 숨기기" : "미리보기 보기"}
-          </button>
-          {showPreview ? (
-            <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
-              {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
-            </button>
-          ) : null}
-          <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
-            <RotateCcw size={16} />
-            기본값
-          </button>
-          <button className="admin-primary-button" type="button" onClick={() => void handleSave()} disabled={!isAuthenticated || loading || saving}>
-            {saving ? <LoaderCircle size={16} className="spin" /> : <Save size={16} />}
-            {saving ? "저장 중" : "즉시 저장"}
-          </button>
+          <div className="editor-studio-stat-row">
+            <div>
+              <span>편집 모드</span>
+              <strong>{showPreview ? "스튜디오 + 미리보기" : "집중 편집"}</strong>
+            </div>
+            <div>
+              <span>현재 항목</span>
+              <strong>{currentItemCount > 0 ? `${selectedIndex + 1} / ${currentItemCount}` : "단일 섹션"}</strong>
+            </div>
+            <div>
+              <span>검색</span>
+              <strong>{normalizedSearch ? `"${searchQuery.trim()}"` : "전체"}</strong>
+            </div>
+          </div>
         </div>
       </div>
 
       {!isAuthenticated ? <p className="admin-banner">편집하려면 Google로 로그인한 관리자 계정이어야 합니다.</p> : null}
       {error ? <p className="admin-error">{error}</p> : null}
 
-      <div className="editor-section-nav" aria-label="편집 섹션 이동">
-        {sectionNav.map((item) => (
-          <button
-            key={item.key}
-            className={selectedSection === item.key ? "editor-section-chip active" : "editor-section-chip"}
-            type="button"
-            title={item.description}
-            onClick={() => {
-              setSelectedSection(item.key);
-              if (item.key === "services" || item.key === "cases" || item.key === "blog" || item.key === "process") {
-                setSelectedIndex(0);
-              }
-            }}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="admin-empty">
-          <LoaderCircle size={18} className="spin" />
-          편집 내용을 불러오는 중
-        </div>
-      ) : (
-        <div className={showPreview ? "editor-workspace" : "editor-workspace editor-workspace-single"}>
-          {showPreview ? (
-            <div className={showPreviewFullscreen ? "editor-preview-panel editor-preview-panel-fullscreen" : "editor-preview-panel"}>
-            {showPreviewFullscreen ? (
-              <div className="editor-preview-toolbar">
-                <span>전체 미리보기</span>
-                <button type="button" className="admin-ghost-button" onClick={() => setShowPreviewFullscreen(false)}>
-                  닫기
-                </button>
-              </div>
-            ) : null}
-            <div className="editor-preview-frame">
-              <PreviewSectionLabel label="히어로" active={selectedSection === "hero"} onClick={() => setSelectedSection("hero")} />
-              <HeroPreview content={draft.hero} cases={draft.cases} onSelect={() => setSelectedSection("hero")} />
-
-              <PreviewSectionLabel label="소개" active={selectedSection === "about"} onClick={() => setSelectedSection("about")} />
-              <AboutPreview content={draft.about} cases={draft.cases} onSelect={() => setSelectedSection("about")} />
-
-              <PreviewSectionLabel label="증상" active={selectedSection === "symptoms"} onClick={() => setSelectedSection("symptoms")} />
-              <SymptomsPreview symptoms={draft.symptoms} activeIndex={selectedSection === "symptoms" ? selectedIndex : -1} onSelect={(index) => {
-                setSelectedSection("symptoms");
-                setSelectedIndex(index);
-              }} />
-
-              <PreviewSectionLabel label="가능 작업" active={selectedSection === "specialties"} onClick={() => setSelectedSection("specialties")} />
-              <SpecialtiesPreview specialties={draft.specialties} activeIndex={selectedSection === "specialties" ? selectedIndex : -1} onSelect={(index) => {
-                setSelectedSection("specialties");
-                setSelectedIndex(index);
-              }} />
-
-              <PreviewSectionLabel label="서비스" active={selectedSection === "services"} onClick={() => setSelectedSection("services")} />
-              <ServicesPreview
-                services={draft.services}
-                activeIndex={selectedSection === "services" ? selectedIndex : -1}
-                onSelect={(index) => {
-                  setSelectedSection("services");
-                  setSelectedIndex(index);
-                }}
-              />
-
-              <PreviewSectionLabel label="사례" active={selectedSection === "cases"} onClick={() => setSelectedSection("cases")} />
-              <CasesPreview
-                cases={draft.cases}
-                activeIndex={selectedSection === "cases" ? selectedIndex : -1}
-                onSelect={(index) => {
-                  setSelectedSection("cases");
-                  setSelectedIndex(index);
-                }}
-              />
-
-              <PreviewSectionLabel label="블로그" active={selectedSection === "blog"} onClick={() => setSelectedSection("blog")} />
-              <BlogPreview
-                posts={draft.blog}
-                activeIndex={selectedSection === "blog" ? selectedIndex : -1}
-                onSelect={(index) => {
-                  setSelectedSection("blog");
-                  setSelectedIndex(index);
-                }}
-              />
-
-              <PreviewSectionLabel label="작업 절차" active={selectedSection === "process"} onClick={() => setSelectedSection("process")} />
-              <ProcessPreview
-                steps={draft.process}
-                activeIndex={selectedSection === "process" ? selectedIndex : -1}
-                onSelect={(index) => {
-                  setSelectedSection("process");
-                  setSelectedIndex(index);
-                }}
-              />
-
-              <PreviewSectionLabel label="문의" active={selectedSection === "contact"} onClick={() => setSelectedSection("contact")} />
-              <ContactPreview
-                content={draft.contact}
-                preview={contactPreview}
-                setPreview={setContactPreview}
-                onSelect={() => setSelectedSection("contact")}
-              />
+      <div className="editor-studio-grid">
+        <aside className="editor-studio-rail" aria-label="편집 섹션 이동">
+          <div className="editor-studio-rail__card">
+            <span className="editor-studio-rail__eyebrow">현재 편집</span>
+            <strong>{activeSectionDefinition?.label ?? sectionLabels[selectedSection]}</strong>
+            <p>{activeSectionDefinition?.description ?? ""}</p>
+            <div className="editor-studio-metrics">
+              <span>
+                <em>항목</em>
+                <strong>{currentItemCount > 0 ? `${selectedIndex + 1} / ${currentItemCount}` : "1 / 1"}</strong>
+              </span>
+              <span>
+                <em>미리보기</em>
+                <strong>{showPreview ? "켜짐" : "꺼짐"}</strong>
+              </span>
             </div>
-            </div>
-          ) : null}
+          </div>
 
-          <aside className="editor-inspector">
-            <div className="editor-inspector-head">
-              <span className="editor-inspector-label">선택됨</span>
-              <strong>{sectionLabels[selectedSection]}</strong>
-              <span>{activeSectionDefinition?.description ?? ""}</span>
-              {currentItemCount > 0 ? <span>{selectedIndex + 1} / {currentItemCount}</span> : null}
+          <div className="editor-section-nav">
+            {sectionNav.map((item) => (
+              <button
+                key={item.key}
+                className={selectedSection === item.key ? "editor-section-chip active" : "editor-section-chip"}
+                type="button"
+                title={item.description}
+                onClick={() => {
+                  setSelectedSection(item.key);
+                  if (item.key === "services" || item.key === "cases" || item.key === "blog" || item.key === "process") {
+                    setSelectedIndex(0);
+                  }
+                }}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="editor-shortcuts editor-shortcuts--rail">
+            <span>자동 저장</span>
+            <kbd>Ctrl + S</kbd>
+            <span>미리보기 클릭 → 편집 전환</span>
+            <span>모바일 반응형</span>
+          </div>
+        </aside>
+
+        <div className="editor-studio-stage">
+          {loading ? (
+            <div className="admin-empty">
+              <LoaderCircle size={18} className="spin" />
+              편집 내용을 불러오는 중
             </div>
+          ) : (
+            <div className={showPreview ? "editor-workspace" : "editor-workspace editor-workspace-single"}>
+              {showPreview ? (
+                <div className={showPreviewFullscreen ? "editor-preview-panel editor-preview-panel-fullscreen" : "editor-preview-panel"}>
+                  {showPreviewFullscreen ? (
+                    <div className="editor-preview-toolbar">
+                      <span>전체 미리보기</span>
+                      <button type="button" className="admin-ghost-button" onClick={() => setShowPreviewFullscreen(false)}>
+                        닫기
+                      </button>
+                    </div>
+                  ) : null}
+                  <div className="editor-preview-frame editor-preview-frame--focused">
+                    <div className="editor-preview-focus-head">
+                      <span className="editor-preview-kicker">포커스 미리보기</span>
+                      <strong>{activeSectionDefinition?.label ?? sectionLabels[selectedSection]}</strong>
+                      <p>{activeSectionDefinition?.description ?? "왼쪽에서 선택한 섹션만 보여줍니다."}</p>
+                    </div>
+                    {renderFocusedPreview()}
+                  </div>
+                </div>
+              ) : null}
+
+              <aside className="editor-inspector">
+                <div className="editor-inspector-head">
+                  <span className="editor-inspector-label">선택됨</span>
+                  <strong>{sectionLabels[selectedSection]}</strong>
+                  <span>{activeSectionDefinition?.description ?? ""}</span>
+                  {currentItemCount > 0 ? <span>{selectedIndex + 1} / {currentItemCount}</span> : null}
+                </div>
 
             {selectedSection === "hero" ? (
               <InspectorGroup title="히어로">
@@ -900,12 +987,14 @@ export function HomepageEditor({ isAuthenticated, isActive = true }: { isAuthent
               </InspectorGroup>
             ) : null}
 
-            <div className="editor-inspector-help">
-              <p>미리보기에서 섹션이나 카드를 클릭하면 오른쪽 편집 대상이 바뀝니다.</p>
+                <div className="editor-inspector-help">
+                  <p>미리보기에서 섹션이나 카드를 클릭하면 오른쪽 편집 대상이 바뀝니다.</p>
+                </div>
+              </aside>
             </div>
-          </aside>
+          )}
         </div>
-      )}
+      </div>
     </section>
   );
 }
@@ -1585,6 +1674,92 @@ function normalizeLines(value: string, fallbackCount: number) {
   return Array.from({ length: fallbackCount }, () => "");
 }
 
+function findHomepageSearchTarget(query: string, draft: HomepageContent): { section: EditorSection; index?: number } | null {
+  const targets: Array<{ section: EditorSection; text: string }> = [
+    {
+      section: "services",
+      text: [sectionLabels.services, draft.services.map((item) => `${item.title} ${item.text}`).join(" ")].join(" ")
+    },
+    {
+      section: "cases",
+      text: [sectionLabels.cases, draft.cases.map((item) => `${item.title} ${item.area} ${item.problem} ${item.solution}`).join(" ")].join(" ")
+    },
+    {
+      section: "blog",
+      text: [sectionLabels.blog, draft.blog.map((item) => `${item.title} ${item.description}`).join(" ")].join(" ")
+    },
+    {
+      section: "process",
+      text: [sectionLabels.process, draft.process.map((item) => `${item.title} ${item.text}`).join(" ")].join(" ")
+    },
+    {
+      section: "contact",
+      text: [sectionLabels.contact, draft.contact.title, draft.contact.description].join(" ")
+    },
+    {
+      section: "about",
+      text: [sectionLabels.about, draft.about.title, draft.about.description, draft.about.strengths.join(" ")].join(" ")
+    },
+    {
+      section: "symptoms",
+      text: [sectionLabels.symptoms, draft.symptoms.join(" ")].join(" ")
+    },
+    {
+      section: "specialties",
+      text: [sectionLabels.specialties, draft.specialties.join(" ")].join(" ")
+    },
+    {
+      section: "hero",
+      text: [
+        sectionLabels.hero,
+        draft.hero.title,
+        draft.hero.description,
+        draft.hero.primaryActionLabel,
+        draft.hero.secondaryActionLabel,
+        draft.hero.tertiaryActionLabel,
+        draft.hero.rotatorWords.join(" "),
+        draft.hero.proofs.map((item) => `${item.label} ${item.value}`).join(" "),
+        draft.hero.trust.map((item) => `${item.num} ${item.label} ${item.sub}`).join(" ")
+      ].join(" ")
+    }
+  ];
+
+  for (const target of targets) {
+    if (normalizeSearchText(target.text).includes(query)) {
+      return { section: target.section };
+    }
+  }
+
+  const repeaterSections: Array<"services" | "cases" | "blog" | "process"> = ["services", "cases", "blog", "process"];
+  for (const section of repeaterSections) {
+    const items = draft[section] as Array<Record<string, unknown>>;
+    const index = items.findIndex((item) => normalizeSearchText(item).includes(query));
+    if (index >= 0) {
+      return { section, index };
+    }
+  }
+
+  return null;
+}
+
+function normalizeSearchText(value: unknown): string {
+  if (typeof value === "string") {
+    return value.toLowerCase();
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeSearchText(item)).join(" ");
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value as Record<string, unknown>)
+      .map((item) => normalizeSearchText(item))
+      .join(" ");
+  }
+
+  return String(value ?? "").toLowerCase();
+}
+
 function countChangedTopLevelSections<T extends Record<string, unknown>>(current: T, previousSnapshot: string) {
   try {
     const previous = JSON.parse(previousSnapshot) as T;
@@ -1620,3 +1795,4 @@ function useEditorSaveShortcut(onSave: () => void, enabled: boolean) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [enabled, onSave]);
 }
+

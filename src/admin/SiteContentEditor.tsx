@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ClipboardList, Home, LayoutGrid, LoaderCircle, PencilLine, RotateCcw, Save, UserRound } from "lucide-react";
 import { HomepageEditor } from "./HomepageEditor";
 import { LandingPagesEditor } from "./LandingPagesEditor";
@@ -11,14 +11,25 @@ const AUTOSAVE_DELAY = 1200;
 type EditorPage = "homepage" | "landing" | "account" | "estimate";
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
-export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolean }) {
+type SiteContentEditorProps = {
+  isAuthenticated: boolean;
+  searchQuery?: string;
+};
+
+const pageTabs = [
+  { key: "homepage" as const, icon: Home, title: "홈페이지", caption: "메인 섹션과 사진", searchText: "홈페이지 메인 메인 화면 히어로 소개 서비스 사례 블로그 작업 절차 문의" },
+  { key: "landing" as const, icon: LayoutGrid, title: "랜딩페이지", caption: "서비스·지역 페이지", searchText: "랜딩페이지 서비스 지역 faq 연결 페이지" },
+  { key: "account" as const, icon: UserRound, title: "마이페이지", caption: "계정과 문의 내역", searchText: "마이페이지 계정 문의 내역 로그인 비밀번호 google" },
+  { key: "estimate" as const, icon: ClipboardList, title: "견적상담", caption: "신청서와 약관", searchText: "견적상담 신청서 약관 단계 입력 폼" }
+];
+
+export function SiteContentEditor({ isAuthenticated, searchQuery = "" }: SiteContentEditorProps) {
   const [page, setPage] = useState<EditorPage>("homepage");
-  const pageTabs = [
-    { key: "homepage" as const, icon: Home, title: "홈페이지", caption: "메인 섹션과 사진" },
-    { key: "landing" as const, icon: LayoutGrid, title: "랜딩페이지", caption: "서비스·지역 페이지" },
-    { key: "account" as const, icon: UserRound, title: "마이페이지", caption: "계정과 문의 내역" },
-    { key: "estimate" as const, icon: ClipboardList, title: "견적상담", caption: "신청서와 약관" }
-  ];
+  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const searchMatches = useMemo(() => {
+    if (!normalizedSearch) return [];
+    return pageTabs.filter((item) => `${item.title} ${item.caption} ${item.searchText}`.toLowerCase().includes(normalizedSearch));
+  }, [normalizedSearch]);
   const pageMeta: Record<EditorPage, { title: string; description: string; badge: string }> = {
     homepage: {
       title: "홈페이지는 히어로, 카드, 사진 순서대로 바로 고칩니다",
@@ -42,58 +53,103 @@ export function SiteContentEditor({ isAuthenticated }: { isAuthenticated: boolea
     }
   };
 
+  useEffect(() => {
+    if (!normalizedSearch || !searchMatches.length) return;
+    const nextPage = searchMatches[0].key;
+    if (nextPage !== page) {
+      setPage(nextPage);
+    }
+  }, [normalizedSearch, page, searchMatches]);
+
   return (
     <section className="site-content-editor">
-      <div className="editor-page-tabs" aria-label="페이지 편집 이동">
-        {pageTabs.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              className={page === item.key ? "editor-page-tab active" : "editor-page-tab"}
-              key={item.key}
-              type="button"
-              onClick={() => setPage(item.key)}
-            >
-              <Icon size={18} />
-              <span>
-                <strong>{item.title}</strong>
-                <em>{item.caption}</em>
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <div className="editor-page-layout">
+        <aside className="editor-page-rail" aria-label="페이지 편집 이동">
+          <div className="editor-page-rail__summary">
+            <span className="admin-kicker">
+              <PencilLine size={16} />
+              {pageMeta[page].badge}
+            </span>
+            <h2>{pageMeta[page].title}</h2>
+            <p>{pageMeta[page].description}</p>
+          </div>
 
-      <div className="editor-page-summary" aria-live="polite">
-        <div>
-          <span className="admin-kicker">
-            <PencilLine size={16} />
-            {pageMeta[page].badge}
-          </span>
-          <h2>{pageMeta[page].title}</h2>
-          <p>{pageMeta[page].description}</p>
-        </div>
-        <div className="editor-shortcuts">
-          <span>자동 저장</span>
-          <kbd>Ctrl + S</kbd>
-          <span>즉시 저장</span>
-          <span>모바일·태블릿 지원</span>
-        </div>
-      </div>
+          <div className="editor-page-rail__meta">
+            <span>
+              현재 페이지
+              <strong>{pageTabs.find((item) => item.key === page)?.title}</strong>
+            </span>
+            <span>
+              검색 힌트
+              <strong>{normalizedSearch ? `${searchMatches.length}개 일치` : "페이지 이름으로 바로 이동"}</strong>
+            </span>
+          </div>
 
-      <div className="editor-page-panels">
-        <section className="editor-page-panel" hidden={page !== "homepage"}>
-          <HomepageEditor isAuthenticated={isAuthenticated} isActive={page === "homepage"} />
-        </section>
-        <section className="editor-page-panel" hidden={page !== "landing"}>
-          <LandingPagesEditor isAuthenticated={isAuthenticated} isActive={page === "landing"} />
-        </section>
-        <section className="editor-page-panel" hidden={page !== "account"}>
-          <AccountContentEditor isAuthenticated={isAuthenticated} isActive={page === "account"} />
-        </section>
-        <section className="editor-page-panel" hidden={page !== "estimate"}>
-          <EstimateContentEditor isAuthenticated={isAuthenticated} isActive={page === "estimate"} />
-        </section>
+          <div className="editor-page-tabs">
+            {pageTabs.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  className={page === item.key ? "editor-page-tab active" : "editor-page-tab"}
+                  key={item.key}
+                  type="button"
+                  onClick={() => setPage(item.key)}
+                >
+                  <span className="editor-page-tab__icon">
+                    <Icon size={18} />
+                  </span>
+                  <span>
+                    <strong>{item.title}</strong>
+                    <em>{item.caption}</em>
+                  </span>
+                  {page === item.key ? <span className="editor-page-tab__active-badge">선택됨</span> : null}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="editor-shortcuts editor-shortcuts--rail">
+            <span>자동 저장</span>
+            <kbd>Ctrl + S</kbd>
+            <span>즉시 저장</span>
+            <span>모바일·태블릿 지원</span>
+          </div>
+
+          {normalizedSearch ? (
+            <div className="editor-search-strip" aria-label="편집기 검색 결과">
+              <span className="editor-search-strip__label">검색 결과</span>
+              {searchMatches.length ? (
+                searchMatches.map((item) => (
+                  <button
+                    key={item.key}
+                    className={page === item.key ? "editor-search-chip active" : "editor-search-chip"}
+                    type="button"
+                    onClick={() => setPage(item.key)}
+                  >
+                    {item.title}
+                  </button>
+                ))
+              ) : (
+                <span className="editor-search-strip__empty">일치하는 편집 항목이 없습니다.</span>
+              )}
+            </div>
+          ) : null}
+        </aside>
+
+        <div className="editor-page-panels">
+          <section className="editor-page-panel" hidden={page !== "homepage"}>
+            <HomepageEditor isAuthenticated={isAuthenticated} isActive={page === "homepage"} searchQuery={searchQuery} />
+          </section>
+          <section className="editor-page-panel" hidden={page !== "landing"}>
+            <LandingPagesEditor isAuthenticated={isAuthenticated} isActive={page === "landing"} searchQuery={searchQuery} />
+          </section>
+          <section className="editor-page-panel" hidden={page !== "account"}>
+            <AccountContentEditor isAuthenticated={isAuthenticated} isActive={page === "account"} />
+          </section>
+          <section className="editor-page-panel" hidden={page !== "estimate"}>
+            <EstimateContentEditor isAuthenticated={isAuthenticated} isActive={page === "estimate"} />
+          </section>
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,53 @@
 # Work Log
 
+## 2026-05-31 - Admin Editor Studio Refresh
+
+Changed files:
+- `src/admin/HomepageEditor.tsx`
+- `src/admin/LandingPagesEditor.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Reworked the homepage and landing-page editors into a split studio layout with a dedicated left rail for section/page selection and a right-side editing stage.
+- Added stronger hero summaries, live status/stat cards, and tighter context blocks so the current edit target is always visible.
+- Kept the existing autosave, preview, and field editing logic intact while making the editor feel less like a list and more like a focused control surface.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked `/admin/editor` at desktop and mobile viewports with no console or page errors.
+
+Follow-up:
+- None.
+
+## 2026-05-31 - Admin Page Split
+
+Changed files:
+- `src/App.tsx`
+- `src/admin/AdminShell.tsx`
+- `src/admin/AdminInquiriesPage.tsx`
+- `src/admin/AdminAnalyticsPage.tsx`
+- `src/admin/AdminEditorPage.tsx`
+- `src/admin/adminUtils.ts`
+- `src/admin/useAdminSession.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Split the admin area into separate routes so `/admin/inquiries`, `/admin/analytics`, and `/admin/editor` now render distinct pages instead of a single multiplexed admin page.
+- Kept the shared cream/navy admin chrome in one shell component so the sidebar, top bar, hero, and user controls stay consistent across pages.
+- Moved the inquiry queue, analytics dashboard, and page editor into their own route-specific page components.
+- Kept the editor search navigation and the inquiry actions intact while isolating the page layouts.
+
+Verification:
+- `npm run build` passed.
+- Browser-checked `/admin` redirect, `/admin/inquiries`, `/admin/analytics`, `/admin/editor`, and `/admin/login`.
+- Confirmed the editor search still jumps to matching content sections.
+- Confirmed desktop and mobile layouts render correctly in the in-app browser.
+
+Follow-up:
+- None.
+
 ## 2026-05-31 - Admin Responsive And Backend Verification
 
 Changed files:
@@ -2721,6 +2769,85 @@ Implemented behavior:
 Verification:
 - `npm run build` passed.
 - Checked built `/service/leak/` and `/area/namyangju/` HTML for page-specific title and description output.
+
+Follow-up:
+- None.
+
+## 2026-05-31 - Supabase Live Data Verification
+
+Changed files:
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Connected the Supabase MCP server to Codex.
+- Inserted a temporary live inquiry record into `public.inquiries`.
+- Updated the inserted row's status to confirm live write access.
+- Deleted the temporary record and verified it was removed.
+
+Verification:
+- `codex mcp add supabase --url https://mcp.supabase.com/mcp?project_ref=xhpldpigkkswmlvqruvl` succeeded.
+- `codex mcp login supabase` succeeded.
+- Supabase SQL insert, update, delete, and follow-up select all succeeded against project `xhpldpigkkswmlvqruvl`.
+
+Follow-up:
+- None.
+
+## 2026-05-31 - Admin UI Simplification Pass
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the extra analytics, breakdown, and chart blocks from the admin inquiry page so the layout now centers on a compact hero, KPI cards, filters, and the inquiry list.
+- Simplified the admin copy and sidebar labels to make the interface easier to scan.
+- Kept inquiry search, bulk actions, status changes, CSV export, and the editor route intact.
+
+Verification:
+- `npm run build` passed.
+- Checked `/admin` and `/admin/login` in the browser at desktop and mobile sizes.
+
+Follow-up:
+- None.
+
+## 2026-05-31 - Account And Admin Follow-up
+
+Changed files:
+- `src/account/AccountPage.tsx`
+- `src/admin/AdminPage.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Moved `/account` off the admin grid wrapper so the page now renders as a single clean column instead of collapsing into a narrow left rail.
+- Reattached the `유입 분석` sidebar link to the inquiry summary section so the navigation target is valid again.
+- Kept the simplified admin inquiry dashboard intact while preserving the same actions and filters.
+
+Verification:
+- `npm run build` passed.
+- Checked `/admin/inquiries`, `/admin/editor`, `/account`, and `/admin/login` in the browser at desktop size.
+
+Follow-up:
+- None.
+
+## 2026-05-31 - Admin Editor Search Navigation
+
+Changed files:
+- `src/admin/AdminPage.tsx`
+- `src/admin/HomepageEditor.tsx`
+- `src/admin/LandingPagesEditor.tsx`
+- `src/admin/SiteContentEditor.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Wired the admin topbar search into the content editor so it now jumps to matching editor pages instead of acting like a dead input.
+- Added an in-editor search result strip for the content editor tabs.
+- Made homepage and landing-page editors auto-select matching sections/pages from the global admin search.
+
+Verification:
+- `npm run build` passed.
+- Verified in the browser that `블로그` jumps to the homepage blog section and `견적` switches to the 견적상담 editor tab.
 
 Follow-up:
 - None.
