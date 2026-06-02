@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-06-02 - Vercel Cron Schedule Fix
+
+Changed files:
+- `vercel.json`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Changed inquiry notification cron from every 5 minutes to daily so Vercel Hobby deployments are not blocked by the cron schedule limit.
+- Kept the editor preview overflow/layout guard so embedded preview content cannot expand past its container.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Deploy to production and confirm Vercel accepts the daily cron schedule.
+
 ## 2026-05-31 - Pricing Page Pre-rendered HTML
 
 Changed files:

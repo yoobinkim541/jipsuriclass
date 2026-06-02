@@ -7426,6 +7426,20 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .editor-preview-section {
   position: relative;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.editor-preview-frame .trust--embedded {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.editor-preview-frame > * {
+  min-width: 0;
+  max-width: 100%;
 }
 
 .preview-edit-trigger {
