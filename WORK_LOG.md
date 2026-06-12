@@ -20,6 +20,68 @@ Follow-up:
 - `/admin` renders the dashboard shell without an authenticated session (data is still protected by Supabase); consider redirecting unauthenticated visits to `/admin/login`.
 - Main JS bundle is 850 kB (262 kB gzip); further vendor chunk splitting is possible.
 
+## 2026-06-12 - /portfolio 현장사례 통합 페이지 신설
+
+Changed files:
+- `src/App.tsx`, `src/seo.ts`, `src/styles.css`
+- `scripts/patch-static-html.mjs`, `vercel.json`, `public/sitemap.xml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 디자인 번들 portfolio.html 기반 `/portfolio` 페이지: 큐레이션 사례(pinnedPosts) + 네이버 블로그 실시간 글을 링크 기준 중복 제거 후 통합 그리드(3/2/1열 반응형)로 표시.
+- 카테고리 칩 필터 7종(전체·누수방수·욕실·주방·도배도장·문창호·전기조명) — 제목·요약·키워드 매칭. "더 보기" 페이지네이션(12개 단위), 끝까지 보면 네이버 블로그 전체 링크.
+- 기존 SiteHeader/SiteFooter/MobileQuickCta/BlogCardImage 재사용 (App.tsx 내 컨벤션 유지).
+- SEO: seo.ts에 CollectionPage JSON-LD 블록, 사이트맵 47번째 URL, 정적 생성(GENERATED_PAGES) + vercel 리라이트/no-cache 헤더. 푸터에 전 페이지 → /portfolio 내부 링크 추가.
+
+Verification:
+- `npm run build` 통과, dist/portfolio/index.html: 고유 타이틀·canonical·JSON-LD·index,follow 확인.
+- Playwright 375/768/1280px: 카드 렌더·오버플로우 0·콘솔에러 없음, 욕실 칩 필터 11→5건 동작.
+- `npm run test:blog` 17개 통과.
+
+## 2026-06-12 - SEO: 지역↔서비스 크로스링크 매트릭스 보강 + 스냅샷 재생성 스크립트
+
+Changed files:
+- `src/landingPages.ts`
+- `scripts/regenerate-snapshots.mjs` (신규)
+- `public/area/*/index.html`, `public/service/*/index.html` (31장 재생성)
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 랜딩 31장의 `relatedLinks`를 디자인 번들의 크로스링크 매트릭스 수준으로 보강: 지역→서비스 19→131개(페이지당 평균 8.2), 서비스→지역 13→90개(평균 6.0). 중복 없음, 어드민 오버라이드는 기존 병합 로직대로 우선.
+- `scripts/regenerate-snapshots.mjs` 신규: vite preview를 띄워 31개 랜딩 페이지를 렌더링한 뒤 `public/<path>/index.html` 스냅샷을 다시 굽는다(크롤러가 보는 SEO 본문이 이 스냅샷이므로 landingPages.ts 변경 시 필수). 본문이 비면 건너뛰는 가드 포함.
+- 스냅샷 31장 재생성 — 섹션·블로그 카드·이미지 수 기존과 동일, 링크 섹션만 확장 확인.
+
+Verification:
+- `npm run build` 통과, dist 산출물에서 링크 9개/7개 + JSON-LD + 페이지별 타이틀 확인.
+- `npm run test:blog` 17개 전부 통과.
+
+Follow-up:
+- 후기 섹션: 디자인 번들의 후기 6건이 실제 고객 후기인지 확인 필요 — 가짜 후기 게시는 표시광고 리스크가 있어 보류. 실제 후기 텍스트를 주시면 섹션 구현과 함께 반영.
+
+## 2026-06-12 - SEO JSON-LD 베이크 + 가격표 SEO 복원 + 네비 수정 + 어드민 메모 (업스트림 재통합)
+
+Changed files:
+- `src/seo.ts` (신규), `src/App.tsx`, `scripts/patch-static-html.mjs`, `scripts/lucide-stub.cjs` (신규)
+- `vercel.json`, `public/sitemap.xml`
+- `src/styles.css`, `src/types.ts`, `src/services/AdminService.ts`, `src/admin/AdminInquiriesPage.tsx`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 병렬 세션이 main에 올린 어드민 리디자인(AdminShell + 분리 페이지)을 채택하고, 이 세션의 고유 기여만 그 위에 재적용.
+- **SEO**: `getSeoConfigForPath`를 `src/seo.ts`로 추출(클라이언트·빌드 단일 소스). `patch-static-html.mjs`가 esbuild로 번들해 모든 정적 HTML(홈·서비스·지역·가격표 12·자가진단·견적상담)에 title/desc/robots/OG/canonical + JSON-LD(WebSite·HomeAndConstructionBusiness·Service·Place·FAQPage)를 빌드 타임 베이크. `/diagnosis`·`/estimate` 정적 생성 + 리라이트 연결.
+- **가격표 SEO 복원(의도 충돌 해소)**: 병렬 세션이 12개 `/pricing` 페이지를 사이트맵에서 빼고 SPA 리라이트로 되돌렸으나, 이는 사용자의 기존 커밋(52914c7 사이트맵 추가, 711e294 프리렌더링) 의도와 충돌 → 사이트맵 46개 복원, `/service/:name/pricing → /` 리라이트 제거, 정적 생성 복원, 클라이언트 noindex 제거(index,follow). 레거시 `/price` 4경로는 noindex 유지.
+- **네비게이션**: 풀 메뉴(10개 링크, 본질 폭 ~1322px)가 880px부터 켜져 880~1366px에서 가로 스크롤 발생 → 브레이크포인트 1080px로 상향 + 1080~1366px 압축 스타일.
+- **어드민 메모**: `intake.adminMemo`(jsonb, 스키마 변경 없음)로 상담별 관리자 메모 저장 — `AdminService.updateInquiryMemo()` + 상세 패널 메모 에디터.
+
+Verification:
+- `npm run build`(tsc 포함) 통과, `npm run test:blog` 17개 전부 통과.
+- 정적 산출물 표본 6종: JSON-LD 1개씩 + 가격표 index,follow + sitemap 46 URL 확인.
+- Playwright: 홈 5개 폭(375~1536) 가로 오버플로우 0px, `/admin/inquiries`(모킹)에서 메모 로드·저장·토스트 정상, 페이지 에러 없음.
+
+Follow-up:
+- vercel.json의 크론 제거(병렬 세션)는 유지 — 배포 거부 리스크 회피. 문의 알림 크론 재추가 여부는 사용자 결정 필요.
+- 배포 후 네이버 서치어드바이저/구글 서치콘솔 구조화 데이터 확인 권장.
+
 ## 2026-05-31 - Admin Editor Studio Refresh
 
 Changed files:

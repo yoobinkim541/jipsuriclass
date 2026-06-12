@@ -353,6 +353,7 @@ export type InquiryIntake = {
   selectedWorkIds?: string[];
   quoteSource?: InquiryQuoteSource | null;
   quoteSnapshot?: InquiryQuoteSnapshot | null;
+  adminMemo?: string;
 };
 
 export type InquiryAttachment = {

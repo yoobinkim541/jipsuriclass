@@ -15,6 +15,11 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://www.jipsuriclass.kr/portfolio</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.jipsuriclass.kr/diagnosis</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
@@ -179,4 +184,65 @@
     <priority>0.6</priority>
   </url>
 
+  <!-- 서비스 가격표 (빌드 시 정적 생성, index 허용) -->
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/plumbing/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/electric/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/leak/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/bathroom/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/door/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/window/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/carpentry/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/wallpaper/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/wallpaper-floor/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/tile/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/paint/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/service/exterior/pricing</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
 </urlset>

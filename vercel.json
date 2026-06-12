@@ -130,6 +130,15 @@
       ]
     },
     {
+      "source": "/portfolio",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/service",
       "headers": [
         {
@@ -213,7 +222,7 @@
     },
     {
       "source": "/diagnosis",
-      "destination": "/"
+      "destination": "/diagnosis/index.html"
     },
     {
       "source": "/diagnosis/:path*",
@@ -221,14 +230,14 @@
     },
     {
       "source": "/estimate",
-      "destination": "/"
+      "destination": "/estimate/index.html"
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/portfolio/index.html"
     },
     {
       "source": "/service",
-      "destination": "/"
-    },
-    {
-      "source": "/service/:name/pricing",
       "destination": "/"
     },
     {

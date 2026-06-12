@@ -84,7 +84,11 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "욕실 수리", href: "/service/bathroom" },
       { label: "남양주", href: "/area/namyangju" },
-      { label: "구리", href: "/area/guri" }
+      { label: "구리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "누수 수리"
@@ -122,7 +126,12 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "누수 수리", href: "/service/leak" },
       { label: "도배", href: "/service/wallpaper" },
-      { label: "하남", href: "/area/hanam" }
+      { label: "하남", href: "/area/hanam" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "욕실 수리"
@@ -160,7 +169,11 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "문 수리", href: "/service/door" },
       { label: "구리", href: "/area/guri" },
-      { label: "서울", href: "/area/seoul" }
+      { label: "서울", href: "/area/seoul" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "도배"
@@ -198,7 +211,11 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "욕실 수리", href: "/service/bathroom" },
       { label: "남양주", href: "/area/namyangju" },
-      { label: "경기", href: "/area/gyeonggi" }
+      { label: "경기", href: "/area/gyeonggi" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" }
     ],
     pageType: "Service",
     serviceType: "문 수리"
@@ -226,7 +243,12 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "도배", href: "/service/wallpaper" },
       { label: "문 수리", href: "/service/door" },
-      { label: "남양주", href: "/area/namyangju" }
+      { label: "남양주", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "목공"
@@ -254,7 +276,12 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "누수 수리", href: "/service/leak" },
       { label: "욕실 수리", href: "/service/bathroom" },
-      { label: "서울", href: "/area/seoul" }
+      { label: "서울", href: "/area/seoul" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "방수"
@@ -282,7 +309,12 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "도배", href: "/service/wallpaper" },
       { label: "목공 수리", href: "/service/carpentry" },
-      { label: "경기", href: "/area/gyeonggi" }
+      { label: "경기", href: "/area/gyeonggi" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" }
     ],
     pageType: "Service",
     serviceType: "도장"
@@ -310,7 +342,12 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "문 수리", href: "/service/door" },
       { label: "누수 수리", href: "/service/leak" },
-      { label: "하남", href: "/area/hanam" }
+      { label: "하남", href: "/area/hanam" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "창호"
@@ -338,7 +375,12 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "문 수리", href: "/service/door" },
       { label: "목공 수리", href: "/service/carpentry" },
-      { label: "구리", href: "/area/guri" }
+      { label: "구리", href: "/area/guri" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "전기"
@@ -366,7 +408,12 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "욕실 수리", href: "/service/bathroom" },
       { label: "방수 보수", href: "/service/waterproofing" },
-      { label: "하남", href: "/area/hanam" }
+      { label: "하남", href: "/area/hanam" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "타일"
@@ -404,7 +451,13 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "누수 수리", href: "/service/leak" },
       { label: "욕실 수리", href: "/service/bathroom" },
-      { label: "방수·타일", href: "/service/waterproofing-tile" }
+      { label: "방수·타일", href: "/service/waterproofing-tile" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "종합 설비"
@@ -443,7 +496,13 @@ const servicePagesBase: LandingPageDefinition[] = [
       { label: "가격표", href: "/service/waterproofing-tile/price" },
       { label: "누수 수리", href: "/service/leak" },
       { label: "욕실 수리", href: "/service/bathroom" },
-      { label: "종합 설비", href: "/service/plumbing" }
+      { label: "종합 설비", href: "/service/plumbing" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "방수·타일"
@@ -481,7 +540,13 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "도장·페인트", href: "/service/paint" },
       { label: "목공", href: "/service/carpentry" },
-      { label: "방수·타일", href: "/service/waterproofing-tile" }
+      { label: "방수·타일", href: "/service/waterproofing-tile" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "도배·바닥"
@@ -519,7 +584,13 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "목공", href: "/service/carpentry" },
       { label: "도장·페인트", href: "/service/paint" },
-      { label: "도배·바닥", href: "/service/wallpaper-floor" }
+      { label: "도배·바닥", href: "/service/wallpaper-floor" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "인테리어 필름"
@@ -557,7 +628,13 @@ const servicePagesBase: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "도장·페인트", href: "/service/paint" },
       { label: "방수", href: "/service/waterproofing" },
-      { label: "누수 탐지·보수", href: "/service/leak" }
+      { label: "누수 탐지·보수", href: "/service/leak" },
+      { label: "남양주 집수리", href: "/area/namyangju" },
+      { label: "구리 집수리", href: "/area/guri" },
+      { label: "하남 집수리", href: "/area/hanam" },
+      { label: "강동 집수리", href: "/area/gangdong" },
+      { label: "서울 집수리", href: "/area/seoul" },
+      { label: "경기 집수리", href: "/area/gyeonggi" }
     ],
     pageType: "Service",
     serviceType: "외부 부분보수"
@@ -598,7 +675,13 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "구리", href: "/area/guri" },
       { label: "누수 수리", href: "/service/leak" },
-      { label: "도배", href: "/service/wallpaper" }
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "남양주"
@@ -636,7 +719,13 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "남양주", href: "/area/namyangju" },
       { label: "누수 수리", href: "/service/leak" },
-      { label: "문 수리", href: "/service/door" }
+      { label: "문 수리", href: "/service/door" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "구리"
@@ -674,7 +763,13 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "서울", href: "/area/seoul" },
       { label: "욕실 수리", href: "/service/bathroom" },
-      { label: "도배", href: "/service/wallpaper" }
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "하남"
@@ -712,7 +807,13 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "경기", href: "/area/gyeonggi" },
       { label: "누수 수리", href: "/service/leak" },
-      { label: "문 수리", href: "/service/door" }
+      { label: "문 수리", href: "/service/door" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "서울"
@@ -750,7 +851,15 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "서울", href: "/area/seoul" },
       { label: "남양주", href: "/area/namyangju" },
-      { label: "하남", href: "/area/hanam" }
+      { label: "하남", href: "/area/hanam" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "경기"
@@ -778,7 +887,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "하남", href: "/area/hanam" },
       { label: "남양주", href: "/area/namyangju" },
-      { label: "누수 수리", href: "/service/leak" }
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "양평"
@@ -806,7 +922,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "남양주", href: "/area/namyangju" },
       { label: "경기", href: "/area/gyeonggi" },
-      { label: "누수 수리", href: "/service/leak" }
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "의정부"
@@ -834,7 +957,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "하남", href: "/area/hanam" },
       { label: "서울", href: "/area/seoul" },
-      { label: "욕실 수리", href: "/service/bathroom" }
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "성남"
@@ -862,7 +992,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "서울", href: "/area/seoul" },
       { label: "강동·송파", href: "/area/gangdong" },
-      { label: "도장", href: "/service/paint" }
+      { label: "도장", href: "/service/paint" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" }
     ],
     pageType: "Place",
     areaLabel: "강남"
@@ -890,7 +1027,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "서울", href: "/area/seoul" },
       { label: "하남", href: "/area/hanam" },
-      { label: "누수 수리", href: "/service/leak" }
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "강동"
@@ -918,7 +1062,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "서울", href: "/area/seoul" },
       { label: "의정부", href: "/area/uijeongbu" },
-      { label: "욕실 수리", href: "/service/bathroom" }
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "노원"
@@ -946,7 +1097,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "경기", href: "/area/gyeonggi" },
       { label: "성남", href: "/area/seongnam" },
-      { label: "누수 수리", href: "/service/leak" }
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "수원"
@@ -974,7 +1132,15 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "경기", href: "/area/gyeonggi" },
       { label: "의정부", href: "/area/uijeongbu" },
-      { label: "창호 수리", href: "/service/window" }
+      { label: "창호 수리", href: "/service/window" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "고양"
@@ -1002,7 +1168,14 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "경기", href: "/area/gyeonggi" },
       { label: "고양·일산", href: "/area/goyang" },
-      { label: "도배", href: "/service/wallpaper" }
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "부천"
@@ -1030,7 +1203,15 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "고양·일산", href: "/area/goyang" },
       { label: "경기", href: "/area/gyeonggi" },
-      { label: "창호 수리", href: "/service/window" }
+      { label: "창호 수리", href: "/service/window" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "파주"
@@ -1058,7 +1239,15 @@ const areaPages: LandingPageDefinition[] = [
     relatedLinks: [
       { label: "경기", href: "/area/gyeonggi" },
       { label: "수원", href: "/area/suwon" },
-      { label: "목공 수리", href: "/service/carpentry" }
+      { label: "목공 수리", href: "/service/carpentry" },
+      { label: "누수 수리", href: "/service/leak" },
+      { label: "욕실 수리", href: "/service/bathroom" },
+      { label: "설비 수리", href: "/service/plumbing" },
+      { label: "도배", href: "/service/wallpaper" },
+      { label: "전기 수리", href: "/service/electric" },
+      { label: "타일 시공", href: "/service/tile" },
+      { label: "문 수리", href: "/service/door" },
+      { label: "페인트", href: "/service/paint" }
     ],
     pageType: "Place",
     areaLabel: "안양"

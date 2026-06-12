@@ -102,6 +102,18 @@ export function AdminInquiriesPage() {
     setInquiries((current) => current.map((item) => (item.id === id ? { ...item, intake } : item)));
   }
 
+  async function handleMemoSave(id: string, currentIntake: InquiryIntake | null, memo: string) {
+    setError(null);
+    try {
+      const intake = await adminService.updateInquiryMemo(id, currentIntake, memo);
+      setInquiries((current) => current.map((item) => (item.id === id ? { ...item, intake } : item)));
+      setCopyFeedback("메모 저장됨");
+      window.setTimeout(() => setCopyFeedback(null), 1800);
+    } catch (memoError) {
+      setError(memoError instanceof Error ? memoError.message : "메모를 저장하지 못했습니다.");
+    }
+  }
+
   async function handleCopy(text: string, label: string) {
     try {
       await navigator.clipboard.writeText(text);
@@ -386,6 +398,11 @@ export function AdminInquiriesPage() {
                         <DetailItem label="예산" value={stringField(item.intake?.budget)} />
                         <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
                       </div>
+                      <InquiryMemoEditor
+                        key={`memo-${item.id}`}
+                        memo={item.intake?.adminMemo ?? ""}
+                        onSave={(memo) => handleMemoSave(item.id, item.intake, memo)}
+                      />
                       <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
                       {item.attachments?.length ? (
                         <div className="inquiry-attachment-grid" aria-label="첨부 사진">
@@ -455,6 +472,24 @@ function DetailItem({ label, value }: { label: string; value: string | null }) {
     <div className="admin-detail-item">
       <span>{label}</span>
       <strong>{value || "-"}</strong>
+    </div>
+  );
+}
+
+function InquiryMemoEditor({ memo, onSave }: { memo: string; onSave: (memo: string) => void }) {
+  const [draft, setDraft] = useState(memo);
+
+  return (
+    <div className="admin-memo-editor">
+      <span className="admin-memo-editor__label">관리자 메모</span>
+      <textarea
+        value={draft}
+        placeholder="응대 내용, 일정, 특이사항을 적어두세요."
+        onChange={(event) => setDraft(event.target.value)}
+      />
+      <button className="admin-status-button" type="button" disabled={draft === memo} onClick={() => onSave(draft)}>
+        메모 저장
+      </button>
     </div>
   );
 }

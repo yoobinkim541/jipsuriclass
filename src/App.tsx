@@ -41,13 +41,10 @@ import { ServicePricingPage } from "./pricing/ServicePricingPage";
 import { getServicePricingConfig, getServicePricingConfigByPricingPath } from "./pricing/registry";
 import type { ServicePricingConfig } from "./pricing/types";
 import { buildEstimateHref } from "./services/QuoteService";
+import { defaultDescription, defaultImage, getSeoConfigForPath, siteName, siteUrl, type SeoConfig } from "./seo";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();
-const siteUrl = "https://www.jipsuriclass.kr";
-const siteName = business.name;
-const defaultDescription = "서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 빠르게 안내합니다.";
-const defaultImage = `${siteUrl}/og-image.png`;
 function Redirect({ to }: { to: string }) {
   useEffect(() => {
     window.location.replace(to);
@@ -109,6 +106,9 @@ function App() {
   if (window.location.pathname.startsWith("/estimate")) {
     return <Suspense fallback={null}><EstimatePage /></Suspense>;
   }
+  if (window.location.pathname.startsWith("/portfolio")) {
+    return <PortfolioPage />;
+  }
   const pricingPageConfig = getServicePricingConfigByPricingPath(window.location.pathname);
   if (pricingPageConfig) {
     return <ServicePricingPage config={pricingPageConfig} />;
@@ -157,236 +157,6 @@ function usePageSeo(config: SeoConfig) {
     setLinkTag("canonical", `${siteUrl}${config.path}`);
     setStructuredData(config.jsonLd);
   }, [config]);
-}
-
-type SeoConfig = {
-  path: string;
-  title: string;
-  description: string;
-  image?: string;
-  noindex?: boolean;
-  jsonLd?: Record<string, unknown>[];
-};
-
-function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<typeof getLandingPageDefinition>): SeoConfig {
-  if (pathname.startsWith("/admin") || pathname.startsWith("/account") || pathname.startsWith("/mypage") || pathname.startsWith("/login")) {
-    return {
-      path: pathname,
-      title: `${siteName} | 내부 페이지`,
-      description: defaultDescription,
-      image: defaultImage,
-      noindex: true
-    };
-  }
-
-  if (pathname === "/service/electric/price") {
-    return {
-      path: "/service/electric/price",
-      title: `전기공사 가격표 | ${siteName}`,
-      description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      noindex: true,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `전기공사 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/electric/price`,
-          description: "집수리클라쓰 전기공사 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname === "/service/waterproofing-tile/price") {
-    return {
-      path: "/service/waterproofing-tile/price",
-      title: `방수·타일 가격표 | ${siteName}`,
-      description: "집수리클라쓰 방수·타일 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      noindex: true,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `방수·타일 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/waterproofing-tile/price`,
-          description: "집수리클라쓰 방수·타일 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname === "/service/waterproofing/price") {
-    return {
-      path: "/service/waterproofing/price",
-      title: `방수 보수 가격표 | ${siteName}`,
-      description: "집수리클라쓰 방수 보수 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      noindex: true,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `방수 보수 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/waterproofing/price`,
-          description: "집수리클라쓰 방수 보수 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname === "/service/tile/price") {
-    return {
-      path: "/service/tile/price",
-      title: `타일 시공·보수 가격표 | ${siteName}`,
-      description: "집수리클라쓰 타일 시공·보수 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.",
-      image: defaultImage,
-      noindex: true,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `타일 시공·보수 가격표 | ${siteName}`,
-          url: `${siteUrl}/service/tile/price`,
-          description: "집수리클라쓰 타일 시공·보수 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다."
-        }
-      ]
-    };
-  }
-
-  const registryPricingConfig = getServicePricingConfigByPricingPath(pathname);
-  if (registryPricingConfig) {
-    return {
-      path: pathname,
-      title: `${registryPricingConfig.serviceName} 가격표 | ${siteName}`,
-      description: `집수리클라쓰 ${registryPricingConfig.serviceName} 서비스의 항목별 표준 시공 단가를 확인하고, 모의 견적을 계산해보세요.`,
-      image: defaultImage,
-      noindex: true,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `${registryPricingConfig.serviceName} 가격표 | ${siteName}`,
-          url: `${siteUrl}${pathname}`,
-          description: `집수리클라쓰 ${registryPricingConfig.serviceName} 서비스의 항목별 표준 시공 단가와 모의 견적 계산기를 제공합니다.`
-        }
-      ]
-    };
-  }
-
-  if (pathname.startsWith("/estimate")) {
-    return {
-      path: "/estimate",
-      title: `견적상담 | ${siteName}`,
-      description: "사진과 증상으로 집수리·누수 복구·부분수리 견적을 빠르게 상담하는 페이지입니다.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `견적상담 | ${siteName}`,
-          url: `${siteUrl}/estimate`,
-          description: "사진과 증상으로 집수리·누수 복구·부분수리 견적을 빠르게 상담하는 페이지입니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname.startsWith("/privacy")) {
-    return {
-      path: "/privacy",
-      title: `개인정보처리방침 | ${siteName}`,
-      description: "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다.",
-      image: defaultImage,
-      noindex: true,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          name: `개인정보처리방침 | ${siteName}`,
-          url: `${siteUrl}/privacy`,
-          description: "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다."
-        }
-      ]
-    };
-  }
-
-  if (pathname.startsWith("/diagnosis")) {
-    return {
-      path: "/diagnosis",
-      title: `간편 자가진단 | ${siteName}`,
-      description: "문이 뻑뻑하거나 물이 새는 등 생활 집수리 증상을 클릭하면 원인과 다음 행동을 바로 확인할 수 있습니다.",
-      image: defaultImage,
-      jsonLd: [
-        {
-          "@context": "https://schema.org",
-          "@type": "FAQPage",
-          mainEntity: [
-            {
-              "@type": "Question",
-              name: "문이 뻑뻑해요. 어떻게 확인하나요?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "경첩 처짐, 문틀 변형, 바닥 쓸림을 먼저 확인하고, 증상이 반복되면 문수리 상담이 필요합니다."
-              }
-            },
-            {
-              "@type": "Question",
-              name: "물이 샌다. 바로 뭘 해야 하나요?",
-              acceptedAnswer: {
-                "@type": "Answer",
-                text: "전기 기기 주변이면 사용을 멈추고 물자국이 번지는 방향을 확인한 뒤 누수 상담을 받는 것이 좋습니다."
-              }
-            }
-          ]
-        }
-      ]
-    };
-  }
-
-  if (landingPage) {
-    return {
-      path: landingPage.path,
-      title: landingPage.title,
-      description: landingPage.description,
-      image: defaultImage,
-      jsonLd: buildLandingPageJsonLd(landingPage, siteUrl)
-    };
-  }
-
-  return {
-    path: "/",
-    title: `${siteName} - 클라쓰가 다른 종합 집수리`,
-    description: defaultDescription,
-    image: defaultImage,
-    jsonLd: [
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: siteName,
-        url: siteUrl,
-        description: defaultDescription
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "HomeAndConstructionBusiness",
-        name: siteName,
-        url: siteUrl,
-        telephone: business.phone,
-        image: defaultImage,
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: business.address,
-          addressCountry: "KR"
-        },
-        areaServed: business.area,
-        openingHours: business.hours,
-        sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl],
-        description: business.introduction
-      }
-    ]
-  };
 }
 
 function setMetaTag(name: string, content: string, attribute: "name" | "property" = "name") {
@@ -1646,6 +1416,147 @@ function RowHeading({
   );
 }
 
+const portfolioChips = [
+  { key: "all", label: "전체", terms: [] as string[] },
+  { key: "leak", label: "누수·방수", terms: ["누수", "방수", "결로", "곰팡이", "천장"] },
+  { key: "bath", label: "욕실", terms: ["욕실", "화장실", "타일", "변기", "세면", "줄눈", "실리콘"] },
+  { key: "kitchen", label: "주방", terms: ["주방", "싱크", "수전", "배수"] },
+  { key: "wall", label: "도배·도장", terms: ["도배", "벽지", "페인트", "도장", "몰딩", "장판"] },
+  { key: "door", label: "문·창호", terms: ["문", "도어", "현관", "방충망", "창문", "샷시", "경첩", "손잡이"] },
+  { key: "electric", label: "전기·조명", terms: ["전기", "조명", "콘센트", "스위치", "LED", "등"] }
+];
+
+function PortfolioPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [posts, setPosts] = useState<PortfolioPost[]>([]);
+  const [postSource, setPostSource] = useState<"loading" | "naver" | "fallback">("loading");
+  const [activeChip, setActiveChip] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  useEffect(() => {
+    blogPortfolioService.loadLatestPortfolioPosts().then(({ posts: loaded, source }) => {
+      setPosts(loaded);
+      setPostSource(source);
+    });
+  }, []);
+
+  const allPosts = useMemo(() => {
+    const seen = new Set<string>();
+    return [...pinnedPosts, ...posts].filter((post) => {
+      if (seen.has(post.link)) return false;
+      seen.add(post.link);
+      return true;
+    });
+  }, [posts]);
+
+  const filteredPosts = useMemo(() => {
+    if (activeChip === "all") return allPosts;
+    const chip = portfolioChips.find((item) => item.key === activeChip);
+    if (!chip) return allPosts;
+    return allPosts.filter((post) => {
+      const haystack = [post.title, post.cardTitle, post.description, ...(post.keywords ?? [])]
+        .filter(Boolean)
+        .join(" ");
+      return chip.terms.some((term) => haystack.includes(term));
+    });
+  }, [activeChip, allPosts]);
+
+  const visiblePosts = filteredPosts.slice(0, visibleCount);
+
+  return (
+    <>
+      <SiteHeader
+        menuOpen={menuOpen}
+        navLabels={defaultHomepageContent.navLabels}
+        onOpenMenu={() => setMenuOpen(true)}
+        onCloseMenu={() => setMenuOpen(false)}
+        brandHref="/"
+      />
+      <main className="portfolio-page">
+        <section className="portfolio-hero">
+          <nav className="portfolio-crumb" aria-label="현재 위치">
+            <a href="/">홈</a>
+            <span aria-hidden="true">/</span>
+            <span>현장사례</span>
+          </nav>
+          <h1>
+            대표가 직접 다녀온
+            <br />
+            현장 기록 전체.
+          </h1>
+          <p>큐레이션 시공 사례와 네이버 블로그 최신 글을 한 곳에 모았습니다. 카테고리로 좁혀 보세요.</p>
+        </section>
+
+        <section className="portfolio-grid-section" aria-label="현장사례 목록">
+          <div className="portfolio-chips" role="group" aria-label="카테고리 필터">
+            {portfolioChips.map((chip) => (
+              <button
+                key={chip.key}
+                className={activeChip === chip.key ? "portfolio-chip is-active" : "portfolio-chip"}
+                type="button"
+                aria-pressed={activeChip === chip.key}
+                onClick={() => {
+                  setActiveChip(chip.key);
+                  setVisibleCount(12);
+                }}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
+          <p className="portfolio-meta" aria-live="polite">
+            {postSource === "loading"
+              ? "블로그 글을 불러오는 중입니다…"
+              : `${filteredPosts.length}건${postSource === "naver" ? " · 네이버 블로그 실시간" : " · 큐레이션 사례"}`}
+          </p>
+
+          <div className="portfolio-grid">
+            {visiblePosts.map((post) => (
+              <a className="blog-card portfolio-card" href={post.link} target="_blank" rel="noreferrer" key={post.link}>
+                <BlogCardImage post={post} />
+                <div className="blog-card-body">
+                  <div className="blog-card-meta">
+                    <span className="naver-mark">N</span>
+                    <time>{post.date}</time>
+                  </div>
+                  <h3>{post.cardTitle ?? post.title}</h3>
+                  <div className="blog-card-summary">
+                    {(post.summary?.length ? post.summary : buildSummaryLines(post.description)).slice(0, 2).map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  </div>
+                  <span className="blog-card-link">
+                    자세히 보기 <ExternalLink size={16} />
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {!visiblePosts.length && postSource !== "loading" ? (
+            <p className="portfolio-empty">이 카테고리의 기록이 아직 없습니다. 다른 카테고리를 골라 보세요.</p>
+          ) : null}
+
+          <div className="portfolio-more">
+            {visibleCount < filteredPosts.length ? (
+              <button className="portfolio-more-button" type="button" onClick={() => setVisibleCount((count) => count + 12)}>
+                더 보기 ({filteredPosts.length - visibleCount}건 남음)
+              </button>
+            ) : (
+              <a className="portfolio-more-button" href={business.naverBlogUrl} target="_blank" rel="noreferrer">
+                네이버 블로그에서 전체 글 보기 <ExternalLink size={15} />
+              </a>
+            )}
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+      <MobileQuickCta />
+    </>
+  );
+}
+
 function SiteFooter() {
   return (
     <footer className="footer">
@@ -1654,6 +1565,9 @@ function SiteFooter() {
         {business.registrationNumber} · {business.owner} · {business.address}
       </p>
       <p>개인정보는 상담 목적 외 사용하지 않으며, 아래 정책 페이지에서 처리 방침을 확인할 수 있습니다.</p>
+      <a className="footer-admin-link" href="/portfolio">
+        현장사례 모아보기
+      </a>
       <a className="footer-admin-link" href="/privacy">
         개인정보처리방침
       </a>
