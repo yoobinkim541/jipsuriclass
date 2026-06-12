@@ -965,7 +965,7 @@ function CasesSection({
         title="대표 현장사례"
         description="실제 현장 사진과 작업 내용을 확인하세요."
         linkLabel="전체 사례 보기"
-        href={business.naverBlogUrl}
+        href="/portfolio"
         className="naver-link"
       />
       <div className="cases__carousel">
@@ -1403,13 +1403,19 @@ function RowHeading({
   href: string;
   className?: string;
 }) {
+  const isExternal = href.startsWith("http");
   return (
     <div className="section-heading row-heading">
       <div>
         <h2 id={id}>{title}</h2>
         <p>{description}</p>
       </div>
-      <a className={className} href={href} target="_blank" rel="noreferrer">
+      <a
+        className={className}
+        href={href}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noreferrer" : undefined}
+      >
         {linkLabel} <ExternalLink size={17} />
       </a>
     </div>

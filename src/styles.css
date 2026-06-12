@@ -10856,7 +10856,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   border-color: #3b5bdb;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 860px) {
   .estimator-layout {
     flex-direction: column;
   }
@@ -12084,4 +12084,18 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .portfolio-more-button:hover {
   background: var(--ink, #0b1a30);
   color: #ffffff;
+}
+
+/* 721~1023px: 플로팅 '이전' 버튼이 본문 텍스트를 덜 가리도록 아이콘 원형으로 축소 */
+@media (min-width: 721px) and (max-width: 1023px) {
+  .landing-back-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .landing-back-btn span {
+    display: none;
+  }
 }

@@ -1,5 +1,18 @@
 # Work Log
 
+## 2026-06-12 - 태블릿 마감 수정 2건 + 홈 사례 링크를 /portfolio로 연결
+
+Changed files:
+- `src/styles.css`, `src/App.tsx`, `WORK_LOG.md`
+
+Implemented behavior:
+- 검증 스위프에서 남았던 low 이슈 2건 수정: ① 랜딩 페이지 플로팅 '이전' 버튼이 768px에서 본문을 가림 → 721~1023px 구간에서 44px 아이콘 원형으로 축소(라벨 숨김). ② 모의 견적 계산기 2단 레이아웃이 768px에서 비좁음 → 1단 전환 브레이크포인트를 720px→860px로 상향.
+- 홈 '대표 현장사례'의 "전체 사례 보기" 링크를 외부 네이버 블로그에서 내부 `/portfolio`로 변경. RowHeading이 내부 링크일 때 target=_blank를 붙이지 않도록 수정.
+
+Verification:
+- Playwright 768px: 백 버튼 44×44 원형·라벨 숨김, estimator flex-direction=column·패널 전폭, 오버플로우 0px.
+- 홈 사례 링크 href=/portfolio·target 없음 확인. `npm run build` + `test:blog` 17개 통과.
+
 ## 2026-06-12 - /portfolio 현장사례 통합 페이지 신설
 
 Changed files:
