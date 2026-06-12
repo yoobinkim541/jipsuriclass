@@ -62,4 +62,10 @@ export class AdminService {
       throw error;
     }
   }
+
+  async updateInquiryMemo(id: string, currentIntake: InquiryIntake | null, memo: string) {
+    const intake: InquiryIntake = { ...(currentIntake ?? {}), adminMemo: memo };
+    await this.updateInquiryIntake(id, intake);
+    return intake;
+  }
 }
