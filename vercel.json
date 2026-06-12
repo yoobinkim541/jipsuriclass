@@ -228,10 +228,6 @@
       "destination": "/"
     },
     {
-      "source": "/service/:name/pricing",
-      "destination": "/"
-    },
-    {
       "source": "/service/:path*",
       "destination": "/service/:path*/index.html"
     },
