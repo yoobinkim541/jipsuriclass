@@ -1,5 +1,25 @@
 # Work Log
 
+## 2026-06-12 - Remaining Task Audit + Multi-Viewport Verification
+
+Changed files:
+- `full-verify.mjs`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Audited `tasks-remaining.md` against the codebase and confirmed all four tasks (blog empty-state fallback, static HTML SEO patching, jspdf dynamic import, CSS cleanup) are already implemented in commit `be325a3`.
+- Added `full-verify.mjs`, a reusable Playwright verification script that checks page load, rendered content, JS errors, console errors, and horizontal overflow for 7 key routes at mobile (390px), tablet (820px), and desktop (1440px) viewports.
+
+Verification:
+- `npm run build` passed (including `postbuild` static HTML patching).
+- `node full-verify.mjs` passed 105/105 checks across `/`, `/service/bathroom`, `/area/namyangju`, `/diagnosis`, `/estimate`, `/admin/login`, and `/admin` at all three viewports.
+- Confirmed blog fallback cards render when the Naver API is unreachable (5 cards on home, 7 on service pages).
+- Screenshot review confirmed clean layouts at all three viewports.
+
+Follow-up:
+- `/admin` renders the dashboard shell without an authenticated session (data is still protected by Supabase); consider redirecting unauthenticated visits to `/admin/login`.
+- Main JS bundle is 850 kB (262 kB gzip); further vendor chunk splitting is possible.
+
 ## 2026-05-31 - Admin Editor Studio Refresh
 
 Changed files:
