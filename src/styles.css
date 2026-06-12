@@ -279,15 +279,8 @@ textarea {
     scroll-padding-top: 76px;
   }
 
-  main.home-page > section {
-    height: calc(100svh - 76px);
-  }
-
-  main.home-page > section.section {
-    padding-block: clamp(36px, 4vh, 64px);
-  }
-
   main.home-page .hero {
+    min-height: calc(100svh - 76px);
     padding: clamp(48px, 4.5vw, 96px) clamp(32px, 2vw, 84px) 0;
   }
 
@@ -1052,24 +1045,16 @@ textarea {
 }
 
 @media (min-width: 1100px) {
-  /* ── Scroll snap: 섹션 단위로 딱딱 맞아 떨어짐 ── */
+  /* ── 자연스러운 원페이지 스크롤: 스냅 없이 히어로만 첫 화면을 채움 ── */
   html {
-    scroll-snap-type: y mandatory;
     scroll-padding-top: 68px;
   }
 
-  main.home-page > section {
-    height: calc(100svh - 68px);
-    overflow: hidden;
+  main.home-page .hero {
+    min-height: calc(100svh - 68px);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    scroll-snap-align: start;
-  }
-
-  /* .section 클래스 섹션: 수직 padding을 화면 비율로 조정 */
-  main.home-page > section.section {
-    padding-block: clamp(28px, 3.5vh, 52px);
+    overflow-x: clip; /* trust 띠 풀블리드 음수 마진이 가로 스크롤을 만들지 않게 */
   }
 
   /* ── About: 2열 그리드 복원 (flex 덮어쓰기 방지) ── */
@@ -1081,6 +1066,7 @@ textarea {
     max-width: var(--max, 1320px);
     margin-inline: auto;
     width: 100%;
+    overflow-x: clip; /* 비주얼 figure가 좁은 폭에서 그리드 밖으로 살짝 나가는 것 클리핑 */
   }
 
   /* ── Contact: 상단 헤더 + 하단 상담 카드 ── */
@@ -1107,17 +1093,6 @@ textarea {
   main.home-page .symptom-grid {
     max-width: var(--max, 1320px);
     margin-inline: auto;
-  }
-
-  /* ── Specialties: 태그 많으므로 내부 스크롤 허용 ── */
-  main.home-page section.specialties {
-    overflow-y: auto;
-  }
-
-  /* ── Office: 지도 높이 때문에 내부 스크롤 허용 ── */
-  main.home-page .office-section,
-  main.home-page section:has(.office-grid) {
-    overflow-y: auto;
   }
 
   /* ── Hero: trust band를 섹션 하단에 고정 ── */

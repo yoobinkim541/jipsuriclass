@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-06-12 - 홈 스크롤 스냅 제거: 페이지 단위 끊김 → 자연스러운 원페이지 스크롤
+
+Changed files:
+- `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 사용자 요청: 노트북·데스크탑에서 섹션 단위로 뚝뚝 끊기는 스크롤을 부드러운 연속 스크롤로 변경.
+- ≥1100px의 `html { scroll-snap-type: y mandatory }` + `main.home-page > section { height: calc(100svh - 68px); overflow: hidden; ... scroll-snap-align }` 풀페이지 스냅 메커니즘 제거. ≥1600px의 동일 고정높이 규칙도 제거.
+- 히어로만 `min-height: calc(100svh - 68px/76px)` flex로 유지해 첫 화면 임팩트 보존. 나머지 섹션은 자연 높이 + 기본 `.section` 패딩으로 복귀.
+- 고정높이 보정용이던 specialties/office `overflow-y: auto` 제거.
+- 섹션 overflow:hidden이 사라지며 드러난 가로 오버플로우 2건 수정: 히어로 trust 띠 풀블리드 음수 마진(1680px에서 30px) → hero `overflow-x: clip`, about 비주얼 figure(1100px에서 6px) → about `overflow-x: clip`.
+- `html { scroll-behavior: smooth }`는 기존 유지 — 앵커 이동도 부드럽게 동작.
+
+Verification:
+- Playwright 7개 폭(1100~1920px): scroll-snap-type=none, 가로 오버플로우 0px, 섹션 높이가 자연 분포(832/880/732/695…)로 전환 확인.
+- 1440px 스크롤 중간 지점 스크린샷으로 연속 흐름 확인. `npm run build` + `test:blog` 17개 통과. 태블릿·모바일(<1100px)은 원래 스냅이 없어 영향 없음.
+
 ## 2026-06-12 - 태블릿 마감 수정 2건 + 홈 사례 링크를 /portfolio로 연결
 
 Changed files:
