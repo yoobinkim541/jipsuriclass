@@ -1,5 +1,25 @@
 # Work Log
 
+## 2026-06-12 - SEO: 지역↔서비스 크로스링크 매트릭스 보강 + 스냅샷 재생성 스크립트
+
+Changed files:
+- `src/landingPages.ts`
+- `scripts/regenerate-snapshots.mjs` (신규)
+- `public/area/*/index.html`, `public/service/*/index.html` (31장 재생성)
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 랜딩 31장의 `relatedLinks`를 디자인 번들의 크로스링크 매트릭스 수준으로 보강: 지역→서비스 19→131개(페이지당 평균 8.2), 서비스→지역 13→90개(평균 6.0). 중복 없음, 어드민 오버라이드는 기존 병합 로직대로 우선.
+- `scripts/regenerate-snapshots.mjs` 신규: vite preview를 띄워 31개 랜딩 페이지를 렌더링한 뒤 `public/<path>/index.html` 스냅샷을 다시 굽는다(크롤러가 보는 SEO 본문이 이 스냅샷이므로 landingPages.ts 변경 시 필수). 본문이 비면 건너뛰는 가드 포함.
+- 스냅샷 31장 재생성 — 섹션·블로그 카드·이미지 수 기존과 동일, 링크 섹션만 확장 확인.
+
+Verification:
+- `npm run build` 통과, dist 산출물에서 링크 9개/7개 + JSON-LD + 페이지별 타이틀 확인.
+- `npm run test:blog` 17개 전부 통과.
+
+Follow-up:
+- 후기 섹션: 디자인 번들의 후기 6건이 실제 고객 후기인지 확인 필요 — 가짜 후기 게시는 표시광고 리스크가 있어 보류. 실제 후기 텍스트를 주시면 섹션 구현과 함께 반영.
+
 ## 2026-06-12 - SEO JSON-LD 베이크 + 가격표 SEO 복원 + 네비 수정 + 어드민 메모 (업스트림 재통합)
 
 Changed files:
