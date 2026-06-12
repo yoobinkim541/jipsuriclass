@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-06-12 - 신규 상담 텔레그램 실시간 알림 추가
+
+Changed files:
+- `api/inquiries.ts`, `.env.example`, `WORK_LOG.md`
+
+Implemented behavior:
+- 상담 접수 API(`POST /api/inquiries`)가 Supabase 저장 성공 직후 텔레그램 봇으로 즉시 알림 발송: 이름·연락처·지역·설문 요약·첨부 수·문의 내용(600자 컷) + 어드민 바로가기 링크. HTML 이스케이프 적용.
+- `TELEGRAM_BOT_TOKEN`·`TELEGRAM_CHAT_ID` 환경변수 기반 — 미설정 시 조용히 건너뛰고(기존과 동일), 발송 실패해도 try/catch로 접수 자체에는 영향 없음. 응답에 `telegramSent` 필드 추가.
+- 크론 불필요(접수 시점 직발송) — 기존 이메일(Resend) 경로는 그대로 두되 둘 다 옵셔널.
+
+Verification:
+- `npm run build` + api 파일 tsc strict 통과.
+- 실발송 테스트는 Vercel에 TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID 등록 후 가능 (BotFather 봇 생성 필요 — 사용자 액션).
+
+Follow-up:
+- 사용자: ① @BotFather로 봇 생성 → 토큰, ② 봇에게 /start 보낸 뒤 getUpdates로 chat_id 확인, ③ Vercel 환경변수 2개 등록 후 재배포.
+
 ## 2026-06-12 - 홈 스크롤 스냅 제거: 페이지 단위 끊김 → 자연스러운 원페이지 스크롤
 
 Changed files:
