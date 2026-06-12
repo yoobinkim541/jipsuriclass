@@ -1,5 +1,29 @@
 # Work Log
 
+## 2026-06-12 - Self-Hosted Web Fonts
+
+Changed files:
+- `src/main.tsx`
+- `index.html`
+- `public/service/**/index.html`, `public/area/**/index.html` (33 snapshots)
+- `package.json`, `package-lock.json`
+- `full-verify.mjs`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Replaced the Google Fonts CDN load (Inter, Noto Sans KR, JetBrains Mono) with self-hosted fonts via `@fontsource` packages, importing the same weights (Inter 400-900, Noto Sans KR 300/400/500/700/900, JetBrains Mono 400/500) in `src/main.tsx` so Vite bundles the woff2 files.
+- Removed the `fonts.googleapis.com` link tags from `index.html` and from all 33 prerendered snapshot HTML files, eliminating the external font dependency entirely.
+- Hardened `full-verify.mjs`: block service workers and abort cross-origin requests during verification so blocked external hosts (e.g. Daum postcode script in the sandbox) fail cleanly instead of producing false JS syntax errors.
+
+Verification:
+- `npm run build` passed; dist contains the bundled woff2 subsets and zero `fonts.googleapis` references.
+- `node full-verify.mjs` against the production preview build passed 105/105 checks at mobile/tablet/desktop viewports.
+- Screenshot review confirmed Noto Sans KR/Inter now render in the isolated environment (previously fell back to system fonts because the CDN was unreachable).
+- Confirmed the `/estimate` "Unexpected token '<'" page error seen mid-investigation was a sandbox artifact of the blocked Daum postcode CDN, present on the baseline build too — not a product bug.
+
+Follow-up:
+- None.
+
 ## 2026-06-12 - Remaining Task Audit + Multi-Viewport Verification
 
 Changed files:

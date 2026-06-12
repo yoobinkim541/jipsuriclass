@@ -35,7 +35,18 @@ async function run() {
   for (const vp of VIEWPORTS) {
     log(`\n=== ${vp.name} (${vp.width}x${vp.height}) ===`);
     for (const p of PAGES) {
-      const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height } });
+      const context = await browser.newContext({
+        viewport: { width: vp.width, height: vp.height },
+        serviceWorkers: "block"
+      });
+      const page = await context.newPage();
+      // Abort cross-origin requests so blocked external hosts fail cleanly
+      // instead of returning proxy HTML that triggers false JS errors.
+      await page.route(/^https?:\/\//, (route) => {
+        const url = route.request().url();
+        if (url.startsWith(BASE) || url.includes("localhost") || url.includes("127.0.0.1")) return route.continue();
+        return route.abort();
+      });
       const consoleErrors = [];
       const pageErrors = [];
       page.on("console", (msg) => {
@@ -84,7 +95,7 @@ async function run() {
       if (hasOverflow) log(`     overflow: scrollW=${overflow.scrollW} clientW=${overflow.clientW}`);
 
       await page.screenshot({ path: `${OUT}/${vp.name}-${p.name}.png`, fullPage: false }).catch(() => {});
-      await page.close();
+      await context.close();
     }
   }
 
