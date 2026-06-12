@@ -213,7 +213,7 @@
     },
     {
       "source": "/diagnosis",
-      "destination": "/"
+      "destination": "/diagnosis/index.html"
     },
     {
       "source": "/diagnosis/:path*",
@@ -221,7 +221,7 @@
     },
     {
       "source": "/estimate",
-      "destination": "/"
+      "destination": "/estimate/index.html"
     },
     {
       "source": "/service",
