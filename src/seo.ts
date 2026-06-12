@@ -143,6 +143,24 @@ export function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<t
     };
   }
 
+  if (pathname.startsWith("/portfolio")) {
+    return {
+      path: "/portfolio",
+      title: `현장사례·시공 기록 | ${siteName}`,
+      description: "집수리클라쓰가 직접 다녀온 시공 현장 기록과 네이버 블로그 최신 글을 한 곳에 모았습니다. 누수·욕실·주방·도배 사례를 카테고리별로 볼 수 있습니다.",
+      image: defaultImage,
+      jsonLd: [
+        {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: `현장사례·시공 기록 | ${siteName}`,
+          url: `${siteUrl}/portfolio`,
+          description: "집수리클라쓰의 시공 현장 기록과 블로그 사례 모음."
+        }
+      ]
+    };
+  }
+
   if (pathname.startsWith("/privacy")) {
     return {
       path: "/privacy",

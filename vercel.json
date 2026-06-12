@@ -130,6 +130,15 @@
       ]
     },
     {
+      "source": "/portfolio",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/service",
       "headers": [
         {
@@ -222,6 +231,10 @@
     {
       "source": "/estimate",
       "destination": "/estimate/index.html"
+    },
+    {
+      "source": "/portfolio",
+      "destination": "/portfolio/index.html"
     },
     {
       "source": "/service",

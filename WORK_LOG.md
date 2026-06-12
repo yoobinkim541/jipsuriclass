@@ -1,5 +1,23 @@
 # Work Log
 
+## 2026-06-12 - /portfolio 현장사례 통합 페이지 신설
+
+Changed files:
+- `src/App.tsx`, `src/seo.ts`, `src/styles.css`
+- `scripts/patch-static-html.mjs`, `vercel.json`, `public/sitemap.xml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 디자인 번들 portfolio.html 기반 `/portfolio` 페이지: 큐레이션 사례(pinnedPosts) + 네이버 블로그 실시간 글을 링크 기준 중복 제거 후 통합 그리드(3/2/1열 반응형)로 표시.
+- 카테고리 칩 필터 7종(전체·누수방수·욕실·주방·도배도장·문창호·전기조명) — 제목·요약·키워드 매칭. "더 보기" 페이지네이션(12개 단위), 끝까지 보면 네이버 블로그 전체 링크.
+- 기존 SiteHeader/SiteFooter/MobileQuickCta/BlogCardImage 재사용 (App.tsx 내 컨벤션 유지).
+- SEO: seo.ts에 CollectionPage JSON-LD 블록, 사이트맵 47번째 URL, 정적 생성(GENERATED_PAGES) + vercel 리라이트/no-cache 헤더. 푸터에 전 페이지 → /portfolio 내부 링크 추가.
+
+Verification:
+- `npm run build` 통과, dist/portfolio/index.html: 고유 타이틀·canonical·JSON-LD·index,follow 확인.
+- Playwright 375/768/1280px: 카드 렌더·오버플로우 0·콘솔에러 없음, 욕실 칩 필터 11→5건 동작.
+- `npm run test:blog` 17개 통과.
+
 ## 2026-06-12 - SEO: 지역↔서비스 크로스링크 매트릭스 보강 + 스냅샷 재생성 스크립트
 
 Changed files:

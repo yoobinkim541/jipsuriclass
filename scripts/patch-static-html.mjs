@@ -17,7 +17,8 @@ const GENERATED_PAGES = [
   "/service/paint/pricing",
   "/service/exterior/pricing",
   "/diagnosis",
-  "/estimate"
+  "/estimate",
+  "/portfolio"
 ];
 
 const SITE_URL = "https://www.jipsuriclass.kr";

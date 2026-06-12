@@ -106,6 +106,9 @@ function App() {
   if (window.location.pathname.startsWith("/estimate")) {
     return <Suspense fallback={null}><EstimatePage /></Suspense>;
   }
+  if (window.location.pathname.startsWith("/portfolio")) {
+    return <PortfolioPage />;
+  }
   const pricingPageConfig = getServicePricingConfigByPricingPath(window.location.pathname);
   if (pricingPageConfig) {
     return <ServicePricingPage config={pricingPageConfig} />;
@@ -1413,6 +1416,147 @@ function RowHeading({
   );
 }
 
+const portfolioChips = [
+  { key: "all", label: "전체", terms: [] as string[] },
+  { key: "leak", label: "누수·방수", terms: ["누수", "방수", "결로", "곰팡이", "천장"] },
+  { key: "bath", label: "욕실", terms: ["욕실", "화장실", "타일", "변기", "세면", "줄눈", "실리콘"] },
+  { key: "kitchen", label: "주방", terms: ["주방", "싱크", "수전", "배수"] },
+  { key: "wall", label: "도배·도장", terms: ["도배", "벽지", "페인트", "도장", "몰딩", "장판"] },
+  { key: "door", label: "문·창호", terms: ["문", "도어", "현관", "방충망", "창문", "샷시", "경첩", "손잡이"] },
+  { key: "electric", label: "전기·조명", terms: ["전기", "조명", "콘센트", "스위치", "LED", "등"] }
+];
+
+function PortfolioPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [posts, setPosts] = useState<PortfolioPost[]>([]);
+  const [postSource, setPostSource] = useState<"loading" | "naver" | "fallback">("loading");
+  const [activeChip, setActiveChip] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(12);
+
+  useEffect(() => {
+    blogPortfolioService.loadLatestPortfolioPosts().then(({ posts: loaded, source }) => {
+      setPosts(loaded);
+      setPostSource(source);
+    });
+  }, []);
+
+  const allPosts = useMemo(() => {
+    const seen = new Set<string>();
+    return [...pinnedPosts, ...posts].filter((post) => {
+      if (seen.has(post.link)) return false;
+      seen.add(post.link);
+      return true;
+    });
+  }, [posts]);
+
+  const filteredPosts = useMemo(() => {
+    if (activeChip === "all") return allPosts;
+    const chip = portfolioChips.find((item) => item.key === activeChip);
+    if (!chip) return allPosts;
+    return allPosts.filter((post) => {
+      const haystack = [post.title, post.cardTitle, post.description, ...(post.keywords ?? [])]
+        .filter(Boolean)
+        .join(" ");
+      return chip.terms.some((term) => haystack.includes(term));
+    });
+  }, [activeChip, allPosts]);
+
+  const visiblePosts = filteredPosts.slice(0, visibleCount);
+
+  return (
+    <>
+      <SiteHeader
+        menuOpen={menuOpen}
+        navLabels={defaultHomepageContent.navLabels}
+        onOpenMenu={() => setMenuOpen(true)}
+        onCloseMenu={() => setMenuOpen(false)}
+        brandHref="/"
+      />
+      <main className="portfolio-page">
+        <section className="portfolio-hero">
+          <nav className="portfolio-crumb" aria-label="현재 위치">
+            <a href="/">홈</a>
+            <span aria-hidden="true">/</span>
+            <span>현장사례</span>
+          </nav>
+          <h1>
+            대표가 직접 다녀온
+            <br />
+            현장 기록 전체.
+          </h1>
+          <p>큐레이션 시공 사례와 네이버 블로그 최신 글을 한 곳에 모았습니다. 카테고리로 좁혀 보세요.</p>
+        </section>
+
+        <section className="portfolio-grid-section" aria-label="현장사례 목록">
+          <div className="portfolio-chips" role="group" aria-label="카테고리 필터">
+            {portfolioChips.map((chip) => (
+              <button
+                key={chip.key}
+                className={activeChip === chip.key ? "portfolio-chip is-active" : "portfolio-chip"}
+                type="button"
+                aria-pressed={activeChip === chip.key}
+                onClick={() => {
+                  setActiveChip(chip.key);
+                  setVisibleCount(12);
+                }}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
+
+          <p className="portfolio-meta" aria-live="polite">
+            {postSource === "loading"
+              ? "블로그 글을 불러오는 중입니다…"
+              : `${filteredPosts.length}건${postSource === "naver" ? " · 네이버 블로그 실시간" : " · 큐레이션 사례"}`}
+          </p>
+
+          <div className="portfolio-grid">
+            {visiblePosts.map((post) => (
+              <a className="blog-card portfolio-card" href={post.link} target="_blank" rel="noreferrer" key={post.link}>
+                <BlogCardImage post={post} />
+                <div className="blog-card-body">
+                  <div className="blog-card-meta">
+                    <span className="naver-mark">N</span>
+                    <time>{post.date}</time>
+                  </div>
+                  <h3>{post.cardTitle ?? post.title}</h3>
+                  <div className="blog-card-summary">
+                    {(post.summary?.length ? post.summary : buildSummaryLines(post.description)).slice(0, 2).map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                  </div>
+                  <span className="blog-card-link">
+                    자세히 보기 <ExternalLink size={16} />
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {!visiblePosts.length && postSource !== "loading" ? (
+            <p className="portfolio-empty">이 카테고리의 기록이 아직 없습니다. 다른 카테고리를 골라 보세요.</p>
+          ) : null}
+
+          <div className="portfolio-more">
+            {visibleCount < filteredPosts.length ? (
+              <button className="portfolio-more-button" type="button" onClick={() => setVisibleCount((count) => count + 12)}>
+                더 보기 ({filteredPosts.length - visibleCount}건 남음)
+              </button>
+            ) : (
+              <a className="portfolio-more-button" href={business.naverBlogUrl} target="_blank" rel="noreferrer">
+                네이버 블로그에서 전체 글 보기 <ExternalLink size={15} />
+              </a>
+            )}
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+      <MobileQuickCta />
+    </>
+  );
+}
+
 function SiteFooter() {
   return (
     <footer className="footer">
@@ -1421,6 +1565,9 @@ function SiteFooter() {
         {business.registrationNumber} · {business.owner} · {business.address}
       </p>
       <p>개인정보는 상담 목적 외 사용하지 않으며, 아래 정책 페이지에서 처리 방침을 확인할 수 있습니다.</p>
+      <a className="footer-admin-link" href="/portfolio">
+        현장사례 모아보기
+      </a>
       <a className="footer-admin-link" href="/privacy">
         개인정보처리방침
       </a>
