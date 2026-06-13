@@ -11,6 +11,9 @@
     "test:blog": "playwright test"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/noto-sans-kr": "^5.2.9",
     "@supabase/supabase-js": "^2.106.1",
     "@vercel/node": "^5.5.17",
     "@vitejs/plugin-react": "^6.0.2",

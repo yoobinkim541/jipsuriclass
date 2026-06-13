@@ -1,5 +1,49 @@
 # Work Log
 
+## 2026-06-12 - Self-Hosted Web Fonts
+
+Changed files:
+- `src/main.tsx`
+- `index.html`
+- `public/service/**/index.html`, `public/area/**/index.html` (33 snapshots)
+- `package.json`, `package-lock.json`
+- `full-verify.mjs`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Replaced the Google Fonts CDN load (Inter, Noto Sans KR, JetBrains Mono) with self-hosted fonts via `@fontsource` packages, importing the same weights (Inter 400-900, Noto Sans KR 300/400/500/700/900, JetBrains Mono 400/500) in `src/main.tsx` so Vite bundles the woff2 files.
+- Removed the `fonts.googleapis.com` link tags from `index.html` and from all 33 prerendered snapshot HTML files, eliminating the external font dependency entirely.
+- Hardened `full-verify.mjs`: block service workers and abort cross-origin requests during verification so blocked external hosts (e.g. Daum postcode script in the sandbox) fail cleanly instead of producing false JS syntax errors.
+
+Verification:
+- `npm run build` passed; dist contains the bundled woff2 subsets and zero `fonts.googleapis` references.
+- `node full-verify.mjs` against the production preview build passed 105/105 checks at mobile/tablet/desktop viewports.
+- Screenshot review confirmed Noto Sans KR/Inter now render in the isolated environment (previously fell back to system fonts because the CDN was unreachable).
+- Confirmed the `/estimate` "Unexpected token '<'" page error seen mid-investigation was a sandbox artifact of the blocked Daum postcode CDN, present on the baseline build too — not a product bug.
+
+Follow-up:
+- None.
+
+## 2026-06-12 - Remaining Task Audit + Multi-Viewport Verification
+
+Changed files:
+- `full-verify.mjs`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Audited `tasks-remaining.md` against the codebase and confirmed all four tasks (blog empty-state fallback, static HTML SEO patching, jspdf dynamic import, CSS cleanup) are already implemented in commit `be325a3`.
+- Added `full-verify.mjs`, a reusable Playwright verification script that checks page load, rendered content, JS errors, console errors, and horizontal overflow for 7 key routes at mobile (390px), tablet (820px), and desktop (1440px) viewports.
+
+Verification:
+- `npm run build` passed (including `postbuild` static HTML patching).
+- `node full-verify.mjs` passed 105/105 checks across `/`, `/service/bathroom`, `/area/namyangju`, `/diagnosis`, `/estimate`, `/admin/login`, and `/admin` at all three viewports.
+- Confirmed blog fallback cards render when the Naver API is unreachable (5 cards on home, 7 on service pages).
+- Screenshot review confirmed clean layouts at all three viewports.
+
+Follow-up:
+- `/admin` renders the dashboard shell without an authenticated session (data is still protected by Supabase); consider redirecting unauthenticated visits to `/admin/login`.
+- Main JS bundle is 850 kB (262 kB gzip); further vendor chunk splitting is possible.
+
 ## 2026-06-12 - 신규 상담 텔레그램 실시간 알림 추가
 
 Changed files:
