@@ -15,6 +15,8 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabasePublishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const resendApiKey = process.env.RESEND_API_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "POST") {
@@ -83,6 +85,25 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
+  let telegramSent = false;
+  if (telegramBotToken && telegramChatId) {
+    try {
+      const telegramResponse = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: buildTelegramText({ name, phone, serviceArea, message, userEmail, attachments, intake }),
+          parse_mode: "HTML",
+          disable_web_page_preview: true
+        })
+      });
+      telegramSent = telegramResponse.ok;
+    } catch {
+      telegramSent = false;
+    }
+  }
+
   let emailSent = false;
   if (resendApiKey && adminEmail) {
     const emailResponse = await fetch("https://api.resend.com/emails", {
@@ -102,7 +123,63 @@ export default async function handler(request: VercelRequest, response: VercelRe
     emailSent = emailResponse.ok;
   }
 
-  response.status(200).json({ ok: true, emailSent });
+  response.status(200).json({ ok: true, emailSent, telegramSent });
+}
+
+function buildTelegramText(input: {
+  name: string;
+  phone: string;
+  serviceArea: string;
+  message: string;
+  userEmail: string | null;
+  attachments: Array<{ name: string; url: string; type: string }>;
+  intake: Record<string, unknown>;
+}) {
+  const lines = [
+    "🔔 <b>새 상담 요청</b>",
+    "",
+    `👤 이름: ${escapeHtml(input.name)}`,
+    `📞 연락처: ${escapeHtml(input.phone)}`,
+    `📍 지역: ${escapeHtml(input.serviceArea || "-")}`
+  ];
+
+  if (input.userEmail) {
+    lines.push(`✉️ 이메일: ${escapeHtml(input.userEmail)}`);
+  }
+
+  const summary = formatIntakePlain(input.intake);
+  if (summary) {
+    lines.push("", "📋 설문 요약", summary);
+  }
+
+  if (input.attachments.length) {
+    lines.push("", `📷 첨부 사진 ${input.attachments.length}장`);
+  }
+
+  const trimmedMessage = input.message.length > 600 ? `${input.message.slice(0, 600)}…` : input.message;
+  lines.push("", "📝 문의 내용", escapeHtml(trimmedMessage));
+  lines.push("", '👉 <a href="https://www.jipsuriclass.kr/admin/inquiries">어드민에서 확인</a>');
+
+  return lines.join("\n");
+}
+
+function formatIntakePlain(intake: Record<string, unknown>) {
+  const addressParts = [intake.postalCode, intake.address, intake.detailAddress]
+    .filter((part): part is string => typeof part === "string" && part.trim().length > 0);
+  const address = addressParts.join(" ").trim();
+
+  return [
+    ["공간 유형", intake.spaceType],
+    ["면적", intake.areaBand],
+    ["거주 상태", intake.propertyStatus],
+    ["수리 이유", intake.reason],
+    ["예산", intake.budget],
+    ["착수 시기", intake.startTiming],
+    ["주소", address || undefined]
+  ]
+    .filter(([, value]) => typeof value === "string" && (value as string).trim())
+    .map(([label, value]) => `· ${label}: ${escapeHtml(String(value))}`)
+    .join("\n");
 }
 
 function buildEmailHtml(input: {

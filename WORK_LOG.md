@@ -44,6 +44,53 @@ Follow-up:
 - `/admin` renders the dashboard shell without an authenticated session (data is still protected by Supabase); consider redirecting unauthenticated visits to `/admin/login`.
 - Main JS bundle is 850 kB (262 kB gzip); further vendor chunk splitting is possible.
 
+## 2026-06-12 - 신규 상담 텔레그램 실시간 알림 추가
+
+Changed files:
+- `api/inquiries.ts`, `.env.example`, `WORK_LOG.md`
+
+Implemented behavior:
+- 상담 접수 API(`POST /api/inquiries`)가 Supabase 저장 성공 직후 텔레그램 봇으로 즉시 알림 발송: 이름·연락처·지역·설문 요약·첨부 수·문의 내용(600자 컷) + 어드민 바로가기 링크. HTML 이스케이프 적용.
+- `TELEGRAM_BOT_TOKEN`·`TELEGRAM_CHAT_ID` 환경변수 기반 — 미설정 시 조용히 건너뛰고(기존과 동일), 발송 실패해도 try/catch로 접수 자체에는 영향 없음. 응답에 `telegramSent` 필드 추가.
+- 크론 불필요(접수 시점 직발송) — 기존 이메일(Resend) 경로는 그대로 두되 둘 다 옵셔널.
+
+Verification:
+- `npm run build` + api 파일 tsc strict 통과.
+- 실발송 테스트는 Vercel에 TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID 등록 후 가능 (BotFather 봇 생성 필요 — 사용자 액션).
+
+Follow-up:
+- 사용자: ① @BotFather로 봇 생성 → 토큰, ② 봇에게 /start 보낸 뒤 getUpdates로 chat_id 확인, ③ Vercel 환경변수 2개 등록 후 재배포.
+
+## 2026-06-12 - 홈 스크롤 스냅 제거: 페이지 단위 끊김 → 자연스러운 원페이지 스크롤
+
+Changed files:
+- `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 사용자 요청: 노트북·데스크탑에서 섹션 단위로 뚝뚝 끊기는 스크롤을 부드러운 연속 스크롤로 변경.
+- ≥1100px의 `html { scroll-snap-type: y mandatory }` + `main.home-page > section { height: calc(100svh - 68px); overflow: hidden; ... scroll-snap-align }` 풀페이지 스냅 메커니즘 제거. ≥1600px의 동일 고정높이 규칙도 제거.
+- 히어로만 `min-height: calc(100svh - 68px/76px)` flex로 유지해 첫 화면 임팩트 보존. 나머지 섹션은 자연 높이 + 기본 `.section` 패딩으로 복귀.
+- 고정높이 보정용이던 specialties/office `overflow-y: auto` 제거.
+- 섹션 overflow:hidden이 사라지며 드러난 가로 오버플로우 2건 수정: 히어로 trust 띠 풀블리드 음수 마진(1680px에서 30px) → hero `overflow-x: clip`, about 비주얼 figure(1100px에서 6px) → about `overflow-x: clip`.
+- `html { scroll-behavior: smooth }`는 기존 유지 — 앵커 이동도 부드럽게 동작.
+
+Verification:
+- Playwright 7개 폭(1100~1920px): scroll-snap-type=none, 가로 오버플로우 0px, 섹션 높이가 자연 분포(832/880/732/695…)로 전환 확인.
+- 1440px 스크롤 중간 지점 스크린샷으로 연속 흐름 확인. `npm run build` + `test:blog` 17개 통과. 태블릿·모바일(<1100px)은 원래 스냅이 없어 영향 없음.
+
+## 2026-06-12 - 태블릿 마감 수정 2건 + 홈 사례 링크를 /portfolio로 연결
+
+Changed files:
+- `src/styles.css`, `src/App.tsx`, `WORK_LOG.md`
+
+Implemented behavior:
+- 검증 스위프에서 남았던 low 이슈 2건 수정: ① 랜딩 페이지 플로팅 '이전' 버튼이 768px에서 본문을 가림 → 721~1023px 구간에서 44px 아이콘 원형으로 축소(라벨 숨김). ② 모의 견적 계산기 2단 레이아웃이 768px에서 비좁음 → 1단 전환 브레이크포인트를 720px→860px로 상향.
+- 홈 '대표 현장사례'의 "전체 사례 보기" 링크를 외부 네이버 블로그에서 내부 `/portfolio`로 변경. RowHeading이 내부 링크일 때 target=_blank를 붙이지 않도록 수정.
+
+Verification:
+- Playwright 768px: 백 버튼 44×44 원형·라벨 숨김, estimator flex-direction=column·패널 전폭, 오버플로우 0px.
+- 홈 사례 링크 href=/portfolio·target 없음 확인. `npm run build` + `test:blog` 17개 통과.
+
 ## 2026-06-12 - /portfolio 현장사례 통합 페이지 신설
 
 Changed files:
