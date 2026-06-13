@@ -1,0 +1,27 @@
+---
+/**
+ * /privacy — Phase 0 검증용 첫 정적 페이지.
+ * PrivacyPolicyPage(.tsx)를 client 지시어 없이 렌더 → 빌드 타임 정적 HTML, JS 0.
+ * SEO 값은 기존 getSeoConfigForPath('/privacy')와 동일(noindex 유지).
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Seo from "../components/seo/Seo.astro";
+import { PrivacyPolicyPage } from "../privacy/PrivacyPolicyPage";
+
+const siteUrl = "https://www.jipsuriclass.kr";
+const title = "개인정보처리방침 | 집수리클라쓰";
+const description = "집수리클라쓰의 개인정보 수집, 이용, 보관, 제3자 제공 기준을 확인할 수 있습니다.";
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: title,
+    url: `${siteUrl}/privacy`,
+    description
+  }
+];
+---
+<BaseLayout>
+  <Seo slot="head" title={title} description={description} path="/privacy" noindex={true} jsonLd={jsonLd} />
+  <PrivacyPolicyPage />
+</BaseLayout>
