@@ -1,5 +1,49 @@
 # Work Log
 
+## 2026-06-13 - 비로그인 어드민 접근 시 로그인 리다이렉트
+
+Changed files:
+- `src/lib/supabaseClient.ts`
+- `src/admin/useAdminSession.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 비로그인 방문자가 `/admin/inquiries`·`/admin/analytics`·`/admin/editor`에 접근하면 세션 확인이 끝난 뒤 `/admin/login`으로 `window.location.replace` 리다이렉트. (데이터는 Supabase RLS로 이미 보호되지만, 빈 대시보드 셸 노출을 막는 UX 개선.)
+- 가드 조건: `세션 로딩 완료 && 세션 없음 && Supabase 설정됨`. Supabase 미설정(개발/샌드박스)에서는 리다이렉트하지 않고 기존처럼 "not configured" 안내를 띄움 → 로그인 페이지로 무의미하게 보내지 않음.
+- `supabaseClient.ts`에 `isSupabaseConfigured` 플래그 추가. 리다이렉트 로직은 세 보호 페이지가 공유하는 `useAdminSession` 훅에 한 곳으로 배치(로그인 페이지는 이 훅을 쓰지 않아 리다이렉트 루프 없음).
+
+Verification:
+- `npm run build` 통과.
+- 더미 Supabase 설정으로 빌드해 Playwright로 확인: 비로그인 상태에서 inquiries/analytics/editor → `/admin/login` 리다이렉트, 로그인 페이지는 그대로 유지(루프 없음).
+- 미설정 빌드에서 `admin-review.mjs` 90/90 통과(기존 동작 회귀 없음). 커밋 산출물에 더미 설정 누출 없음 확인.
+
+Follow-up:
+- None.
+
+## 2026-06-13 - 어드민 반응형 검수 + 모바일/태블릿 레이아웃 수정
+
+Changed files:
+- `src/admin-panel.css`
+- `src/styles.css`
+- `src/admin/AdminInquiriesPage.tsx`, `src/admin/AdminAnalyticsPage.tsx`, `src/admin/AdminEditorPage.tsx`
+- `admin-review.mjs` (신규)
+- `WORK_LOG.md`
+
+Implemented behavior:
+- **사이드바 캐스케이드 버그 수정**: `@media (max-width:1023px)`의 `.admin-side { display:none }`이 그 뒤에 오는 무조건 규칙 `.admin-side { display:flex }`에 가려져(같은 명시도 → 나중 규칙 승) 모바일/태블릿에서 사이드바가 항상 표시되고 세로 전체(100dvh)를 차지해 실제 콘텐츠를 한 화면 아래로 밀어내던 문제. 사이드바 기본 규칙 *뒤에* 오는 미디어 블록을 추가해 ≤1023px에서 사이드바를 상단 가로 스크롤 내비게이션 스트립으로 전환(static 위치, auto 높이, 그룹 라벨·푸터 숨김).
+- **헤더 정리**: ≤1023px에서 브랜드명 `white-space:nowrap`(글자 단위 줄바꿈 방지), ≤560px에서 `관리자` 배지·사용자 메타 텍스트 숨김으로 우측 컨트롤 폭 확보.
+- **액션 버튼 줄바꿈 수정**: 공유 버튼 규칙(`.admin-ghost-button/.admin-primary-button/.admin-filter/.admin-status-button`)에 `white-space:nowrap` + `flex-shrink:0` 추가.
+- **ghost 버튼 라벨 패턴 정합**: ≤720px에서 ghost 버튼을 36px 아이콘 정사각형으로 만드는 기존 디자인 규칙은 텍스트를 `.admin-btn-label`로 감싸야 동작하는데, 신규 분리 페이지들의 CSV 내보내기/새로고침/동기화 버튼이 맨텍스트라 36px 박스에서 잘리던 문제 → 세 버튼 텍스트를 `.admin-btn-label`로 감쌈(파일 내 기존 패턴과 동일).
+- `admin-review.mjs` 신규: 어드민 5개 라우트(`/admin` 리다이렉트·login·inquiries·analytics·editor)를 모바일/태블릿/데스크톱에서 로드·렌더·콘솔에러·가로오버플로우 검사 + 스크린샷.
+
+Verification:
+- `npm run build` 통과.
+- `node admin-review.mjs` 90/90 통과(3 뷰포트 × 5 라우트 × 6 체크).
+- 스크린샷 검수: 모바일/태블릿에서 네비가 상단 가로 스트립으로 전환되고 KPI·필터·에디터 콘텐츠가 즉시 노출, 로고·버튼 텍스트 깨짐 없음 확인.
+
+Follow-up:
+- 비로그인 `/admin` 접근 시 대시보드 셸 노출(데이터는 Supabase RLS 보호) → 로그인 리다이렉트는 별도 작업으로 남김.
+
 ## 2026-06-12 - Self-Hosted Web Fonts
 
 Changed files:

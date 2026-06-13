@@ -5897,12 +5897,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   border-radius: 8px;
   cursor: pointer;
   display: inline-flex;
+  flex-shrink: 0;
   font-size: 14px;
   font-weight: 800;
   gap: 8px;
   justify-content: center;
   min-height: 40px;
   padding: 0 14px;
+  white-space: nowrap;
 }
 
 .admin-ghost-button,

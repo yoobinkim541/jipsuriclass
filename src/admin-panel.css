@@ -166,7 +166,11 @@
   .admin-top { grid-template-columns: 1fr auto; }
   .admin-top__center { display: none; }
   .admin-shell-grid { grid-template-columns: 1fr; }
-  .admin-side { display: none; }
+  .admin-brand__name { white-space: nowrap; }
+}
+@media (max-width: 560px) {
+  .admin-top__pill { display: none; }
+  .admin-top__user-meta { display: none; }
 }
 
 /* ─ 사이드바 ─ */
@@ -220,6 +224,27 @@
 @keyframes admin-pulse {
   0%, 100% { box-shadow: 0 0 0 4px rgba(47,122,77,.18); }
   50%       { box-shadow: 0 0 0 7px rgba(47,122,77,.07); }
+}
+
+/* 태블릿·모바일: 사이드바를 상단 가로 내비게이션 스트립으로 전환 */
+@media (max-width: 1023px) {
+  .admin-side {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--hair);
+    overflow-x: auto;
+  }
+  .admin-nav { flex-direction: row; align-items: center; gap: 8px; }
+  .admin-nav > div { display: inline-flex; align-items: center; gap: 6px; }
+  .admin-nav__group { display: none; }
+  .admin-nav__item { padding: 8px 12px; white-space: nowrap; }
+  .admin-nav__count { margin-left: 6px; }
+  .admin-side__foot { display: none; }
 }
 
 /* ─ 메인 ─ */
