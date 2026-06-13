@@ -9,3 +9,6 @@ const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
  */
 export const supabase =
   supabaseUrl && supabasePublishableKey ? createClient(supabaseUrl, supabasePublishableKey) : null;
+
+/** True when Supabase auth is configured, so admin routes can enforce login. */
+export const isSupabaseConfigured = supabase !== null;

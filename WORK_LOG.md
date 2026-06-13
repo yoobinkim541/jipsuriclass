@@ -1,5 +1,25 @@
 # Work Log
 
+## 2026-06-13 - 비로그인 어드민 접근 시 로그인 리다이렉트
+
+Changed files:
+- `src/lib/supabaseClient.ts`
+- `src/admin/useAdminSession.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 비로그인 방문자가 `/admin/inquiries`·`/admin/analytics`·`/admin/editor`에 접근하면 세션 확인이 끝난 뒤 `/admin/login`으로 `window.location.replace` 리다이렉트. (데이터는 Supabase RLS로 이미 보호되지만, 빈 대시보드 셸 노출을 막는 UX 개선.)
+- 가드 조건: `세션 로딩 완료 && 세션 없음 && Supabase 설정됨`. Supabase 미설정(개발/샌드박스)에서는 리다이렉트하지 않고 기존처럼 "not configured" 안내를 띄움 → 로그인 페이지로 무의미하게 보내지 않음.
+- `supabaseClient.ts`에 `isSupabaseConfigured` 플래그 추가. 리다이렉트 로직은 세 보호 페이지가 공유하는 `useAdminSession` 훅에 한 곳으로 배치(로그인 페이지는 이 훅을 쓰지 않아 리다이렉트 루프 없음).
+
+Verification:
+- `npm run build` 통과.
+- 더미 Supabase 설정으로 빌드해 Playwright로 확인: 비로그인 상태에서 inquiries/analytics/editor → `/admin/login` 리다이렉트, 로그인 페이지는 그대로 유지(루프 없음).
+- 미설정 빌드에서 `admin-review.mjs` 90/90 통과(기존 동작 회귀 없음). 커밋 산출물에 더미 설정 누출 없음 확인.
+
+Follow-up:
+- None.
+
 ## 2026-06-13 - 어드민 반응형 검수 + 모바일/태블릿 레이아웃 수정
 
 Changed files:
