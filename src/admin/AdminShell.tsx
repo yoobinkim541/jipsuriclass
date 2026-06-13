@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   BarChart3,
   Bell,
@@ -10,7 +10,12 @@ import {
   Search,
 } from "lucide-react";
 import { business } from "../data";
+import { AdminService } from "../services/AdminService";
+import type { InquiryRow } from "../types";
+import { formatTime } from "./adminUtils";
 import "../admin-panel.css";
+
+const adminService = new AdminService();
 
 type AdminShellProps = {
   pageMeta: {
@@ -91,10 +96,7 @@ export function AdminShell({
         </div>
 
         <div className="admin-top__right">
-          <button className="admin-top__btn" type="button" aria-label="알림">
-            <Bell size={16} />
-            <span className="admin-top__dot" />
-          </button>
+          <NotificationBell sessionEmail={sessionEmail} />
           <a className="admin-top__btn" href="/" target="_blank" rel="noreferrer" aria-label="사이트 새 창 열기">
             <ExternalLink size={16} />
           </a>
@@ -180,6 +182,89 @@ export function AdminShell({
           {children}
         </main>
       </div>
+    </div>
+  );
+}
+
+function NotificationBell({ sessionEmail }: { sessionEmail: string | null }) {
+  const [items, setItems] = useState<InquiryRow[]>([]);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!sessionEmail) {
+      setItems([]);
+      return;
+    }
+    let cancelled = false;
+    adminService
+      .listInquiries()
+      .then((rows) => {
+        if (!cancelled) setItems(rows.filter((row) => row.status === "new").slice(0, 6));
+      })
+      .catch(() => {
+        if (!cancelled) setItems([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionEmail]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [open]);
+
+  const count = items.length;
+
+  return (
+    <div className="admin-notif">
+      <button
+        className="admin-top__btn"
+        type="button"
+        aria-label={`알림 ${count}건`}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        <Bell size={16} />
+        {count > 0 && <span className="admin-top__dot" />}
+      </button>
+      {open && (
+        <>
+          <div className="admin-notif__overlay" onClick={() => setOpen(false)} aria-hidden="true" />
+          <div className="admin-notif__panel" role="menu" aria-label="새 상담 알림">
+            <div className="admin-notif__head">
+              <strong>새 상담 {count}건</strong>
+              <a href="/admin/inquiries" onClick={() => setOpen(false)}>
+                모두 보기
+              </a>
+            </div>
+            {count > 0 ? (
+              <ul className="admin-notif__list">
+                {items.map((item) => (
+                  <li key={item.id}>
+                    <a href="/admin/inquiries" role="menuitem" onClick={() => setOpen(false)}>
+                      <span className="admin-notif__row">
+                        <span className="admin-notif__name">{item.name}</span>
+                        <span className="admin-notif__time">{formatTime(item.created_at)}</span>
+                      </span>
+                      <span className="admin-notif__meta">
+                        {item.service_area || "지역 미입력"} · {item.phone}
+                      </span>
+                      {item.message ? <span className="admin-notif__msg">{item.message}</span> : null}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="admin-notif__empty">새 상담이 없습니다.</p>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
