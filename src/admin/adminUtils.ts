@@ -4,7 +4,7 @@ export type SortMode = "newest" | "oldest" | "status" | "name";
 export type TimeFilter = "all" | "today" | "7d" | "30d";
 export type InquiryFilter = "all" | "pending" | InquiryStatus;
 
-export const statusOrder: Array<InquiryFilter> = ["all", "pending", "new", "contacted", "done", "spam"];
+export const statusOrder: Array<InquiryFilter> = ["all", "pending", "new", "contacted", "quoted", "active", "done", "spam"];
 export const sortOrder: Array<{ value: SortMode; label: string }> = [
   { value: "newest", label: "최신순" },
   { value: "oldest", label: "오래된순" },
@@ -19,7 +19,7 @@ export function buildAnalytics(inquiries: InquiryRow[]) {
       acc[item.status] += 1;
       return acc;
     },
-    { new: 0, contacted: 0, done: 0, spam: 0 }
+    { new: 0, contacted: 0, quoted: 0, active: 0, done: 0, spam: 0 }
   );
 
   const now = new Date();
@@ -112,6 +112,8 @@ export function statusLabel(status: InquiryFilter) {
     pending: "미처리",
     new: "신규",
     contacted: "연락",
+    quoted: "견적",
+    active: "진행",
     done: "완료",
     spam: "스팸"
   };
@@ -124,12 +126,16 @@ export function statusSortValue(status: InquiryStatus) {
       return 0;
     case "contacted":
       return 1;
-    case "done":
+    case "quoted":
       return 2;
-    case "spam":
+    case "active":
       return 3;
-    default:
+    case "done":
       return 4;
+    case "spam":
+      return 5;
+    default:
+      return 6;
   }
 }
 

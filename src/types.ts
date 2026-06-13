@@ -362,7 +362,7 @@ export type InquiryAttachment = {
   type: string;
 };
 
-export type InquiryStatus = "new" | "contacted" | "done" | "spam";
+export type InquiryStatus = "new" | "contacted" | "quoted" | "active" | "done" | "spam";
 
 export type InquiryRow = {
   id: string;
