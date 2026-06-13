@@ -6826,6 +6826,16 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   color: #b91c1c;
 }
 
+.status-quoted {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
+.status-active {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
 .admin-empty {
   align-items: center;
   background: var(--cream-2, #f1ece1);
@@ -11744,6 +11754,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .status-contacted { background: rgba(59, 91, 219, 0.12); color: #3553b7; }
 .status-done { background: rgba(47, 122, 77, 0.14); color: #2f7a4d; }
 .status-spam { background: rgba(185, 28, 28, 0.12); color: #b42318; }
+.status-quoted { background: rgba(139, 92, 246, 0.14); color: #6d28d9; }
+.status-active { background: rgba(13, 148, 136, 0.14); color: #0f766e; }
 
 .admin-quote-badge-row {
   display: flex;

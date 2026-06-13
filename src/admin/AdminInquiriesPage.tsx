@@ -99,7 +99,27 @@ export function AdminInquiriesPage() {
 
   async function handleInquiryIntakeSave(id: string, intake: InquiryIntake) {
     await adminService.updateInquiryIntake(id, intake);
-    setInquiries((current) => current.map((item) => (item.id === id ? { ...item, intake } : item)));
+
+    // Issuing a quote advances a still-open inquiry to "quoted". Best-effort:
+    // the quote is already saved above even if the status promotion fails, and
+    // local state only flips to "quoted" when the server update succeeds.
+    const target = inquiries.find((item) => item.id === id);
+    const hasQuote = Boolean(intake.quoteSnapshot) || Boolean(intake.selectedWorks?.length);
+    let promotedStatus: InquiryStatus | null = null;
+    if (hasQuote && target && (target.status === "new" || target.status === "contacted")) {
+      try {
+        await adminService.updateInquiryStatus(id, "quoted");
+        promotedStatus = "quoted";
+      } catch {
+        // leave status unchanged; the quote itself is already persisted
+      }
+    }
+
+    setInquiries((current) =>
+      current.map((item) =>
+        item.id === id ? { ...item, intake, ...(promotedStatus ? { status: promotedStatus } : {}) } : item
+      )
+    );
   }
 
   async function handleMemoSave(id: string, currentIntake: InquiryIntake | null, memo: string) {
@@ -365,7 +385,7 @@ export function AdminInquiriesPage() {
                       <span>선택</span>
                     </label>
                     <strong>{item.name}</strong>
-                    <span className={`status-badge status-${item.status}`}>{item.status}</span>
+                    <span className={`status-badge status-${item.status}`}>{statusLabel(item.status)}</span>
                   </div>
                   <p>
                     {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
@@ -432,7 +452,7 @@ export function AdminInquiriesPage() {
                   >
                     {isExpanded ? "접기" : "상세"}
                   </button>
-                  {(["new", "contacted", "done", "spam"] as InquiryStatus[])
+                  {(["new", "contacted", "quoted", "active", "done", "spam"] as InquiryStatus[])
                     .filter((status) => status !== item.status)
                     .map((status) => (
                       <button
