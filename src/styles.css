@@ -11952,10 +11952,15 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 .portfolio-crumb {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   color: var(--ink-3, #5b6781);
   margin-bottom: 14px;
+}
+.portfolio-crumb a {
+  padding: 6px 4px;
+  margin: -6px 0;
 }
 .portfolio-crumb a:hover {
   color: var(--navy-700, #10284a);

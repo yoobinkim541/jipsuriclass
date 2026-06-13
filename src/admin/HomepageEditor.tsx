@@ -19,6 +19,7 @@ import {
 } from "../contentSections";
 import { SiteContentService, defaultHomepageContent } from "../services/SiteContentService";
 import { MediaService } from "../services/MediaService";
+import { directionalParticle } from "../lib/koreanParticle";
 import type { HomepageContent } from "../types";
 
 const siteContentService = new SiteContentService();
@@ -1047,7 +1048,7 @@ function HeroPreview({
           <h1 className="hero__title" style={{ fontSize: "clamp(28px,3.5vw,52px)" }}>
             {content.title || "집의 모든 불편을"}{" "}
             <br />
-            <span className="hero__rotator"><em>{rotatorWords[0]}</em></span>로 끝냅니다.
+            <span className="hero__rotator"><em>{rotatorWords[0]}</em></span>{directionalParticle(rotatorWords[0])} 끝냅니다.
           </h1>
           <p className="hero__lede">{content.description || "설명 텍스트를 입력하세요."}</p>
           <div className="hero__cta" style={{ marginBottom: 0 }}>

@@ -1,5 +1,34 @@
 # Work Log
 
+## 2026-06-13 - 모바일 사용성 개선 (히어로 조사·로그인 폼·터치 타깃)
+
+Changed files:
+- `src/lib/koreanParticle.ts` (신규)
+- `src/App.tsx`, `src/admin/HomepageEditor.tsx`
+- `src/auth-panel.css`, `src/styles.css`
+- `mobile-ux-review.mjs` (신규)
+- `WORK_LOG.md`
+
+Implemented behavior:
+- **히어로 회전 문구 조사 교정**: 회전 단어 뒤 접미사가 `로 끝냅니다`로 고정돼 받침 있는 단어에서 비문이 되던 문제(예: "사진 몇 장로", "5분의 상담로"). `directionalParticle()` 헬퍼를 추가해 마지막 음절 종성으로 `로`/`으로`를 동적 선택(종성 없음·ㄹ→로, 그 외→으로). 홈 히어로와 어드민 HomepageEditor 미리보기 둘 다 적용.
+- **로그인 폼 모바일 노출**: ≤860px에서 마케팅 히어로를 숨기는 규칙(`.auth-hero { display:none }`)이 그 뒤 기본 규칙에 캐스케이드로 덮여 무력화돼, 모바일에서 로그인 폼이 인트로 한 화면 아래에 묻혀 있던 문제. 기본 규칙 뒤로 미디어 블록을 옮겨 의도대로 모바일에서 폼을 즉시 노출(폼 top 92px).
+- **포트폴리오 브레드크럼 터치 타깃**: `.portfolio-crumb a`가 12×19px로 너무 작던 것을 패딩(+상쇄 마진)으로 20×31px로 확대.
+
+Verification:
+- `npm run build`(tsc 포함) 통과.
+- iPhone 12 뷰포트 검증: 히어로 3종 모두 정상 조사("전화로/장으로/상담으로"), 로그인 히어로 숨김+폼 above-fold, 브레드크럼 20×31px. 가로 오버플로우 0.
+- `admin-review.mjs` 90/90 통과(HomepageEditor 회귀 없음).
+- `mobile-ux-review.mjs` 신규: 9개 라우트 모바일 계측(터치 타깃·작은 폰트·고정 CTA·오버플로우) + 스크린샷.
+
+검토했으나 변경하지 않은 항목(사유):
+- 고정 하단 CTA의 푸터 가림: `.footer`에 이미 `padding-bottom:132px`(모바일)가 있어 실제 텍스트는 가려지지 않음(자동 체크 오탐).
+- 견적 인트로 대비: 이미 0.72 어두운 그라디언트 오버레이 + 흰 텍스트(0.92)로 가독성 충분.
+- 11px 키커 라벨: 장식용 mono 라벨로 가독성 저해 아님(디자인 의도).
+- 헤더 마이페이지 아이콘(41×33): 경미하고 최근 재디자인된 헤더 리스크 대비 이득 작아 보류.
+
+Follow-up:
+- None.
+
 ## 2026-06-13 - 비로그인 어드민 접근 시 로그인 리다이렉트
 
 Changed files:
