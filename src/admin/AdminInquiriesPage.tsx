@@ -208,7 +208,7 @@ export function AdminInquiriesPage() {
         <>
           <button className="admin-ghost-button" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
             <Download size={16} />
-            CSV 내보내기
+            <span className="admin-btn-label">CSV 내보내기</span>
           </button>
           <button className="admin-primary-button" type="button" onClick={() => void handleRefresh()}>
             <RefreshCcw size={16} />

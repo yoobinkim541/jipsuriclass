@@ -19,7 +19,7 @@ export function AdminEditorPage() {
         <>
           <button className="admin-ghost-button" type="button" onClick={() => window.location.reload()}>
             <RefreshCcw size={16} />
-            동기화
+            <span className="admin-btn-label">동기화</span>
           </button>
           <a className="admin-primary-button" href="/admin/inquiries">
             <ArrowUpRight size={16} />

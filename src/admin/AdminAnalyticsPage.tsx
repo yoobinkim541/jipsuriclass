@@ -96,7 +96,7 @@ export function AdminAnalyticsPage() {
         <>
           <button className="admin-ghost-button" type="button" onClick={() => void loadInquiries()}>
             <RefreshCcw size={16} />
-            새로고침
+            <span className="admin-btn-label">새로고침</span>
           </button>
           <a className="admin-primary-button" href="/admin/inquiries">
             <ArrowUpRight size={16} />
