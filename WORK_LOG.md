@@ -1,5 +1,26 @@
 # Work Log
 
+## 2026-06-13 - 데스크톱 스크롤 끊김 해소 + 섹션 배경색 통일
+
+Changed files:
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- **스크롤 끊김(데스크톱)**: sticky 헤더 `.nav`가 `backdrop-filter: saturate()+blur(12~14px)`를 써서, 스크롤할 때마다 헤더 뒤로 지나가는 콘텐츠를 매 프레임 재블러링 → 데스크톱에서 "뚝뚝 끊김" 유발. backdrop-filter(기본/elevated 상태 모두)를 제거하고 반투명 배경을 불투명 `var(--cream)`로 전환해 컴포지팅 비용을 없앰. border/elevated box-shadow는 유지.
+- **섹션 배경색 통일**: 홈 섹션 중 `.specialties(가능 작업)·.cases·.process`만 `var(--cream-2, #f1ece1)`(짙은 베이지)였고 나머지(hero·services·about·blog·contact 등)는 body의 `var(--cream, #faf7f2)`라 섹션마다 색이 번갈아 달라 보였음. 세 섹션을 `var(--cream)`로 바꿔 전 섹션을 단일 배경으로 통일. `--cream-2` 변수 자체는 칩·카드 등 컴포넌트에서 계속 쓰이므로 그대로 둠.
+
+Verification:
+- `npm run build` 통과.
+- 데스크톱 1440px: nav `backdrop-filter: none`·불투명 cream 확인, 홈 전 섹션 computed 배경이 모두 `rgb(250,247,242)`로 동일. 서비스→가능작업 경계 스크린샷에서 색 띠 사라짐 확인.
+- `full-verify.mjs` 105/105 통과(모바일·태블릿·데스크톱 회귀 없음).
+
+비고:
+- 미사용 레거시 `.site-header`(컴포넌트에서 참조 없음)에도 backdrop-filter가 남아있으나 죽은 코드라 건드리지 않음.
+
+Follow-up:
+- None.
+
 ## 2026-06-13 - 모바일 사용성 개선 (히어로 조사·로그인 폼·터치 타깃)
 
 Changed files:
