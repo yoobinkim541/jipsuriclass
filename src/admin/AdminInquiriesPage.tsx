@@ -5,8 +5,10 @@ import {
   Copy,
   Download,
   LoaderCircle,
+  Phone,
   RefreshCcw,
-  SortAsc
+  SortAsc,
+  X
 } from "lucide-react";
 import { AdminService } from "../services/AdminService";
 import type { InquiryIntake, InquiryRow, InquiryStatus } from "../types";
@@ -216,6 +218,9 @@ export function AdminInquiriesPage() {
   const pendingCount = analytics.byStatus.new + analytics.byStatus.contacted;
   const selectedCount = selectedVisibleInquiryIds.length;
   const topbarSearchPlaceholder = "이름·연락처·지역으로 검색";
+  const expandedInquiry = expandedInquiryId
+    ? inquiries.find((item) => item.id === expandedInquiryId) ?? null
+    : null;
 
   return (
     <AdminShell
@@ -404,44 +409,7 @@ export function AdminInquiriesPage() {
                       {item.intake?.selectedWorks?.length ?? 0}개 항목
                     </span>
                   </div>
-                  {isExpanded ? (
-                    <div className="admin-row-detail">
-                      <div className="admin-detail-grid">
-                        <DetailItem label="연락처" value={item.phone} />
-                        <DetailItem label="지역" value={item.service_area || "지역 미입력"} />
-                        <DetailItem label="고객 이메일" value={item.user_email || "-"} />
-                        <DetailItem label="접수 경로" value={item.source} />
-                      </div>
-                      <div className="admin-detail-grid">
-                        <DetailItem label="집 환경" value={stringField(item.intake?.propertyType)} />
-                        <DetailItem label="공사 유형" value={stringField(item.intake?.projectType)} />
-                        <DetailItem label="예산" value={stringField(item.intake?.budget)} />
-                        <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
-                      </div>
-                      <InquiryMemoEditor
-                        key={`memo-${item.id}`}
-                        memo={item.intake?.adminMemo ?? ""}
-                        onSave={(memo) => handleMemoSave(item.id, item.intake, memo)}
-                      />
-                      <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
-                      {item.attachments?.length ? (
-                        <div className="inquiry-attachment-grid" aria-label="첨부 사진">
-                          {item.attachments.map((attachment) => (
-                            <a
-                              className="inquiry-attachment"
-                              href={attachment.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              key={attachment.url}
-                            >
-                              <img src={attachment.url} alt={attachment.name} />
-                              <span>{attachment.name}</span>
-                            </a>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  ) : null}
+                  {/* 상세는 슬라이드인 드로어(InquiryDetailDrawer)로 표시 */}
                 </div>
                 <div className="admin-row-actions">
                   <button
@@ -482,6 +450,16 @@ export function AdminInquiriesPage() {
         )}
       </section>
 
+      {expandedInquiry ? (
+        <InquiryDetailDrawer
+          inquiry={expandedInquiry}
+          onClose={() => setExpandedInquiryId(null)}
+          onMemoSave={(memo) => handleMemoSave(expandedInquiry.id, expandedInquiry.intake, memo)}
+          onIntakeSave={(intake) => handleInquiryIntakeSave(expandedInquiry.id, intake)}
+          onCopy={handleCopy}
+        />
+      ) : null}
+
       {copyFeedback ? <div className="admin-toast" role="status">{copyFeedback}</div> : null}
     </AdminShell>
   );
@@ -511,5 +489,86 @@ function InquiryMemoEditor({ memo, onSave }: { memo: string; onSave: (memo: stri
         메모 저장
       </button>
     </div>
+  );
+}
+
+function InquiryDetailDrawer({
+  inquiry,
+  onClose,
+  onMemoSave,
+  onIntakeSave,
+  onCopy
+}: {
+  inquiry: InquiryRow;
+  onClose: () => void;
+  onMemoSave: (memo: string) => void;
+  onIntakeSave: (intake: InquiryIntake) => Promise<void>;
+  onCopy: (text: string, label: string) => void;
+}) {
+  return (
+    <>
+      <div className="admin-drawer-overlay" onClick={onClose} aria-hidden="true" />
+      <aside className="admin-drawer" role="dialog" aria-modal="true" aria-label={`${inquiry.name} 상담 상세`}>
+        <header className="admin-drawer__head">
+          <div className="admin-drawer__title">
+            <strong>{inquiry.name}</strong>
+            <span className={`status-badge status-${inquiry.status}`}>{statusLabel(inquiry.status)}</span>
+          </div>
+          <button className="admin-drawer__close" type="button" onClick={onClose} aria-label="닫기">
+            <X size={18} />
+          </button>
+        </header>
+        <div className="admin-drawer__cta">
+          <a className="admin-primary-button" href={`tel:${inquiry.phone}`}>
+            <Phone size={15} />
+            전화
+          </a>
+          <button className="admin-ghost-button" type="button" onClick={() => onCopy(inquiry.phone, "연락처")}>
+            <Copy size={15} />
+            연락처 복사
+          </button>
+        </div>
+        <div className="admin-drawer__body">
+          <div className="admin-detail-grid">
+            <DetailItem label="연락처" value={inquiry.phone} />
+            <DetailItem label="지역" value={inquiry.service_area || "지역 미입력"} />
+            <DetailItem label="고객 이메일" value={inquiry.user_email || "-"} />
+            <DetailItem label="접수 경로" value={inquiry.source} />
+          </div>
+          <div className="admin-detail-grid">
+            <DetailItem label="집 환경" value={stringField(inquiry.intake?.propertyType)} />
+            <DetailItem label="공사 유형" value={stringField(inquiry.intake?.projectType)} />
+            <DetailItem label="예산" value={stringField(inquiry.intake?.budget)} />
+            <DetailItem label="상담 가능 시간" value={stringField(inquiry.intake?.preferredTime)} />
+          </div>
+          <div className="admin-detail-message">
+            <span>문의 내용</span>
+            <p>{inquiry.message}</p>
+          </div>
+          <InquiryMemoEditor
+            key={`memo-${inquiry.id}`}
+            memo={inquiry.intake?.adminMemo ?? ""}
+            onSave={onMemoSave}
+          />
+          <InquiryQuoteEditor inquiry={inquiry} onSave={onIntakeSave} />
+          {inquiry.attachments?.length ? (
+            <div className="inquiry-attachment-grid" aria-label="첨부 사진">
+              {inquiry.attachments.map((attachment) => (
+                <a
+                  className="inquiry-attachment"
+                  href={attachment.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  key={attachment.url}
+                >
+                  <img src={attachment.url} alt={attachment.name} />
+                  <span>{attachment.name}</span>
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </aside>
+    </>
   );
 }
