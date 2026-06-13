@@ -1,0 +1,38 @@
+---
+/**
+ * 서비스 가격표 페이지 (정적). servicePricingRegistry로 getStaticPaths 생성하고
+ * ServicePricingPage(무상태)를 무JS 정적 렌더 — 가격표 본문/JSON-LD가 크롤러에
+ * 그대로 노출된다(계획 Phase 2). 뒤로가기 버튼만 인라인 스크립트로 배선해
+ * React 아일랜드 없이 동작하게 한다.
+ */
+export const prerender = true;
+
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Seo from "../../../components/seo/Seo.astro";
+import { ServicePricingPage } from "../../../pricing/ServicePricingPage";
+import { servicePricingRegistry } from "../../../pricing/registry";
+import { getSeoConfigForPath } from "../../../seo";
+
+export function getStaticPaths() {
+  return Object.values(servicePricingRegistry).map((config) => ({
+    params: { slug: config.servicePath.replace("/service/", "") },
+    props: { config }
+  }));
+}
+
+const { config } = Astro.props;
+const seo = getSeoConfigForPath(config.pricingPagePath);
+---
+<BaseLayout>
+  <Seo slot="head" title={seo.title} description={seo.description} path={config.pricingPagePath} jsonLd={seo.jsonLd} />
+  <ServicePricingPage config={config} />
+  <script is:inline>
+    document.querySelector(".landing-back-btn")?.addEventListener("click", function () {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "/";
+      }
+    });
+  </script>
+</BaseLayout>
