@@ -73,17 +73,13 @@ textarea {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(250, 247, 242, 0.9);
-  backdrop-filter: saturate(135%) blur(12px);
-  -webkit-backdrop-filter: saturate(135%) blur(12px);
+  background: var(--cream, #faf7f2);
   border-bottom: 1px solid var(--hair, #e6dfd0);
-  transition: background 240ms ease, border-color 240ms ease;
+  transition: background 240ms ease, border-color 240ms ease, box-shadow 240ms ease;
 }
 
 .nav[data-elevated="true"] {
-  background: rgba(252, 250, 245, 0.96);
-  backdrop-filter: saturate(140%) blur(14px);
-  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  background: var(--cream, #faf7f2);
   border-bottom-color: var(--hair, #e6dfd0);
   box-shadow: 0 2px 16px rgba(11, 26, 48, 0.07);
 }
@@ -3831,7 +3827,7 @@ main.home-page .blog .row-heading a {
 .specialties,
 .cases,
 .process {
-  background: var(--cream-2, #f1ece1);
+  background: var(--cream, #faf7f2);
 }
 
 /* ── 데스크탑 2단: 카테고리 카드 + 증상 칩 ── */
