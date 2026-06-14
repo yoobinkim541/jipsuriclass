@@ -12390,3 +12390,46 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background: var(--panel, #111827);
   }
 }
+
+/* salvage(reconcile 2026-06-14): 다크모드 — 가능 작업 칩(.specs__item) 가독성 */
+@media (prefers-color-scheme: dark) {
+  .specs__item {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+  .specs__item:hover,
+  .specs__item.selected {
+    background: var(--gold-500, #f2c879);
+    border-color: var(--gold-500, #f2c879);
+    color: #0b1220;
+  }
+  .specs__item:hover::after,
+  .specs__item.selected::after {
+    color: #0b1220;
+  }
+}
+
+/* salvage(reconcile 2026-06-14): 다크모드 — 자가진단 증상 칩 가독성 */
+@media (prefers-color-scheme: dark) {
+  .symptom-chip {
+    background: var(--panel-soft, #162033);
+    color: var(--ink-2, #d8e1f0);
+  }
+  .symptom-chip:hover {
+    background: var(--panel-strong, #1f2937);
+    border-color: var(--gold-500, #f2c879);
+    color: var(--ink, #f8fafc);
+  }
+  .symptom-grid-item,
+  .symptom-grid a {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+  .symptom-grid-item:hover,
+  .symptom-grid a:hover {
+    background: var(--panel-strong, #1f2937);
+    border-color: var(--gold-500, #f2c879);
+  }
+}
