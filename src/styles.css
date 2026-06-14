@@ -6737,7 +6737,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
   .quote-editor__grid,
   .quote-editor__summary {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -7032,6 +7032,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   border: 1px solid var(--hair, #e6dfd0);
   border-radius: 16px;
   display: grid;
+  /* minmax(0,1fr): 단일 컬럼이 내용(960px 견적 테이블) 대신 컨테이너에 맞게 줄어들도록
+     해서, 좁은 상세 패널에서 카드가 넘치지 않고 테이블만 내부 가로 스크롤되게 한다. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   padding: 16px;
 }
@@ -7175,7 +7178,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .quote-editor__grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* 좁은 폭에서는 1열, 넓으면 2열로 자동 전환 — 좁은 상세 패널에서 충전 카드 라벨이
+     잘리던 문제 해결(반응형 규칙이 base 규칙보다 앞서 있어 무력화되던 것을 대체). */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
 }
 
 .quote-editor__panel {
@@ -7190,8 +7195,13 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .quote-editor__panel-head {
   align-items: center;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
+}
+/* 좁은 패널에서 제목(자재비/부대비용)이 글자 단위로 세로 줄바꿈되지 않게 한다. */
+.quote-editor__panel-head > strong {
+  white-space: nowrap;
 }
 
 .quote-editor__charge-list {
@@ -8610,6 +8620,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .editor-upload-field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -8624,10 +8635,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   border-radius: 8px;
   cursor: pointer;
   padding: 12px 13px;
+  overflow: hidden;
 }
 
 .editor-upload-trigger input {
   cursor: pointer;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .editor-upload-hint {

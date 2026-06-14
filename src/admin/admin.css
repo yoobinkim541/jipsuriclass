@@ -936,8 +936,12 @@
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px dashed var(--hair-2);
+  min-width: 0;
 }
-.adm-quote-host .quote-editor { margin: 0; }
+.adm-quote-host .quote-editor { margin: 0; min-width: 0; }
+/* 좁은 상세 패널에서 견적 테이블(min-width:760px)이 카드 폭을 늘리지 않고
+   table-wrap 내부에서만 가로 스크롤되도록 한다(flex min-width:auto 오버플로 방지). */
+.adm-quote-host .quote-editor__table-wrap { min-width: 0; max-width: 100%; }
 
 /* ────────────────────── 지역 / 작업 그리드 ────────────────────── */
 .adm-regions-controls {
