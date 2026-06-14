@@ -46,5 +46,19 @@ import "@fontsource/jetbrains-mono/500.css";
         });
       }
     </script>
+    <!--
+      Vercel Web Analytics + Speed Insights + 연락 클릭 추적.
+      SPA(main.tsx)는 <Analytics/>를 React로 마운트하지만, Astro 빌드는 main.tsx를
+      거치지 않으므로(정적 페이지 + [...all] catch-all 모두) 여기서 vanilla로 주입해
+      모든 경로를 커버한다. 익명·쿠키리스(동의 배너 불필요).
+    -->
+    <script>
+      import { inject } from "@vercel/analytics";
+      import { injectSpeedInsights } from "@vercel/speed-insights";
+      import { initContactTracking } from "../lib/analytics";
+      inject();
+      injectSpeedInsights();
+      initContactTracking();
+    </script>
   </body>
 </html>
