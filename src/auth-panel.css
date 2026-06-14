@@ -228,3 +228,63 @@
   font-size: 17px; font-weight: 800; color: var(--navy-900, #0b1a30); margin: 0;
 }
 .mypage-section__body { padding: 24px; }
+
+/* =====================================================================
+   다크모드 — 로그인/마이페이지: 하드코딩 흰 배경 + --navy-900 글자가
+   다크에서 안 보이던 문제 일괄 보정.
+   (오너 reconcile/salvage-unique 브랜치의 auth-panel 다크 작업을 이식)
+   ===================================================================== */
+@media (prefers-color-scheme: dark) {
+  .auth-shell, .mypage-shell { background: var(--page-bg, #0b1220); }
+  .auth-side-link:hover { background: var(--panel-soft, #162033); }
+  .auth-back, .mypage-brand { color: var(--ink, #f8fafc); }
+
+  .auth-hero__title { color: var(--ink, #f8fafc); }
+  .auth-hero__grid article { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); }
+  .auth-hero__grid strong { color: var(--ink, #f8fafc); }
+  .auth-hero__grid span { color: var(--ink-3, #aebbd0); }
+
+  .auth-card { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.36); }
+  .auth-card__head h2 { color: var(--ink, #f8fafc); }
+  .auth-card__head p { color: var(--ink-3, #aebbd0); }
+
+  .auth-field { color: var(--ink-2, #d8e1f0); }
+  .auth-field input:focus { background: var(--panel-soft, #162033); }
+
+  .auth-google { background: var(--panel, #111827); color: var(--ink, #f8fafc); }
+  .auth-google:hover { background: var(--panel-soft, #162033); border-color: var(--ink-3, #aebbd0); }
+
+  .auth-submit { background: var(--gold-500, #f2c879); color: #0b1220; }
+  .auth-submit:hover { background: #e7b65f; }
+
+  .auth-error { color: #fca5a5; }
+
+  .mypage-section { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); }
+  .mypage-section__head { border-bottom-color: var(--hair, rgba(226, 232, 240, 0.18)); }
+  .mypage-section__head h2 { color: var(--ink, #f8fafc); }
+
+  /* 계정(마이페이지) 본문 — 흰 입력/버튼/히어로 제목 보정 (.mypage-shell 스코프라 어드민 불간섭) */
+  .mypage-shell h1 { color: var(--ink, #f8fafc); }
+  .mypage-shell input,
+  .mypage-shell textarea,
+  .account-identity-field input,
+  .account-edit-form input,
+  .account-edit-form textarea {
+    background: var(--panel-soft, #162033);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+  /* 계정 본문에서 재사용하는 admin 버튼: navy-700→밝은파랑/흰배경 반전 보정 */
+  .mypage-shell .admin-primary-button {
+    background: var(--gold-500, #f2c879);
+    border-color: rgba(242, 200, 121, 0.6);
+    color: #0b1220;
+  }
+  .mypage-shell .admin-primary-button:hover { background: #e7b65f; border-color: rgba(242, 200, 121, 0.8); }
+  .mypage-shell .admin-status-button {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink-2, #d8e1f0);
+  }
+  .mypage-shell .admin-muted { color: var(--ink-3, #aebbd0); }
+}
