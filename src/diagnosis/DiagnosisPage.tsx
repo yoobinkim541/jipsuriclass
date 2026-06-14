@@ -4,6 +4,7 @@ import { business, navItems } from "../data";
 import { symptomCategories, type SymptomCategory } from "../data";
 import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
 import { MobileQuickCta } from "../components/site/SiteFooter";
+import { trackEvent } from "../lib/analytics";
 
 export function DiagnosisPage() {
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -71,6 +72,8 @@ export function DiagnosisPage() {
     if (topic) {
       setSelectedTopic(topic);
       scrollToAnswer();
+      // 어떤 증상(문제)으로 자가진단을 하는지 분포 측정 — 수요 파악·콘텐츠 우선순위에 활용
+      trackEvent("diagnosis_symptom", { topic: topic.id });
     }
   }
 

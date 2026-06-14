@@ -5,6 +5,7 @@ import { business } from "../data";
 import { InquiryService } from "../services/InquiryService";
 import { MediaService } from "../services/MediaService";
 import { SiteContentService, defaultEstimatePageContent } from "../services/SiteContentService";
+import { trackEvent } from "../lib/analytics";
 import type { EstimatePageContent } from "../types";
 
 const inquiryService = new InquiryService();
@@ -91,6 +92,14 @@ export function EstimatePage() {
       mounted = false;
     };
   }, []);
+
+  // 견적폼 퍼널 계측: 설문 진입(step 1) ~ 연락처 단계(step 8) 도달 단계를 기록해
+  // 어느 단계에서 이탈하는지 측정. PII 없음(단계 번호만).
+  useEffect(() => {
+    if (stage === "survey") {
+      trackEvent("estimate_step", { step });
+    }
+  }, [stage, step]);
 
   useEffect(() => {
     const nextPreviews = files.map((file) => ({
@@ -243,6 +252,18 @@ export function EstimatePage() {
       });
 
       setStatus("success");
+      // 전환 완료 이벤트 — 범주형 퍼널 데이터만(이름·전화·주소 등 PII는 보내지 않음)
+      trackEvent("estimate_submit", {
+        spaceType: draft.spaceType || null,
+        areaBand: draft.areaBand || null,
+        propertyStatus: draft.propertyStatus || null,
+        reason: draft.reason || null,
+        budget: draft.budget || null,
+        startTiming: draft.startTiming || null,
+        roomCount: draft.selectedRooms.length,
+        hasPhotos: files.length > 0,
+        fromQuote: presetWorks.length > 0,
+      });
       window.setTimeout(() => {
         window.location.href = "/";
       }, 2400);

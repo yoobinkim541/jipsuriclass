@@ -1,4 +1,4 @@
-const CACHE_NAME = "jipsuri-class-v6";
+const CACHE_NAME = "jipsuri-class-v7";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon.svg", "/icons/icon-192.svg", "/icons/icon-512.svg"];
 
 self.addEventListener("install", (event) => {
@@ -39,7 +39,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (requestUrl.pathname.startsWith("/api/")) {
+  // API 및 Vercel 분석 스크립트·비콘(/_vercel/insights, /_vercel/speed-insights)은
+  // 항상 네트워크 직결 — SW가 캐시·가로채지 않도록 통과시킨다.
+  if (requestUrl.pathname.startsWith("/api/") || requestUrl.pathname.startsWith("/_vercel/")) {
     event.respondWith(fetch(event.request));
     return;
   }
