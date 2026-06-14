@@ -48,9 +48,12 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   const totals = useMemo(() => calculateQuoteTotals(draft), [draft]);
 
   useEffect(() => {
+    // 다른 문의로 전환될 때만 draft를 다시 시드한다. 같은 문의의 intake 참조 변경
+    // (예: 메모 저장)에는 반응하지 않아야 편집 중인 견적이 날아가지 않는다.
     setDraft(ensureEditableDraft(buildQuoteDraftFromInquiry(inquiry)));
     setFeedback(null);
-  }, [inquiry.id, inquiry.intake]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inquiry.id]);
 
   function updateLineItem(index: number, patch: Partial<InquiryQuoteLineItem>) {
     setDraft((current) => ({
