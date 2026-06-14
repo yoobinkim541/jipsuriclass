@@ -12208,3 +12208,185 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     display: none;
   }
 }
+
+/* salvage(reconcile 2026-06-14): dark-mode theme — prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --navy-700: #8fb8ff;
+    --navy-800: #0b1220;
+    --gold-500: #f2c879;
+    --cream: #0b1220;
+    --cream-2: #111827;
+    --ink: #f8fafc;
+    --ink-2: #d8e1f0;
+    --ink-3: #aebbd0;
+    --ink-4: #7e8ba3;
+    --hair: rgba(226, 232, 240, 0.18);
+    --page-bg: #0b1220;
+    --surface: rgba(15, 23, 42, 0.86);
+    --panel: #111827;
+    --panel-soft: #162033;
+    --panel-strong: #1f2937;
+    --border: rgba(226, 232, 240, 0.18);
+    --text: #f8fafc;
+    --muted: #cbd5e1;
+    --muted-strong: #e2e8f0;
+    --accent: #f2c879;
+    --accent-strong: #f8fafc;
+    --accent-soft: rgba(242, 200, 121, 0.18);
+    --shadow: 0 18px 48px rgba(0, 0, 0, 0.36);
+    --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.28);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  body,
+  main,
+  .login-shell,
+  .diagnosis-page {
+    background: var(--cream, #0b1220);
+    color: var(--ink, #f8fafc);
+  }
+
+  .nav,
+  .nav[data-elevated="true"] {
+    background: rgba(11, 18, 32, 0.92);
+    border-bottom-color: var(--hair, rgba(226, 232, 240, 0.18));
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.32);
+  }
+
+  .nav__links,
+  .nav__login,
+  .nav__menu,
+  .mobile-menu button {
+    color: var(--ink-2, #d8e1f0);
+  }
+
+  .nav__links a:hover,
+  .nav__links a[data-active="true"],
+  .nav__login:hover,
+  .mobile-menu a[data-active="true"] {
+    background: rgba(242, 200, 121, 0.14);
+    color: var(--gold-500, #f2c879);
+  }
+
+  .nav__phone {
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+
+  .nav__phone:hover,
+  .primary-button,
+  .estimate-form button,
+  .specs__filter.active,
+  .specs__jump-button.primary {
+    background: linear-gradient(180deg, #f2c879 0%, #d7ae6b 100%);
+    border-color: rgba(242, 200, 121, 0.68);
+    color: #0b1220;
+  }
+
+  .secondary-button,
+  .specs__filter,
+  .specs__search,
+  .specs__jump-button.secondary,
+  .cases__carousel-button,
+  .estimator-item-row,
+  .estimator-checkbox {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+
+  .mobile-menu {
+    background: rgba(15, 23, 42, 0.98);
+    border-left-color: var(--hair, rgba(226, 232, 240, 0.18));
+    box-shadow: -20px 0 40px rgba(0, 0, 0, 0.42);
+    color: var(--ink, #f8fafc);
+  }
+
+  .mobile-menu a {
+    border-bottom-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+
+  .mobile-menu-overlay {
+    background: rgba(0, 0, 0, 0.62);
+  }
+
+  .hero__card,
+  .bento__card,
+  .cases__card,
+  .blog-card,
+  .office-card,
+  .contact-estimate-card,
+  .landing-hero-panel,
+  .landing-point-card,
+  .landing-faq-item,
+  .landing-related-link,
+  .landing-link-card,
+  .diagnosis-hero-copy,
+  .diagnosis-hero-panel,
+  .diagnosis-topic-card,
+  .diagnosis-answer-card,
+  .diagnosis-answer-panel,
+  .diagnosis-cat-card,
+  .symptom-cat-card,
+  .symptom-grid-item,
+  .symptom-grid a,
+  .privacy-card,
+  .estimate-panel,
+  .estimate-review-item,
+  .estimate-modal,
+  .admin-login-card,
+  .account-summary-card,
+  .price-calc__inner {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+
+  .bento__card h3,
+  .cases__body h3,
+  .blog-card h3,
+  .contact-copy h2,
+  .contact-header h2,
+  .auth-field input,
+  .specs__search input,
+  .estimate-form input,
+  .estimate-form textarea {
+    color: var(--ink, #f8fafc);
+  }
+
+  .bento__card p,
+  .cases__body .row dd,
+  .contact-copy > p,
+  .contact-actions-note,
+  .blog-card p,
+  .blog-card-summary p {
+    color: var(--ink-2, #d8e1f0);
+  }
+
+  .bento__card svg,
+  .bento__link-label,
+  .cases__body .more,
+  .specs__search svg {
+    color: var(--gold-500, #f2c879);
+  }
+
+  .auth-field input,
+  .estimate-form input,
+  .estimate-form textarea {
+    background: var(--panel-soft, #162033);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+
+  .estimator-item-row:hover,
+  .estimator-item-row[aria-checked="true"] {
+    background: var(--panel-soft, #162033);
+  }
+
+  .estimator-item-row[aria-disabled="true"]:hover {
+    background: var(--panel, #111827);
+  }
+}
