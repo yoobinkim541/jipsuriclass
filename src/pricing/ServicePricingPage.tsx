@@ -53,7 +53,7 @@ export function ServicePricingPage({ config }: { config: ServicePricingConfig })
         </div>
 
         {/* 안내 배너 */}
-        <div style={{ background: "#fff8ed", border: "1px solid #f0d99a", borderRadius: 10, padding: "14px 18px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: "clamp(28px,4vw,48px)" }}>
+        <div className="dark-callout" style={{ background: "#fff8ed", border: "1px solid #f0d99a", borderRadius: 10, padding: "14px 18px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: "clamp(28px,4vw,48px)" }}>
           <Info size={18} style={{ color: "#b07d10", flexShrink: 0, marginTop: 2 }} />
           <p style={{ margin: 0, fontSize: 14, color: "#7a5608", lineHeight: 1.6 }}>
             {config.disclaimer}
@@ -76,7 +76,7 @@ export function ServicePricingPage({ config }: { config: ServicePricingConfig })
                 )}
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 12, overflow: "hidden" }}>
+              <div className="dark-surface" style={{ background: "#fff", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 12, overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "var(--cream-2,#f1ece1)" }}>

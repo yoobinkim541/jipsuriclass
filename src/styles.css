@@ -12433,3 +12433,74 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     border-color: var(--gold-500, #f2c879);
   }
 }
+
+/* salvage(reconcile 2026-06-14): 다크모드 — 순수용도 변수 보정 (안전 플립) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cream-light: #162033;  /* 라이트 크림 배경 → 다크 패널 */
+    --ivory: #111827;        /* 아이보리 배경 → 다크 */
+    --slate: #cbd5e1;        /* 슬레이트 글자 → 밝은 회색 */
+    --gold-dark: #f2c879;    /* 다크골드 글자 → 밝은 골드 */
+  }
+}
+
+/* salvage(reconcile 2026-06-14): 다크모드 — 전 페이지 가시성 일괄 보정 (감사 기반) */
+@media (prefers-color-scheme: dark) {
+  :root { --gold-700: #f2c879; }
+
+  /* footer: bg가 var(--ink) 공유 → 다크에서 흰색되던 문제 */
+  .footer { background: var(--panel, #111827); color: var(--ink-2, #d8e1f0); border-top: 1px solid var(--hair, rgba(226, 232, 240, 0.18)); }
+  .footer p { color: var(--ink-2, #d8e1f0); }
+  .footer strong { color: var(--ink, #f8fafc); }
+  .footer-admin-link { color: var(--gold-500, #f2c879); }
+
+  /* business-list (오시는 길/문의/지역·서비스 히어로) */
+  .business-list { color: var(--ink-2, #d8e1f0); }
+  .business-list li::before { color: var(--gold-500, #f2c879); }
+  .landing-hero-panel .business-list li { background: var(--panel-soft, #162033); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink-2, #d8e1f0); }
+
+  /* 플로팅 뒤로가기 버튼 */
+  .landing-back-btn { background: rgba(17, 24, 39, 0.92); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink, #f8fafc); }
+  .landing-back-btn span, .landing-back-btn svg { color: var(--ink, #f8fafc); }
+  .landing-back-btn:hover { background: var(--gold-500, #f2c879); color: #0b1220; }
+
+  /* 포트폴리오 필터 칩 + 더보기 */
+  .portfolio-chip { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink-2, #d8e1f0); }
+  .portfolio-chip:hover:not(.is-active) { border-color: var(--gold-500, #f2c879); color: var(--ink, #f8fafc); }
+  .portfolio-more-button { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink, #f8fafc); }
+  .portfolio-more-button:hover { background: var(--gold-500, #f2c879); border-color: var(--gold-500, #f2c879); color: #0b1220; }
+
+  /* 견적 폼 입력/동의/선택칩 */
+  .estimate-final-group input, .estimate-final-group textarea, .estimate-inline-field input { background: var(--panel-soft, #162033); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink, #f8fafc); }
+  .estimate-consent-box { background: var(--panel-soft, #162033); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink, #f8fafc); }
+  .estimate-consent-box span, .estimate-consent-box strong { color: var(--ink, #f8fafc); }
+  .estimate-choice.active { background: var(--gold-500, #f2c879); border-color: var(--gold-500, #f2c879); color: #0b1220; }
+
+  /* hero 신뢰지표 띠 */
+  .trust, .trust--embedded { background: var(--panel-strong, #1f2937); border-color: var(--hair, rgba(226, 232, 240, 0.18)); }
+  .trust__label strong { color: var(--ink, #f8fafc); }
+  .trust__label span { color: var(--ink-3, #aebbd0); }
+  .trust__num { color: var(--gold-500, #f2c879); }
+
+  /* about 강점 체크리스트 (#111827 하드코딩 어두운 글씨) */
+  .about-strengths li { color: var(--ink, #f8fafc); }
+  .about-strengths svg { color: var(--gold-500, #f2c879); }
+
+  /* process(작업 절차) 섹션 */
+  .process__signal-card { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); }
+  .process__signal-icon { background: var(--accent-soft, rgba(242, 200, 121, 0.18)); color: var(--gold-500, #f2c879); }
+  .process__step { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink, #f8fafc); }
+  .process__step.active { background: var(--panel-strong, #1f2937); border-color: var(--gold-500, #f2c879); color: var(--ink, #f8fafc); }
+  .process__detail-card { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); }
+  .process__detail-card h3 { color: var(--ink, #f8fafc); }
+  .process__detail-card p { color: var(--ink-2, #d8e1f0); }
+  .process__detail-point { background: var(--panel-soft, #162033); border-color: var(--hair, rgba(226, 232, 240, 0.18)); color: var(--ink-2, #d8e1f0); }
+}
+
+/* salvage(reconcile 2026-06-14): 다크모드 — 인라인 흰배경 래퍼(가격표·견적기·안내배너) */
+@media (prefers-color-scheme: dark) {
+  .dark-surface { background: var(--panel, #111827) !important; border-color: var(--hair, rgba(226, 232, 240, 0.18)) !important; }
+  .dark-callout { background: var(--accent-soft, rgba(242, 200, 121, 0.12)) !important; border-color: rgba(242, 200, 121, 0.35) !important; }
+  .dark-callout p { color: var(--ink-2, #d8e1f0) !important; }
+  .dark-callout svg { color: var(--gold-500, #f2c879) !important; }
+}
