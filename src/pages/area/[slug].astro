@@ -1,0 +1,59 @@
+---
+/**
+ * 지역 랜딩 페이지 (정적). service/[slug].astro와 동일 구조, /area/ 정의만 대상.
+ */
+export const prerender = true;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Seo from "../../components/seo/Seo.astro";
+import { SiteHeaderIsland } from "../../components/site/SiteHeaderIsland";
+import { SiteFooter, MobileQuickCta } from "../../components/site/SiteFooter";
+import {
+  LandingSummarySection,
+  LandingPointsSection,
+  LandingFaqSection,
+  LandingRelatedSection
+} from "../../components/landing/LandingSections";
+import { LandingBlogSection, LandingBackButton } from "../../components/landing/LandingInteractive";
+import { landingPageDefinitions, mergeLandingPageContent, buildLandingPageJsonLd } from "../../landingPages";
+import { defaultLandingSectionOrder } from "../../contentSections";
+import { SiteContentService } from "../../services/SiteContentService";
+
+export async function getStaticPaths() {
+  // A build-time Supabase failure must not fail the whole Astro build; fall back
+  // to defaults (empty overrides) so pages still prerender.
+  const overrides = await new SiteContentService()
+    .loadLandingPagesContent()
+    .catch(() => ({}) as Awaited<ReturnType<SiteContentService["loadLandingPagesContent"]>>);
+  return landingPageDefinitions
+    .filter((def) => def.categoryLabel === "지역" && def.path.startsWith("/area/"))
+    .map((def) => ({
+      params: { slug: def.path.replace("/area/", "") },
+      props: { merged: mergeLandingPageContent(def, overrides[def.path]) }
+    }));
+}
+
+const { merged } = Astro.props;
+const siteUrl = "https://www.jipsuriclass.kr";
+const jsonLd = buildLandingPageJsonLd(merged, siteUrl);
+const sections = merged.sections ?? defaultLandingSectionOrder;
+---
+<BaseLayout>
+  <Seo slot="head" title={merged.title} description={merged.description} path={merged.path} jsonLd={jsonLd} />
+  <SiteHeaderIsland client:idle brandHref="/" />
+  <LandingBackButton client:idle fallbackHref="/" />
+  <main class="landing-page" id="top">
+    {
+      sections.map((sectionId) => {
+        if (sectionId === "summary") return <LandingSummarySection content={merged} />;
+        if (sectionId === "points") return <LandingPointsSection content={merged} />;
+        if (sectionId === "blog") return <LandingBlogSection client:visible content={merged} />;
+        if (sectionId === "faq") return <LandingFaqSection content={merged} />;
+        if (sectionId === "relatedLinks") return <LandingRelatedSection content={merged} />;
+        return null;
+      })
+    }
+  </main>
+  <SiteFooter />
+  <MobileQuickCta />
+</BaseLayout>

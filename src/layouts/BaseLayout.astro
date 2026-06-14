@@ -1,0 +1,49 @@
+---
+/**
+ * BaseLayout.astro — index.html의 문서 셸을 이식한 공통 레이아웃.
+ * 고정 head(폰트·아이콘·manifest·고정 OG)만 렌더하고, 페이지별 SEO 태그는
+ * <slot name="head"> 로 받는다(보통 Seo.astro). styles.css는 단일 글로벌 import.
+ * 서비스워커 등록은 main.tsx에서 이 곳으로 이전(PWA 유지, 계획 D-6).
+ */
+import "../styles.css";
+// Self-host fonts to match the SPA (main.tsx), instead of the Google Fonts CDN
+// the original handoff used — keeps Astro-rendered pages on the same fonts.
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/inter/800.css";
+import "@fontsource/inter/900.css";
+import "@fontsource/noto-sans-kr/300.css";
+import "@fontsource/noto-sans-kr/400.css";
+import "@fontsource/noto-sans-kr/500.css";
+import "@fontsource/noto-sans-kr/700.css";
+import "@fontsource/noto-sans-kr/900.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#10284a" />
+    <meta property="og:locale" content="ko_KR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="집수리클라쓰" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/png" href="/icons/icon.png" />
+    <link rel="apple-touch-icon" href="/icons/icon.png" />
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <script>
+      if ("serviceWorker" in navigator && import.meta.env.PROD) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/service-worker.js").catch(() => undefined);
+        });
+      }
+    </script>
+  </body>
+</html>

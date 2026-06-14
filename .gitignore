@@ -8,4 +8,5 @@ vite.err.log
 dev-server.log
 
 .vercel
+.astro/
 .env*

@@ -1,72 +1,110 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ArrowLeft,
-  ArrowUpRight,
   BarChart3,
   Bell,
-  Clock3,
-  Copy,
-  Download,
+  ChevronDown,
   ExternalLink,
+  FileText,
+  Hammer,
+  History,
+  Home,
+  LayoutGrid,
   LoaderCircle,
   LogOut,
-  LayoutDashboard,
+  MapPin,
   MessageSquare,
-  RefreshCcw,
+  Monitor,
+  Rss,
   Search,
+  Settings,
   ShieldCheck,
-  SortAsc,
+  Smartphone,
+  Tablet,
   UserRound,
+  X
 } from "lucide-react";
+import "./admin.css";
 import { business } from "../data";
-import { supabase } from "../lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
+import { landingPageDefinitions } from "../landingPages";
 import { AuthService } from "../services/AuthService";
 import { AdminService } from "../services/AdminService";
 import type { InquiryIntake, InquiryRow, InquiryStatus } from "../types";
-import { InquiryQuoteEditor } from "./InquiryQuoteEditor";
-import { SiteContentEditor } from "./SiteContentEditor";
+import { InquiriesTab, buildDisplay, inquiryStatusLabels } from "./InquiriesTab";
+import {
+  AnalyticsTab,
+  AuditTab,
+  BlogTab,
+  ContentTab,
+  RegionsTab,
+  SettingsTab,
+  WorksTab
+} from "./DashboardPanels";
+import type { EditorPage } from "./SiteContentEditor";
 
 const authService = new AuthService();
 const adminService = new AdminService();
-const statusOrder: Array<InquiryFilter> = ["all", "pending", "new", "contacted", "done", "spam"];
-const sortOrder: Array<{ value: SortMode; label: string }> = [
-  { value: "newest", label: "최신순" },
-  { value: "oldest", label: "오래된순" },
-  { value: "status", label: "상태순" },
-  { value: "name", label: "이름순" }
+
+type AdminTab = "inquiries" | "analytics" | "regions" | "works" | "content" | "blog" | "settings" | "audit";
+
+const tabs: Array<{ key: AdminTab; label: string; icon: typeof Home; group: string }> = [
+  { key: "inquiries", label: "상담 요청", icon: MessageSquare, group: "대시보드" },
+  { key: "analytics", label: "유입·분석", icon: BarChart3, group: "대시보드" },
+  { key: "regions", label: "지역 페이지", icon: MapPin, group: "콘텐츠" },
+  { key: "works", label: "작업 페이지", icon: Hammer, group: "콘텐츠" },
+  { key: "content", label: "핵심 페이지", icon: LayoutGrid, group: "콘텐츠" },
+  { key: "blog", label: "블로그 연동", icon: Rss, group: "콘텐츠" },
+  { key: "settings", label: "사이트 설정", icon: Settings, group: "사이트" },
+  { key: "audit", label: "편집 이력", icon: History, group: "사이트" }
 ];
 
-type AdminView = "editor" | "inquiries";
-type SortMode = "newest" | "oldest" | "status" | "name";
-type TimeFilter = "all" | "today" | "7d" | "30d";
-type InquiryFilter = "all" | "pending" | InquiryStatus;
-type SidebarItem = {
-  label: string;
-  href: string;
-  icon: typeof LayoutDashboard;
-  badge?: string | number;
-  active: boolean;
-  hint?: string;
-};
+function readTabFromHash(): AdminTab {
+  const hash = window.location.hash.replace("#", "");
+  return (tabs.some((tab) => tab.key === hash) ? hash : "inquiries") as AdminTab;
+}
 
 export function AdminPage() {
-  const view = getAdminView();
+  const [tab, setTab] = useState<AdminTab>(readTabFromHash);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [inquiriesLoading, setInquiriesLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<InquiryFilter>("all");
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [sortMode, setSortMode] = useState<SortMode>("newest");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedInquiryIds, setSelectedInquiryIds] = useState<string[]>([]);
-  const [actionId, setActionId] = useState<string | null>(null);
-  const [expandedInquiryId, setExpandedInquiryId] = useState<string | null>(null);
-  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
-  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const [contentEditorPage, setContentEditorPage] = useState<EditorPage | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ path: string; label: string } | null>(null);
+  const toastTimer = useRef<number | null>(null);
 
+  /* 구 경로(/admin/inquiries)는 해시 탭으로 흡수 */
+  useEffect(() => {
+    if (window.location.pathname.startsWith("/admin/inquiries")) {
+      window.history.replaceState(null, "", "/admin#inquiries");
+    }
+  }, []);
+
+  /* 해시 ↔ 탭 동기화 */
+  useEffect(() => {
+    const apply = () => setTab(readTabFromHash());
+    window.addEventListener("hashchange", apply);
+    return () => window.removeEventListener("hashchange", apply);
+  }, []);
+
+  function gotoTab(next: AdminTab) {
+    window.location.hash = next;
+    setTab(next);
+  }
+
+  // 비로그인 방문자는 세션 확인이 끝나면 로그인 페이지로 보낸다(Supabase 설정 시에만).
+  // 로그인 페이지(AdminLoginPage)는 이 컴포넌트를 쓰지 않아 리다이렉트 루프가 없다.
+  useEffect(() => {
+    if (sessionLoading || sessionEmail || !isSupabaseConfigured) return;
+    window.location.replace("/admin/login");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionLoading, sessionEmail]);
+
+  /* 세션 + 문의 로드 */
   useEffect(() => {
     let mounted = true;
 
@@ -76,9 +114,7 @@ export function AdminPage() {
         if (!mounted) return;
         setSessionEmail(session?.user.email ?? null);
         setSessionLoading(false);
-        if (session?.user && view === "inquiries") {
-          void loadInquiries();
-        }
+        if (session?.user) void loadInquiries();
       })
       .catch((sessionError) => {
         if (!mounted) return;
@@ -87,14 +123,17 @@ export function AdminPage() {
       });
 
     const { data } =
-      supabase?.auth.onAuthStateChange((_event, session) => {
+      supabase?.auth.onAuthStateChange((event, session) => {
         setSessionEmail(session?.user.email ?? null);
         setSessionLoading(false);
-        if (session?.user && view === "inquiries") {
+        // 초기 로드는 위의 getSession()이 담당한다. INITIAL_SESSION에서 또 부르면
+        // 마운트 시 문의를 두 번 가져오므로 실제 인증 전환에서만 다시 로드한다.
+        if (event === "INITIAL_SESSION") return;
+        if (session?.user) {
           void loadInquiries();
         } else {
           setInquiries([]);
-          setExpandedInquiryId(null);
+          setDetailId(null);
         }
       }) ?? { data: { subscription: { unsubscribe: () => undefined } } };
 
@@ -102,7 +141,7 @@ export function AdminPage() {
       mounted = false;
       data.subscription.unsubscribe();
     };
-  }, [view]);
+  }, []);
 
   async function loadInquiries() {
     setInquiriesLoading(true);
@@ -111,8 +150,7 @@ export function AdminPage() {
       const rows = await adminService.listInquiries();
       setInquiries(rows);
       setAuthError(null);
-      setLastRefreshedAt(new Date().toISOString());
-      setExpandedInquiryId((current) => (current && rows.some((item) => item.id === current) ? current : null));
+      setDetailId((current) => (current && rows.some((item) => item.id === current) ? current : null));
     } catch (loadError) {
       const message = loadError instanceof Error ? loadError.message : "문의 목록을 불러오지 못했습니다.";
       setError(message);
@@ -124,728 +162,560 @@ export function AdminPage() {
     }
   }
 
-  async function handleRefresh() {
-    if (view === "inquiries") {
-      await loadInquiries();
-      return;
-    }
-
-    window.location.reload();
-  }
-
   async function handleSignOut() {
     await authService.signOut();
-    window.location.reload();
+    window.location.href = "/admin/login";
   }
 
-  async function handleStatusChange(id: string, status: InquiryStatus) {
-    setActionId(id);
-    setError(null);
+  function toast(message: string) {
+    setToastMessage(message);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToastMessage(null), 2400);
+  }
+
+  async function handleStatusMemoSave(id: string, status: InquiryStatus, memo: string) {
+    const target = inquiries.find((item) => item.id === id);
+    if (!target) return;
     try {
-      await adminService.updateInquiryStatus(id, status);
-      setInquiries((current) => current.map((item) => (item.id === id ? { ...item, status } : item)));
-    } catch (statusError) {
-      setError(statusError instanceof Error ? statusError.message : "상태를 바꾸지 못했습니다.");
-    } finally {
-      setActionId(null);
+      if (target.status !== status) {
+        await adminService.updateInquiryStatus(id, status);
+      }
+      const trimmedMemo = memo.trim();
+      const currentMemo = target.intake?.adminMemo ?? "";
+      let nextIntake = target.intake;
+      if (trimmedMemo !== currentMemo.trim()) {
+        nextIntake = { ...(target.intake ?? {}), adminMemo: trimmedMemo };
+        await adminService.updateInquiryIntake(id, nextIntake);
+      }
+      setInquiries((current) =>
+        current.map((item) => (item.id === id ? { ...item, status, intake: nextIntake ?? item.intake } : item))
+      );
+    } catch (saveError) {
+      toast(saveError instanceof Error ? saveError.message : "변경 사항을 저장하지 못했습니다.");
+      throw saveError;
     }
   }
 
-  async function handleBulkStatusChange(status: InquiryStatus) {
-    if (!selectedVisibleInquiryIds.length) return;
-
-    setActionId(`bulk-${status}`);
-    setError(null);
-
-    try {
-      await Promise.all(selectedVisibleInquiryIds.map((id) => adminService.updateInquiryStatus(id, status)));
-      setInquiries((current) => current.map((item) => (selectedVisibleInquiryIds.includes(item.id) ? { ...item, status } : item)));
-      setSelectedInquiryIds((current) => current.filter((id) => !selectedVisibleInquiryIds.includes(id)));
-    } catch (statusError) {
-      setError(statusError instanceof Error ? statusError.message : "상태를 바꾸지 못했습니다.");
-    } finally {
-      setActionId(null);
-    }
-  }
-
-  async function handleInquiryIntakeSave(id: string, intake: InquiryIntake) {
+  async function handleQuoteIntakeSave(id: string, intake: InquiryIntake) {
     await adminService.updateInquiryIntake(id, intake);
-    setInquiries((current) => current.map((item) => (item.id === id ? { ...item, intake } : item)));
-  }
-
-  async function handleCopy(text: string, label: string) {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopyFeedback(`${label} 복사됨`);
-    } catch {
-      setCopyFeedback("복사 실패");
-    } finally {
-      window.setTimeout(() => setCopyFeedback(null), 1800);
-    }
-  }
-
-  function handleExport() {
-    const header = ["이름", "연락처", "지역", "상태", "문의 내용", "접수 경로", "접수일시", "고객 이메일"];
-    const rows = visibleInquiries.map((item) => [
-      item.name,
-      item.phone,
-      item.service_area ?? "",
-      statusLabel(item.status),
-      item.message ?? "",
-      item.source ?? "",
-      formatDate(item.created_at),
-      item.user_email ?? ""
-    ]);
-
-    const csvContent = [header, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob(["﻿" + csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `inquiries_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }
-
-  useEffect(() => {
-    if (!expandedInquiryId) return;
-    const handler = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setExpandedInquiryId(null);
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [expandedInquiryId]);
-
-  const analytics = useMemo(() => buildAnalytics(inquiries), [inquiries]);
-
-  const visibleInquiries = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    const now = new Date();
-    const todayKey = now.toDateString();
-    const sevenDaysAgo = new Date(now);
-    sevenDaysAgo.setDate(now.getDate() - 7);
-    const thirtyDaysAgo = new Date(now);
-    thirtyDaysAgo.setDate(now.getDate() - 30);
-
-    const filtered = inquiries.filter((item) => {
-      const statusMatch =
-        statusFilter === "all" ||
-        (statusFilter === "pending" && (item.status === "new" || item.status === "contacted")) ||
-        item.status === statusFilter;
-      const createdAt = new Date(item.created_at);
-      const timeMatch =
-        timeFilter === "all" ||
-        (timeFilter === "today" && createdAt.toDateString() === todayKey) ||
-        (timeFilter === "7d" && createdAt >= sevenDaysAgo) ||
-        (timeFilter === "30d" && createdAt >= thirtyDaysAgo);
-      const searchMatch =
-        !normalizedQuery ||
-        [item.name, item.phone, item.service_area, item.message, item.user_email]
-          .filter((value): value is string => Boolean(value))
-          .some((value) => value.toLowerCase().includes(normalizedQuery));
-
-      return statusMatch && timeMatch && searchMatch;
-    });
-
-    return filtered.slice().sort((left, right) => {
-      if (sortMode === "name") {
-        return left.name.localeCompare(right.name, "ko-KR");
+    const target = inquiries.find((item) => item.id === id);
+    // 견적이 확정 발행되면 상태를 자동으로 '견적완료'로 올린다 (이미 시공중/완료면 유지).
+    // 상태 승격은 best-effort: 실패해도 이미 저장된 견적은 화면에 반영하고 상태만 기존값으로 둔다.
+    const currentStatus: InquiryStatus = target?.status ?? "new";
+    let nextStatus: InquiryStatus = currentStatus;
+    if (intake.quoteSnapshot?.confirmedAt && (currentStatus === "new" || currentStatus === "contacted")) {
+      try {
+        await adminService.updateInquiryStatus(id, "quoted");
+        nextStatus = "quoted";
+      } catch {
+        // 상태 승격 실패 — 견적(intake)은 이미 저장됨, 상태는 그대로 유지
       }
-
-      if (sortMode === "status") {
-        const statusDiff = statusSortValue(left.status) - statusSortValue(right.status);
-        return statusDiff || new Date(right.created_at).getTime() - new Date(left.created_at).getTime();
-      }
-
-      const timeDiff = new Date(left.created_at).getTime() - new Date(right.created_at).getTime();
-      return sortMode === "oldest" ? timeDiff : -timeDiff;
-    });
-  }, [inquiries, searchQuery, sortMode, statusFilter, timeFilter]);
-
-  const selectedInquirySet = useMemo(() => new Set(selectedInquiryIds), [selectedInquiryIds]);
-  const selectedVisibleInquiryIds = useMemo(
-    () => visibleInquiries.filter((item) => selectedInquirySet.has(item.id)).map((item) => item.id),
-    [selectedInquirySet, visibleInquiries]
-  );
-
-  useEffect(() => {
-    setSelectedInquiryIds((current) => {
-      const next = current.filter((id) => inquiries.some((item) => item.id === id));
-      return next.length === current.length ? current : next;
-    });
-  }, [inquiries]);
-
-  const pageMeta =
-    view === "editor"
-      ? {
-          kicker: "콘텐츠 · 핵심 페이지",
-          title: "핵심 페이지를 바로 수정하세요.",
-          description: "홈, 자기진단, 상담신청 같은 자주 쓰는 페이지를 한 번에 관리합니다."
-        }
-      : {
-          kicker: "대시보드 · 상담 요청",
-          title: "들어온 상담을 빠르게 확인하고 상태를 정리하세요.",
-          description: "상담신청, 전화, 카카오톡으로 들어온 요청을 한 화면에서 검색하고 처리할 수 있습니다."
-        };
-
-  const pendingCount = analytics.byStatus.new + analytics.byStatus.contacted;
-  const selectedCount = selectedVisibleInquiryIds.length;
-  const topbarSearchPlaceholder =
-    view === "inquiries" ? "이름·연락처·지역으로 검색" : "홈·랜딩·마이·견적 편집 항목 검색";
-  const sidebarGroups: Array<{ title: string; items: SidebarItem[] }> = [
-    {
-      title: "대시보드",
-      items: [
-        {
-          label: "상담 요청",
-          href: "/admin/inquiries",
-          icon: MessageSquare,
-          badge: analytics.total,
-          active: view === "inquiries"
-        },
-        {
-          label: "유입 분석",
-          href: "/admin/inquiries#inquiry-summary",
-          icon: BarChart3,
-          badge: analytics.last7Days,
-          active: false
-        }
-      ]
-    },
-    {
-      title: "콘텐츠",
-      items: [
-        {
-          label: "페이지 편집",
-          href: "/admin/editor",
-          icon: LayoutDashboard,
-          badge: 4,
-          active: view === "editor"
-        }
-      ]
-    },
-    {
-      title: "사이트",
-      items: [
-        {
-          label: "사이트 확인",
-          href: "/",
-          icon: ExternalLink,
-          active: false
-        },
-        {
-          label: "로그인",
-          href: "/admin/login",
-          icon: UserRound,
-          active: false
-        }
-      ]
     }
-  ];
-
-  function toggleInquirySelection(id: string) {
-    setSelectedInquiryIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
-    );
+    setInquiries((current) => current.map((item) => (item.id === id ? { ...item, intake, status: nextStatus } : item)));
   }
 
-  function selectVisibleInquiries() {
-    setSelectedInquiryIds(visibleInquiries.map((item) => item.id));
+  const newInquiries = useMemo(() => inquiries.filter((item) => item.status === "new"), [inquiries]);
+  const regionCount = useMemo(() => landingPageDefinitions.filter((page) => page.categoryLabel === "지역").length, []);
+  const workCount = useMemo(() => landingPageDefinitions.filter((page) => page.categoryLabel === "서비스").length, []);
+
+  function openInquiryDetail(id: string) {
+    gotoTab("inquiries");
+    setDetailId(id);
   }
 
-  function clearSelection() {
-    setSelectedInquiryIds([]);
-  }
+  const isAuthenticated = Boolean(sessionEmail);
 
   return (
-    <main className="admin-shell">
-      <aside className="admin-sidebar" aria-label="관리자 내비게이션">
-        <a className="admin-brand" href="/">
-          <span className="admin-brand__mark" aria-hidden="true">
-            <ShieldCheck size={18} />
+    <div className="adm-root">
+      <header className="adm-top">
+        <a className="adm-brand" href="/">
+          <img src="/icons/icon.png" alt="" aria-hidden="true" />
+          <span>
+            집수리<em>클라쓰</em>
           </span>
-          <span className="admin-brand__text">
-            <strong>{business.name}</strong>
-            <em>관리자 콘솔</em>
-          </span>
+          <span className="adm-top__pill">관리자</span>
         </a>
-
-        <nav className="admin-sidebar__nav">
-          {sidebarGroups.map((group) => (
-            <div className="admin-sidebar__group" key={group.title}>
-              <span className="admin-sidebar__group-label">{group.title}</span>
-              <div className="admin-sidebar__list">
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <a
-                      className={item.active ? "admin-sidebar__item active" : "admin-sidebar__item"}
-                      href={item.href}
-                      key={item.label}
-                    >
-                      <span className="admin-sidebar__item-icon">
-                        <Icon size={18} />
-                      </span>
-                      <span className="admin-sidebar__item-copy">
-                        <strong>{item.label}</strong>
-                        {item.hint ? <em>{item.hint}</em> : null}
-                      </span>
-                      {item.badge !== undefined ? <span className="admin-sidebar__badge">{item.badge}</span> : null}
-                    </a>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="admin-sidebar__status">
-          <span className="admin-sidebar__status-dot" />
-          <div>
-            <strong>모든 시스템 정상</strong>
-            <p>BUILD · {new Date().toISOString().slice(0, 10)}</p>
-          </div>
+        <div className="adm-top__center">
+          <CommandPalette
+            inquiries={inquiries}
+            onOpenInquiry={openInquiryDetail}
+            onGotoTab={gotoTab}
+            onPreview={(path, label) => setPreview({ path, label })}
+          />
         </div>
-      </aside>
-
-      <div className="admin-frame">
-        <header className="admin-topbar">
-          <a className="admin-topbar__home" href="/">
-            <ArrowLeft size={18} />
-            <span>{business.name}</span>
+        <div className="adm-top__right">
+          <NotificationBell newInquiries={newInquiries} onOpenInquiry={openInquiryDetail} />
+          <a className="adm-top__btn" href="/" target="_blank" rel="noreferrer" title="새 창으로 사이트 보기">
+            <ExternalLink />
           </a>
+          <UserMenu email={sessionEmail} onSignOut={() => void handleSignOut()} />
+        </div>
+      </header>
 
-          <label className="admin-topbar__search" aria-label="관리자 전역 검색">
-            <Search size={18} />
-            <input
-              aria-label="관리자 검색"
-              className="admin-topbar__search-input"
-              placeholder={topbarSearchPlaceholder}
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-            />
-            <kbd>⌘K</kbd>
-          </label>
+      <div className="adm-mtabs" role="tablist" aria-label="관리자 메뉴">
+        {tabs.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            className={tab === item.key ? "is-active" : ""}
+            onClick={() => gotoTab(item.key)}
+          >
+            {item.label}
+            {item.key === "inquiries" && newInquiries.length ? ` ${newInquiries.length}` : ""}
+          </button>
+        ))}
+      </div>
 
-          <div className="admin-topbar__actions">
-            <button className="admin-topbar__icon-button" type="button" aria-label="알림">
-              <Bell size={18} />
-            </button>
-            <a className="admin-topbar__icon-button" href="/" aria-label="공개 사이트 열기" target="_blank" rel="noreferrer">
-              <ExternalLink size={18} />
-            </a>
-            {sessionEmail ? (
-              <button className="admin-user-chip" type="button" onClick={() => void handleSignOut()} aria-label="로그아웃">
-                <span className="admin-user-chip__avatar">{business.owner.slice(-1)}</span>
-                <span className="admin-user-chip__copy">
-                  <strong>{business.owner}</strong>
-                  <em>대표 · 관리자</em>
-                </span>
-                <LogOut size={16} />
-              </button>
-            ) : (
-              <a className="admin-user-chip admin-user-chip--login" href="/admin/login">
-                <span className="admin-user-chip__avatar">{business.owner.slice(-1)}</span>
-                <span className="admin-user-chip__copy">
-                  <strong>로그인 필요</strong>
-                  <em>관리자 입장</em>
-                </span>
-                <ArrowUpRight size={16} />
-              </a>
-            )}
-          </div>
-        </header>
-
-        <div className="admin-content">
-          <section className="admin-hero">
-            <div className="admin-hero__copy">
-              <span className="admin-kicker">
-                <ShieldCheck size={16} />
-                {pageMeta.kicker}
-              </span>
-              <h1>{pageMeta.title}</h1>
-              <p>{pageMeta.description}</p>
-            </div>
-            <div className="admin-hero__actions">
-              {view === "inquiries" ? (
-                <>
-                  <button className="admin-ghost-button" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
-                    <Download size={16} />
-                    CSV 내보내기
-                  </button>
-                  <button className="admin-primary-button" type="button" onClick={() => void handleRefresh()}>
-                    <RefreshCcw size={16} />
-                    새로고침
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button className="admin-ghost-button" type="button" onClick={() => void handleRefresh()}>
-                    <RefreshCcw size={16} />
-                    동기화
-                  </button>
-                  <a className="admin-primary-button" href="/admin/login">
-                    <ArrowUpRight size={16} />
-                    관리자 로그인
-                  </a>
-                </>
-              )}
-            </div>
-          </section>
-
-          {view === "editor" ? (
-            sessionLoading ? (
-              <div className="admin-empty">
-                <LoaderCircle size={18} className="spin" />
-                세션 확인 중
+      <div className="adm-shell">
+        <aside className="adm-side">
+          <nav className="adm-nav">
+            {["대시보드", "콘텐츠", "사이트"].map((group) => (
+              <div key={group} style={{ display: "contents" }}>
+                <span className="adm-nav__group">{group}</span>
+                {tabs
+                  .filter((item) => item.group === group)
+                  .map((item) => {
+                    const Icon = item.icon;
+                    const count =
+                      item.key === "inquiries"
+                        ? newInquiries.length
+                        : item.key === "regions"
+                          ? regionCount
+                          : item.key === "works"
+                            ? workCount
+                            : null;
+                    return (
+                      <a
+                        key={item.key}
+                        className={`adm-nav__item${tab === item.key ? " is-active" : ""}`}
+                        href={`#${item.key}`}
+                        onClick={() => setTab(item.key)}
+                      >
+                        <Icon />
+                        {item.label}
+                        {count !== null ? <span className="adm-nav__count">{count}</span> : null}
+                      </a>
+                    );
+                  })}
               </div>
-            ) : (
-              <section className="admin-panel admin-panel--editor" aria-label="페이지 편집">
-                <SiteContentEditor isAuthenticated={Boolean(sessionEmail)} searchQuery={searchQuery} />
-              </section>
-            )
+            ))}
+          </nav>
+          <div className="adm-side__foot">
+            <div className="adm-side__pulse">
+              <span className="adm-dot" />
+              <span>모든 시스템 정상</span>
+            </div>
+            <span>jipsuriclass.kr · admin</span>
+          </div>
+        </aside>
+
+        <main className="adm-main">
+          {sessionLoading ? (
+            <div className="adm-gate">
+              <div className="adm-gate__card">
+                <LoaderCircle className="spin" />
+                <strong>세션 확인 중</strong>
+                <p>관리자 로그인 상태를 확인하고 있습니다.</p>
+              </div>
+            </div>
+          ) : !isAuthenticated ? (
+            <div className="adm-gate">
+              <div className="adm-gate__card">
+                <ShieldCheck />
+                <strong>관리자 로그인이 필요합니다</strong>
+                <p>관리자 이메일과 비밀번호, 또는 Google 계정으로 로그인하세요.</p>
+                {authError ? <span className="adm-gate__error">{authError}</span> : null}
+                <a className="adm-btn adm-btn--primary adm-btn--lg" href="/admin/login">
+                  관리자 로그인
+                </a>
+              </div>
+            </div>
+          ) : authError ? (
+            <div className="adm-gate">
+              <div className="adm-gate__card">
+                <ShieldCheck />
+                <strong>접근 권한이 없습니다</strong>
+                <span className="adm-gate__error">{authError}</span>
+                <p>{sessionEmail} 계정은 관리자 allowlist(admin_users)에 없습니다.</p>
+                <button className="adm-btn adm-btn--ghost" type="button" onClick={() => void handleSignOut()}>
+                  다른 계정으로 로그인
+                </button>
+              </div>
+            </div>
           ) : (
             <>
-              <section className="admin-metrics" id="inquiry-summary" aria-label="문의 요약">
-                <button className="admin-metric-card admin-metric-card--active" type="button" onClick={() => setStatusFilter("all")}>
-                  <span>전체 문의</span>
-                  <strong>{analytics.total}</strong>
-                  <p>누적 문의 수</p>
-                </button>
-                <button className="admin-metric-card" type="button" onClick={() => setStatusFilter("pending")}>
-                  <span>미처리</span>
-                  <strong>{pendingCount}</strong>
-                  <p>신규 + 처리중</p>
-                </button>
-                <article className="admin-metric-card">
-                  <span>오늘 문의</span>
-                  <strong>{analytics.today}</strong>
-                  <p>금일 접수</p>
-                </article>
-                <article className="admin-metric-card">
-                  <span>최근 7일</span>
-                  <strong>{analytics.last7Days}</strong>
-                  <p>주간 접수</p>
-                </article>
-              </section>
-
-              <section className="admin-toolbar" aria-label="문의 검색 및 필터">
-                <div className="admin-toolbar-group">
-                  {statusOrder.map((status) => (
-                    <button
-                      key={status}
-                      className={statusFilter === status ? "admin-filter active" : "admin-filter"}
-                      type="button"
-                      onClick={() => setStatusFilter(status)}
-                    >
-                      {statusLabel(status)}
-                    </button>
-                  ))}
-                </div>
-                <div className="admin-toolbar-group">
-                  {([
-                    ["all", "전체"],
-                    ["today", "오늘"],
-                    ["7d", "7일"],
-                    ["30d", "30일"]
-                  ] as Array<[TimeFilter, string]>).map(([value, label]) => (
-                    <button
-                      key={value}
-                      className={timeFilter === value ? "admin-filter active" : "admin-filter"}
-                      type="button"
-                      onClick={() => setTimeFilter(value)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="admin-toolbar-group">
-                  <SortAsc size={16} className="admin-toolbar-icon" />
-                  <select
-                    aria-label="문의 정렬"
-                    className="admin-sort"
-                    value={sortMode}
-                    onChange={(event) => setSortMode(event.target.value as SortMode)}
-                  >
-                    {sortOrder.map((item) => (
-                      <option key={item.value} value={item.value}>
-                        {item.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="admin-spacer" />
-                <div className="admin-toolbar-meta">
-                  <span className="admin-count">{visibleInquiries.length}건</span>
-                  {selectedCount > 0 ? <span className="admin-sync">선택 {selectedCount}건</span> : null}
-                  <span className="admin-sync">
-                    <Clock3 size={14} />
-                    {lastRefreshedAt ? `마지막 ${formatTime(lastRefreshedAt)}` : "새로고침 전"}
-                  </span>
-                  <button className="admin-ghost-button admin-export-button" type="button" onClick={handleExport} disabled={!visibleInquiries.length}>
-                    <Download size={14} />
-                    <span className="admin-btn-label">내보내기</span>
-                  </button>
-                </div>
-              </section>
-
-              {authError ? <p className="admin-banner">{authError}</p> : null}
-              {error ? <p className="admin-error">{error}</p> : null}
-
-              <section className="admin-list" aria-label="문의 목록">
-                {selectedCount > 0 ? (
-                  <div className="admin-bulk-bar" aria-label="선택 문의 작업">
-                    <div className="admin-bulk-copy">
-                      <strong>선택 {selectedCount}건</strong>
-                      <p>선택한 문의를 한 번에 처리합니다.</p>
-                    </div>
-                    <div className="admin-bulk-actions">
-                      <button
-                        className="admin-bulk-button"
-                        type="button"
-                        onClick={selectVisibleInquiries}
-                        disabled={!visibleInquiries.length || Boolean(actionId)}
-                      >
-                        전체 선택
-                      </button>
-                      <button className="admin-bulk-button" type="button" onClick={clearSelection} disabled={Boolean(actionId)}>
-                        선택 해제
-                      </button>
-                      <button className="admin-bulk-button" type="button" onClick={() => void handleBulkStatusChange("contacted")} disabled={Boolean(actionId)}>
-                        연락 처리
-                      </button>
-                      <button className="admin-bulk-button" type="button" onClick={() => void handleBulkStatusChange("done")} disabled={Boolean(actionId)}>
-                        완료 처리
-                      </button>
-                      <button className="admin-bulk-button" type="button" onClick={() => void handleBulkStatusChange("spam")} disabled={Boolean(actionId)}>
-                        스팸 처리
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-                {inquiriesLoading ? (
-                  <div className="admin-empty">
-                    <LoaderCircle size={18} className="spin" />
-                    문의를 불러오는 중
-                  </div>
-                ) : visibleInquiries.length ? (
-                  visibleInquiries.map((item) => {
-                    const isExpanded = expandedInquiryId === item.id;
-
-                    return (
-                      <article className="admin-row" key={item.id}>
-                        <div className="admin-row-main">
-                          <div className="admin-row-top">
-                            <label className="admin-row-select">
-                              <input
-                                type="checkbox"
-                                checked={selectedInquirySet.has(item.id)}
-                                onChange={() => toggleInquirySelection(item.id)}
-                                disabled={Boolean(actionId)}
-                                aria-label={`${item.name} 선택`}
-                              />
-                              <span>선택</span>
-                            </label>
-                            <strong>{item.name}</strong>
-                            <span className={`status-badge status-${item.status}`}>{item.status}</span>
-                          </div>
-                          <p>
-                            {item.phone} · {item.service_area || "지역 미입력"} · {formatDate(item.created_at)}
-                          </p>
-                          {item.user_email ? <p>고객 이메일: {item.user_email}</p> : null}
-                          <p className="admin-message">{item.message}</p>
-                          <div className="admin-quote-badge-row">
-                            {item.intake?.quoteSnapshot?.confirmedAt ? (
-                              <span className="admin-quote-badge">견적 컨펌됨</span>
-                            ) : item.intake?.selectedWorks?.length || item.intake?.quoteSnapshot ? (
-                              <span className="admin-quote-badge">견적 작성됨</span>
-                            ) : (
-                              <span className="admin-quote-badge admin-quote-badge--muted">견적 없음</span>
-                            )}
-                            <span className="admin-quote-badge admin-quote-badge--muted">
-                              {item.intake?.selectedWorks?.length ?? 0}개 항목
-                            </span>
-                          </div>
-                          {isExpanded ? (
-                            <div className="admin-row-detail">
-                              <div className="admin-detail-grid">
-                                <DetailItem label="연락처" value={item.phone} />
-                                <DetailItem label="지역" value={item.service_area || "지역 미입력"} />
-                                <DetailItem label="고객 이메일" value={item.user_email || "-"} />
-                                <DetailItem label="접수 경로" value={item.source} />
-                              </div>
-                              <div className="admin-detail-grid">
-                                <DetailItem label="집 환경" value={stringField(item.intake?.propertyType)} />
-                                <DetailItem label="공사 유형" value={stringField(item.intake?.projectType)} />
-                                <DetailItem label="예산" value={stringField(item.intake?.budget)} />
-                                <DetailItem label="상담 가능 시간" value={stringField(item.intake?.preferredTime)} />
-                              </div>
-                              <InquiryQuoteEditor inquiry={item} onSave={(nextIntake) => handleInquiryIntakeSave(item.id, nextIntake)} />
-                              {item.attachments?.length ? (
-                                <div className="inquiry-attachment-grid" aria-label="첨부 사진">
-                                  {item.attachments.map((attachment) => (
-                                    <a
-                                      className="inquiry-attachment"
-                                      href={attachment.url}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      key={attachment.url}
-                                    >
-                                      <img src={attachment.url} alt={attachment.name} />
-                                      <span>{attachment.name}</span>
-                                    </a>
-                                  ))}
-                                </div>
-                              ) : null}
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="admin-row-actions">
-                          <button
-                            className="admin-status-button admin-detail-toggle"
-                            type="button"
-                            onClick={() => setExpandedInquiryId((current) => (current === item.id ? null : item.id))}
-                            aria-expanded={isExpanded}
-                          >
-                            {isExpanded ? "접기" : "상세"}
-                          </button>
-                          {(["new", "contacted", "done", "spam"] as InquiryStatus[])
-                            .filter((status) => status !== item.status)
-                            .map((status) => (
-                              <button
-                                key={status}
-                                className="admin-status-button"
-                                type="button"
-                                disabled={Boolean(actionId)}
-                                onClick={() => void handleStatusChange(item.id, status)}
-                              >
-                                {actionId === item.id ? <LoaderCircle size={12} className="spin" /> : statusLabel(status)}
-                              </button>
-                            ))}
-                          <button className="admin-link admin-copy-button" type="button" onClick={() => void handleCopy(item.phone, "연락처")}>
-                            <Copy size={14} />
-                            복사
-                          </button>
-                          <a className="admin-link" href={`tel:${item.phone}`}>
-                            <ArrowUpRight size={14} />
-                            전화
-                          </a>
-                        </div>
-                      </article>
-                    );
-                  })
-                ) : (
-                  <div className="admin-empty">표시할 문의가 없습니다.</div>
-                )}
-              </section>
+              {tab === "inquiries" ? (
+                <InquiriesTab
+                  inquiries={inquiries}
+                  loading={inquiriesLoading}
+                  error={error && !authError ? error : null}
+                  detailId={detailId}
+                  onOpenDetail={setDetailId}
+                  onRefresh={loadInquiries}
+                  onStatusMemoSave={handleStatusMemoSave}
+                  onQuoteIntakeSave={handleQuoteIntakeSave}
+                  toast={toast}
+                />
+              ) : null}
+              {tab === "analytics" ? <AnalyticsTab inquiries={inquiries} /> : null}
+              {tab === "regions" ? (
+                <RegionsTab
+                  onPreview={(path, label) => setPreview({ path, label })}
+                  onEdit={() => {
+                    setContentEditorPage("landing");
+                    gotoTab("content");
+                  }}
+                />
+              ) : null}
+              {tab === "works" ? (
+                <WorksTab
+                  onPreview={(path, label) => setPreview({ path, label })}
+                  onEdit={() => {
+                    setContentEditorPage("landing");
+                    gotoTab("content");
+                  }}
+                />
+              ) : null}
+              {tab === "content" ? (
+                <ContentTab
+                  isAuthenticated={isAuthenticated}
+                  editorPage={contentEditorPage}
+                  onEditorPageChange={setContentEditorPage}
+                  onPreview={(path, label) => setPreview({ path, label })}
+                />
+              ) : null}
+              {tab === "blog" ? <BlogTab toast={toast} /> : null}
+              {tab === "settings" ? <SettingsTab toast={toast} /> : null}
+              {tab === "audit" ? <AuditTab /> : null}
             </>
           )}
-        </div>
+        </main>
       </div>
-      {copyFeedback ? <div className="admin-toast" role="status">{copyFeedback}</div> : null}
-    </main>
-  );
-}
 
-function getAdminView(): AdminView {
-  const pathname = window.location.pathname;
-  return pathname.startsWith("/admin/editor") ? "editor" : "inquiries";
-}
-
-function buildAnalytics(inquiries: InquiryRow[]) {
-  const total = inquiries.length;
-  const byStatus = inquiries.reduce<Record<InquiryStatus, number>>(
-    (acc, item) => {
-      acc[item.status] += 1;
-      return acc;
-    },
-    { new: 0, contacted: 0, done: 0, spam: 0 }
-  );
-
-  const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-
-  const series = Array.from({ length: 7 }, (_value, index) => {
-    const day = new Date(start);
-    day.setDate(start.getDate() - (6 - index));
-    const next = new Date(day);
-    next.setDate(day.getDate() + 1);
-    const count = inquiries.filter((item) => {
-      const createdAt = new Date(item.created_at);
-      return createdAt >= day && createdAt < next;
-    }).length;
-
-    return {
-      label: new Intl.DateTimeFormat("ko-KR", { weekday: "short" }).format(day),
-      dateLabel: new Intl.DateTimeFormat("ko-KR", { month: "2-digit", day: "2-digit" }).format(day),
-      count
-    };
-  });
-
-  const last7Days = series.reduce((sum, item) => sum + item.count, 0);
-  const today = series[series.length - 1]?.count ?? 0;
-
-  return { total, byStatus, series, last7Days, today };
-}
-
-function stringField(value: unknown) {
-  return typeof value === "string" && value.trim() ? value.trim() : null;
-}
-
-function statusSortValue(status: InquiryStatus) {
-  switch (status) {
-    case "new":
-      return 0;
-    case "contacted":
-      return 1;
-    case "done":
-      return 2;
-    case "spam":
-      return 3;
-    default:
-      return 4;
-  }
-}
-
-function formatTime(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(new Date(value));
-}
-
-function DetailItem({ label, value }: { label: string; value: string | null }) {
-  return (
-    <div className="admin-detail-item">
-      <span>{label}</span>
-      <strong>{value || "-"}</strong>
+      {preview ? <PreviewModal path={preview.path} label={preview.label} onClose={() => setPreview(null)} /> : null}
+      {toastMessage ? (
+        <div className="adm-toast" role="status">
+          {toastMessage}
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function statusLabel(status: InquiryFilter) {
-  const map: Record<InquiryFilter, string> = {
-    all: "전체",
-    pending: "미처리",
-    new: "신규",
-    contacted: "연락",
-    done: "완료",
-    spam: "스팸"
-  };
-  return map[status];
+/* ──────────── ⌘K 커맨드 팔레트 ──────────── */
+
+function CommandPalette({
+  inquiries,
+  onOpenInquiry,
+  onGotoTab,
+  onPreview
+}: {
+  inquiries: InquiryRow[];
+  onOpenInquiry: (id: string) => void;
+  onGotoTab: (tab: AdminTab) => void;
+  onPreview: (path: string, label: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const rootRef = useRef<HTMLLabelElement | null>(null);
+
+  const index = useMemo(() => {
+    const entries: Array<{ type: string; label: string; sub?: string; icon: typeof Home; run: () => void }> = [];
+    tabs.forEach((item) => {
+      entries.push({ type: "탭", label: item.label, icon: item.icon, run: () => onGotoTab(item.key) });
+    });
+    inquiries.forEach((item) => {
+      const display = buildDisplay(item);
+      entries.push({
+        type: "상담",
+        label: `${item.name} · ${display.workType}`,
+        sub: `${display.region} · ${inquiryStatusLabels[item.status] ?? item.status}`,
+        icon: UserRound,
+        run: () => onOpenInquiry(item.id)
+      });
+    });
+    landingPageDefinitions.forEach((page) => {
+      const label = page.areaLabel || page.title.split("|")[0].trim();
+      entries.push({
+        type: page.categoryLabel,
+        label,
+        sub: page.path,
+        icon: page.categoryLabel === "지역" ? MapPin : Hammer,
+        run: () => onPreview(page.path, label)
+      });
+    });
+    (
+      [
+        ["/", "홈"],
+        ["/estimate", "상담신청서"],
+        ["/mypage", "마이페이지"],
+        ["/diagnosis", "자기진단"],
+        ["/privacy", "개인정보처리방침"]
+      ] as Array<[string, string]>
+    ).forEach(([path, name]) => {
+      entries.push({ type: "페이지", label: name, sub: path, icon: FileText, run: () => onPreview(path, name) });
+    });
+    return entries;
+  }, [inquiries, onGotoTab, onOpenInquiry, onPreview]);
+
+  const hits = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    const filtered = term
+      ? index.filter((entry) => `${entry.label} ${entry.sub ?? ""} ${entry.type}`.toLowerCase().includes(term))
+      : index;
+    return filtered.slice(0, 9);
+  }, [index, query]);
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        inputRef.current?.focus();
+        setOpen(true);
+      }
+      if (event.key === "Escape") setOpen(false);
+    };
+    const onClick = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("click", onClick);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("click", onClick);
+    };
+  }, []);
+
+  return (
+    <label className="adm-top__search" ref={rootRef}>
+      <Search />
+      <input
+        ref={inputRef}
+        type="search"
+        placeholder="상담요청·페이지·블로그 글 검색"
+        value={query}
+        onFocus={() => setOpen(true)}
+        onChange={(event) => {
+          setQuery(event.target.value);
+          setOpen(true);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && hits[0]) {
+            hits[0].run();
+            setOpen(false);
+            setQuery("");
+            inputRef.current?.blur();
+          }
+        }}
+      />
+      <kbd>⌘K</kbd>
+      {open ? (
+        <div className="adm-cmdk">
+          {hits.length ? (
+            hits.map((entry, indexInList) => {
+              const Icon = entry.icon;
+              return (
+                <button
+                  key={`${entry.type}-${entry.label}-${entry.sub ?? ""}`}
+                  className={`adm-cmdk__item${indexInList === 0 ? " is-first" : ""}`}
+                  type="button"
+                  onClick={() => {
+                    entry.run();
+                    setOpen(false);
+                    setQuery("");
+                  }}
+                >
+                  <Icon />
+                  <span className="adm-cmdk__label">
+                    {entry.label}
+                    {entry.sub ? <em>{entry.sub}</em> : null}
+                  </span>
+                  <span className="adm-cmdk__type">{entry.type}</span>
+                </button>
+              );
+            })
+          ) : (
+            <div className="adm-cmdk__empty">검색 결과가 없습니다</div>
+          )}
+        </div>
+      ) : null}
+    </label>
+  );
 }
 
-function formatDate(value: string) {
-  const date = new Date(value);
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(date);
+/* ──────────── 알림 벨 ──────────── */
+
+function NotificationBell({
+  newInquiries,
+  onOpenInquiry
+}: {
+  newInquiries: InquiryRow[];
+  onOpenInquiry: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
+  return (
+    <div ref={rootRef} style={{ position: "relative" }}>
+      <button className="adm-top__btn" type="button" title="알림" onClick={() => setOpen((current) => !current)}>
+        <Bell />
+        {newInquiries.length ? <span className="adm-top__dot" /> : null}
+      </button>
+      {open ? (
+        <div className="adm-notif">
+          <header>알림{newInquiries.length ? ` · 새 상담 ${newInquiries.length}건` : ""}</header>
+          {newInquiries.length ? (
+            newInquiries.slice(0, 5).map((item) => {
+              const display = buildDisplay(item);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="adm-notif__row"
+                  onClick={() => {
+                    setOpen(false);
+                    onOpenInquiry(item.id);
+                  }}
+                >
+                  <strong>
+                    {item.name} · {display.workType}
+                  </strong>
+                  <span>
+                    {display.region} · {new Date(item.created_at).toLocaleString("ko-KR")}
+                  </span>
+                </button>
+              );
+            })
+          ) : (
+            <div className="adm-notif__empty">새 알림이 없습니다</div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* ──────────── 사용자 메뉴 ──────────── */
+
+function UserMenu({ email, onSignOut }: { email: string | null; onSignOut: () => void }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
+
+  const initial = (email?.[0] ?? "관").toUpperCase();
+
+  return (
+    <div ref={rootRef} style={{ position: "relative" }}>
+      <button className="adm-top__user" type="button" onClick={() => setOpen((current) => !current)}>
+        <span className="adm-top__avatar">{initial}</span>
+        <span className="adm-top__user-meta">
+          <strong>{business.owner.replace("대표자 ", "")}</strong>
+          <em>{email ?? "로그인 필요"}</em>
+        </span>
+        <ChevronDown />
+      </button>
+      {open ? (
+        <div className="adm-usermenu">
+          <a href="/" target="_blank" rel="noreferrer">
+            <Home />
+            사이트 홈
+          </a>
+          <a href="/mypage" target="_blank" rel="noreferrer">
+            <UserRound />내 마이페이지
+          </a>
+          {email ? (
+            <button type="button" className="adm-usermenu__logout" onClick={onSignOut}>
+              <LogOut />
+              로그아웃
+            </button>
+          ) : (
+            <a href="/admin/login">
+              <ShieldCheck />
+              관리자 로그인
+            </a>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/* ──────────── 미리보기 모달 ──────────── */
+
+function PreviewModal({ path, label, onClose }: { path: string; label: string; onClose: () => void }) {
+  const [width, setWidth] = useState<string>("100%");
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  const sizes: Array<{ key: string; icon: typeof Monitor; title: string }> = [
+    { key: "390px", icon: Smartphone, title: "모바일" },
+    { key: "820px", icon: Tablet, title: "태블릿" },
+    { key: "100%", icon: Monitor, title: "데스크탑" }
+  ];
+
+  return (
+    <div className="adm-pv" role="dialog" aria-label={`${label} 미리보기`}>
+      <div className="adm-pv__backdrop" onClick={onClose} />
+      <div className="adm-pv__panel">
+        <header className="adm-pv__bar">
+          <span className="adm-pv__file">
+            {label} · {path}
+          </span>
+          <div className="adm-pv__sizes">
+            {sizes.map((size) => {
+              const Icon = size.icon;
+              return (
+                <button
+                  key={size.key}
+                  type="button"
+                  title={size.title}
+                  className={width === size.key ? "is-active" : ""}
+                  onClick={() => setWidth(size.key)}
+                >
+                  <Icon />
+                </button>
+              );
+            })}
+          </div>
+          <div className="adm-pv__tools">
+            <a className="adm-pv__open" href={path} target="_blank" rel="noreferrer">
+              <ExternalLink />새 탭
+            </a>
+            <button type="button" className="adm-pv__close" aria-label="닫기" onClick={onClose}>
+              <X size={14} />
+            </button>
+          </div>
+        </header>
+        <div className="adm-pv__stage">
+          <iframe className="adm-pv__frame" title={`${label} 미리보기`} src={path} style={{ width }} />
+        </div>
+      </div>
+    </div>
+  );
 }

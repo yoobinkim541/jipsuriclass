@@ -1,0 +1,46 @@
+---
+/**
+ * Seo.astro — 런타임 usePageSeo(App.tsx:123-145)의 빌드 타임 대체.
+ * 같은 데이터를 정적 <head>에 emit한다. og:locale/type/site_name 같은 고정값은
+ * BaseLayout에서 한 번만 렌더하므로 여기서는 페이지별 값만 출력한다.
+ */
+const siteUrl = "https://www.jipsuriclass.kr";
+const defaultImage = `${siteUrl}/og-image.png`;
+const ogAlt = "집수리클라쓰 OG 배너";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  image?: string;
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown>[];
+}
+
+const { title, description, path, image, noindex = false, jsonLd = [] } = Astro.props;
+const url = `${siteUrl}${path}`;
+const ogImage = image ?? defaultImage;
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="robots" content={noindex ? "noindex,nofollow" : "index,follow"} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={url} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:secure_url" content={ogImage} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1729" />
+<meta property="og:image:height" content="910" />
+<meta property="og:image:alt" content={ogAlt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+<meta name="twitter:image:alt" content={ogAlt} />
+<link rel="canonical" href={url} />
+{jsonLd.map((entry) => (
+  // Escape "<" to < so an admin-editable value containing "</script>"
+  // cannot break out of the ld+json block (valid JSON, identical to consumers).
+  <script type="application/ld+json" set:html={JSON.stringify(entry).replace(/</g, "\\u003c")} />
+))}

@@ -29,7 +29,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
-  const cutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  // The cron runs once per day (see vercel.json). Look back slightly more than
+  // 24h so inquiries near the execution boundary are never dropped. This is a
+  // backup digest — each inquiry is already alerted in real time on submit
+  // (email + Telegram in api/inquiries.ts).
+  const cutoff = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
   const query = new URLSearchParams({
     select: "name,phone,service_area,message,created_at",
     source: "eq.website",
@@ -65,7 +69,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     body: JSON.stringify({
       from: "집수리클라쓰 <onboarding@resend.dev>",
       to: [adminEmail],
-      subject: `최근 5분 문의 ${rows.length}건`,
+      subject: `최근 24시간 문의 ${rows.length}건`,
       html: buildDigestHtml(rows)
     })
   });
@@ -98,8 +102,8 @@ function buildDigestHtml(rows: InquiryRow[]) {
 
   return `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
-      <h2 style="margin: 0 0 12px;">최근 5분 문의 알림</h2>
-      <p style="margin: 0 0 16px;">총 ${rows.length}건의 새 문의가 들어왔습니다.</p>
+      <h2 style="margin: 0 0 12px;">일일 문의 요약</h2>
+      <p style="margin: 0 0 16px;">최근 24시간 동안 총 ${rows.length}건의 새 문의가 들어왔습니다.</p>
       <table style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>

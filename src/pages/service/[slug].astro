@@ -1,0 +1,61 @@
+---
+/**
+ * 서비스 랜딩 페이지 (정적). landingPageDefinitions로 getStaticPaths 생성하고
+ * 콘텐츠 override를 빌드 타임에 Supabase에서 해석한다(없으면 기본값 — 계획 D-3a).
+ * summary/points/faq/relatedLinks는 정적 HTML, blog 섹션만 client:visible 아일랜드.
+ */
+export const prerender = true;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Seo from "../../components/seo/Seo.astro";
+import { SiteHeaderIsland } from "../../components/site/SiteHeaderIsland";
+import { SiteFooter, MobileQuickCta } from "../../components/site/SiteFooter";
+import {
+  LandingSummarySection,
+  LandingPointsSection,
+  LandingFaqSection,
+  LandingRelatedSection
+} from "../../components/landing/LandingSections";
+import { LandingBlogSection, LandingBackButton } from "../../components/landing/LandingInteractive";
+import { landingPageDefinitions, mergeLandingPageContent, buildLandingPageJsonLd } from "../../landingPages";
+import { defaultLandingSectionOrder } from "../../contentSections";
+import { SiteContentService } from "../../services/SiteContentService";
+
+export async function getStaticPaths() {
+  // A build-time Supabase failure must not fail the whole Astro build; fall back
+  // to defaults (empty overrides) so pages still prerender.
+  const overrides = await new SiteContentService()
+    .loadLandingPagesContent()
+    .catch(() => ({}) as Awaited<ReturnType<SiteContentService["loadLandingPagesContent"]>>);
+  return landingPageDefinitions
+    .filter((def) => def.categoryLabel === "서비스" && def.path.startsWith("/service/"))
+    .map((def) => ({
+      params: { slug: def.path.replace("/service/", "") },
+      props: { merged: mergeLandingPageContent(def, overrides[def.path]) }
+    }));
+}
+
+const { merged } = Astro.props;
+const siteUrl = "https://www.jipsuriclass.kr";
+const jsonLd = buildLandingPageJsonLd(merged, siteUrl);
+const sections = merged.sections ?? defaultLandingSectionOrder;
+---
+<BaseLayout>
+  <Seo slot="head" title={merged.title} description={merged.description} path={merged.path} jsonLd={jsonLd} />
+  <SiteHeaderIsland client:idle brandHref="/" />
+  <LandingBackButton client:idle fallbackHref="/" />
+  <main class="landing-page" id="top">
+    {
+      sections.map((sectionId) => {
+        if (sectionId === "summary") return <LandingSummarySection content={merged} />;
+        if (sectionId === "points") return <LandingPointsSection content={merged} />;
+        if (sectionId === "blog") return <LandingBlogSection client:visible content={merged} />;
+        if (sectionId === "faq") return <LandingFaqSection content={merged} />;
+        if (sectionId === "relatedLinks") return <LandingRelatedSection content={merged} />;
+        return null;
+      })
+    }
+  </main>
+  <SiteFooter />
+  <MobileQuickCta />
+</BaseLayout>
