@@ -225,12 +225,20 @@ function formatIntakeSummary(intake: Record<string, unknown>) {
   const addressParts = [intake.postalCode, intake.address, intake.detailAddress]
     .filter((part): part is string => typeof part === "string" && part.trim().length > 0);
   const address = addressParts.join(" ").trim();
+  const selectedRooms = Array.isArray(intake.selectedRooms)
+    ? (intake.selectedRooms as unknown[])
+        .filter((r): r is string => typeof r === "string" && r.trim().length > 0)
+        .join(", ")
+    : "";
+  const otherDetail = typeof intake.otherRoomDetail === "string" ? intake.otherRoomDetail.trim() : "";
 
   const entries = [
     ["공간 유형", intake.spaceType],
     ["면적", intake.areaBand],
     ["거주 상태", intake.propertyStatus],
     ["수리 이유", intake.reason],
+    ["수리 항목", selectedRooms || undefined],
+    ["기타 상세", otherDetail || undefined],
     ["예산", intake.budget],
     ["착수 시기", intake.startTiming],
     ["주소", address || undefined]

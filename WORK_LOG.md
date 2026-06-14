@@ -1,6 +1,25 @@
 # Work Log
 
-## 2026-06-13 - 데스크톱 스크롤 끊김 해소 + 섹션 배경색 통일
+## 2026-06-14 - reconcile: stale 로컬 발산 정리 + 고유 가치 salvage
+
+Changed files:
+- `index.html`, `public/icons/icon-dark.svg`, `scripts/smoke.mjs`
+- `src/styles.css`, `src/services/QuoteService.ts`, `api/inquiries.ts`, `vite.config.ts`
+
+Implemented behavior:
+- 로컬 main이 origin/main보다 32+커밋 뒤처진 채 6h cron으로 prod를 stale 빌드로 덮어쓰던 문제를 정리. 로컬 main을 origin/main에 정렬하고(7커밋은 backup 브랜치 보존), origin에 없는 고유 가치만 이 브랜치로 salvage.
+- salvage: ① 다크모드 파비콘(prefers-color-scheme) + icon-dark.svg, ② 배포 산출물 검증용 smoke.mjs 게이트, ③ 다크모드 테마 CSS(변수+컴포넌트 오버라이드), ④ xlsx 동적 import(메인 번들에서 424KB 분리), ⑤ 문의 이메일 요약에 수리 항목/기타 상세.
+- discard(대체됨/obsolete): SEO pricing sitemap·prerender(origin Astro 페이지가 상위호환), Vercel cron(origin은 GitHub Actions), -625줄 레거시 CSS 정리 텍스트 패치(origin 전면 재작성과 충돌, 별도 재작업).
+
+Verification:
+- `npm run build` 통과. `node scripts/smoke.mjs` 6/6 통과. dist에 다크 파비콘·다크모드 CSS 포함, xlsx 별도 청크 확인.
+
+Follow-up:
+- 배포 경로 교정: 로컬 6h `jipsuri-deploy.sh`(stale 트리 빌드) 폐기/교정 → GitHub 연동 Vercel을 prod 단일 경로로. smoke.mjs는 이 PR로 origin 반입.
+- estimateHref 모듈 분리(순수 리팩터)·editor-preview overflow(재디자인 충돌 위험)는 가치/리스크 판단으로 스킵.
+- 미커밋 -625줄 레거시 CSS 정리는 origin 새 styles.css 위에서 별도 재도출 권장.
+
+
 
 Changed files:
 - `src/styles.css`
