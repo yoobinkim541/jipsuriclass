@@ -4,12 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
-    "postbuild": "node scripts/patch-static-html.mjs",
-    "preview": "vite preview --host 0.0.0.0",
-    "dev:astro": "astro dev",
-    "build:astro": "astro build",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "dev:vite": "vite --host 0.0.0.0",
+    "build:vite": "tsc -b && vite build && node scripts/patch-static-html.mjs",
     "astro": "astro",
     "test:blog": "playwright test"
   },
