@@ -1,4 +1,3 @@
-import * as XLSX from "xlsx";
 import type jsPDF from "jspdf";
 import { electricPriceCategories } from "../electricPriceData";
 import { servicePricingRegistry } from "../pricing/registry";
@@ -207,6 +206,7 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
 }
 
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
+  const XLSX = await import("xlsx");
   const buffer = await input.file.arrayBuffer();
   const workbook = XLSX.read(buffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
@@ -231,6 +231,7 @@ export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: Fi
 }
 
 export async function downloadQuoteTemplateAsXlsx() {
+  const XLSX = await import("xlsx");
   const workbook = XLSX.utils.book_new();
   const rows: Array<Array<string | number>> = [
     ["상담 견적서 템플릿"],
@@ -275,6 +276,7 @@ export async function downloadQuoteTemplateAsXlsx() {
 }
 
 export async function downloadQuoteAsXlsx(input: QuoteDownloadContext) {
+  const XLSX = await import("xlsx");
   const documentTitle = buildQuoteDocumentTitle(input.quote);
   const workbook = XLSX.utils.book_new();
   const totals = input.totals;
