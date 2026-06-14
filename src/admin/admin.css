@@ -1696,3 +1696,132 @@
 
 /* 임베드한 기존 에디터(밝은 회색 테마)가 어드민 크림 배경 위에서도 자연스럽도록 */
 .adm-editor-host .site-content-editor { margin: 0; }
+
+/* =====================================================================
+   다크모드 — .adm-root 스코프 토큰 반전
+   admin.css는 표면/글씨를 토큰으로 일관되게 쓰므로(--paper/--ivory/--ink…),
+   스코프 토큰만 뒤집으면 어드민 전체가 한 번에 다크로 전환된다.
+   단, navy-*는 라이트/다크 양쪽에서 어두운 '배경'으로도, 어두운 '글씨'로도
+   쓰여 이중 용도라 일부 셀렉터는 개별 보정한다.
+   ===================================================================== */
+@media (prefers-color-scheme: dark) {
+  .adm-root {
+    /* 표면: 밝은 크림/페이퍼 → 다크 패널 */
+    --cream: #0b1220;
+    --cream-2: #141d31;
+    --ivory: #141d31;
+    --paper: #1b2740;
+    /* 글씨: 짙은 잉크 → 밝게 */
+    --ink: #f3f6fb;
+    --ink-2: #c7d2e4;
+    --ink-3: #97a4bd;
+    --ink-4: #6f7e99;
+    /* 경계선: 크림 헤어라인 → 반투명 라이트 */
+    --hair: rgba(226, 232, 240, 0.14);
+    --hair-2: rgba(226, 232, 240, 0.22);
+    /* 골드 살짝 밝게(다크 배경 대비) */
+    --gold-500: #e6c074;
+    --gold-600: #d7ae6b;
+    /* 그림자 강화 */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.32);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.44), 0 24px 64px rgba(0, 0, 0, 0.5);
+    background: #0a111f; /* line 64 #f3f1eb 하드코딩 대체 */
+  }
+
+  /* ── navy 표면(사이드바·primary 버튼 등)은 양쪽 모드 모두 어두움 →
+        글씨 var(--paper)가 다크로 반전되면 안 보이므로 밝게 고정 ── */
+  .adm-root .adm-btn--primary,
+  .adm-root .adm-btn--primary:hover { color: #f3f6fb; }
+  /* primary 버튼 배경 navy-900은 다크 페이지서 묻힘 → 골드 강조로 전환(공개 사이트와 통일) */
+  .adm-root .adm-btn--primary {
+    background: linear-gradient(180deg, #e6c074 0%, #cf9f54 100%);
+    color: #0b1220;
+    border-color: rgba(230, 192, 116, 0.6);
+  }
+  .adm-root .adm-btn--primary:hover {
+    background: linear-gradient(180deg, #efce8a 0%, #d7ae6b 100%);
+    color: #0b1220;
+  }
+
+  /* ── navy를 '글씨'로 쓰던 곳: 다크 표면 위에서 거의 안 보임 → 밝게 ── */
+  .adm-root .adm-top__btn:hover { color: var(--ink); }
+  .adm-root .adm-notif__row strong { color: var(--ink); }
+  .adm-root .adm-detail__body dd a,
+  .adm-root .adm-status--contacted { color: var(--gold-500); }
+
+  /* 성공/연락됨 상태칩 등 반투명 navy 배경칩: 글씨 밝게 */
+  .adm-root [class*="adm-status--"] { color: var(--ink); }
+
+  /* ── navy-900을 '글씨'로 쓰던 4곳: 다크 표면 위 거의 안 보임 → 밝게 ── */
+  /* 브랜드 워드마크 '집수리'(클라쓰는 골드라 OK) */
+  .adm-root .adm-brand > span:first-of-type { color: var(--ink); }
+  /* 페이지 제목 H1 */
+  .adm-root .adm-tab__head h1 { color: var(--ink); }
+  /* 활성 내비 항목: navy 배경 유지 + 글씨 밝게(카운트 배지는 골드 그대로) */
+  .adm-root .adm-nav__item.is-active { color: var(--ink); }
+  /* 활성 필터 버튼: navy 배경 유지 + 글씨 밝게 */
+  .adm-root .adm-inq-filters button.is-active { color: var(--ink); }
+
+  /* ── navy-900/700을 '글씨'로 쓰던 표면 위 제목·숫자·셀: 다크에서 안 보임 → 밝게.
+        (gold 배경 위 navy 글씨 칩/배지는 그대로 둠: 대비 양호) ── */
+  .adm-root .adm-kpi__num,
+  .adm-root .adm-inq-row .adm-cell-scope strong,
+  .adm-root .adm-detail__head h2,
+  .adm-root .adm-region-card__name,
+  .adm-root .adm-region-card__stats strong,
+  .adm-root .adm-blog-status__item strong,
+  .adm-root .adm-blog-card__title,
+  .adm-root .adm-akpi__val,
+  .adm-root .adm-card__head h3,
+  .adm-root .adm-funnel__num,
+  .adm-root .adm-gate__card strong { color: var(--ink); }
+
+  /* navy 코드·경로 라벨 → 본문 보조색 */
+  .adm-root .adm-tab__head code,
+  .adm-root .adm-audit-row .adm-path { color: var(--ink-2); }
+
+  /* navy 배경 카드 버튼('편집 열기' 등): paper 글씨가 다크 반전 → 밝게 */
+  .adm-root .adm-card-primary { color: var(--ink); }
+  /* 상세 패널: 활성 상태칩·'변경 저장' 버튼(navy 배경 + paper 글씨) → 글씨 밝게 */
+  .adm-root .adm-edit__chip.is-active,
+  .adm-root .adm-edit__save { color: var(--ink); }
+
+  /* 밝은 배경 hover + navy 글씨 조합 → 밝게 */
+  .adm-root .adm-top__btn:hover,
+  .adm-root .adm-nav__item:hover,
+  .adm-root .adm-pv__close:hover { color: var(--ink); }
+
+  /* 활성 지역 필터: navy 배경 유지 + 글씨 밝게 */
+  .adm-root .adm-regions-filter.is-active { color: var(--ink); }
+
+  /* 샘플/예시 배지 + 지역 tier 배지(밝은 gold-100 칩) → 다크 칩 + 골드 글씨 */
+  .adm-root .adm-badge-sample,
+  .adm-root .adm-region-card__tier--core {
+    background: rgba(230, 192, 116, 0.16);
+    color: var(--gold-500);
+  }
+
+  /* 활성 상태 navy 테두리가 다크에서 안 보임 → 골드로 강조 */
+  .adm-root .adm-mtabs button.is-active,
+  .adm-root .adm-inq-filters button.is-active,
+  .adm-root .adm-edit__chip.is-active,
+  .adm-root .adm-regions-filter.is-active,
+  .adm-root .adm-pv__sizes button.is-active { border-color: var(--gold-500); }
+
+  /* ── 견적서 에디터(전역 .quote-editor/.editor-upload 클래스, .adm-root 안에서 렌더):
+        #fff/그라데이션 흰 배경 하드코딩 → 다크 패널로 ── */
+  .adm-root .quote-editor__table-wrap,
+  .adm-root .quote-editor__panel,
+  .adm-root .quote-editor__summary div,
+  .adm-root .editor-upload-trigger {
+    background: var(--paper);
+    border-color: var(--hair);
+  }
+  .adm-root .quote-editor__meta span {
+    background: rgba(124, 152, 240, 0.18);
+    color: var(--ink-2);
+  }
+
+  /* 임베드 에디터(밝은 회색 테마)는 다크 표면 위에서 분리감 유지 */
+  .adm-editor-host { color-scheme: light; }
+}
