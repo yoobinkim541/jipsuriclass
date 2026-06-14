@@ -27,45 +27,37 @@ type PreviewFn = (path: string, label: string) => void;
 
 /* ──────────── 유입 · 분석 ──────────── */
 
-// 페이지 유입·검색 키워드·전환 흐름은 아직 수집 백엔드가 없어 예시 데이터로 표시합니다.
-const sampleTopPages = [
-  { name: "누수 탐지·보수 가격표", path: "/service/leak/pricing", visits: 1842, conv: "8.2%" },
-  { name: "홈", path: "/", visits: 1238, conv: "6.1%" },
-  { name: "욕실 가격표", path: "/service/bathroom/pricing", visits: 812, conv: "12.3%" },
-  { name: "남양주 집수리", path: "/area/namyangju", visits: 698, conv: "8.8%" },
-  { name: "자기진단", path: "/diagnosis", visits: 412, conv: "15.6%" }
-];
-const sampleKeywords = [
-  { kw: "남양주 누수", visits: 642 },
-  { kw: "다산 집수리", visits: 488 },
-  { kw: "구리 욕실 부분 리모델링", visits: 412 },
-  { kw: "하남 집수리클라쓰", visits: 384 },
-  { kw: "강동구 도배 잘하는 곳", visits: 312 }
-];
-const sampleFunnel = [
-  { step: "SEO 페이지 진입", n: 8420, w: 100 },
-  { step: "내부 이동", n: 5128, w: 61 },
-  { step: "상담신청 페이지", n: 1842, w: 22 },
-  { step: "신청서 시작", n: 824, w: 9.8 },
-  { step: "최종 제출", n: 412, w: 4.9 }
-];
+// 방문·유입 트래픽은 Vercel Web Analytics 대시보드에서 봅니다(이 어드민에는 가짜 데이터를
+// 두지 않음). 여기서는 inquiries DB에서 계산한 실데이터만 시각화합니다.
+const VERCEL_ANALYTICS_URL = "https://vercel.com/yoobinkim541s-projects/jipsuriclass/analytics";
 
 export function AnalyticsTab({ inquiries }: { inquiries: InquiryRow[] }) {
   const stats = useMemo(() => {
-    const total = inquiries.length;
-    const quotedOrLater = inquiries.filter((item) => ["quoted", "active", "done"].includes(item.status)).length;
-    const done = inquiries.filter((item) => item.status === "done").length;
-    const pending = inquiries.filter((item) => item.status === "new").length;
+    const real = inquiries.filter((item) => item.status !== "spam");
+    const total = real.length;
+    const countAtLeast = (statuses: string[]) => real.filter((item) => statuses.includes(item.status)).length;
+    const quotedOrLater = countAtLeast(["quoted", "active", "done"]);
+    const done = countAtLeast(["done"]);
+    const pending = real.filter((item) => item.status === "new").length;
     const convRate = total ? Math.round((quotedOrLater / total) * 100) : 0;
 
     const tally = (pick: (row: InquiryRow) => string) => {
       const map = new Map<string, number>();
-      inquiries.forEach((row) => {
+      real.forEach((row) => {
         const value = (pick(row) || "기타").split(/[,/·]/)[0].trim() || "기타";
         map.set(value, (map.get(value) ?? 0) + 1);
       });
       return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
     };
+
+    // 상담 처리 단계 퍼널 — 각 단계는 "그 단계 이상" 누적 건수(실데이터).
+    const funnel = [
+      { step: "접수 (신규 포함)", n: total },
+      { step: "응대 이상", n: countAtLeast(["contacted", "quoted", "active", "done"]) },
+      { step: "견적 이상", n: quotedOrLater },
+      { step: "시공 이상", n: countAtLeast(["active", "done"]) },
+      { step: "완료", n: done }
+    ];
 
     return {
       total,
@@ -74,17 +66,20 @@ export function AnalyticsTab({ inquiries }: { inquiries: InquiryRow[] }) {
       pending,
       convRate,
       byWork: tally((row) => buildDisplay(row).workType),
-      byRegion: tally((row) => buildDisplay(row).region)
+      byRegion: tally((row) => buildDisplay(row).region),
+      funnel
     };
   }, [inquiries]);
+
+  const funnelMax = stats.funnel[0]?.n || 1;
 
   return (
     <section className="adm-tab">
       <header className="adm-tab__head">
         <div>
-          <span className="adm-tab__kicker">대시보드 · 유입 분석</span>
-          <h1>어느 페이지로 들어와서 어느 페이지에서 신청했나요?</h1>
-          <p>상담 데이터는 실시간 집계입니다. 페이지 유입·키워드는 분석 도구 연동 전까지 예시로 표시됩니다.</p>
+          <span className="adm-tab__kicker">대시보드 · 상담 분석</span>
+          <h1>상담이 어떻게 들어와서 어디까지 진행되나요?</h1>
+          <p>접수부터 시공 완료까지 inquiries DB 기준 실시간 집계입니다. 방문·유입 트래픽과 전환 이벤트는 Vercel Web Analytics에서 확인하세요.</p>
         </div>
       </header>
 
@@ -128,44 +123,39 @@ export function AnalyticsTab({ inquiries }: { inquiries: InquiryRow[] }) {
         </article>
         <article className="adm-card">
           <header className="adm-card__head">
-            <h3>유입 페이지 TOP</h3>
-            <span className="adm-badge-sample">예시 데이터</span>
+            <h3>방문·유입 분석</h3>
           </header>
-          <ol className="adm-rank-list">
-            {sampleTopPages.map((page) => (
-              <li key={page.path}>
-                <strong>{page.name}</strong> <em>{page.visits.toLocaleString()}회 · 전환 {page.conv}</em>
-              </li>
-            ))}
-          </ol>
-        </article>
-        <article className="adm-card">
-          <header className="adm-card__head">
-            <h3>지역 검색 키워드</h3>
-            <span className="adm-badge-sample">예시 데이터</span>
-          </header>
-          <ol className="adm-rank-list">
-            {sampleKeywords.map((keyword) => (
-              <li key={keyword.kw}>
-                <strong>{keyword.kw}</strong> <em>{keyword.visits.toLocaleString()}회</em>
-              </li>
-            ))}
-          </ol>
+          <p style={{ fontSize: "var(--fs-sm)", color: "var(--ink-2)", lineHeight: "var(--lh-base)", margin: 0 }}>
+            방문자·페이지뷰·유입 경로·검색 키워드·웹바이탈, 그리고 전화/카카오톡 클릭·견적폼 단계·자가진단 같은 전환
+            이벤트는 Vercel Web Analytics에서 집계됩니다(익명·쿠키리스).
+          </p>
+          <footer className="adm-card__foot">
+            <a className="adm-btn adm-btn--ghost" href={VERCEL_ANALYTICS_URL} target="_blank" rel="noreferrer">
+              <ExternalLink />Vercel 대시보드에서 보기
+            </a>
+          </footer>
         </article>
         <article className="adm-card adm-card--span2">
           <header className="adm-card__head">
-            <h3>전환 흐름 (상담신청까지)</h3>
-            <span className="adm-badge-sample">예시 데이터</span>
+            <h3>상담 처리 단계</h3>
+            <span>접수 상담 기준 · 스팸 제외</span>
           </header>
-          <div className="adm-funnel">
-            {sampleFunnel.map((step) => (
-              <div className="adm-funnel__step" key={step.step}>
-                <strong>{step.step}</strong>
-                <div className="adm-funnel__bar" style={{ width: `${step.w}%` }} />
-                <span className="adm-funnel__num">{step.n.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
+          {stats.total ? (
+            <div className="adm-funnel">
+              {stats.funnel.map((step) => (
+                <div className="adm-funnel__step" key={step.step}>
+                  <strong>{step.step}</strong>
+                  <div
+                    className="adm-funnel__bar"
+                    style={{ width: `${Math.max(2, Math.round((step.n / funnelMax) * 100))}%` }}
+                  />
+                  <span className="adm-funnel__num">{step.n.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="adm-rank-empty">아직 접수된 상담이 없습니다.</p>
+          )}
         </article>
       </div>
     </section>
