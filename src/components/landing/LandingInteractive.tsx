@@ -385,7 +385,7 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
             )}
           </div>
 
-          <div style={{ background: "#fff", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ background: "var(--panel,#fff)", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 12, overflow: "hidden" }}>
             {config.categories.map((cat, catIdx) => (
               <div key={cat.id}>
                 <div style={{ background: "var(--cream-2,#f1ece1)", padding: "8px 16px", borderTop: catIdx > 0 ? "1px solid var(--hair,#e6dfd0)" : undefined, display: "flex", alignItems: "baseline", gap: 8 }}>
@@ -438,7 +438,7 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
                           className="estimator-qty-control"
                           aria-label={`${item.name} 수량`}
                           onClick={(event) => event.stopPropagation()}
-                          style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, border: "1px solid var(--hair,#e6dfd0)", borderRadius: 999, padding: 2, background: "#fff" }}
+                          style={{ display: "inline-flex", alignItems: "center", gap: 4, flexShrink: 0, border: "1px solid var(--hair,#e6dfd0)", borderRadius: 999, padding: 2, background: "var(--panel,#fff)" }}
                         >
                           <button
                             type="button"
@@ -468,7 +468,7 @@ function ServiceEstimator({ config }: { config: ServicePricingConfig }) {
         </div>
 
         <div className="estimator-panel-col">
-          <div style={{ background: "#fff", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 16, overflow: "hidden" }}>
+          <div style={{ background: "var(--panel,#fff)", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 16, overflow: "hidden" }}>
             <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--hair,#e6dfd0)", display: "flex", alignItems: "center", gap: 8 }}>
               <Calculator size={16} style={{ color: "var(--ink-2,#2a3a55)" }} />
               <span style={{ fontWeight: 700, fontSize: 14, color: "var(--ink,#0b1a30)" }}>견적 요약</span>

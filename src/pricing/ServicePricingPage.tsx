@@ -76,7 +76,7 @@ export function ServicePricingPage({ config }: { config: ServicePricingConfig })
                 )}
               </div>
 
-              <div style={{ background: "#fff", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 12, overflow: "hidden" }}>
+              <div style={{ background: "var(--panel,#fff)", border: "1px solid var(--hair,#e6dfd0)", borderRadius: 12, overflow: "hidden" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ background: "var(--cream-2,#f1ece1)" }}>

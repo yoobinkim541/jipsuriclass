@@ -12390,3 +12390,225 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background: var(--panel, #111827);
   }
 }
+
+/* ── 다크모드 보강: PR #11이 놓쳐 글씨가 안 보이던 섹션들 ───────────────── */
+@media (prefers-color-scheme: dark) {
+  /* 푸터: 배경이 var(--ink)라 다크모드에서 밝아져 글씨가 묻힘 → 어둡게 고정 */
+  .footer {
+    background: var(--panel-strong, #1f2937);
+    color: var(--ink-2, #d8e1f0);
+  }
+  .footer strong { color: var(--ink, #f8fafc); }
+  .footer .footer-admin-link { color: var(--gold-500, #f2c879); }
+
+  /* 신뢰 지표(7/All/13시간): 배경이 var(--navy-700)이라 밝은 파랑으로 반전됨 → 어둡게 */
+  .trust {
+    background: var(--panel-strong, #1f2937);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+
+  /* 자가진단/증상 카드: 배경 #ffffff 하드코딩 → 어둡게 + 글씨 밝게 */
+  .specs__item {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+
+  /* 작업 절차 카드 */
+  .process__signal-card {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+  .process__signal-card h3 { color: var(--ink, #f8fafc); }
+  .process__signal-card p { color: var(--ink-2, #d8e1f0); }
+  .process__signal-icon { color: var(--gold-500, #f2c879); }
+
+  /* 대표 강점 리스트: 텍스트 #111827 하드코딩 → 밝게 */
+  .about-strengths li { color: var(--ink-2, #d8e1f0); }
+  .about-strengths svg { color: var(--gold-500, #f2c879); }
+
+  /* 오피스 지도 링크/버튼 */
+  .office-map-link-action,
+  .office-map-fallback,
+  .office-map-live {
+    background: var(--panel-soft, #162033);
+    color: var(--ink, #f8fafc);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+
+  /* 작업 절차 — inline-detail / step 카드 (밝은 배경 하드코딩) */
+  .process__inline-detail,
+  .process__step {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+  .process__step h3,
+  .process__inline-text h3 { color: var(--ink, #f8fafc); }
+  .process__step p,
+  .process__inline-text p { color: var(--ink-2, #d8e1f0); }
+  /* 활성 스텝: background:var(--ink)가 다크모드에서 밝게 반전 → 흰글씨가 흰배경 위(cr=1).
+     gold 강조 테두리 + panel-strong 배경 + 흰 글씨로 대비 확보 */
+  .process__step.active {
+    background: var(--panel-strong, #1f2937);
+    border-color: var(--gold-500, #f2c879);
+    color: #ffffff;
+  }
+  .process__step.active h3 { color: #ffffff; }
+
+  /* 오피스 지도 링크 카드 (흰 배경) */
+  .office-map,
+  .office-map-link-content {
+    background: var(--panel, #111827);
+    color: var(--ink, #f8fafc);
+  }
+  .office-map-link-content strong { color: var(--ink, #f8fafc); }
+  .office-map-link-content p { color: var(--ink-2, #d8e1f0); }
+
+  /* 오피스 영업 정보 리스트 (어두운 글씨 #374151 하드코딩) */
+  .business-list li { color: var(--ink-2, #d8e1f0); }
+
+  /* 모바일 하단 CTA: 카카오 버튼 배경이 var(--navy-700) → 밝은 파랑으로 반전 */
+  .mobile-cta a {
+    background: var(--panel-strong, #1f2937);
+    color: #ffffff;
+  }
+}
+
+/* =========================================================================
+   다크모드 — 공개(고객) 페이지 표면 일괄 보정
+   PR #11 다크모드는 토큰만 반전했고, 사이트 전반에 #fff/#ffffff/크림색이
+   하드코딩된 카드 표면이 그대로 남아 밝은 배경 위 밝은 글씨(대비 1:1)가 됨.
+   홈·진단·견적·서비스·지역 등 고객이 보는 표면을 패널 배경으로 통일.
+   (admin / editor / account 등 인증 영역은 별도 범위)
+   ========================================================================= */
+@media (prefers-color-scheme: dark) {
+  /* 카드/패널 표면: 하드코딩 흰/크림 배경 → 다크 패널 */
+  .symptom-grid,
+  .symptom-chip,
+  .symptom-cat-card,
+  .process__detail-card,
+  .office-card,
+  .office-map,
+  .office-map-embed-footer,
+  .blog-card,
+  .privacy-card,
+  .contact-estimate-card,
+  .landing-link-card,
+  .form-success,
+  .estimate-summary,
+  .estimate-panel,
+  .estimate-modal,
+  .estimate-survey-summary,
+  .estimate-review-item,
+  .estimate-survey-card,
+  .price-calc__inner,
+  .specs__jump-button {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+
+  /* 선택/강조 상태 카드: navy/ink 배경이 다크모드서 밝게 반전 → 패널-강조 + 골드 테두리 */
+  .estimator-item-row.active,
+  .symptom-chip.active {
+    background: var(--panel-strong, #1f2937);
+    border-color: var(--gold-500, #f2c879);
+    color: #ffffff;
+  }
+
+  /* 흰 카드 위 하드코딩된 어두운 본문 글씨 → 밝게 */
+  .process__detail-card h3,
+  .process__detail-card h4,
+  .symptom-cat-card h3,
+  .office-card h3,
+  .blog-card h3,
+  .contact-estimate-card h3,
+  .estimate-summary h3,
+  .estimate-panel h3 { color: var(--ink, #f8fafc); }
+
+  .process__detail-card p,
+  .process__detail-card span,
+  .process__detail-card li,
+  .symptom-cat-card p,
+  .office-card p,
+  .blog-card p,
+  .contact-estimate-card p,
+  .estimate-summary p,
+  .estimate-panel p,
+  .estimate-review-item p,
+  .privacy-card p,
+  .privacy-card li { color: var(--ink-2, #d8e1f0); }
+
+  /* 오피스 지도 "네이버 지도 열기" 링크: navy-700 → 밝은 파랑이 흰 배경 위 (대비 2:1) */
+  .office-map a,
+  .office-map-link,
+  .office-map-embed-footer a { color: var(--gold-500, #f2c879); }
+
+  /* "이전"/"견적 요약" 등 흰 배경 위 칩/스텝 라벨 */
+  .process__detail-card .step-num,
+  .estimate-summary .muted,
+  .estimate-panel .muted { color: var(--ink-3, #aebbd0); }
+
+  /* 랜딩 플로팅 '이전' 버튼: 반투명 흰 배경 → 어둡게 (글씨는 var(--ink)라 이미 밝음) */
+  .landing-back-btn {
+    background: rgba(31, 41, 55, 0.92);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+  .landing-back-btn:hover {
+    background: var(--panel-strong, #1f2937);
+    color: #ffffff;
+  }
+
+  /* 랜딩 히어로 패널 영업정보 리스트: li 배경 #ffffff 하드코딩 (특이도 0,3,0) */
+  .landing-hero-panel .business-list li {
+    background: var(--panel-soft, #162033);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink-2, #d8e1f0);
+  }
+
+  /* 작업 절차 상세 카드 내 '사진 우선/대표 직접 확인/투명 안내' 알약 칩 (#fff 하드코딩) */
+  .process__detail-point {
+    background: var(--panel-soft, #162033);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink-2, #d8e1f0);
+  }
+
+  /* 가격표(서비스/가격 페이지·프리렌더 스냅샷 공통): 헤더 #f1f5f9, 행 hover/선택 크림·노랑 하드코딩 */
+  .price-table thead tr {
+    background: var(--panel-strong, #1f2937);
+    color: var(--ink, #f8fafc);
+  }
+  .price-table__row:hover {
+    background: var(--panel-soft, #162033);
+  }
+  .price-table__row--selected,
+  .price-table__row--selected:hover {
+    background: rgba(242, 200, 121, 0.12);
+  }
+  .price-table__row-note { color: var(--ink-3, #aebbd0); }
+  /* 인건비·자재비 셀: navy-700(다크모드서 밝은 파랑) — 다크 배경 위라 가독 OK, 골드로 통일 */
+  .price-table td.price-table__price,
+  .price-table td.price-table__material { color: var(--gold-500, #f2c879); }
+
+  /* 포트폴리오 필터 칩·더보기 버튼: 흰 배경 하드코딩 */
+  .portfolio-chip {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink-2, #d8e1f0);
+  }
+  .portfolio-chip.is-active {
+    background: linear-gradient(180deg, #f2c879 0%, #d7ae6b 100%);
+    border-color: rgba(242, 200, 121, 0.68);
+    color: #0b1220;
+  }
+  .portfolio-more-button {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+  .portfolio-more-button:hover {
+    background: var(--panel-strong, #1f2937);
+    color: #ffffff;
+  }
+}
