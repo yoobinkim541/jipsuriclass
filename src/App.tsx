@@ -1182,16 +1182,32 @@ function BlogSection({
   );
 }
 
+// 네이버 블로그 RSS 본문은 모든 글이 동일한 인사말로 시작한다("안녕하세요. 집수리에
+// 품격을 더하는... 7개의 국가 공인 건축기술 자격..."). 이 보일러플레이트를 걸러내고
+// 실제 본문 문장부터 발췌한다. 남는 문장이 없으면 빈 배열을 반환해(제목+썸네일+날짜만
+// 노출) 카드가 글자 단위로 똑같아 보이는 것을 막는다.
+const BLOG_BOILERPLATE = [
+  /안녕하세요/,
+  /집수리에\s*품격/,
+  /종합\s*집수리\s*전문/,
+  /집수리클라쓰["'”’]?\s*입니다/,
+  /국가\s*공인\s*건축/,
+  /자격이?\s*있는\s*대표/,
+  /직접\s*함께\s*시공/,
+  /니즈에\s*맞는/,
+  /약속\s*(을)?\s*드립니다/,
+];
+
 function buildSummaryLines(description: string) {
   const cleaned = description.replace(/\s+/g, " ").trim();
-  if (!cleaned) return ["상세 내용을 확인해 주세요."];
+  if (!cleaned) return [];
 
   const sentences = cleaned
     .split(/(?<=[.!?])\s+|(?<=다)\s+/)
     .map((sentence) => sentence.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .filter((sentence) => sentence.length > 6 && !BLOG_BOILERPLATE.some((pattern) => pattern.test(sentence)));
 
-  if (!sentences.length) return [cleaned.slice(0, 120)];
   return sentences.slice(0, 3).map((sentence) => sentence.slice(0, 80));
 }
 

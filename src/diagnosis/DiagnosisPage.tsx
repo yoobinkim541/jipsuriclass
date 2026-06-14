@@ -3,6 +3,7 @@ import { ArrowUpRight, CheckCircle2, ChevronLeft, Menu, MessageCircle, Phone, Us
 import { business, navItems } from "../data";
 import { symptomCategories, type SymptomCategory } from "../data";
 import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
+import { MobileQuickCta } from "../components/site/SiteFooter";
 
 export function DiagnosisPage() {
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
@@ -262,18 +263,32 @@ export function DiagnosisPage() {
               <p>{selectedTopic.whenToCall}</p>
             </div>
 
-            <div className="hero-actions">
-              <a className="primary-button" href={selectedTopic.ctaHref}>
-                <ArrowUpRight size={20} />
-                {selectedTopic.ctaLabel}
+            {/* 증상을 확인한 직후(의도 정점)에 바로 연락할 수 있도록 전화·카톡을 1순위로.
+                긴급 증상(예: 전기 타는 냄새)도 읽기 페이지가 아니라 즉시 통화로 연결된다. */}
+            <div className="hero-actions diagnosis-answer-actions">
+              <a className="primary-button" href={business.phoneHref}>
+                <Phone size={20} />
+                전화 상담
+              </a>
+              <a className="secondary-button kakao-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
+                <MessageCircle size={20} />
+                카카오톡 사진 상담
               </a>
               <a className="secondary-button" href="/estimate">
-                견적상담 페이지
+                <ArrowUpRight size={20} />
+                견적상담
               </a>
             </div>
+            {selectedTopic.ctaHref?.startsWith("/service/") && (
+              <a className="diagnosis-answer-servicelink" href={selectedTopic.ctaHref}>
+                {selectedTopic.ctaLabel} ›
+              </a>
+            )}
           </article>
         </section>
+        <div className="mobile-cta-spacer" aria-hidden="true" />
       </main>
+      <MobileQuickCta />
       <button
         className="diagnosis-back-float"
         type="button"

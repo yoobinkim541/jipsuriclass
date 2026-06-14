@@ -3526,9 +3526,41 @@ textarea {
   transform: translateY(-2px);
 }
 
+/* 독립 페이지(진단/가격표)에서 하단 고정 CTA 바가 마지막 콘텐츠를 가리지 않도록 하는
+   모바일 전용 스페이서. 데스크탑에선 숨김(고정 바가 없음). */
+.mobile-cta-spacer {
+  display: none;
+}
+
+/* 카카오톡 버튼: 2순위 전환 수단(사진 전송)을 카카오 옐로로 차별화 */
+.secondary-button.kakao-button {
+  background: #fee500;
+  border-color: #fee500;
+  color: #191600;
+}
+.secondary-button.kakao-button:hover {
+  background: #f4d800;
+  border-color: #f4d800;
+  color: #191600;
+}
+
+/* 자가진단 답변: 해당 서비스 상세로 가는 보조 텍스트 링크(연락 버튼보다 약하게) */
+.diagnosis-answer-servicelink {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy-700, #10284a);
+  text-decoration: none;
+}
+.diagnosis-answer-servicelink:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 720px) {
   .diagnosis-back-float {
-    bottom: 14px;
+    /* 모바일 고정 CTA 바(.mobile-cta) 위로 올려 겹침 방지 */
+    bottom: calc(84px + env(safe-area-inset-bottom));
     right: 14px;
     padding: 11px 14px;
     font-size: 14px;
@@ -9692,6 +9724,11 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
   .landing-section:last-of-type {
     padding-bottom: calc(132px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-cta-spacer {
+    display: block;
+    height: calc(76px + env(safe-area-inset-bottom));
   }
 
   .admin-actions {
