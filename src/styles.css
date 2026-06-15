@@ -12598,9 +12598,21 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   flex-direction: column;
   text-decoration: none;
   color: inherit;
+  /* 사이트 카드 디자인 언어(.cases__card/.blog-card)에 맞춰 카드 컨테이너 부여 */
+  background: var(--panel, #ffffff);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(8, 22, 40, 0.04);
+  transition: box-shadow 240ms ease, border-color 240ms ease;
   opacity: 0;
   transform: translateY(12px);
   animation: catalogCardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.catalog-card:hover {
+  box-shadow: 0 16px 36px rgba(8, 22, 40, 0.14);
+  border-color: var(--gold-500, #d7ae6b);
 }
 @keyframes catalogCardIn {
   to {
@@ -12611,9 +12623,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .catalog-card__media {
   position: relative;
   aspect-ratio: 4 / 3;
-  border-radius: 14px;
   overflow: hidden;
   background: var(--cream-2, #f1ece1);
+  border-bottom: 1px solid var(--hair, #e6dfd0);
 }
 .catalog-card__media .blog-card-image {
   width: 100%;
@@ -12629,7 +12641,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   transform: scale(1.04);
 }
 .catalog-card__info {
-  padding: 12px 4px 0;
+  padding: 14px 16px 16px;
 }
 .catalog-card__title {
   margin: 0 0 6px;

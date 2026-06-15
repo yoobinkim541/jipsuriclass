@@ -1506,7 +1506,7 @@ function scorePostForQuery(post: PortfolioPost, tokens: string[], relatedTokens:
 }
 
 // 현재 URL 쿼리(?q=&cat=&sort=)에서 현장사례 필터 상태를 읽는다. 공유·새로고침·딥링크 복원용.
-function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "oldest" } {
+function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "popular" } {
   if (typeof window === "undefined") {
     return { q: "", cat: "all", sort: "latest" };
   }
@@ -1516,7 +1516,7 @@ function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "olde
   return {
     q: params.get("q") || "",
     cat: validCat,
-    sort: params.get("sort") === "oldest" ? "oldest" : "latest"
+    sort: params.get("sort") === "popular" ? "popular" : "latest"
   };
 }
 
@@ -1526,7 +1526,7 @@ function PortfolioPage() {
   const [postSource, setPostSource] = useState<"loading" | "naver" | "fallback">("loading");
   const [activeChip, setActiveChip] = useState(() => readPortfolioParams().cat);
   const [query, setQuery] = useState(() => readPortfolioParams().q);
-  const [sort, setSort] = useState<"latest" | "oldest">(() => readPortfolioParams().sort);
+  const [sort, setSort] = useState<"latest" | "popular">(() => readPortfolioParams().sort);
   const [visibleCount, setVisibleCount] = useState(12);
 
   useEffect(() => {
@@ -1599,13 +1599,22 @@ function PortfolioPage() {
       }
     }
 
+    // 블로그 인기글: 조회수 데이터가 없어 큐레이션 대표글(pinnedPosts)을 인기글로 사용.
+    // 대표글만, 큐레이션 순서대로 노출(검색·카테고리 필터는 그대로 적용됨).
+    if (sort === "popular") {
+      const pinnedOrder = new Map(pinnedPosts.map((post, index) => [post.link, index]));
+      return scored
+        .filter((entry) => pinnedOrder.has(entry.post.link))
+        .sort((left, right) => (pinnedOrder.get(left.post.link) ?? 0) - (pinnedOrder.get(right.post.link) ?? 0))
+        .map((entry) => entry.post);
+    }
+
     scored.sort((left, right) => {
-      // 검색어가 있으면 적합도 우선, 동점이면 날짜순. 검색어가 없으면 선택한 정렬대로.
+      // 검색어가 있으면 적합도 우선, 동점이면 최신순.
       if (tokens.length && right.score !== left.score) {
         return right.score - left.score;
       }
-      const comparison = (right.post.date || "").localeCompare(left.post.date || "");
-      return sort === "latest" ? comparison : -comparison;
+      return (right.post.date || "").localeCompare(left.post.date || "");
     });
 
     return scored.map((entry) => entry.post);
@@ -1671,9 +1680,9 @@ function PortfolioPage() {
               )}
             </p>
             <label className="catalog-sort">
-              <select aria-label="정렬 기준" value={sort} onChange={(event) => setSort(event.target.value as "latest" | "oldest")}>
+              <select aria-label="정렬 기준" value={sort} onChange={(event) => setSort(event.target.value as "latest" | "popular")}>
                 <option value="latest">최신순</option>
-                <option value="oldest">오래된순</option>
+                <option value="popular">블로그 인기글</option>
               </select>
             </label>
           </div>
