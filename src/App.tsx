@@ -1497,6 +1497,7 @@ function PortfolioPage() {
   }, [activeChip, allPosts, query, sort]);
 
   const visiblePosts = filteredPosts.slice(0, visibleCount);
+  const isLoading = postSource === "loading";
 
   return (
     <>
@@ -1507,52 +1508,46 @@ function PortfolioPage() {
         onCloseMenu={() => setMenuOpen(false)}
         brandHref="/"
       />
-      <main className="portfolio-page">
-        <section className="portfolio-hero">
+      <main className="portfolio-page portfolio-catalog">
+        <section className="catalog-head">
           <nav className="portfolio-crumb" aria-label="현재 위치">
             <a href="/">홈</a>
             <span aria-hidden="true">/</span>
             <span>현장사례</span>
           </nav>
-          <h1>
-            대표가 직접 다녀온
-            <br />
-            현장 기록 전체.
-          </h1>
-          <p>큐레이션 시공 사례와 네이버 블로그 최신 글을 한 곳에 모았습니다. 카테고리로 좁혀 보세요.</p>
+          <h1>현장사례</h1>
+          <p>집수리클라쓰가 직접 다녀온 시공 현장 기록 전체입니다. 검색하거나 카테고리로 좁혀 보세요.</p>
+          <div className="catalog-search">
+            <Search size={20} aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="검색어를 입력해 주세요 (예: 욕실, 누수, 도배)"
+              aria-label="현장사례 검색"
+            />
+          </div>
         </section>
 
-        <section className="portfolio-grid-section" aria-label="현장사례 목록">
-          <div className="portfolio-toolbar">
-            <div className="portfolio-search">
-              <Search size={18} aria-hidden="true" />
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="검색어를 입력해 주세요 (예: 욕실, 누수, 도배)"
-                aria-label="현장사례 검색"
-              />
-            </div>
-            <div className="portfolio-chips" role="group" aria-label="카테고리 필터">
-              {portfolioChips.map((chip) => (
-                <button
-                  key={chip.key}
-                  className={activeChip === chip.key ? "portfolio-chip is-active" : "portfolio-chip"}
-                  type="button"
-                  aria-pressed={activeChip === chip.key}
-                  onClick={() => setActiveChip(chip.key)}
-                >
-                  {chip.label}
-                </button>
-              ))}
-            </div>
+        <section className="catalog-body" aria-label="현장사례 목록">
+          <div className="catalog-filters" role="group" aria-label="카테고리 필터">
+            {portfolioChips.map((chip) => (
+              <button
+                key={chip.key}
+                className={activeChip === chip.key ? "catalog-chip is-active" : "catalog-chip"}
+                type="button"
+                aria-pressed={activeChip === chip.key}
+                onClick={() => setActiveChip(chip.key)}
+              >
+                {chip.label}
+              </button>
+            ))}
           </div>
 
-          <div className="portfolio-resultbar">
-            <p className="portfolio-meta" aria-live="polite">
-              {postSource === "loading" ? (
-                "블로그 글을 불러오는 중입니다…"
+          <div className="catalog-resultbar">
+            <p className="catalog-count" aria-live="polite">
+              {isLoading ? (
+                "현장 기록을 불러오는 중…"
               ) : (
                 <>
                   전체 <strong>{filteredPosts.length.toLocaleString()}</strong>건
@@ -1560,7 +1555,7 @@ function PortfolioPage() {
                 </>
               )}
             </p>
-            <label className="portfolio-sort">
+            <label className="catalog-sort">
               <select aria-label="정렬 기준" value={sort} onChange={(event) => setSort(event.target.value as "latest" | "oldest")}>
                 <option value="latest">최신순</option>
                 <option value="oldest">오래된순</option>
@@ -1568,30 +1563,42 @@ function PortfolioPage() {
             </label>
           </div>
 
-          <div className="portfolio-grid">
-            {visiblePosts.map((post) => (
-              <a className="blog-card portfolio-card" href={post.link} target="_blank" rel="noreferrer" key={post.link}>
-                <BlogCardImage post={post} />
-                <div className="blog-card-body">
-                  <div className="blog-card-meta">
-                    <span className="naver-mark">N</span>
-                    <time>{post.date}</time>
-                  </div>
-                  <h3>{post.cardTitle ?? post.title}</h3>
-                  <div className="blog-card-summary">
-                    {(post.summary?.length ? post.summary : buildSummaryLines(post.description)).slice(0, 2).map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </div>
-                  <span className="blog-card-link">
-                    자세히 보기 <ExternalLink size={16} />
-                  </span>
+          {isLoading ? (
+            <div className="catalog-grid catalog-grid--skeleton" aria-hidden="true">
+              {Array.from({ length: 12 }).map((_, index) => (
+                <div className="catalog-skeleton" key={index}>
+                  <div className="catalog-skeleton__media" />
+                  <div className="catalog-skeleton__line catalog-skeleton__line--title" />
+                  <div className="catalog-skeleton__line catalog-skeleton__line--meta" />
                 </div>
-              </a>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="catalog-grid">
+              {visiblePosts.map((post, index) => (
+                <a
+                  className="catalog-card"
+                  style={{ animationDelay: `${(index % 12) * 45}ms` }}
+                  href={post.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  key={post.link}
+                >
+                  <div className="catalog-card__media">
+                    <BlogCardImage post={post} />
+                  </div>
+                  <div className="catalog-card__info">
+                    <h3 className="catalog-card__title">{post.cardTitle ?? post.title}</h3>
+                    <p className="catalog-card__meta">
+                      {[post.date, post.keywords?.[0]].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
 
-          {!visiblePosts.length && postSource !== "loading" ? (
+          {!visiblePosts.length && !isLoading ? (
             <p className="portfolio-empty">
               {query.trim()
                 ? `'${query.trim()}' 검색 결과가 없습니다. 다른 검색어나 카테고리를 골라 보세요.`
@@ -2096,6 +2103,27 @@ const LandingBackButton = ({ fallbackHref = "/" }: { fallbackHref?: string }) =>
   );
 };
 
+const NAVER_IMAGE_HOST = /(?:^|\.)(?:pstatic\.net|naver\.net|naver\.com)$/i;
+
+/**
+ * 네이버 블로그 이미지는 브라우저에서 직접 불러오면 핫링크 차단(403)으로 자주 깨진다.
+ * 같은 오리진의 /api/blog-image 프록시(서버가 Referer를 붙여 받아옴)를 거치게 해 안정적으로 표시한다.
+ * 로컬 에셋(/assets/...)이나 비-네이버 URL은 그대로 사용한다.
+ */
+function toDisplayBlogImage(rawUrl: string): string {
+  const url = (rawUrl || "").trim();
+  if (!url || url.startsWith("/")) return url || "/assets/consult-hero.png";
+  try {
+    const parsed = new URL(url);
+    if (NAVER_IMAGE_HOST.test(parsed.hostname)) {
+      return `/api/blog-image?url=${encodeURIComponent(url)}`;
+    }
+  } catch {
+    return url;
+  }
+  return url;
+}
+
 function BlogCardImage({
   post
 }: {
@@ -2106,20 +2134,30 @@ function BlogCardImage({
     return [...new Set(values)];
   }, [post.image, post.imageCandidates]);
   const [candidateIndex, setCandidateIndex] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     setCandidateIndex(0);
   }, [post.link, post.title, candidates.join("|")]);
 
-  const currentImage = candidates[candidateIndex] ?? "/assets/consult-hero.png";
+  const currentImage = toDisplayBlogImage(candidates[candidateIndex] ?? "/assets/consult-hero.png");
+
+  // 캐시된 이미지는 onLoad가 안 뜰 수 있어, 마운트/소스 변경 시 complete 여부를 직접 확인한다.
+  useEffect(() => {
+    setLoaded(false);
+    if (imgRef.current?.complete) setLoaded(true);
+  }, [currentImage]);
 
   return (
     <img
-      className="blog-card-image"
+      ref={imgRef}
+      className={loaded ? "blog-card-image is-loaded" : "blog-card-image"}
       src={currentImage}
       alt={post.title}
       loading="lazy"
       referrerPolicy="no-referrer"
+      onLoad={() => setLoaded(true)}
       onError={(event) => {
         if (candidateIndex < candidates.length - 1) {
           setCandidateIndex((index) => index + 1);
@@ -2127,7 +2165,10 @@ function BlogCardImage({
         }
 
         const image = event.currentTarget;
-        if (image.dataset.fallbackApplied === "true") return;
+        if (image.dataset.fallbackApplied === "true") {
+          setLoaded(true);
+          return;
+        }
         image.dataset.fallbackApplied = "true";
         image.src = "/assets/consult-hero.png";
       }}

@@ -27,6 +27,56 @@ function naverBlogApi(): Plugin {
           res.end(JSON.stringify({ items: [], source: "fallback", reason: String(error) }));
         }
       });
+
+      // 네이버 블로그 이미지 프록시(dev): 핫링크 차단을 피하려고 서버에서 Referer를 붙여 받아온다.
+      server.middlewares.use("/api/blog-image", async (req, res) => {
+        const rawUrl = (new URL(req.url || "", "http://localhost").searchParams.get("url") || "").trim();
+        if (!rawUrl) {
+          res.statusCode = 400;
+          res.end("Missing image url");
+          return;
+        }
+        let target: URL;
+        try {
+          target = new URL(rawUrl);
+        } catch {
+          res.statusCode = 400;
+          res.end("Invalid image url");
+          return;
+        }
+        const allowed = ["pstatic.net", "naver.net", "naver.com"].some(
+          (domain) => target.hostname === domain || target.hostname.endsWith(`.${domain}`)
+        );
+        if (!allowed || (target.protocol !== "http:" && target.protocol !== "https:")) {
+          res.statusCode = 403;
+          res.end("Image host is not allowed");
+          return;
+        }
+        try {
+          const type = target.searchParams.get("type");
+          if (type && /^w\d*(?:_?blur)?$/i.test(type)) {
+            target.searchParams.set("type", "w966");
+          }
+          const upstream = await fetch(target.toString(), {
+            headers: {
+              Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+              Referer: "https://blog.naver.com/",
+              "User-Agent": "Mozilla/5.0"
+            }
+          });
+          const contentType = upstream.headers.get("content-type") || "image/jpeg";
+          if (!upstream.ok || !contentType.startsWith("image/")) {
+            throw new Error(`Upstream image returned ${upstream.status}`);
+          }
+          const buffer = Buffer.from(await upstream.arrayBuffer());
+          res.setHeader("Content-Type", contentType);
+          res.setHeader("Cache-Control", "public, max-age=86400");
+          res.end(buffer);
+        } catch {
+          res.statusCode = 502;
+          res.end("Image fetch failed");
+        }
+      });
     }
   };
 }
