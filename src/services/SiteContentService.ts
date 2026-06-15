@@ -192,7 +192,7 @@ const estimateSteps: EstimateSurveyStepContent[] = [
     helper: "",
     field: "propertyStatus",
     mode: "single",
-    options: ["짐보관 후 살면서 공사예정", "현재 공실", "시공 시 공실 예정", "신축입주", "기타 (부동산 미계약 상태)"]
+    options: ["짐보관 후 살면서 공사예정", "현재 공실", "시공 시 공실 예정", "신축입주", "현재 거주중", "기타 (부동산 미계약 상태)"]
   },
   {
     title: "인테리어 상담신청",
