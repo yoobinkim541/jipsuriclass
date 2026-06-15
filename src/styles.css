@@ -12268,9 +12268,10 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   }
 }
 
-/* salvage(reconcile 2026-06-14): dark-mode theme — prefers-color-scheme */
-@media (prefers-color-scheme: dark) {
-  :root {
+/* salvage(reconcile 2026-06-14): dark-mode theme.
+   수동 토글: <html data-theme="dark|light">로 제어. 시스템 설정은 <head> 인라인
+   스크립트가 resolve해 data-theme로 주입하므로(깜빡임 없음) 여기선 명시 토큰만 둔다. */
+:root[data-theme="dark"] {
     color-scheme: dark;
     --navy-700: #8fb8ff;
     --navy-800: #0b1220;
@@ -12300,10 +12301,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     --callout-icon: #e6c47a;
     --shadow: 0 18px 48px rgba(0, 0, 0, 0.36);
     --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.28);
-  }
 }
 
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
   body,
   main,
   .login-shell,
@@ -12460,7 +12460,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 /* ── 다크모드 보강: PR #11이 놓쳐 글씨가 안 보이던 섹션들 ───────────────── */
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
   /* 푸터: 배경이 var(--ink)라 다크모드에서 밝아져 글씨가 묻힘 → 어둡게 고정 */
   .footer {
     background: var(--panel-strong, #1f2937);
@@ -12549,7 +12549,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
    홈·진단·견적·서비스·지역 등 고객이 보는 표면을 패널 배경으로 통일.
    (admin / editor / account 등 인증 영역은 별도 범위)
    ========================================================================= */
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
   /* 카드/패널 표면: 하드코딩 흰/크림 배경 → 다크 패널 */
   .symptom-grid,
   .symptom-chip,
@@ -12701,7 +12701,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
    var(--navy-700)→#8fb8ff)를 깔고 그 위에 흰색/네이비 텍스트를 얹는다.
    다크모드에선 배경이 밝아지면서 텍스트가 묻혀 안 보이므로, 호버 표면을
    다시 어둡게(패널톤 + 골드 보더) 잡고 텍스트를 밝게 고정한다. */
-@media (prefers-color-scheme: dark) {
+:root[data-theme="dark"] {
   .diagnosis-cat-card:hover,
   .symptom-grid-item:hover,
   .symptom-grid a:hover,
@@ -12718,5 +12718,58 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .specs__item:hover::after,
   .specs__item.selected::after {
     color: var(--gold-500, #f2c879);
+  }
+}
+
+/* ── 다크/라이트 테마 토글 버튼 ──
+   테마 토큰(var(--hair)/--cream/--ink-2)을 쓰므로 다크 모드에서 자동 반전된다. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--hair, #e6dfd0);
+  background: var(--cream, #fffdf8);
+  color: var(--ink-2, #2a3a55);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--gold-500, #d7ae6b);
+  color: var(--ink, #0b1a30);
+}
+
+.theme-toggle svg {
+  flex: 0 0 auto;
+}
+
+/* 어드민 탑바: 아이콘 버튼 형제(.adm-top__btn)와 통일 → 텍스트 숨기고 정사각 아이콘 버튼 */
+.theme-toggle--admin .theme-toggle__text {
+  display: none;
+}
+
+.theme-toggle--admin {
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  justify-content: center;
+}
+
+@media (max-width: 480px) {
+  /* 모바일 마이페이지 헤더 공간 절약: 라벨 숨기고 아이콘만 */
+  .theme-toggle--compact .theme-toggle__text {
+    display: none;
+  }
+
+  .theme-toggle--compact {
+    padding: 7px;
+    width: 34px;
+    height: 34px;
+    justify-content: center;
   }
 }

@@ -11,6 +11,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { business } from "../data";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { supabase } from "../lib/supabaseClient";
 import { AuthService } from "../services/AuthService";
 import { buildQuoteSourceLabel, calculateQuoteTotals, downloadQuoteAsPdf, downloadQuoteAsXlsx } from "../services/QuoteService";
@@ -219,6 +220,7 @@ export function AccountPage() {
               {sessionEmail}
             </span>
           ) : null}
+          <ThemeToggle className="theme-toggle--compact" />
           <button
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 999, border: "1px solid var(--hair)", background: "var(--cream)", fontSize: 13, fontWeight: 600, color: "var(--ink-2)", cursor: "pointer" }}
             onClick={() => void loadInquiries()} type="button" aria-label="새로고침"
