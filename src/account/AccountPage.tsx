@@ -28,9 +28,16 @@ type Draft = {
   message: string;
 };
 
+function socialName(session: { user?: { user_metadata?: Record<string, unknown> | null } } | null | undefined): string | null {
+  const meta = session?.user?.user_metadata ?? {};
+  const value = meta.full_name ?? meta.name ?? meta.user_name;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
 export function AccountPage() {
   const [content, setContent] = useState(defaultAccountPageContent);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [sessionName, setSessionName] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [loading, setLoading] = useState(false);
@@ -64,6 +71,7 @@ export function AccountPage() {
       .then((session) => {
         if (!mounted) return;
         setSessionEmail(session?.user.email ?? null);
+        setSessionName(socialName(session));
         setSessionLoading(false);
         if (session?.user) {
           void loadInquiries();
@@ -77,6 +85,7 @@ export function AccountPage() {
 
     const { data } = supabase?.auth.onAuthStateChange((_event, session) => {
       setSessionEmail(session?.user.email ?? null);
+      setSessionName(socialName(session));
       setSessionLoading(false);
       if (session?.user) {
         void loadInquiries();
@@ -249,7 +258,7 @@ export function AccountPage() {
               <div className="account-login-head">
                 <div>
                   <span className="account-session-label">{content.auth.currentLoginLabel}</span>
-                  <strong>{sessionEmail}</strong>
+                  <strong>{sessionName ?? sessionEmail}</strong>
                 </div>
                 <button
                   className="admin-status-button account-login-toggle"
