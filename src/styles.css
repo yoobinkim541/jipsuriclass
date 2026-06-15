@@ -38,6 +38,11 @@
   --accent-soft: #e2e8f0;
   --shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
   --shadow-soft: 0 12px 28px rgba(15, 23, 42, 0.06);
+  /* 안내(주의) 콜아웃 — 가격표 disclaimer 등. 다크모드에서 어두운 앰버로 반전 */
+  --callout-bg: #fff8ed;
+  --callout-border: #f0d99a;
+  --callout-text: #7a5608;
+  --callout-icon: #b07d10;
 }
 
 * {
@@ -12272,6 +12277,10 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     --accent: #f2c879;
     --accent-strong: #f8fafc;
     --accent-soft: rgba(242, 200, 121, 0.18);
+    --callout-bg: #2a2110;
+    --callout-border: #5a4a1e;
+    --callout-text: #f0d9a4;
+    --callout-icon: #e6c47a;
     --shadow: 0 18px 48px rgba(0, 0, 0, 0.36);
     --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.28);
   }

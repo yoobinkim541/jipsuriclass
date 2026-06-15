@@ -54,9 +54,9 @@ export function ServicePricingPage({ config }: { config: ServicePricingConfig })
         </div>
 
         {/* 안내 배너 */}
-        <div style={{ background: "#fff8ed", border: "1px solid #f0d99a", borderRadius: 10, padding: "14px 18px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: "clamp(28px,4vw,48px)" }}>
-          <Info size={18} style={{ color: "#b07d10", flexShrink: 0, marginTop: 2 }} />
-          <p style={{ margin: 0, fontSize: 14, color: "#7a5608", lineHeight: 1.6 }}>
+        <div style={{ background: "var(--callout-bg,#fff8ed)", border: "1px solid var(--callout-border,#f0d99a)", borderRadius: 10, padding: "14px 18px", display: "flex", gap: 10, alignItems: "flex-start", marginBottom: "clamp(28px,4vw,48px)" }}>
+          <Info size={18} style={{ color: "var(--callout-icon,#b07d10)", flexShrink: 0, marginTop: 2 }} />
+          <p style={{ margin: 0, fontSize: 14, color: "var(--callout-text,#7a5608)", lineHeight: 1.6 }}>
             {config.disclaimer}
           </p>
         </div>

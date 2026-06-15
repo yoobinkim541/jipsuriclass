@@ -3,8 +3,8 @@
 > 서울·경기 종합 집수리 상담 웹앱 — 사진 기반 견적 상담, 지역·서비스별 SEO 랜딩, 관리자 대시보드
 
 [![Vercel](https://img.shields.io/badge/Vercel-배포중-black?logo=vercel)](https://www.jipsuriclass.kr)
+[![Astro](https://img.shields.io/badge/Astro-6-FF5D01?logo=astro)](https://astro.build)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite)](https://vitejs.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-인증·DB-3ECF8E?logo=supabase)](https://supabase.com)
 
@@ -18,7 +18,7 @@
 
 - **고객 흐름** — 홈 → 증상 자가진단 → 서비스·지역 랜딩 → 견적상담 신청
 - **관리자 흐름** — 상담 요청 수신 → 상태 관리·견적 발행 → 페이지 콘텐츠 편집
-- **SEO** — 15개 지역·13개 서비스 랜딩 페이지 + 사전 렌더링(SSG) + OG 태그 자동 패치
+- **SEO** — 16개 지역·15개 서비스 랜딩 + 12개 가격표를 Astro로 빌드 타임 정적 생성(본문 + JSON-LD), 어드민·견적기 등 인터랙티브 화면만 React 아일랜드
 
 ---
 
@@ -26,11 +26,12 @@
 
 | 영역 | 기술 |
 |------|------|
-| 프론트엔드 | React 19, TypeScript 6, Vite 8 |
-| 스타일 | CSS Custom Properties (토큰 기반 디자인 시스템) |
-| 백엔드 API | Vercel Functions (Node.js) |
+| 프레임워크 | Astro 6 (아일랜드) + React 19, TypeScript 6 |
+| 스타일 | CSS Custom Properties (토큰 기반 디자인 시스템, prefers-color-scheme 다크모드) |
+| 백엔드 API | Vercel Functions (`api/*.ts`, Node.js) |
 | 인증·데이터 | Supabase Auth + PostgreSQL + RLS |
-| 배포 | Vercel (빌드: `npm run build`, 출력: `dist/`) |
+| 분석 | Vercel Web Analytics + Speed Insights (익명·쿠키리스) |
+| 배포 | Vercel (빌드: `astro build`, @astrojs/vercel 어댑터) |
 | 블로그 연동 | 네이버 블로그 API + Gemini AI 요약 |
 | 이메일 알림 | Resend API |
 | 지도 | 네이버 지도 Embed |
@@ -88,23 +89,33 @@ RESEND_API_KEY=
 ```
 jipsuriclass/
 ├── src/
-│   ├── App.tsx                    # 전체 라우팅 + 홈페이지 섹션 조립
+│   ├── pages/                     # Astro 라우트
+│   │   ├── [...all].astro         # 미이전 경로 → 기존 SPA(<App client:only>) SSR 마운트
+│   │   ├── privacy.astro          # 정적
+│   │   ├── service/[slug].astro          # 서비스 랜딩 15p (정적 + JSON-LD)
+│   │   ├── service/[slug]/pricing.astro  # 가격표 12p (정적)
+│   │   └── area/[slug].astro             # 지역 랜딩 16p (정적)
+│   ├── layouts/BaseLayout.astro   # 문서 셸: head·폰트·파비콘·SW·애널리틱스
+│   ├── components/seo/Seo.astro   # per-page meta + JSON-LD (빌드 타임)
+│   ├── components/site/           # SiteHeaderIsland.tsx · SiteFooter.tsx (공유 chrome)
+│   ├── components/landing/        # LandingSections.tsx(정적) · LandingInteractive.tsx(아일랜드)
+│   ├── App.tsx                    # SPA: 홈·진단·견적·포트폴리오 (catch-all이 마운트)
 │   ├── data.ts                    # 운영 정보, 서비스, 사례, 고정 블로그 글
 │   ├── types.ts                   # 공통 타입 정의
-│   ├── styles.css                 # 전역 디자인 토큰 + 반응형 스타일
-│   ├── admin-panel.css            # 관리자 대시보드 전용 스타일
-│   ├── auth-panel.css             # 로그인·마이페이지 공통 스타일
-│   ├── landingPages.ts            # 서비스·지역 랜딩 페이지 정의 (28개)
-│   ├── admin/
-│   │   ├── AdminShell.tsx         # 관리자 레이아웃 (사이드바·상단바)
-│   │   ├── AdminLoginPage.tsx     # 관리자 로그인 페이지
-│   │   ├── AdminInquiriesPage.tsx # 상담 요청 목록·상세·상태 관리
-│   │   ├── AdminAnalyticsPage.tsx # 유입·전환 분석
-│   │   ├── AdminEditorPage.tsx    # 페이지 콘텐츠 편집
+│   ├── styles.css                 # 전역 디자인 토큰 + 다크모드
+│   ├── auth-panel.css             # 로그인·마이페이지 스타일
+│   ├── lib/                       # supabaseClient.ts · analytics.ts · koreanParticle.ts
+│   ├── landingPages.ts            # 서비스·지역 랜딩 정의 (31개: 서비스 15 + 지역 16)
+│   ├── admin/                     # 어드민 대시보드 (해시 탭, React 아일랜드)
+│   │   ├── AdminPage.tsx          # 셸: 상단바·사이드바·해시탭·미리보기 모달
+│   │   ├── InquiriesTab.tsx       # 상담 목록·상세·상태·메모·견적
+│   │   ├── DashboardPanels.tsx    # 분석·지역·작업·콘텐츠·블로그·설정·이력 탭
 │   │   ├── SiteContentEditor.tsx  # 홈·견적·계정 페이지 편집
 │   │   ├── HomepageEditor.tsx     # 홈 섹션별 편집
 │   │   ├── LandingPagesEditor.tsx # 랜딩 페이지 편집
-│   │   └── InquiryQuoteEditor.tsx # 견적 에디터
+│   │   ├── InquiryQuoteEditor.tsx # 견적 에디터
+│   │   ├── AdminLoginPage.tsx     # 관리자 로그인
+│   │   └── admin.css              # .adm-root 스코프 스타일 (다크모드 포함)
 │   ├── account/
 │   │   └── AccountPage.tsx        # 고객 마이페이지
 │   ├── login/
@@ -134,14 +145,14 @@ jipsuriclass/
 │   ├── notify-inquiries.ts        # 미발송 문의 알림 API
 │   ├── blog-image.ts              # 블로그 이미지 프록시
 │   └── naver-geocode.ts           # 주소 → 좌표 변환
-├── public/
-│   ├── service/                   # 서비스별 사전 렌더링 HTML (SEO)
-│   ├── area/                      # 지역별 사전 렌더링 HTML (SEO)
+├── public/                        # (service/·area/ 랜딩은 Astro가 빌드 타임 생성 — 스냅샷 미커밋)
 │   ├── assets/                    # 시공사진 이미지
+│   ├── icons/                     # 파비콘 (icon.png + 다크모드 icon-dark.png)
 │   ├── manifest.webmanifest       # PWA 설치 정보
 │   └── service-worker.js          # 앱 셸 캐시
+├── astro.config.mjs               # Astro + @astrojs/react + @astrojs/vercel
 ├── scripts/
-│   └── patch-static-html.mjs     # 빌드 후 OG 태그·제목 자동 패치
+│   └── patch-static-html.mjs     # (레거시 Vite 빌드 전용 — build:vite)
 ├── vercel.json                    # 라우팅·캐시·리다이렉트 설정
 └── supabase/
     └── schema.sql                 # DB 스키마·RLS 정책
@@ -182,14 +193,15 @@ jipsuriclass/
 `vercel.json`에 빌드·라우팅·캐시 설정이 모두 커밋되어 있습니다.
 
 ```
-Build Command : npm run build
-Output Dir    : dist
-Framework     : Vite
+Build Command : astro build   (npm run build)
+Output        : @astrojs/vercel 어댑터 (.vercel/output, Build Output API)
+Framework     : Astro 6 (아일랜드)
 ```
 
-**캐시 전략**
-- `/assets/*`, `/icons/*` → `max-age=31536000, immutable` (콘텐츠 해시 기반)
-- `/`, `/admin/*`, `/service/*` 등 → `no-cache` (항상 최신)
+**렌더링 모델**
+- `/service/*`, `/area/*`, `/service/*/pricing`, `/privacy` → 빌드 타임 정적 HTML(+JSON-LD), JS≈0
+- `/`, `/diagnosis`, `/estimate`, `/admin`, `/login`, `/mypage`, `/portfolio` → `src/pages/[...all].astro` 온디맨드 SSR catch-all이 기존 React SPA(`<App client:only>`)를 그대로 마운트
+- `/icons/*` → `max-age=31536000, immutable`; 인증/동적 경로(`/admin` 등)는 `no-cache`; `/_astro/*`는 어댑터가 immutable 처리
 
 ### Vercel 환경 변수
 
@@ -207,13 +219,18 @@ CNAME  www    cname.vercel-dns.com
 ### 빌드 파이프라인
 
 ```
-npm run build
-  ├── tsc -b              # TypeScript 타입 검사
-  ├── vite build          # JS·CSS 번들 (코드 스플리팅 적용)
-  └── node scripts/patch-static-html.mjs
-        # public/ HTML 파일의 <title>, og:title, og:description,
-        # twitter:title, twitter:description을 landingPages.ts 값으로 자동 교체
+npm run build  →  astro build
+  ├── src/pages/**/*.astro 를 정적 HTML로 prerender
+  │     (랜딩·가격표·privacy: 본문 + JSON-LD를 빌드 타임 생성, 콘텐츠는
+  │      SiteContentService로 Supabase override를 빌드 타임에 반영)
+  ├── 인터랙티브 부분만 React 아일랜드로 번들 (client:idle/visible/only)
+  └── @astrojs/vercel 어댑터가 .vercel/output 으로 출력
+        (정적 파일 + [...all] catch-all 함수 + /api/* 서버리스 함수)
 ```
+
+> 레거시 Vite 빌드는 `npm run build:vite`(tsc + vite + patch-static-html.mjs)로
+> 남겨둠 — Astro cutover가 안정화되면 제거 예정(patch-static-html, 루트 index.html,
+> App.tsx 라우팅 분기).
 
 ---
 
