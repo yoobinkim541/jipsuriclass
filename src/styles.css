@@ -5190,6 +5190,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .estimate-step-count {
   align-items: center;
   display: inline-flex;
+  justify-content: center;
   flex: 0 0 auto;
   min-width: 64px;
   border: 1px solid rgba(122, 122, 122, 0.22);
@@ -12567,6 +12568,20 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background: var(--panel-strong, #1f2937);
     border-color: var(--gold-500, #f2c879);
     color: #ffffff;
+  }
+
+  /* 견적폼 선택지: 미선택 배경이 --cream-2(#111827)라 active 하드코딩(#111827)과 같아져
+     눌렀는지 안 눌렀는지 구분이 안 됨 → 골드 배경 + 골드 테두리로 명확히 강조 */
+  .estimate-choice {
+    background: var(--panel-soft, #162033);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink, #f8fafc);
+  }
+
+  .estimate-choice.active {
+    background: linear-gradient(180deg, #f2c879 0%, #d7ae6b 100%);
+    border-color: var(--gold-500, #f2c879);
+    color: #0b1220;
   }
 
   /* 흰 카드 위 하드코딩된 어두운 본문 글씨 → 밝게 */
