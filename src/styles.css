@@ -12386,11 +12386,16 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .estimate-modal,
   .admin-login-card,
   .account-summary-card,
+  .account-quote-card,
+  .account-quote-grid div,
+  .account-quote-list li,
   .price-calc__inner {
     background: var(--panel, #111827);
     border-color: var(--hair, rgba(226, 232, 240, 0.18));
     color: var(--ink, #f8fafc);
   }
+  /* 계정 견적 행 부제목: 하드코딩 회색 #6b7280 → 다크에서 저대비(~3.4:1) → 보조색 */
+  .account-row-subtitle { color: var(--ink-3, #aebbd0); }
 
   .bento__card h3,
   .cases__body h3,
