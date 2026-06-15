@@ -1028,6 +1028,17 @@ function CasesSection({
           </div>
         ) : null}
       </div>
+      <div className="cases__quicklinks" aria-label="분야별 현장사례 바로가기">
+        <span className="cases__quicklinks-label">분야별로 바로 찾기</span>
+        <div className="cases__quicklinks-row">
+          <a className="cases__quicklink" href="/portfolio?cat=bath">욕실</a>
+          <a className="cases__quicklink" href="/portfolio?cat=leak">누수·방수</a>
+          <a className="cases__quicklink" href="/portfolio?cat=kitchen">주방</a>
+          <a className="cases__quicklink" href="/portfolio?cat=wall">도배·도장</a>
+          <a className="cases__quicklink" href="/portfolio?cat=door">문·창호</a>
+          <a className="cases__quicklink cases__quicklink--all" href="/portfolio">전체 보기 →</a>
+        </div>
+      </div>
     </section>
   );
 }
@@ -1494,13 +1505,28 @@ function scorePostForQuery(post: PortfolioPost, tokens: string[], relatedTokens:
   return score;
 }
 
+// 현재 URL 쿼리(?q=&cat=&sort=)에서 현장사례 필터 상태를 읽는다. 공유·새로고침·딥링크 복원용.
+function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "oldest" } {
+  if (typeof window === "undefined") {
+    return { q: "", cat: "all", sort: "latest" };
+  }
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get("cat") || "all";
+  const validCat = portfolioChips.some((chip) => chip.key === cat) ? cat : "all";
+  return {
+    q: params.get("q") || "",
+    cat: validCat,
+    sort: params.get("sort") === "oldest" ? "oldest" : "latest"
+  };
+}
+
 function PortfolioPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [posts, setPosts] = useState<PortfolioPost[]>([]);
   const [postSource, setPostSource] = useState<"loading" | "naver" | "fallback">("loading");
-  const [activeChip, setActiveChip] = useState("all");
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<"latest" | "oldest">("latest");
+  const [activeChip, setActiveChip] = useState(() => readPortfolioParams().cat);
+  const [query, setQuery] = useState(() => readPortfolioParams().q);
+  const [sort, setSort] = useState<"latest" | "oldest">(() => readPortfolioParams().sort);
   const [visibleCount, setVisibleCount] = useState(12);
 
   useEffect(() => {
@@ -1514,6 +1540,29 @@ function PortfolioPage() {
   useEffect(() => {
     setVisibleCount(12);
   }, [query, activeChip, sort]);
+
+  // 필터 상태를 URL 쿼리에 반영(공유·북마크·새로고침 복원). history는 쌓지 않도록 replace.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (activeChip !== "all") params.set("cat", activeChip);
+    if (sort !== "latest") params.set("sort", sort);
+    const search = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${search ? `?${search}` : ""}`);
+  }, [query, activeChip, sort]);
+
+  // 뒤로/앞으로 등으로 URL이 바뀌면 필터 상태를 다시 동기화.
+  useEffect(() => {
+    const handlePopState = () => {
+      const next = readPortfolioParams();
+      setQuery(next.q);
+      setActiveChip(next.cat);
+      setSort(next.sort);
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const allPosts = useMemo(() => {
     const seen = new Set<string>();
