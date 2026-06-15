@@ -5190,6 +5190,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .estimate-step-count {
   align-items: center;
   display: inline-flex;
+  justify-content: center;
   flex: 0 0 auto;
   min-width: 64px;
   border: 1px solid rgba(122, 122, 122, 0.22);
