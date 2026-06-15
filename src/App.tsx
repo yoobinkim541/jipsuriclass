@@ -1449,14 +1449,21 @@ function PortfolioPage() {
   const [posts, setPosts] = useState<PortfolioPost[]>([]);
   const [postSource, setPostSource] = useState<"loading" | "naver" | "fallback">("loading");
   const [activeChip, setActiveChip] = useState("all");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"latest" | "oldest">("latest");
   const [visibleCount, setVisibleCount] = useState(12);
 
   useEffect(() => {
-    blogPortfolioService.loadLatestPortfolioPosts().then(({ posts: loaded, source }) => {
+    blogPortfolioService.loadAllPortfolioPosts().then(({ posts: loaded, source }) => {
       setPosts(loaded);
       setPostSource(source);
     });
   }, []);
+
+  // 검색·필터·정렬이 바뀌면 더보기 카운트를 처음으로 되돌린다.
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [query, activeChip, sort]);
 
   const allPosts = useMemo(() => {
     const seen = new Set<string>();
@@ -1468,16 +1475,23 @@ function PortfolioPage() {
   }, [posts]);
 
   const filteredPosts = useMemo(() => {
-    if (activeChip === "all") return allPosts;
-    const chip = portfolioChips.find((item) => item.key === activeChip);
-    if (!chip) return allPosts;
-    return allPosts.filter((post) => {
-      const haystack = [post.title, post.cardTitle, post.description, ...(post.keywords ?? [])]
+    const chip = activeChip === "all" ? null : portfolioChips.find((item) => item.key === activeChip);
+    const normalizedQuery = query.trim().toLowerCase();
+
+    const matched = allPosts.filter((post) => {
+      const haystack = [post.title, post.cardTitle, post.description, ...(post.summary ?? []), ...(post.keywords ?? [])]
         .filter(Boolean)
         .join(" ");
-      return chip.terms.some((term) => haystack.includes(term));
+      if (chip && !chip.terms.some((term) => haystack.includes(term))) return false;
+      if (normalizedQuery && !haystack.toLowerCase().includes(normalizedQuery)) return false;
+      return true;
     });
-  }, [activeChip, allPosts]);
+
+    return matched.slice().sort((left, right) => {
+      const comparison = (right.date || "").localeCompare(left.date || "");
+      return sort === "latest" ? comparison : -comparison;
+    });
+  }, [activeChip, allPosts, query, sort]);
 
   const visiblePosts = filteredPosts.slice(0, visibleCount);
 
@@ -1506,28 +1520,50 @@ function PortfolioPage() {
         </section>
 
         <section className="portfolio-grid-section" aria-label="현장사례 목록">
-          <div className="portfolio-chips" role="group" aria-label="카테고리 필터">
-            {portfolioChips.map((chip) => (
-              <button
-                key={chip.key}
-                className={activeChip === chip.key ? "portfolio-chip is-active" : "portfolio-chip"}
-                type="button"
-                aria-pressed={activeChip === chip.key}
-                onClick={() => {
-                  setActiveChip(chip.key);
-                  setVisibleCount(12);
-                }}
-              >
-                {chip.label}
-              </button>
-            ))}
+          <div className="portfolio-toolbar">
+            <div className="portfolio-search">
+              <Search size={18} aria-hidden="true" />
+              <input
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="검색어를 입력해 주세요 (예: 욕실, 누수, 도배)"
+                aria-label="현장사례 검색"
+              />
+            </div>
+            <div className="portfolio-chips" role="group" aria-label="카테고리 필터">
+              {portfolioChips.map((chip) => (
+                <button
+                  key={chip.key}
+                  className={activeChip === chip.key ? "portfolio-chip is-active" : "portfolio-chip"}
+                  type="button"
+                  aria-pressed={activeChip === chip.key}
+                  onClick={() => setActiveChip(chip.key)}
+                >
+                  {chip.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <p className="portfolio-meta" aria-live="polite">
-            {postSource === "loading"
-              ? "블로그 글을 불러오는 중입니다…"
-              : `${filteredPosts.length}건${postSource === "naver" ? " · 네이버 블로그 실시간" : " · 큐레이션 사례"}`}
-          </p>
+          <div className="portfolio-resultbar">
+            <p className="portfolio-meta" aria-live="polite">
+              {postSource === "loading" ? (
+                "블로그 글을 불러오는 중입니다…"
+              ) : (
+                <>
+                  전체 <strong>{filteredPosts.length.toLocaleString()}</strong>건
+                  {postSource === "fallback" ? " · 큐레이션 사례" : ""}
+                </>
+              )}
+            </p>
+            <label className="portfolio-sort">
+              <select aria-label="정렬 기준" value={sort} onChange={(event) => setSort(event.target.value as "latest" | "oldest")}>
+                <option value="latest">최신순</option>
+                <option value="oldest">오래된순</option>
+              </select>
+            </label>
+          </div>
 
           <div className="portfolio-grid">
             {visiblePosts.map((post) => (
@@ -1553,7 +1589,11 @@ function PortfolioPage() {
           </div>
 
           {!visiblePosts.length && postSource !== "loading" ? (
-            <p className="portfolio-empty">이 카테고리의 기록이 아직 없습니다. 다른 카테고리를 골라 보세요.</p>
+            <p className="portfolio-empty">
+              {query.trim()
+                ? `'${query.trim()}' 검색 결과가 없습니다. 다른 검색어나 카테고리를 골라 보세요.`
+                : "이 카테고리의 기록이 아직 없습니다. 다른 카테고리를 골라 보세요."}
+            </p>
           ) : null}
 
           <div className="portfolio-more">

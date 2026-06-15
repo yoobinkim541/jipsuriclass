@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv, type Plugin } from "vite";
-import { loadNaverBlogCandidates } from "./src/services/NaverBlogSource";
+import { loadNaverBlogCandidates, loadAllBlogPosts } from "./src/services/NaverBlogSource";
 
 function naverBlogApi(): Plugin {
   return {
@@ -10,13 +10,17 @@ function naverBlogApi(): Plugin {
         const env = loadEnv(server.config.mode, process.cwd(), "");
         const blogId = env.NAVER_BLOG_ID || "it77khy";
         const search = new URL(req.url || "", "http://localhost").searchParams;
+        const mode = search.get("mode") || "";
         const terms = parseTerms(search.get("terms") || "");
         const categoryNos = parseCategoryNos(search.get("categoryNos") || "");
 
         try {
-          const enrichedItems = await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: 6 });
+          const items =
+            mode === "all"
+              ? await loadAllBlogPosts(blogId)
+              : await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: 6 });
           res.setHeader("Content-Type", "application/json; charset=utf-8");
-          res.end(JSON.stringify({ items: enrichedItems, source: "naver" }));
+          res.end(JSON.stringify({ items, source: "naver" }));
         } catch (error) {
           res.statusCode = 502;
           res.setHeader("Content-Type", "application/json; charset=utf-8");

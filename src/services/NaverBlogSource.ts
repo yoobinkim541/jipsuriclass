@@ -238,10 +238,37 @@ async function fetchMobileItems(blogId: string, categoryNos: number[]) {
   return results;
 }
 
-async function fetchMobilePostList(blogId: string, categoryNo: number, itemCount: number) {
+/**
+ * 블로그에 지금까지 작성된 글을 모바일 post-list API의 페이지네이션으로 모두 모은다.
+ * (이미지 HEAD 검증·AI 요약 없이 썸네일/요약문을 그대로 쓰는 가벼운 카드용)
+ */
+export async function loadAllBlogPosts(blogId: string, maxPages = 30, itemsPerPage = 30): Promise<NaverBlogItem[]> {
+  const collected: NaverBlogItem[] = [];
+  const seen = new Set<string>();
+
+  for (let page = 1; page <= maxPages; page += 1) {
+    const items = await fetchMobilePostList(blogId, 0, itemsPerPage, page);
+    if (!items.length) break;
+
+    let added = 0;
+    for (const item of items) {
+      const key = item.link.trim();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      collected.push(item);
+      added += 1;
+    }
+
+    if (items.length < itemsPerPage || added === 0) break;
+  }
+
+  return collected;
+}
+
+async function fetchMobilePostList(blogId: string, categoryNo: number, itemCount: number, page = 1) {
   try {
     const response = await fetch(
-      `https://m.blog.naver.com/api/blogs/${encodeURIComponent(blogId)}/post-list?categoryNo=${categoryNo}&itemCount=${itemCount}&page=1&userId=`,
+      `https://m.blog.naver.com/api/blogs/${encodeURIComponent(blogId)}/post-list?categoryNo=${categoryNo}&itemCount=${itemCount}&page=${page}&userId=`,
       {
         headers: {
           Accept: "application/json, text/plain, */*",
@@ -278,13 +305,16 @@ function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlo
     buildBlogImageUrl(item.thumbnailList?.[0]?.encodedThumbnailUrl) ??
     buildBlogImageUrl(item.thumbnailList?.[0]?.thumbnailUrl);
 
+  const categoryName = sanitizeText(item.categoryName || "");
+
   return {
     title,
     description,
     link: `https://m.blog.naver.com/PostView.naver?blogId=${encodeURIComponent(blogId)}&logNo=${logNo}`,
     postdate: formatMobileDate(item.addDate),
     image,
-    imageCandidates: buildImageCandidates([item.thumbnailUrl, item.thumbnailList?.[0]?.encodedThumbnailUrl, item.thumbnailList?.[0]?.thumbnailUrl])
+    imageCandidates: buildImageCandidates([item.thumbnailUrl, item.thumbnailList?.[0]?.encodedThumbnailUrl, item.thumbnailList?.[0]?.thumbnailUrl]),
+    keywords: categoryName ? [categoryName] : undefined
   };
 }
 

@@ -33,6 +33,38 @@ export class BlogPortfolioService {
     return this.fallbackResult();
   }
 
+  /**
+   * 블로그에 지금까지 작성된 모든 글을 가벼운 카드(썸네일+요약문)로 불러온다.
+   * 전용 mode=all 응답이라 maxPosts 제한을 적용하지 않는다. 24시간 캐시.
+   */
+  async loadAllPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
+    const cacheKey = "blog-cache:all";
+    const cached = this.readCache(cacheKey);
+    if (cached) {
+      return { posts: cached, source: "naver" };
+    }
+
+    try {
+      const url = new URL(this.endpoint, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+      url.searchParams.set("mode", "all");
+
+      const response = await fetch(url.toString(), { cache: "no-store" });
+      if (!response.ok) throw new Error("Naver blog endpoint unavailable");
+
+      const data = (await response.json()) as NaverBlogResponse;
+      const items = Array.isArray(data.items) ? data.items : [];
+      if (!items.length) {
+        return this.loadLatestPortfolioPosts();
+      }
+
+      const posts = items.map((item, index) => this.toPortfolioPost(item, index));
+      this.writeCache(cacheKey, posts);
+      return { source: "naver", posts };
+    } catch {
+      return this.fallbackResult();
+    }
+  }
+
   async loadPortfolioPosts(
     terms: string[] = [],
     categoryNos: number[] = []
