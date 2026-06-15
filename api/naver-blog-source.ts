@@ -646,6 +646,9 @@ function upgradeNaverBlogImageUrl(value: string) {
     const type = url.searchParams.get("type");
     if (type && /^w\d*(?:_?blur)?$/i.test(type)) {
       url.searchParams.set("type", "w966");
+    } else if (!type && /(?:^|\.)pstatic\.net$/i.test(url.hostname)) {
+      // 썸네일 CDN은 type 파라미터가 없으면 이미지를 반환하지 않는다.
+      url.searchParams.set("type", "w966");
     }
 
     return url.toString();

@@ -56,24 +56,31 @@ function naverBlogApi(): Plugin {
           const originalUrl = target.toString();
           const upgraded = new URL(originalUrl);
           const type = upgraded.searchParams.get("type");
+          const isPstatic = /(?:^|\.)pstatic\.net$/i.test(upgraded.hostname);
           if (type && /^w\d*(?:_?blur)?$/i.test(type)) {
             upgraded.searchParams.set("type", "w966");
+          } else if (!type && isPstatic) {
+            // 썸네일 CDN은 type 파라미터가 없으면 이미지를 반환하지 않는다.
+            upgraded.searchParams.set("type", "w966");
           }
-          const attempts = upgraded.toString() === originalUrl ? [originalUrl] : [upgraded.toString(), originalUrl];
+          const urlVariants = upgraded.toString() === originalUrl ? [originalUrl] : [upgraded.toString(), originalUrl];
 
           let upstream: Response | null = null;
-          for (const attempt of attempts) {
-            const candidate = await fetch(attempt, {
-              headers: {
-                Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-                Referer: "https://blog.naver.com/",
-                "User-Agent": "Mozilla/5.0"
+          for (const attempt of urlVariants) {
+            for (const referer of ["https://blog.naver.com/", "https://m.blog.naver.com/"]) {
+              const candidate = await fetch(attempt, {
+                headers: {
+                  Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+                  Referer: referer,
+                  "User-Agent": "Mozilla/5.0"
+                }
+              });
+              if (candidate.ok && (candidate.headers.get("content-type") || "").startsWith("image/")) {
+                upstream = candidate;
+                break;
               }
-            });
-            if (candidate.ok && (candidate.headers.get("content-type") || "").startsWith("image/")) {
-              upstream = candidate;
-              break;
             }
+            if (upstream) break;
           }
           if (!upstream) {
             throw new Error("No live image variant");
