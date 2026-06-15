@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import "./admin.css";
 import { business } from "../data";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { supabase, isSupabaseConfigured } from "../lib/supabaseClient";
 import { landingPageDefinitions } from "../landingPages";
 import { AuthService } from "../services/AuthService";
@@ -247,6 +248,7 @@ export function AdminPage() {
           />
         </div>
         <div className="adm-top__right">
+          <ThemeToggle className="theme-toggle--admin" />
           <NotificationBell newInquiries={newInquiries} onOpenInquiry={openInquiryDetail} />
           <a className="adm-top__btn" href="/" target="_blank" rel="noreferrer" title="새 창으로 사이트 보기">
             <ExternalLink />

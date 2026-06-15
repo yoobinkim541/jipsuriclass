@@ -463,9 +463,16 @@ function HeroSection({
 
   const proofs = content.proofs.length > 0 ? content.proofs : defaultHomepageContent.hero.proofs;
   const trustItems = content.trust.length > 0 ? content.trust : defaultHomepageContent.hero.trust;
+  // 모바일 히어로 배경: 데스크톱에서 숨던 시공 사진(자동 회전하는 메인 카드)을 풀블리드로 깐다.
+  const heroBackdrop = cardSlots.find((slot) => slot.role === "main")?.img ?? caseImages[0];
 
   return (
     <section className="hero" id="hero">
+      {heroBackdrop ? (
+        <div className="hero__mobile-bg" aria-hidden="true">
+          <img src={heroBackdrop.image} alt="" />
+        </div>
+      ) : null}
       <div className="hero__grid">
         {/* Left column */}
         <div>
@@ -475,7 +482,9 @@ function HeroSection({
             <span className="hero__rotator">
               <em key={rotatorKey}>{heroRotatorWords[rotatorIndex % heroRotatorWords.length]}</em>
             </span>
-            {directionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length])} 끝냅니다.
+            <span className="hero__rotator-suffix">
+              {directionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length])} 끝냅니다.
+            </span>
           </h1>
           <p className="hero__lede">
             {(content.description || "물 새는 천장부터 들뜬 벽지까지. 큰 공사 권하지 않고 딱 필요한 만큼만, 7개 국가공인 건축자격을 가진 대표가 직접 손봅니다.").replace("누수 복구", "누수 복구")}

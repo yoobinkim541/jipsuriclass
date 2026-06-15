@@ -28,6 +28,25 @@ import "@fontsource/jetbrains-mono/500.css";
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#10284a" />
+    <!-- 테마 무플래시 초기화: 저장된 선택(light|dark)이 없으면 시스템 설정을 따른다. -->
+    <script is:inline>
+      (function () {
+        try {
+          var v = localStorage.getItem("jsc-theme");
+          var t =
+            v === "light" || v === "dark"
+              ? v
+              : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          document.documentElement.dataset.theme = t;
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute("content", t === "dark" ? "#0b1220" : "#10284a");
+        } catch (e) {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
     <meta property="og:locale" content="ko_KR" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="집수리클라쓰" />
