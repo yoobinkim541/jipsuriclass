@@ -2590,6 +2590,51 @@ textarea {
   margin: 0 clamp(18px, 5vw, 64px) 10px;
 }
 
+/* 분야별 현장사례 바로가기(홈 → /portfolio?cat= 딥링크) */
+.cases__quicklinks {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: clamp(20px, 3vw, 32px) clamp(18px, 5vw, 64px) 0;
+  text-align: center;
+}
+.cases__quicklinks-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink-3, #5b6781);
+}
+.cases__quicklinks-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.cases__quicklink {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--hair, #e6dfd0);
+  background: var(--panel, #ffffff);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2, #2a3a55);
+  text-decoration: none;
+  transition: all 180ms;
+}
+.cases__quicklink:hover {
+  border-color: var(--navy-700, #10284a);
+  background: var(--navy-700, #10284a);
+  color: #ffffff;
+}
+.cases__quicklink--all {
+  border-color: var(--navy-700, #10284a);
+  color: var(--navy-700, #10284a);
+  font-weight: 700;
+}
+
 .cases__carousel-button {
   width: 42px;
   height: 42px;
