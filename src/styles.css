@@ -1556,6 +1556,11 @@ textarea {
   padding: clamp(40px, 6vw, 80px) clamp(18px, 5vw, 64px);
 }
 
+/* 모바일 전용 히어로 배경 사진(데스크톱은 카드 덱을 쓰므로 숨김) */
+.hero__mobile-bg {
+  display: none;
+}
+
 .hero__grid {
   display: grid;
   gap: clamp(32px, 5vw, 64px);
@@ -9383,8 +9388,35 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     gap: 14px;
   }
 
+  .hero {
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  /* 풀블리드 시공 사진 배경 + 어두운 그라데이션 오버레이 */
+  .hero__mobile-bg {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .hero__mobile-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero__mobile-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(7, 13, 26, 0.56) 0%, rgba(7, 13, 26, 0.74) 52%, rgba(7, 13, 26, 0.92) 100%);
+  }
+
   .hero__grid {
     gap: 18px;
+    position: relative;
   }
 
   .hero__grid > div:first-child {
@@ -9393,14 +9425,26 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   }
 
   .hero__title {
-    font-size: clamp(46px, 14vw, 76px);
-    line-height: 1.0;
-    margin-bottom: 56px;
+    font-size: clamp(44px, 13vw, 72px);
+    line-height: 1.04;
+    margin-bottom: 44px;
+    color: #ffffff;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+  }
+
+  /* 회전 단어: 어두운 배경에서 navy 그라데이션이 묻히므로 골드 계열로 전환 */
+  .hero__rotator em {
+    background: linear-gradient(120deg, #f2c879, #ffe2ab 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   .hero__lede {
     font-size: 14px;
     line-height: 1.65;
+    color: rgba(255, 255, 255, 0.88);
+    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
   }
 
   .hero__deck,

@@ -463,9 +463,16 @@ function HeroSection({
 
   const proofs = content.proofs.length > 0 ? content.proofs : defaultHomepageContent.hero.proofs;
   const trustItems = content.trust.length > 0 ? content.trust : defaultHomepageContent.hero.trust;
+  // 모바일 히어로 배경: 데스크톱에서 숨던 시공 사진(자동 회전하는 메인 카드)을 풀블리드로 깐다.
+  const heroBackdrop = cardSlots.find((slot) => slot.role === "main")?.img ?? caseImages[0];
 
   return (
     <section className="hero" id="hero">
+      {heroBackdrop ? (
+        <div className="hero__mobile-bg" aria-hidden="true">
+          <img src={heroBackdrop.image} alt="" />
+        </div>
+      ) : null}
       <div className="hero__grid">
         {/* Left column */}
         <div>
