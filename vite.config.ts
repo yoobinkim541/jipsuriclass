@@ -53,21 +53,32 @@ function naverBlogApi(): Plugin {
           return;
         }
         try {
-          const type = target.searchParams.get("type");
+          const originalUrl = target.toString();
+          const upgraded = new URL(originalUrl);
+          const type = upgraded.searchParams.get("type");
           if (type && /^w\d*(?:_?blur)?$/i.test(type)) {
-            target.searchParams.set("type", "w966");
+            upgraded.searchParams.set("type", "w966");
           }
-          const upstream = await fetch(target.toString(), {
-            headers: {
-              Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-              Referer: "https://blog.naver.com/",
-              "User-Agent": "Mozilla/5.0"
+          const attempts = upgraded.toString() === originalUrl ? [originalUrl] : [upgraded.toString(), originalUrl];
+
+          let upstream: Response | null = null;
+          for (const attempt of attempts) {
+            const candidate = await fetch(attempt, {
+              headers: {
+                Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+                Referer: "https://blog.naver.com/",
+                "User-Agent": "Mozilla/5.0"
+              }
+            });
+            if (candidate.ok && (candidate.headers.get("content-type") || "").startsWith("image/")) {
+              upstream = candidate;
+              break;
             }
-          });
-          const contentType = upstream.headers.get("content-type") || "image/jpeg";
-          if (!upstream.ok || !contentType.startsWith("image/")) {
-            throw new Error(`Upstream image returned ${upstream.status}`);
           }
+          if (!upstream) {
+            throw new Error("No live image variant");
+          }
+          const contentType = upstream.headers.get("content-type") || "image/jpeg";
           const buffer = Buffer.from(await upstream.arrayBuffer());
           res.setHeader("Content-Type", contentType);
           res.setHeader("Cache-Control", "public, max-age=86400");

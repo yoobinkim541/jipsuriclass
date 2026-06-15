@@ -24,24 +24,30 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   try {
+    // 사이즈 업스케일(type=w966) 변형을 먼저 시도하고, 실패하면 원본 URL로 재시도한다.
     const upgradedUrl = upgradeNaverBlogImageUrl(url.toString());
-    const upstream = await fetch(upgradedUrl, {
-      headers: {
-        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-        Referer: "https://blog.naver.com/",
-        "User-Agent": "Mozilla/5.0"
-      }
-    });
+    const attempts = upgradedUrl === url.toString() ? [upgradedUrl] : [upgradedUrl, url.toString()];
 
-    if (!upstream.ok) {
-      throw new Error(`Upstream image returned ${upstream.status}`);
+    let upstream: Response | null = null;
+    for (const attempt of attempts) {
+      const candidate = await fetch(attempt, {
+        headers: {
+          Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+          Referer: "https://blog.naver.com/",
+          "User-Agent": "Mozilla/5.0"
+        }
+      });
+      if (candidate.ok && (candidate.headers.get("content-type") || "").startsWith("image/")) {
+        upstream = candidate;
+        break;
+      }
+    }
+
+    if (!upstream) {
+      throw new Error("No live image variant");
     }
 
     const contentType = upstream.headers.get("content-type") || "image/jpeg";
-    if (!contentType.startsWith("image/")) {
-      throw new Error(`Unexpected content type: ${contentType}`);
-    }
-
     const buffer = await upstream.arrayBuffer();
     response.setHeader("Content-Type", contentType);
     response.setHeader("Cache-Control", "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800");

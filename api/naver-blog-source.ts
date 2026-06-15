@@ -329,8 +329,16 @@ function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlo
 }
 
 function buildBlogImageUrl(value?: string) {
-  const image = typeof value === "string" ? value.trim() : "";
+  let image = typeof value === "string" ? value.trim() : "";
   if (!image) return undefined;
+  // encodedThumbnailUrl 등 퍼센트 인코딩된 값을 복원(인코딩된 URL이면 new URL()이 실패해 깨짐).
+  if (/%[0-9a-fA-F]{2}/.test(image) && !/^https?:\/\//i.test(image)) {
+    try {
+      image = decodeURIComponent(image);
+    } catch {
+      /* keep original */
+    }
+  }
   return upgradeNaverBlogImageUrl(image) || undefined;
 }
 
