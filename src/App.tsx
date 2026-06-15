@@ -18,7 +18,7 @@ import {
 import { business, cases, navItems, pinnedPosts, process, services, symptoms, symptomCategories } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
-import { directionalParticle } from "./lib/koreanParticle";
+import { directionalParticle, stripDirectionalParticle } from "./lib/koreanParticle";
 import type { HomepageContent, PortfolioPost } from "./types";
 const AdminPage = lazy(() => import("./admin/AdminPage").then((m) => ({ default: m.AdminPage })));
 const AdminLoginPage = lazy(() => import("./admin/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
@@ -465,6 +465,9 @@ function HeroSection({
   const trustItems = content.trust.length > 0 ? content.trust : defaultHomepageContent.hero.trust;
   // 모바일 히어로 배경: 데스크톱에서 숨던 시공 사진(자동 회전하는 메인 카드)을 풀블리드로 깐다.
   const heroBackdrop = cardSlots.find((slot) => slot.role === "main")?.img ?? caseImages[0];
+  // 회전 단어에 방향 조사(으로/로)가 붙어 있으면 떼어내 골드 강조에서 제외하고,
+  // 조사는 흰색 서술부(.hero__rotator-suffix)로 따로 렌더한다.
+  const heroRotatorWord = stripDirectionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length]);
 
   return (
     <section className="hero" id="hero">
@@ -480,10 +483,10 @@ function HeroSection({
             {content.title || "집의 모든 불편을"}{" "}
             <br />
             <span className="hero__rotator">
-              <em key={rotatorKey}>{heroRotatorWords[rotatorIndex % heroRotatorWords.length]}</em>
+              <em key={rotatorKey}>{heroRotatorWord}</em>
             </span>
             <span className="hero__rotator-suffix">
-              {directionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length])} 끝냅니다.
+              {directionalParticle(heroRotatorWord)} 끝냅니다.
             </span>
           </h1>
           <p className="hero__lede">
