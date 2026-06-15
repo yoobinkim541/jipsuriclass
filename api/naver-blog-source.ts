@@ -17,6 +17,9 @@ type MobilePostListResponse = {
   isSuccess?: boolean;
   result?: {
     items?: MobilePostItem[];
+    totalCount?: number;
+    totalCnt?: number;
+    count?: number;
   };
 };
 
@@ -228,14 +231,14 @@ function getSourcePriority(sources: Set<"mobile" | "mobile-category" | "rss" | "
 async function fetchMobileItems(blogId: string, categoryNos: number[]) {
   const results: Array<{ item: NaverBlogItem; source: "mobile" | "mobile-category" }> = [];
 
-  const latestItems = await fetchMobilePostList(blogId, 0, MOBILE_FETCH_LIMIT);
+  const { items: latestItems } = await fetchMobilePostList(blogId, 0, MOBILE_FETCH_LIMIT);
   for (const item of latestItems) {
     results.push({ item, source: "mobile" });
   }
 
   const uniqueCategoryNos = [...new Set(categoryNos.filter((value) => Number.isInteger(value) && value > 0))];
   for (const categoryNo of uniqueCategoryNos) {
-    const categoryItems = await fetchMobilePostList(blogId, categoryNo, MOBILE_FETCH_LIMIT);
+    const { items: categoryItems } = await fetchMobilePostList(blogId, categoryNo, MOBILE_FETCH_LIMIT);
     for (const item of categoryItems) {
       results.push({ item, source: "mobile-category" });
     }
@@ -247,13 +250,20 @@ async function fetchMobileItems(blogId: string, categoryNos: number[]) {
 /**
  * 블로그에 지금까지 작성된 글을 모바일 post-list API의 페이지네이션으로 모두 모은다.
  * (이미지 HEAD 검증·AI 요약 없이 썸네일/요약문을 그대로 쓰는 가벼운 카드용)
+ * totalCount는 블로그 전체 글 수(표시용) — 실제 수집 카드 수보다 많을 수 있다.
  */
-export async function loadAllBlogPosts(blogId: string, maxPages = 60, itemsPerPage = 30): Promise<NaverBlogItem[]> {
+export async function loadAllBlogPosts(
+  blogId: string,
+  maxPages = 60,
+  itemsPerPage = 30
+): Promise<{ items: NaverBlogItem[]; totalCount: number }> {
   const collected: NaverBlogItem[] = [];
   const seen = new Set<string>();
+  let totalCount = 0;
 
   for (let page = 1; page <= maxPages; page += 1) {
-    const items = await fetchMobilePostList(blogId, 0, itemsPerPage, page);
+    const { items, totalCount: pageTotal } = await fetchMobilePostList(blogId, 0, itemsPerPage, page);
+    if (page === 1 && pageTotal > 0) totalCount = pageTotal;
     if (!items.length) break;
 
     let added = 0;
@@ -268,10 +278,15 @@ export async function loadAllBlogPosts(blogId: string, maxPages = 60, itemsPerPa
     if (items.length < itemsPerPage || added === 0) break;
   }
 
-  return collected;
+  return { items: collected, totalCount: Math.max(totalCount, collected.length) };
 }
 
-async function fetchMobilePostList(blogId: string, categoryNo: number, itemCount: number, page = 1) {
+async function fetchMobilePostList(
+  blogId: string,
+  categoryNo: number,
+  itemCount: number,
+  page = 1
+): Promise<{ items: NaverBlogItem[]; totalCount: number }> {
   try {
     const response = await fetch(
       `https://m.blog.naver.com/api/blogs/${encodeURIComponent(blogId)}/post-list?categoryNo=${categoryNo}&itemCount=${itemCount}&page=${page}&userId=`,
@@ -289,14 +304,17 @@ async function fetchMobilePostList(blogId: string, categoryNo: number, itemCount
     }
 
     const data = (await response.json()) as MobilePostListResponse;
-    const items = Array.isArray(data.result?.items) ? data.result?.items : [];
+    const rawItems = Array.isArray(data.result?.items) ? data.result?.items ?? [] : [];
+    const totalCount = data.result?.totalCount ?? data.result?.totalCnt ?? data.result?.count ?? 0;
 
-    return items.flatMap((item) => {
+    const items = rawItems.flatMap((item) => {
       const normalized = normalizeMobilePostItem(blogId, item);
       return normalized ? [normalized] : [];
     });
+
+    return { items, totalCount: typeof totalCount === "number" ? totalCount : 0 };
   } catch {
-    return [];
+    return { items: [], totalCount: 0 };
   }
 }
 

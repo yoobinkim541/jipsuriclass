@@ -15,12 +15,15 @@ function naverBlogApi(): Plugin {
         const categoryNos = parseCategoryNos(search.get("categoryNos") || "");
 
         try {
-          const items =
-            mode === "all"
-              ? await loadAllBlogPosts(blogId)
-              : await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: 6 });
-          res.setHeader("Content-Type", "application/json; charset=utf-8");
-          res.end(JSON.stringify({ items, source: "naver" }));
+          if (mode === "all") {
+            const { items, totalCount } = await loadAllBlogPosts(blogId);
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify({ items, totalCount, source: "naver" }));
+          } else {
+            const items = await loadNaverBlogCandidates({ blogId, terms, categoryNos, limit: 6 });
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.end(JSON.stringify({ items, source: "naver" }));
+          }
         } catch (error) {
           res.statusCode = 502;
           res.setHeader("Content-Type", "application/json; charset=utf-8");

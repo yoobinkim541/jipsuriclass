@@ -46,9 +46,10 @@ export default async function handler(_request: VercelRequest, response: VercelR
   try {
     if (mode === "all") {
       // 전체 글: 모바일 post-list 페이지네이션으로 모두 수집(AI 요약·이미지 검증 없이 가벼운 카드).
-      const items = await loadAllBlogPosts(blogId);
+      // totalCount는 블로그 전체 글 수(표시용, 수집 카드 수보다 많을 수 있음).
+      const { items, totalCount } = await loadAllBlogPosts(blogId);
       response.setHeader("Cache-Control", "no-store");
-      response.status(200).json({ items, source: "naver" });
+      response.status(200).json({ items, totalCount, source: "naver" });
       return;
     }
 
