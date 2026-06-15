@@ -66,6 +66,7 @@ function readTabFromHash(): AdminTab {
 export function AdminPage() {
   const [tab, setTab] = useState<AdminTab>(readTabFromHash);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [sessionName, setSessionName] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
   const [inquiries, setInquiries] = useState<InquiryRow[]>([]);
   const [inquiriesLoading, setInquiriesLoading] = useState(false);
@@ -113,6 +114,7 @@ export function AdminPage() {
       .then((session) => {
         if (!mounted) return;
         setSessionEmail(session?.user.email ?? null);
+        setSessionName(socialName(session));
         setSessionLoading(false);
         if (session?.user) void loadInquiries();
       })
@@ -125,6 +127,7 @@ export function AdminPage() {
     const { data } =
       supabase?.auth.onAuthStateChange((event, session) => {
         setSessionEmail(session?.user.email ?? null);
+        setSessionName(socialName(session));
         setSessionLoading(false);
         // 초기 로드는 위의 getSession()이 담당한다. INITIAL_SESSION에서 또 부르면
         // 마운트 시 문의를 두 번 가져오므로 실제 인증 전환에서만 다시 로드한다.
@@ -248,7 +251,7 @@ export function AdminPage() {
           <a className="adm-top__btn" href="/" target="_blank" rel="noreferrer" title="새 창으로 사이트 보기">
             <ExternalLink />
           </a>
-          <UserMenu email={sessionEmail} onSignOut={() => void handleSignOut()} />
+          <UserMenu email={sessionEmail} name={sessionName} onSignOut={() => void handleSignOut()} />
         </div>
       </header>
 
@@ -606,7 +609,13 @@ function NotificationBell({
 
 /* ──────────── 사용자 메뉴 ──────────── */
 
-function UserMenu({ email, onSignOut }: { email: string | null; onSignOut: () => void }) {
+function socialName(session: { user?: { user_metadata?: Record<string, unknown> | null } } | null | undefined): string | null {
+  const meta = session?.user?.user_metadata ?? {};
+  const value = meta.full_name ?? meta.name ?? meta.user_name;
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function UserMenu({ email, name, onSignOut }: { email: string | null; name: string | null; onSignOut: () => void }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -625,7 +634,7 @@ function UserMenu({ email, onSignOut }: { email: string | null; onSignOut: () =>
       <button className="adm-top__user" type="button" onClick={() => setOpen((current) => !current)}>
         <span className="adm-top__avatar">{initial}</span>
         <span className="adm-top__user-meta">
-          <strong>{business.owner.replace("대표자 ", "")}</strong>
+          <strong>{name ?? business.owner.replace("대표자 ", "")}</strong>
           <em>{email ?? "로그인 필요"}</em>
         </span>
         <ChevronDown />
