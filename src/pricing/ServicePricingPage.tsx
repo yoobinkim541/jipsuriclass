@@ -10,7 +10,7 @@ export function ServicePricingPage({ config }: { config: ServicePricingConfig })
       <header className="nav" data-elevated="true">
         <div className="nav__inner">
           <a className="brand" href="/" aria-label="집수리클라쓰 홈">
-            <img className="brand__mark" src="/icons/brand-icon.png" alt="" aria-hidden="true" />
+            <img className="brand__mark" src="/icons/icon.png" alt="" aria-hidden="true" />
             <span className="brand__name">
               집수리<em>클라쓰</em>
             </span>
