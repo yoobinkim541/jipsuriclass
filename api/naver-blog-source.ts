@@ -248,7 +248,7 @@ async function fetchMobileItems(blogId: string, categoryNos: number[]) {
  * 블로그에 지금까지 작성된 글을 모바일 post-list API의 페이지네이션으로 모두 모은다.
  * (이미지 HEAD 검증·AI 요약 없이 썸네일/요약문을 그대로 쓰는 가벼운 카드용)
  */
-export async function loadAllBlogPosts(blogId: string, maxPages = 30, itemsPerPage = 30): Promise<NaverBlogItem[]> {
+export async function loadAllBlogPosts(blogId: string, maxPages = 60, itemsPerPage = 30): Promise<NaverBlogItem[]> {
   const collected: NaverBlogItem[] = [];
   const seen = new Set<string>();
 
@@ -319,14 +319,26 @@ function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlo
     link: `https://m.blog.naver.com/PostView.naver?blogId=${encodeURIComponent(blogId)}&logNo=${logNo}`,
     postdate: formatMobileDate(item.addDate),
     image,
-    imageCandidates: buildImageCandidates([item.thumbnailUrl, item.thumbnailList?.[0]?.encodedThumbnailUrl, item.thumbnailList?.[0]?.thumbnailUrl]),
+    // 대표 썸네일 + 글에 담긴 나머지 썸네일을 모두 후보로 → 첫 사진이 안 뜨면 다른 사진으로 폴백.
+    imageCandidates: buildImageCandidates([
+      item.thumbnailUrl,
+      ...(item.thumbnailList ?? []).flatMap((thumb) => [thumb.encodedThumbnailUrl, thumb.thumbnailUrl])
+    ]),
     keywords: categoryName ? [categoryName] : undefined
   };
 }
 
 function buildBlogImageUrl(value?: string) {
-  const image = typeof value === "string" ? value.trim() : "";
+  let image = typeof value === "string" ? value.trim() : "";
   if (!image) return undefined;
+  // encodedThumbnailUrl 등 퍼센트 인코딩된 값을 복원(인코딩된 URL이면 new URL()이 실패해 깨짐).
+  if (/%[0-9a-fA-F]{2}/.test(image) && !/^https?:\/\//i.test(image)) {
+    try {
+      image = decodeURIComponent(image);
+    } catch {
+      /* keep original */
+    }
+  }
   return upgradeNaverBlogImageUrl(image) || undefined;
 }
 
