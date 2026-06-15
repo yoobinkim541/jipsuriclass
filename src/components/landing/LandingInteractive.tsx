@@ -204,8 +204,8 @@ function BlogCardImage({ post }: { post: PortfolioPost }) {
   );
 }
 
-function BlogShowcase({ label, posts, emptyText }: { label: string; posts: PortfolioPost[]; emptyText: string }) {
-  const displayPosts = posts.slice(0, 5);
+function BlogShowcase({ label, posts, emptyText, max = 5 }: { label: string; posts: PortfolioPost[]; emptyText: string; max?: number }) {
+  const displayPosts = posts.slice(0, max);
   const railRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const scrollFrameRef = useRef<number | null>(null);
@@ -588,8 +588,17 @@ export function LandingBlogSection({ content }: { content: LandingPageDefinition
   const referencePosts = useMemo(() => {
     const matchedPosts = filterLandingPosts(landingPosts, content, landingSearchTerms);
     if (content.pageType === "Service") return matchedPosts;
-    if (matchedPosts.length) return matchedPosts;
-    return landingPosts.slice(0, 6);
+    // 지역(Place): 포트폴리오 섹션을 없앤 대신 레퍼런스를 보강 —
+    // 매칭글 + 최신글 + 핀 게시물을 link 기준 중복 제거 후 최대 8개.
+    const merged: PortfolioPost[] = [];
+    const seen = new Set<string>();
+    for (const post of [...matchedPosts, ...landingPosts, ...pinnedPosts]) {
+      if (!post?.link || seen.has(post.link)) continue;
+      seen.add(post.link);
+      merged.push(post);
+      if (merged.length >= 8) break;
+    }
+    return merged;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, landingPosts, landingSearchTerms]);
 
@@ -603,8 +612,15 @@ export function LandingBlogSection({ content }: { content: LandingPageDefinition
         title={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 사례 & 블로그`}
         description={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 관련 시공 사례와 블로그 게시물을 모았습니다.`}
       />
-      <BlogShowcase label="블로그 레퍼런스" posts={referencePosts} emptyText="키워드가 맞는 최신 게시물을 찾지 못했습니다." />
-      <BlogShowcase label="포트폴리오" posts={portfolioPosts} emptyText="추가 포트폴리오를 찾지 못했습니다." />
+      <BlogShowcase
+        label="블로그 레퍼런스"
+        posts={referencePosts}
+        max={content.pageType === "Place" ? 8 : 5}
+        emptyText="키워드가 맞는 최신 게시물을 찾지 못했습니다."
+      />
+      {content.pageType !== "Place" && (
+        <BlogShowcase label="포트폴리오" posts={portfolioPosts} emptyText="추가 포트폴리오를 찾지 못했습니다." />
+      )}
       {pricingConfig && <ServiceEstimator config={pricingConfig} />}
     </section>
   );
