@@ -3872,19 +3872,48 @@ main.home-page .cases .row-heading,
 main.home-page .blog .row-heading {
   align-items: center;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr auto 1fr;
   gap: 18px;
   width: 100%;
 }
 
+/* 제목·부제목 블록을 가운데 칼럼에 배치해 섹션 정중앙 정렬(좌우 1fr 동일) */
 main.home-page .cases .row-heading > div,
 main.home-page .blog .row-heading > div {
+  grid-column: 2;
   text-align: center;
 }
 
 main.home-page .cases .row-heading a,
 main.home-page .blog .row-heading a {
+  grid-column: 3;
   justify-self: end;
+}
+
+/* 대표 현장 사례 이동 링크는 오른쪽 끝에서 살짝 띄운다 */
+main.home-page .cases .row-heading a {
+  margin-right: clamp(8px, 1.5vw, 20px);
+}
+
+@media (max-width: 720px) {
+  main.home-page .cases .row-heading,
+  main.home-page .blog .row-heading {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 12px;
+  }
+
+  main.home-page .cases .row-heading > div,
+  main.home-page .blog .row-heading > div,
+  main.home-page .cases .row-heading a,
+  main.home-page .blog .row-heading a {
+    grid-column: 1;
+  }
+
+  main.home-page .cases .row-heading a {
+    justify-self: center;
+    margin-right: 0;
+  }
 }
 
 .row-heading a {
@@ -12247,6 +12276,55 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .portfolio-grid-section {
   margin-top: 28px;
 }
+.portfolio-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.portfolio-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: 52px;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 14px;
+  background: var(--cream-2, #f1ece1);
+  color: var(--ink-3, #5b6781);
+}
+.portfolio-search:focus-within {
+  border-color: var(--navy-700, #10284a);
+  background: var(--cream, #fffdf8);
+}
+.portfolio-search svg {
+  flex: 0 0 auto;
+}
+.portfolio-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  color: var(--ink, #0b1a30);
+  outline: none;
+}
+.portfolio-resultbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0 18px;
+}
+.portfolio-sort select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--hair, #e6dfd0);
+  background: var(--cream, #fffdf8);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2, #2a3a55);
+  cursor: pointer;
+}
 .portfolio-chips {
   display: flex;
   flex-wrap: wrap;
@@ -12275,6 +12353,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   margin: 16px 0 18px;
   font-size: 13px;
   color: var(--ink-3, #5b6781);
+}
+.portfolio-resultbar .portfolio-meta {
+  margin: 0;
+  font-size: 14px;
+}
+.portfolio-resultbar .portfolio-meta strong {
+  color: var(--ink, #0b1a30);
+  font-weight: 800;
 }
 .portfolio-grid {
   display: grid;

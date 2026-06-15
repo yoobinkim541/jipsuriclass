@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { loadNaverBlogCandidates } from "./naver-blog-source.js";
+import { loadNaverBlogCandidates, loadAllBlogPosts } from "./naver-blog-source.js";
 
 type NaverBlogItem = {
   title: string;
@@ -44,6 +44,14 @@ export default async function handler(_request: VercelRequest, response: VercelR
   const categoryNos = parseCategoryNos(_request.query.categoryNos);
 
   try {
+    if (mode === "all") {
+      // 전체 글: 모바일 post-list 페이지네이션으로 모두 수집(AI 요약·이미지 검증 없이 가벼운 카드).
+      const items = await loadAllBlogPosts(blogId);
+      response.setHeader("Cache-Control", "no-store");
+      response.status(200).json({ items, source: "naver" });
+      return;
+    }
+
     const latestMode = mode === "latest";
     const items = await loadLatestBlogItems(
       blogId,
@@ -60,7 +68,9 @@ export default async function handler(_request: VercelRequest, response: VercelR
 
 function parseMode(value: string | string[] | undefined) {
   const raw = Array.isArray(value) ? value[0] : value ?? "";
-  return raw === "latest" ? "latest" : "matching";
+  if (raw === "latest") return "latest";
+  if (raw === "all") return "all";
+  return "matching";
 }
 
 function parseRssItems(xml: string): NaverBlogItem[] {
