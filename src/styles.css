@@ -1613,6 +1613,11 @@ textarea {
   animation: rotIn .5s cubic-bezier(.16,1,.3,1) both;
 }
 
+/* 회전 단어(골드) 뒤의 조사+서술어는 항상 타이틀과 같은 색으로(골드 아님) */
+.hero__rotator-suffix {
+  color: var(--ink, #0b1a30);
+}
+
 @keyframes rotIn {
   from { transform: translateY(40%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
@@ -3798,6 +3803,31 @@ textarea {
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.6;
   font-size: 14px;
+}
+
+/* 모바일·태블릿: 작은 정사각 타일에서 캡션이 타일 높이를 넘쳐 위쪽 글자가
+   overflow:hidden에 잘리던 문제 → 패딩·폰트를 압축해 캡션을 줄이고, 제목은
+   최대 2줄(말줄임)로 제한해 넘침을 막는다. */
+@media (max-width: 1100px) {
+  .about-visual__hero figcaption,
+  .about-visual__tile figcaption {
+    padding: 11px 13px 12px;
+  }
+
+  .about-visual__tile figcaption strong {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+  }
+
+  .about-visual__tile figcaption span {
+    font-size: 12px;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 @media (min-width: 1100px) {
@@ -9427,7 +9457,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .hero__title {
     font-size: clamp(44px, 13vw, 72px);
     line-height: 1.04;
-    margin-bottom: 44px;
+    margin-bottom: clamp(60px, 13vw, 92px);
     color: #ffffff;
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
   }
@@ -9438,6 +9468,11 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  /* 회전 단어 뒤 조사(으로/로)+서술어: 골드 단어와 달리 타이틀과 같은 흰색으로 */
+  .hero__rotator-suffix {
+    color: #ffffff;
   }
 
   .hero__lede {

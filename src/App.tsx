@@ -482,7 +482,9 @@ function HeroSection({
             <span className="hero__rotator">
               <em key={rotatorKey}>{heroRotatorWords[rotatorIndex % heroRotatorWords.length]}</em>
             </span>
-            {directionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length])} 끝냅니다.
+            <span className="hero__rotator-suffix">
+              {directionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length])} 끝냅니다.
+            </span>
           </h1>
           <p className="hero__lede">
             {(content.description || "물 새는 천장부터 들뜬 벽지까지. 큰 공사 권하지 않고 딱 필요한 만큼만, 7개 국가공인 건축자격을 가진 대표가 직접 손봅니다.").replace("누수 복구", "누수 복구")}
