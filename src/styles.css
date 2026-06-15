@@ -12386,11 +12386,16 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .estimate-modal,
   .admin-login-card,
   .account-summary-card,
+  .account-quote-card,
+  .account-quote-grid div,
+  .account-quote-list li,
   .price-calc__inner {
     background: var(--panel, #111827);
     border-color: var(--hair, rgba(226, 232, 240, 0.18));
     color: var(--ink, #f8fafc);
   }
+  /* 계정 견적 행 부제목: 하드코딩 회색 #6b7280 → 다크에서 저대비(~3.4:1) → 보조색 */
+  .account-row-subtitle { color: var(--ink-3, #aebbd0); }
 
   .bento__card h3,
   .cases__body h3,
@@ -12656,5 +12661,31 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .portfolio-more-button:hover {
     background: var(--panel-strong, #1f2937);
     color: #ffffff;
+  }
+}
+
+/* 다크모드 호버 가독성 보정.
+   라이트 모드에서 이 컴포넌트들의 :hover/.selected 규칙은 밝은 배경
+   (#fffbec)이나 다크모드에서 밝게 뒤집히는 변수(var(--ink)→#f8fafc,
+   var(--navy-700)→#8fb8ff)를 깔고 그 위에 흰색/네이비 텍스트를 얹는다.
+   다크모드에선 배경이 밝아지면서 텍스트가 묻혀 안 보이므로, 호버 표면을
+   다시 어둡게(패널톤 + 골드 보더) 잡고 텍스트를 밝게 고정한다. */
+@media (prefers-color-scheme: dark) {
+  .diagnosis-cat-card:hover,
+  .symptom-grid-item:hover,
+  .symptom-grid a:hover,
+  .symptom-chip:hover,
+  .specs__item:hover,
+  .specs__item.selected,
+  .landing-related-link:hover,
+  .landing-link-card:hover {
+    background: var(--panel-soft, #162033);
+    border-color: var(--gold-500, #f2c879);
+    color: var(--ink, #f8fafc);
+  }
+  /* 골드로 채우던 specs 선택 칩의 ::after 화살표/아이콘도 밝게 유지 */
+  .specs__item:hover::after,
+  .specs__item.selected::after {
+    color: var(--gold-500, #f2c879);
   }
 }

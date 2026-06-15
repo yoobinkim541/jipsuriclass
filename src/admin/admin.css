@@ -1824,4 +1824,33 @@
 
   /* 임베드 에디터(밝은 회색 테마)는 다크 표면 위에서 분리감 유지 */
   .adm-editor-host { color-scheme: light; }
+
+  /* ── 추가 보정: navy 표면 위 paper 글씨가 다크 반전돼 안 보이던 곳들 ──
+        (형제 active 칩들은 위에서 이미 밝게 했으나 아래 셀렉터들은 누락돼 있었음) */
+  /* 모바일 탭바 활성 칩: navy 배경 + paper 글씨 → 다크에서 글씨 묻힘 */
+  .adm-root .adm-mtabs button.is-active { color: var(--ink); }
+  /* 핵심 페이지 카드 썸네일 제목: navy 그라데이션 위 paper 글씨 */
+  .adm-root .adm-page-card__thumb span { color: var(--ink); }
+  /* 토스트: navy 배경 + paper 글씨(중요 피드백 요소) */
+  .adm-root .adm-toast { color: var(--ink); }
+  /* 상세 패널 '필요한 곳' 강조값: 인라인 navy-700 글씨 → 다크 패널서 묻힘(인라인이라 !important) */
+  .adm-root .adm-detail__body dd strong { color: var(--ink) !important; }
+
+  /* 게이트 에러: 짙은 벽돌red(#b13838)가 다크 패널서 거의 안 보임 → 밝은 red로
+     (auth-panel.css의 .auth-error #fca5a5 와 동일 처리) */
+  .adm-root .adm-gate__error {
+    color: #fca5a5;
+    background: rgba(220, 38, 38, 0.12);
+    border-color: rgba(220, 38, 38, 0.3);
+  }
+
+  /* 라이브 미리보기 패널/프레임: styles.css에서 #ffffff/#fffdf8 흰색 하드코딩 →
+     다크에서 흰 섬이 되고, .adm-root에서 밝게 반전된 미리보기 글씨(var(--ink))가
+     흰 배경에 묻힌다. 어드민 스코프로만 다크 표면으로 덮는다(공개 사이트 무영향). */
+  .adm-root .editor-preview-panel,
+  .adm-root .editor-preview-panel-fullscreen,
+  .adm-root .editor-preview-frame {
+    background: var(--cream-2);
+    border-color: var(--hair);
+  }
 }

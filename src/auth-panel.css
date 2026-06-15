@@ -239,6 +239,9 @@
   .auth-side-link:hover { background: var(--panel-soft, #162033); }
   .auth-back, .mypage-brand { color: var(--ink, #f8fafc); }
 
+  /* 키커 칩: var(--gold-700)은 .adm-root에서만 정의돼 auth 페이지선 어두운
+     #8b6024로 폴백 → 다크 배경서 저대비. 밝은 골드로 보정. */
+  .auth-hero__kicker { color: var(--gold-500, #f2c879); background: rgba(242, 200, 121, 0.16); }
   .auth-hero__title { color: var(--ink, #f8fafc); }
   .auth-hero__grid article { background: var(--panel, #111827); border-color: var(--hair, rgba(226, 232, 240, 0.18)); }
   .auth-hero__grid strong { color: var(--ink, #f8fafc); }
