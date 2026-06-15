@@ -1447,6 +1447,53 @@ const portfolioChips = [
   { key: "electric", label: "전기·조명", terms: ["전기", "조명", "콘센트", "스위치", "LED", "등"] }
 ];
 
+// 검색 동의어/연관어 클러스터: 입력어가 한 군에 들면 같은 군의 단어들도 약하게 매칭해
+// 관련 글이 더 폭넓게 검색되도록 한다(예: "화장실" → 욕실·타일·변기… 글도 노출).
+const SEARCH_SYNONYMS: string[][] = [
+  ["누수", "물샘", "물새", "새는", "방수", "결로", "곰팡이", "습기", "천장", "천정", "베란다"],
+  ["욕실", "화장실", "욕조", "샤워", "타일", "변기", "세면", "세면대", "줄눈", "실리콘", "코킹"],
+  ["주방", "부엌", "싱크", "싱크대", "수전", "배수", "후드", "인덕션", "상부장", "하부장"],
+  ["도배", "벽지", "도장", "페인트", "몰딩", "걸레받이", "바닥", "장판", "마루", "데코타일"],
+  ["문", "도어", "현관", "방충망", "창문", "창호", "샷시", "새시", "경첩", "손잡이", "방문"],
+  ["전기", "조명", "콘센트", "스위치", "led", "누전", "차단기", "배선"],
+  ["보일러", "난방", "온수", "배관", "동파"]
+];
+
+// 입력 토큰과 같은 클러스터에 속한 연관어들을 모아 반환한다.
+function expandSearchTokens(tokens: string[]): string[] {
+  const related = new Set<string>();
+  for (const token of tokens) {
+    for (const cluster of SEARCH_SYNONYMS) {
+      if (cluster.some((term) => term.includes(token) || token.includes(term))) {
+        for (const term of cluster) {
+          if (!tokens.includes(term)) related.add(term);
+        }
+      }
+    }
+  }
+  return [...related];
+}
+
+// 게시글의 검색 적합도 점수: 제목 > 키워드 > 본문, 입력어 > 연관어 가중치.
+function scorePostForQuery(post: PortfolioPost, tokens: string[], relatedTokens: string[]): number {
+  const title = `${post.cardTitle ?? ""} ${post.title ?? ""}`.toLowerCase();
+  const keywords = (post.keywords ?? []).join(" ").toLowerCase();
+  const body = [post.description, ...(post.summary ?? [])].filter(Boolean).join(" ").toLowerCase();
+
+  let score = 0;
+  for (const token of tokens) {
+    if (title.includes(token)) score += 10;
+    else if (keywords.includes(token)) score += 6;
+    else if (body.includes(token)) score += 3;
+  }
+  for (const token of relatedTokens) {
+    if (title.includes(token)) score += 2;
+    else if (keywords.includes(token)) score += 1.5;
+    else if (body.includes(token)) score += 0.5;
+  }
+  return score;
+}
+
 function PortfolioPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [posts, setPosts] = useState<PortfolioPost[]>([]);
@@ -1479,21 +1526,40 @@ function PortfolioPage() {
 
   const filteredPosts = useMemo(() => {
     const chip = activeChip === "all" ? null : portfolioChips.find((item) => item.key === activeChip);
-    const normalizedQuery = query.trim().toLowerCase();
+    const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const relatedTokens = tokens.length ? expandSearchTokens(tokens) : [];
 
-    const matched = allPosts.filter((post) => {
-      const haystack = [post.title, post.cardTitle, post.description, ...(post.summary ?? []), ...(post.keywords ?? [])]
-        .filter(Boolean)
-        .join(" ");
-      if (chip && !chip.terms.some((term) => haystack.includes(term))) return false;
-      if (normalizedQuery && !haystack.toLowerCase().includes(normalizedQuery)) return false;
-      return true;
-    });
+    const scored: Array<{ post: PortfolioPost; score: number }> = [];
+    for (const post of allPosts) {
+      if (chip) {
+        const haystack = [post.title, post.cardTitle, post.description, ...(post.summary ?? []), ...(post.keywords ?? [])]
+          .filter(Boolean)
+          .join(" ");
+        if (!chip.terms.some((term) => haystack.includes(term))) continue;
+      }
 
-    return matched.slice().sort((left, right) => {
-      const comparison = (right.date || "").localeCompare(left.date || "");
+      if (!tokens.length) {
+        scored.push({ post, score: 0 });
+        continue;
+      }
+
+      // 입력어 + 연관어 중 하나라도 맞으면 노출하고, 적합도 점수로 순위를 매긴다.
+      const score = scorePostForQuery(post, tokens, relatedTokens);
+      if (score > 0) {
+        scored.push({ post, score });
+      }
+    }
+
+    scored.sort((left, right) => {
+      // 검색어가 있으면 적합도 우선, 동점이면 날짜순. 검색어가 없으면 선택한 정렬대로.
+      if (tokens.length && right.score !== left.score) {
+        return right.score - left.score;
+      }
+      const comparison = (right.post.date || "").localeCompare(left.post.date || "");
       return sort === "latest" ? comparison : -comparison;
     });
+
+    return scored.map((entry) => entry.post);
   }, [activeChip, allPosts, query, sort]);
 
   const visiblePosts = filteredPosts.slice(0, visibleCount);
