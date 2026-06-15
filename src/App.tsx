@@ -1458,49 +1458,50 @@ const portfolioChips = [
   { key: "electric", label: "전기·조명", terms: ["전기", "조명", "콘센트", "스위치", "LED", "등"] }
 ];
 
-// 검색 동의어/연관어 클러스터: 입력어가 한 군에 들면 같은 군의 단어들도 약하게 매칭해
-// 관련 글이 더 폭넓게 검색되도록 한다(예: "화장실" → 욕실·타일·변기… 글도 노출).
-const SEARCH_SYNONYMS: string[][] = [
-  ["누수", "물샘", "물새", "새는", "방수", "결로", "곰팡이", "습기", "천장", "천정", "베란다"],
-  ["욕실", "화장실", "욕조", "샤워", "타일", "변기", "세면", "세면대", "줄눈", "실리콘", "코킹"],
-  ["주방", "부엌", "싱크", "싱크대", "수전", "배수", "후드", "인덕션", "상부장", "하부장"],
-  ["도배", "벽지", "도장", "페인트", "몰딩", "걸레받이", "바닥", "장판", "마루", "데코타일"],
-  ["문", "도어", "현관", "방충망", "창문", "창호", "샷시", "새시", "경첩", "손잡이", "방문"],
-  ["전기", "조명", "콘센트", "스위치", "led", "누전", "차단기", "배선"],
-  ["보일러", "난방", "온수", "배관", "동파"]
-];
+// 검색은 정확도 우선. '사실상 같은 말'(동의어)만 함께 매칭한다.
+// 넓은 카테고리 연관어(예: 수전→주방·싱크·후드…)는 무관한 글까지 끌어와 노이즈가 되므로 제외.
+// 카테고리 단위 탐색은 칩/홈 바로가기 버튼으로 한다.
+const SEARCH_SYNONYMS: Record<string, string[]> = {
+  욕실: ["화장실"],
+  화장실: ["욕실"],
+  주방: ["부엌"],
+  부엌: ["주방"],
+  싱크대: ["싱크"],
+  천장: ["천정"],
+  천정: ["천장"],
+  샷시: ["새시", "창호"],
+  새시: ["샷시", "창호"],
+  창호: ["샷시", "새시"],
+  누수: ["물샘", "물새"],
+  물샘: ["누수"],
+  변기: ["양변기"],
+  양변기: ["변기"],
+  도배: ["벽지"],
+  벽지: ["도배"]
+};
 
-// 입력 토큰과 같은 클러스터에 속한 연관어들을 모아 반환한다.
-function expandSearchTokens(tokens: string[]): string[] {
-  const related = new Set<string>();
-  for (const token of tokens) {
-    for (const cluster of SEARCH_SYNONYMS) {
-      if (cluster.some((term) => term.includes(token) || token.includes(term))) {
-        for (const term of cluster) {
-          if (!tokens.includes(term)) related.add(term);
-        }
-      }
-    }
-  }
-  return [...related];
+// 토큰 + 그 토큰의 동의어(있을 때만)
+function tokenVariants(token: string): string[] {
+  return [token, ...(SEARCH_SYNONYMS[token] ?? [])];
 }
 
-// 게시글의 검색 적합도 점수: 제목 > 키워드 > 본문, 입력어 > 연관어 가중치.
-function scorePostForQuery(post: PortfolioPost, tokens: string[], relatedTokens: string[]): number {
+// 입력한 '모든' 토큰이 (동의어 포함) 매칭될 때만 노출(정확도 우선). 제목>키워드>본문 가중치.
+// 한 토큰이라도 못 맞으면 -1을 반환해 제외한다.
+function scorePostForQuery(post: PortfolioPost, tokens: string[]): number {
   const title = `${post.cardTitle ?? ""} ${post.title ?? ""}`.toLowerCase();
   const keywords = (post.keywords ?? []).join(" ").toLowerCase();
   const body = [post.description, ...(post.summary ?? [])].filter(Boolean).join(" ").toLowerCase();
 
   let score = 0;
   for (const token of tokens) {
-    if (title.includes(token)) score += 10;
-    else if (keywords.includes(token)) score += 6;
-    else if (body.includes(token)) score += 3;
-  }
-  for (const token of relatedTokens) {
-    if (title.includes(token)) score += 2;
-    else if (keywords.includes(token)) score += 1.5;
-    else if (body.includes(token)) score += 0.5;
+    let best = 0;
+    for (const variant of tokenVariants(token)) {
+      if (title.includes(variant)) best = Math.max(best, 10);
+      else if (keywords.includes(variant)) best = Math.max(best, 6);
+      else if (body.includes(variant)) best = Math.max(best, 3);
+    }
+    if (best === 0) return -1;
+    score += best;
   }
   return score;
 }
@@ -1576,7 +1577,6 @@ function PortfolioPage() {
   const filteredPosts = useMemo(() => {
     const chip = activeChip === "all" ? null : portfolioChips.find((item) => item.key === activeChip);
     const tokens = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const relatedTokens = tokens.length ? expandSearchTokens(tokens) : [];
 
     const scored: Array<{ post: PortfolioPost; score: number }> = [];
     for (const post of allPosts) {
@@ -1592,9 +1592,9 @@ function PortfolioPage() {
         continue;
       }
 
-      // 입력어 + 연관어 중 하나라도 맞으면 노출하고, 적합도 점수로 순위를 매긴다.
-      const score = scorePostForQuery(post, tokens, relatedTokens);
-      if (score > 0) {
+      // 입력한 모든 토큰이 매칭될 때만 노출(정확도 우선), 적합도 점수로 순위를 매긴다.
+      const score = scorePostForQuery(post, tokens);
+      if (score >= 0) {
         scored.push({ post, score });
       }
     }
