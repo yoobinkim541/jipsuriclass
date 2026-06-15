@@ -12938,3 +12938,17 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     justify-content: center;
   }
 }
+
+/* 카카오톡 버튼 자동 차별화: 사진 전송이 핵심 2순위 전환 수단인데 일반 보조버튼과
+   구분이 안 됨(리뷰 C-3). href에 kakao가 포함된 secondary-button을 카카오 옐로로.
+   (JSX 수정 없이 전 페이지 적용 — 인라인 스타일된 버튼은 그대로, 라이트/다크 공통) */
+.secondary-button[href*="kakao"] {
+  background: #fee500;
+  border-color: #fee500;
+  color: #191600;
+}
+.secondary-button[href*="kakao"]:hover {
+  background: #f4d800;
+  border-color: #f4d800;
+  color: #191600;
+}
