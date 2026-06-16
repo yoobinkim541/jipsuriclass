@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ChangeEvent, DragEvent } from "react";
-import { CheckCircle2, ChevronDown, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, PlugZap, Save, Search, Trash2, X } from "lucide-react";
+import { Check, CheckCircle2, ChevronDown, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, PlugZap, Save, Search, Trash2, X } from "lucide-react";
 import {
   buildQuoteDraftFromInquiry,
   buildQuoteSourceLabel,
@@ -148,6 +148,60 @@ function CatalogPicker({ onPick }: { onPick: (item: CatalogItem, group: string) 
             {totalCount === 0 ? <p className="catalog-picker__empty">검색 결과가 없습니다.</p> : null}
           </div>
           <div className="catalog-picker__foot">클릭하면 견적에 바로 추가됩니다 · 여러 개 연속 선택 가능</div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** 자재비를 묶을 공정 선택 — 네이티브 select 대신 디자인 토큰을 따르는 모던 드롭다운. */
+function GroupPicker({ value, options, onChange }: { value: string; options: string[]; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocPointer = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const items = [{ value: "", label: "자재(별도 표기)" }, ...options.map((option) => ({ value: option, label: `${option}에 포함` }))];
+  const current = items.find((item) => item.value === value) ?? items[0];
+
+  return (
+    <div className={open ? "group-picker group-picker--open" : "group-picker"} ref={rootRef}>
+      <button type="button" className="group-picker__trigger" onClick={() => setOpen((value) => !value)} aria-haspopup="listbox" aria-expanded={open}>
+        <span className="group-picker__value">{current.label}</span>
+        <ChevronDown size={15} className={open ? "group-picker__chevron group-picker__chevron--open" : "group-picker__chevron"} />
+      </button>
+      {open ? (
+        <div className="group-picker__panel" role="listbox">
+          {items.map((item) => (
+            <button
+              type="button"
+              role="option"
+              aria-selected={item.value === value}
+              key={item.value || "__none"}
+              className={item.value === value ? "group-picker__option group-picker__option--active" : "group-picker__option"}
+              onClick={() => {
+                onChange(item.value);
+                setOpen(false);
+              }}
+            >
+              <span>{item.label}</span>
+              {item.value === value ? <Check size={14} /> : null}
+            </button>
+          ))}
         </div>
       ) : null}
     </div>
@@ -433,7 +487,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   }
 
   const sourceLabel = buildQuoteSourceLabel(draft);
-  // 자재비를 묶을 수 있는 공종 목록(현재 라인 항목의 공사명들).
+  // 자재비를 묶을 수 있는 공정 목록(현재 라인 항목의 공사명들).
   const workCategories = Array.from(
     new Set(draft.lineItems.map((item) => item.categoryTitle).filter((title): title is string => Boolean(title && title.trim())))
   );
@@ -709,20 +763,12 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
                   <input className="quote-field" value={item.label} onChange={(event) => updateCharge("materialCharges", index, { label: event.target.value })} placeholder="예: 강화마루 / 벽타일" />
                 </label>
                 <label className="quote-editor__charge-field quote-editor__charge-field--wide">
-                  <span>공종 묶음</span>
-                  <select
-                    className="quote-field"
+                  <span>공정 묶음</span>
+                  <GroupPicker
                     value={item.group ?? ""}
-                    onChange={(event) => updateCharge("materialCharges", index, { group: event.target.value || undefined })}
-                    title="이 자재비를 묶을 공종(상세내역에서 해당 작업에 합쳐집니다)"
-                  >
-                    <option value="">자재(별도 표기)</option>
-                    {workCategories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}에 포함
-                      </option>
-                    ))}
-                  </select>
+                    options={workCategories}
+                    onChange={(group) => updateCharge("materialCharges", index, { group: group || undefined })}
+                  />
                 </label>
                 <label className="quote-editor__charge-field">
                   <span>수량</span>

@@ -7370,6 +7370,88 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   color: var(--ink-4, #94a0b8);
 }
 
+/* 공정 묶음 선택 — 네이티브 select 대신 모던 드롭다운 */
+.group-picker {
+  position: relative;
+}
+.group-picker__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 11px;
+  background: var(--paper, #fff);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: var(--r-sm, 9px);
+  color: var(--ink, #0b1a30);
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.group-picker__trigger:hover {
+  border-color: var(--hair-2, #d8d0bd);
+}
+.group-picker--open .group-picker__trigger {
+  border-color: var(--navy-700, #10284a);
+  box-shadow: 0 0 0 3px rgba(16, 40, 74, 0.12);
+}
+.group-picker__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.group-picker__chevron {
+  flex-shrink: 0;
+  color: var(--ink-3, #5b6781);
+  transition: transform 0.18s ease;
+}
+.group-picker__chevron--open {
+  transform: rotate(180deg);
+}
+.group-picker__panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 2px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 6px;
+  background: var(--paper, #fff);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: var(--r-md, 12px);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(8, 22, 40, 0.16));
+}
+.group-picker__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--ink-2, #2a3a55);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+.group-picker__option:hover {
+  background: var(--cream-2, #f1ece1);
+  color: var(--ink, #0b1a30);
+}
+.group-picker__option--active {
+  background: rgba(16, 40, 74, 0.08);
+  color: var(--ink, #0b1a30);
+  font-weight: 800;
+}
+
 /* 구글 시트 링크로 불러오기 */
 .quote-editor__gsheet {
   display: flex;
