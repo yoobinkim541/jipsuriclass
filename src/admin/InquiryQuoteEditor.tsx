@@ -692,34 +692,52 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             <strong>자재비</strong>
             <button className="admin-status-button" type="button" onClick={() => addCharge("materialCharges")}>
               <Plus size={14} />
-              추가
+              자재 추가
             </button>
           </div>
           <div className="quote-editor__charge-list">
             {draft.materialCharges.length ? draft.materialCharges.map((item, index) => (
-              <div className="quote-editor__charge-row quote-editor__charge-row--material" key={item.id}>
-                <select
-                  className="quote-field"
-                  value={item.group ?? ""}
-                  onChange={(event) => updateCharge("materialCharges", index, { group: event.target.value || undefined })}
-                  title="이 자재비를 묶을 공종(상세내역에서 해당 작업에 합쳐집니다)"
-                >
-                  <option value="">자재(별도)</option>
-                  {workCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}에 포함
-                    </option>
-                  ))}
-                </select>
-                <input className="quote-field" value={item.label} onChange={(event) => updateCharge("materialCharges", index, { label: event.target.value })} placeholder="자재명" />
-                <input className="quote-field quote-field--number" type="number" min={1} value={item.qty} onChange={(event) => updateCharge("materialCharges", index, { qty: Math.max(1, Number(event.target.value) || 1) })} />
-                <input className="quote-field quote-field--number" type="number" min={0} value={item.unitPrice} onChange={(event) => updateCharge("materialCharges", index, { unitPrice: Math.max(0, Number(event.target.value) || 0) })} />
-                <span className="quote-editor__charge-total">{item.amount.toLocaleString()}원</span>
-                <button className="admin-status-button" type="button" onClick={() => removeCharge("materialCharges", index)}>
-                  <Trash2 size={14} />
-                </button>
+              <div className="quote-editor__charge-card" key={item.id}>
+                <div className="quote-editor__charge-card-head">
+                  <span className="quote-editor__charge-index">자재 {index + 1}</span>
+                  <button className="quote-editor__charge-remove" type="button" onClick={() => removeCharge("materialCharges", index)} aria-label="자재 삭제">
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+                <label className="quote-editor__charge-field quote-editor__charge-field--wide">
+                  <span>자재명</span>
+                  <input className="quote-field" value={item.label} onChange={(event) => updateCharge("materialCharges", index, { label: event.target.value })} placeholder="예: 강화마루 / 벽타일" />
+                </label>
+                <label className="quote-editor__charge-field quote-editor__charge-field--wide">
+                  <span>공종 묶음</span>
+                  <select
+                    className="quote-field"
+                    value={item.group ?? ""}
+                    onChange={(event) => updateCharge("materialCharges", index, { group: event.target.value || undefined })}
+                    title="이 자재비를 묶을 공종(상세내역에서 해당 작업에 합쳐집니다)"
+                  >
+                    <option value="">자재(별도 표기)</option>
+                    {workCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}에 포함
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="quote-editor__charge-field">
+                  <span>수량</span>
+                  <input className="quote-field quote-field--number" type="number" min={1} value={item.qty} onChange={(event) => updateCharge("materialCharges", index, { qty: Math.max(1, Number(event.target.value) || 1) })} />
+                </label>
+                <label className="quote-editor__charge-field">
+                  <span>단가(원)</span>
+                  <input className="quote-field quote-field--number" type="number" min={0} value={item.unitPrice} onChange={(event) => updateCharge("materialCharges", index, { unitPrice: Math.max(0, Number(event.target.value) || 0) })} />
+                </label>
+                <div className="quote-editor__charge-amount">
+                  <span>금액</span>
+                  <strong>{item.amount.toLocaleString()}원</strong>
+                </div>
               </div>
-            )) : <p className="quote-editor__empty">자재비 항목이 없습니다.</p>}
+            )) : <p className="quote-editor__empty">자재비 항목이 없습니다. ‘자재 추가’를 눌러 입력하세요.</p>}
           </div>
         </div>
 
@@ -728,19 +746,28 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             <strong>부대비용</strong>
             <button className="admin-status-button" type="button" onClick={() => addCharge("extraCharges")}>
               <Plus size={14} />
-              추가
+              부대비용 추가
             </button>
           </div>
           <div className="quote-editor__charge-list">
             {draft.extraCharges.length ? draft.extraCharges.map((item, index) => (
-              <div className="quote-editor__charge-row" key={item.id}>
-                <input className="quote-field" value={item.label} onChange={(event) => updateCharge("extraCharges", index, { label: event.target.value })} placeholder="부대비용명" />
-                <input className="quote-field quote-field--number" type="number" min={0} value={item.amount} onChange={(event) => updateCharge("extraCharges", index, { amount: Math.max(0, Number(event.target.value) || 0) })} />
-                <button className="admin-status-button" type="button" onClick={() => removeCharge("extraCharges", index)}>
-                  <Trash2 size={14} />
-                </button>
+              <div className="quote-editor__charge-card quote-editor__charge-card--extra" key={item.id}>
+                <div className="quote-editor__charge-card-head">
+                  <span className="quote-editor__charge-index">부대 {index + 1}</span>
+                  <button className="quote-editor__charge-remove" type="button" onClick={() => removeCharge("extraCharges", index)} aria-label="부대비용 삭제">
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+                <label className="quote-editor__charge-field quote-editor__charge-field--wide">
+                  <span>항목명</span>
+                  <input className="quote-field" value={item.label} onChange={(event) => updateCharge("extraCharges", index, { label: event.target.value })} placeholder="예: 폐기물 처리 / 공과 잡비" />
+                </label>
+                <label className="quote-editor__charge-field quote-editor__charge-field--wide">
+                  <span>금액(원)</span>
+                  <input className="quote-field quote-field--number" type="number" min={0} value={item.amount} onChange={(event) => updateCharge("extraCharges", index, { amount: Math.max(0, Number(event.target.value) || 0) })} />
+                </label>
               </div>
-            )) : <p className="quote-editor__empty">부대비용 항목이 없습니다.</p>}
+            )) : <p className="quote-editor__empty">부대비용 항목이 없습니다. ‘부대비용 추가’를 눌러 입력하세요.</p>}
           </div>
         </div>
       </div>

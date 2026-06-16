@@ -311,8 +311,8 @@ const corePages: Array<{
   { name: "상담신청서", path: "/estimate", icon: ClipboardList, desc: "다단계 상담신청 폼. 질문·약관·첨부 안내 문구 편집", editor: "estimate" },
   { name: "마이페이지", path: "/mypage", icon: UserRound, desc: "고객 계정 화면. 로그인 안내와 문의 카드 문구 편집", editor: "account" },
   { name: "랜딩페이지", path: "/service/leak", icon: LayoutGrid, desc: "서비스·지역 랜딩 전체. 문구·FAQ·연결 링크 편집", editor: "landing" },
-  { name: "자기진단", path: "/diagnosis", icon: Stethoscope, desc: "증상 선택 → 원인·다음 행동 안내 (코드에서 관리)", editor: null },
-  { name: "개인정보처리방침", path: "/privacy", icon: Shield, desc: "개인정보 처리방침 본문 (코드에서 관리)", editor: null }
+  { name: "자기진단", path: "/diagnosis", icon: Stethoscope, desc: "증상 선택 → 원인·점검·상담 안내 문구 편집", editor: "diagnosis" },
+  { name: "개인정보처리방침", path: "/privacy", icon: Shield, desc: "개인정보 처리방침 본문 섹션 편집", editor: "privacy" }
 ];
 
 export function ContentTab({

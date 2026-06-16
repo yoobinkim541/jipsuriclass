@@ -291,6 +291,49 @@ export type EstimatePageContent = {
   };
 };
 
+export type PrivacyPageContent = {
+  intro: {
+    kicker: string;
+    title: string;
+    description: string;
+  };
+  sections: Array<{
+    heading: string;
+    body: string;
+  }>;
+  contactNote: string;
+};
+
+export type DiagnosisTopicContent = {
+  id: string;
+  trigger: string;
+  title: string;
+  summary: string;
+  likelyCauses: string[];
+  firstChecks: string[];
+  whenToCall: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
+
+export type DiagnosisPageContent = {
+  hero: {
+    kicker: string;
+    title: string;
+    description: string;
+    quickFlow: string[];
+  };
+  sections: {
+    categoryTitle: string;
+    categoryDescription: string;
+    symptomTitle: string;
+    symptomDescription: string;
+    answerTitle: string;
+    answerDescription: string;
+  };
+  topics: DiagnosisTopicContent[];
+};
+
 export type InquiryQuoteSource = {
   servicePath: string | null;
   pricingPath: string | null;

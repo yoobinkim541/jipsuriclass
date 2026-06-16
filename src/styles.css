@@ -6900,18 +6900,6 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     padding: 12px;
   }
 
-  .quote-editor__charge-row {
-    grid-template-columns: 1fr;
-  }
-
-  .quote-editor__charge-row--material {
-    grid-template-columns: 1fr;
-  }
-
-  .quote-editor__charge-total {
-    text-align: left;
-  }
-
   .quote-editor__table-toolbar,
   .quote-editor__empty-state {
     align-items: start;
@@ -7745,25 +7733,87 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .quote-editor__charge-list {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
-.quote-editor__charge-row {
+/* 자재비·부대비용: 좁은 한 줄 입력 대신 라벨이 있는 2단 카드로 — 작성칸을 키워 가독성↑ */
+.quote-editor__charge-card {
   display: grid;
-  gap: 8px;
-  grid-template-columns: minmax(0, 1fr) 120px auto;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: var(--r-md, 12px);
+  background: var(--cream-2, #f1ece1);
 }
 
-.quote-editor__charge-row--material {
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) 60px 92px 100px auto;
+.quote-editor__charge-card-head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.quote-editor__charge-total {
-  align-self: center;
-  color: var(--ink, #0b1a30);
-  font-size: 13px;
+.quote-editor__charge-index {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3, #5b6781);
+}
+
+.quote-editor__charge-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--hair, #e6dfd0);
+  background: var(--paper, #fff);
+  color: var(--ink-3, #5b6781);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.quote-editor__charge-remove:hover {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.4);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.quote-editor__charge-field {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.quote-editor__charge-field > span {
+  font-size: 11px;
   font-weight: 700;
-  text-align: right;
+  color: var(--ink-3, #5b6781);
+}
+.quote-editor__charge-field--wide {
+  grid-column: 1 / -1;
+}
+
+.quote-editor__charge-amount {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--r-sm, 9px);
+  background: var(--paper, #fff);
+  border: 1px solid var(--hair, #e6dfd0);
+}
+.quote-editor__charge-amount > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-3, #5b6781);
+}
+.quote-editor__charge-amount > strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink, #0b1a30);
+  font-variant-numeric: tabular-nums;
 }
 
 .quote-field {
@@ -8773,6 +8823,109 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   display: grid;
   gap: 12px;
   padding: 14px;
+}
+
+/* 추가·삭제가 가능한 카드(개인정보 약관 섹션 등) */
+.editor-removable-card {
+  position: relative;
+  padding-right: 46px;
+}
+.editor-remove-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--hair);
+  background: #ffffff;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.editor-remove-button:hover {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+.editor-add-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: start;
+  padding: 9px 14px;
+  border-radius: 9px;
+  border: 1px dashed var(--hair-2, #cbd5e1);
+  background: #ffffff;
+  color: #334155;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.editor-add-button:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+/* 자기진단: 증상별 답변 선택 칩 */
+.editor-topic-search input {
+  width: 100%;
+}
+.editor-topic-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.editor-topic-chip {
+  border: 1px solid var(--hair);
+  background: #ffffff;
+  border-radius: 999px;
+  color: #334155;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 13px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.editor-topic-chip:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+.editor-topic-chip.active {
+  background: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff;
+}
+.editor-topic-empty {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0;
+}
+
+/* 개인정보처리방침 미리보기 섹션 */
+.editor-preview-policy {
+  display: grid;
+  gap: 4px;
+}
+.editor-preview-policy strong {
+  font-size: 13.5px;
+  color: #0f172a;
+}
+.editor-preview-policy p {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0;
+}
+.editor-preview-policy + .editor-preview-policy {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hair);
 }
 
 .editor-step-list {
