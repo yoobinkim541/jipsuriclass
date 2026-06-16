@@ -2,11 +2,13 @@ import type { NaverBlogItem, PortfolioPost } from "../types";
 
 type NaverBlogResponse = {
   items?: NaverBlogItem[];
+  totalCount?: number;
 };
 
 type CacheEntry = {
   posts: PortfolioPost[];
   timestamp: number;
+  totalCount?: number;
 };
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -36,12 +38,17 @@ export class BlogPortfolioService {
   /**
    * 블로그에 지금까지 작성된 모든 글을 가벼운 카드(썸네일+요약문)로 불러온다.
    * 전용 mode=all 응답이라 maxPosts 제한을 적용하지 않는다. 24시간 캐시.
+   * totalCount는 블로그 전체 글 수(표시용) — 실제 카드 수보다 많을 수 있다(새 글 작성 시 자동 증가).
    */
-  async loadAllPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
-    const cacheKey = "blog-cache:all";
-    const cached = this.readCache(cacheKey);
-    if (cached) {
-      return { posts: cached, source: "naver" };
+  async loadAllPortfolioPosts(): Promise<{ posts: PortfolioPost[]; totalCount: number; source: "naver" | "fallback" }> {
+    const cacheKey = "blog-cache:all:v2";
+    const cachedEntry = this.readCacheEntry(cacheKey);
+    if (cachedEntry) {
+      return {
+        posts: cachedEntry.posts,
+        totalCount: cachedEntry.totalCount ?? cachedEntry.posts.length,
+        source: "naver"
+      };
     }
 
     try {
@@ -54,14 +61,17 @@ export class BlogPortfolioService {
       const data = (await response.json()) as NaverBlogResponse;
       const items = Array.isArray(data.items) ? data.items : [];
       if (!items.length) {
-        return this.loadLatestPortfolioPosts();
+        const latest = await this.loadLatestPortfolioPosts();
+        return { ...latest, totalCount: latest.posts.length };
       }
 
       const posts = items.map((item, index) => this.toPortfolioPost(item, index));
-      this.writeCache(cacheKey, posts);
-      return { source: "naver", posts };
+      const totalCount = typeof data.totalCount === "number" && data.totalCount > 0 ? data.totalCount : posts.length;
+      this.writeCache(cacheKey, posts, totalCount);
+      return { source: "naver", posts, totalCount };
     } catch {
-      return this.fallbackResult();
+      const fallback = this.fallbackResult();
+      return { ...fallback, totalCount: fallback.posts.length };
     }
   }
 
@@ -133,6 +143,10 @@ export class BlogPortfolioService {
   }
 
   private readCache(key: string): PortfolioPost[] | null {
+    return this.readCacheEntry(key)?.posts ?? null;
+  }
+
+  private readCacheEntry(key: string): CacheEntry | null {
     try {
       const raw = localStorage.getItem(key);
       if (!raw) return null;
@@ -141,15 +155,15 @@ export class BlogPortfolioService {
         localStorage.removeItem(key);
         return null;
       }
-      return entry.posts;
+      return entry;
     } catch {
       return null;
     }
   }
 
-  private writeCache(key: string, posts: PortfolioPost[]) {
+  private writeCache(key: string, posts: PortfolioPost[], totalCount?: number) {
     try {
-      const entry: CacheEntry = { posts, timestamp: Date.now() };
+      const entry: CacheEntry = { posts, timestamp: Date.now(), totalCount };
       localStorage.setItem(key, JSON.stringify(entry));
     } catch {
       // Ignore storage errors (quota exceeded, private mode, etc.)

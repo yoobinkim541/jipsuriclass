@@ -1524,6 +1524,7 @@ function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "olde
 function PortfolioPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [posts, setPosts] = useState<PortfolioPost[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [postSource, setPostSource] = useState<"loading" | "naver" | "fallback">("loading");
   const [activeChip, setActiveChip] = useState(() => readPortfolioParams().cat);
   const [query, setQuery] = useState(() => readPortfolioParams().q);
@@ -1531,8 +1532,9 @@ function PortfolioPage() {
   const [visibleCount, setVisibleCount] = useState(12);
 
   useEffect(() => {
-    blogPortfolioService.loadAllPortfolioPosts().then(({ posts: loaded, source }) => {
+    blogPortfolioService.loadAllPortfolioPosts().then(({ posts: loaded, totalCount: total, source }) => {
       setPosts(loaded);
+      setTotalCount(total);
       setPostSource(source);
     });
   }, []);
@@ -1663,9 +1665,13 @@ function PortfolioPage() {
             <p className="catalog-count" aria-live="polite">
               {isLoading ? (
                 "현장 기록을 불러오는 중…"
+              ) : query.trim() || activeChip !== "all" ? (
+                <>
+                  <strong>{filteredPosts.length.toLocaleString()}</strong>건
+                </>
               ) : (
                 <>
-                  전체 <strong>{filteredPosts.length.toLocaleString()}</strong>건
+                  전체 <strong>{Math.max(totalCount, filteredPosts.length).toLocaleString()}</strong>건
                   {postSource === "fallback" ? " · 큐레이션 사례" : ""}
                 </>
               )}
