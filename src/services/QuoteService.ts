@@ -170,6 +170,52 @@ export function buildEstimateHref(options: {
   return query ? `/estimate?${query}` : "/estimate";
 }
 
+/** 거주 상태가 '거주중/살면서 공사'면 보양작업이 필요하다고 본다(공실·신축입주는 제외). */
+function isOccupiedDuringWork(propertyStatus?: string | null): boolean {
+  const status = typeof propertyStatus === "string" ? propertyStatus : "";
+  if (!status) return false;
+  if (/공실|신축입주/.test(status)) return false;
+  return /거주중|살면서/.test(status);
+}
+
+/** 거주중 현장 보양작업 기본 항목(코드 100·식·3만원, 자재비 포함). */
+function buildProtectionLineItem(): InquiryQuoteLineItem {
+  return {
+    id: `protection-${Date.now()}`,
+    sourceId: null,
+    name: "거주중\n- 비닐 커버링, 바닥 시트\n- 자재비 포함",
+    unit: "식",
+    qty: 1,
+    unitPrice: 30000,
+    categoryTitle: "보양작업",
+    note: null,
+    materialNote: null
+  };
+}
+
+// 공과 잡비(식사 및 음료) 1식 단가 및 식수 산정 기준.
+const MEAL_UNIT_PRICE = 20000;
+const MEAL_COST_PER_UNIT = 500000; // 공사비 약 50만원당 1식(소요 규모 비례 추정)
+
+/**
+ * '기타'의 공과 잡비(식사 및 음료) 항목 — 예상 공사 규모(공사비 합계)에 비례해 식수를
+ * 자동 산정한다(약 50만원당 1식, 1~10식). 소요 시간 필드가 없어 규모를 대용 지표로 쓴다.
+ */
+function buildMealAllowanceLineItem(workCost: number): InquiryQuoteLineItem {
+  const meals = Math.min(10, Math.max(1, Math.round(workCost / MEAL_COST_PER_UNIT)));
+  return {
+    id: `meal-${Date.now()}`,
+    sourceId: null,
+    name: "공과 잡비 (식사 및 음료)",
+    unit: "식",
+    qty: meals,
+    unitPrice: MEAL_UNIT_PRICE,
+    categoryTitle: "기타",
+    note: null,
+    materialNote: null
+  };
+}
+
 export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSnapshot {
   const intake = inquiry.intake ?? {};
   const existing = isQuoteSnapshot(intake.quoteSnapshot) ? intake.quoteSnapshot : null;
@@ -195,6 +241,18 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
     works: selectedWorks
   });
 
+  const lineItems = resolvedItems.map((item, index) => createQuoteLineItem(item, index));
+  // 거주중(살면서 공사)이면 보양작업을 첫 줄(코드 100)에 자동 추가 — 대표님 표준 견적서 관행.
+  // 초안에만 넣으므로 담당자가 편집기에서 수정·삭제할 수 있고, 저장본에는 중복되지 않는다.
+  if (isOccupiedDuringWork(intake.propertyStatus)) {
+    lineItems.unshift(buildProtectionLineItem());
+  }
+  // '기타' 공과 잡비(식사 및 음료)를 공사 규모에 비례해 마지막 줄에 자동 추가.
+  const workCostBase = lineItems.reduce((sum, item) => sum + item.qty * item.unitPrice, 0);
+  if (workCostBase > 0) {
+    lineItems.push(buildMealAllowanceLineItem(workCostBase));
+  }
+
   return normalizeQuoteSnapshot(
     {
       sourceServicePath: source?.servicePath ?? null,
@@ -203,7 +261,7 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
       confirmedAt: null,
       selectedWorks,
       selectedWorkIds,
-      lineItems: resolvedItems.map((item, index) => createQuoteLineItem(item, index)),
+      lineItems,
       materialCharges: [],
       extraCharges: [],
       vatRate: 0,
