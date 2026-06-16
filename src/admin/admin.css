@@ -1883,8 +1883,36 @@
     color: var(--ink);
   }
 
-  /* 임베드 에디터(밝은 회색 테마)는 다크 표면 위에서 분리감 유지 */
-  .adm-editor-host { color-scheme: light; }
+  /* 임베드 페이지 편집기(홈/랜딩/계정/견적상담/자기진단/개인정보처리방침)는
+     하드코딩 라이트 색(#fff·#f8fafc 등)과 토큰 색(var(--ink) 등)이 섞여 있어,
+     다크 토큰이 적용되면 '라이트 배경 + 라이트 글씨'로 글자가 사라진다.
+     편집기 서브트리에서만 디자인 토큰을 라이트 값으로 되돌려, 토큰 색과
+     하드코딩 라이트 색이 일관되게 맞물리는 '밝은 편집 캔버스'로 만든다. */
+  .adm-editor-host {
+    color-scheme: light;
+    --navy-900: #081628;
+    --navy-800: #0b1d34;
+    --navy-700: #10284a;
+    --navy-600: #1a3a64;
+    --navy-500: #2b528a;
+    --gold-700: #b4894b;
+    --gold-600: #c9a063;
+    --gold-500: #d7ae6b;
+    --gold-400: #e6c48f;
+    --cream: #faf7f2;
+    --cream-2: #f1ece1;
+    --ivory: #fdfbf6;
+    --paper: #ffffff;
+    --ink: #0b1a30;
+    --ink-2: #2a3a55;
+    --ink-3: #5b6781;
+    --ink-4: #94a0b8;
+    --hair: #e6dfd0;
+    --hair-2: #d8d0bd;
+    --success: #2f7a4d;
+    --shadow-sm: 0 1px 2px rgba(8, 22, 40, 0.06), 0 2px 6px rgba(8, 22, 40, 0.05);
+    --shadow-lg: 0 8px 24px rgba(8, 22, 40, 0.12), 0 24px 64px rgba(8, 22, 40, 0.14);
+  }
 
   /* ── 추가 보정: navy 표면 위 paper 글씨가 다크 반전돼 안 보이던 곳들 ──
         (형제 active 칩들은 위에서 이미 밝게 했으나 아래 셀렉터들은 누락돼 있었음) */
