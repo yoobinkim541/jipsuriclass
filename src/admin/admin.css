@@ -1877,6 +1877,11 @@
     background: rgba(124, 152, 240, 0.18);
     color: var(--ink-2);
   }
+  /* 공정 묶음 드롭다운: 선택 항목 강조가 다크 패널에서 묻히지 않게 밝은 인디고로 */
+  .adm-root .group-picker__option--active {
+    background: rgba(124, 152, 240, 0.2);
+    color: var(--ink);
+  }
 
   /* 임베드 에디터(밝은 회색 테마)는 다크 표면 위에서 분리감 유지 */
   .adm-editor-host { color-scheme: light; }
