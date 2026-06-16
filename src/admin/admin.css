@@ -1823,6 +1823,13 @@
 
   /* ── 견적서 에디터(전역 .quote-editor/.editor-upload 클래스, .adm-root 안에서 렌더):
         #fff/그라데이션 흰 배경 하드코딩 → 다크 패널로 ── */
+  /* 바깥 컨테이너: 흰 그라데이션 그대로 두면 헤더 제목·설명·메모·피드백 등
+     var(--ink) 밝은 글씨가 흰 배경에 묻혀 '발행 영역이 안 보이는' 원인이 된다.
+     가장 어두운 표면(--cream)으로 깔아 내부 패널(--paper)·버튼(--cream-2)이 모두 대비되게 한다. */
+  .adm-root .quote-editor {
+    background: var(--cream);
+    border-color: var(--hair);
+  }
   .adm-root .quote-editor__table-wrap,
   .adm-root .quote-editor__panel,
   .adm-root .quote-editor__summary div,
@@ -1830,6 +1837,11 @@
   .adm-root .editor-upload-trigger {
     background: var(--paper);
     border-color: var(--hair);
+  }
+  /* 테이블 헤더(기본 --cream-2)가 wrap(--paper) 안에서 충분히 구분되도록 살짝 더 어둡게 */
+  .adm-root .quote-editor__table th {
+    background: var(--cream-2);
+    color: var(--ink-2);
   }
   /* 입력칸: #fff 하드코딩 → 다크 표면 위에서 흰 박스+밝은 글씨로 안 보이던 것 보정 */
   .adm-root .quote-field {
