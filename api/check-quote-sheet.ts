@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { resolveWebAppUrl, deployTailOf } from "./_quoteSheetUrl";
 
 /**
  * 구글시트 연동 상태 점검 — Apps Script 웹앱에 GET(doGet)으로 핑을 보내
@@ -7,22 +6,23 @@ import { resolveWebAppUrl, deployTailOf } from "./_quoteSheetUrl";
  * 환경변수·배포 상태를 확인하기 위한 진단용. 비밀키는 사용하지 않는다(읽기 핑).
  */
 export default async function handler(_request: VercelRequest, response: VercelResponse) {
-  const rawWebAppUrl = process.env.QUOTE_SHEET_WEBAPP_URL;
-  const secret = process.env.QUOTE_SHEET_SECRET;
-
-  if (!rawWebAppUrl) {
-    response.status(200).json({ ok: false, state: "unconfigured", message: "환경변수 QUOTE_SHEET_WEBAPP_URL 미설정" });
-    return;
-  }
-  if (!secret) {
-    response.status(200).json({ ok: false, state: "unconfigured", message: "환경변수 QUOTE_SHEET_SECRET 미설정" });
-    return;
-  }
-
-  const webAppUrl = resolveWebAppUrl(rawWebAppUrl);
-  const deployTail = deployTailOf(webAppUrl);
-
+  // 점검 엔드포인트는 어떤 경우에도 200 JSON을 돌려준다(불투명 500 방지).
   try {
+    const rawWebAppUrl = process.env.QUOTE_SHEET_WEBAPP_URL;
+    const secret = process.env.QUOTE_SHEET_SECRET;
+
+    if (!rawWebAppUrl) {
+      response.status(200).json({ ok: false, state: "unconfigured", message: "환경변수 QUOTE_SHEET_WEBAPP_URL 미설정" });
+      return;
+    }
+    if (!secret) {
+      response.status(200).json({ ok: false, state: "unconfigured", message: "환경변수 QUOTE_SHEET_SECRET 미설정" });
+      return;
+    }
+
+    const webAppUrl = resolveWebAppUrl(rawWebAppUrl);
+    const deployTail = deployTailOf(webAppUrl);
+
     const upstream = await fetch(webAppUrl, { method: "GET", redirect: "follow" });
     const text = await upstream.text();
     let pingedOk = false;
@@ -55,8 +55,27 @@ export default async function handler(_request: VercelRequest, response: VercelR
     response.status(200).json({
       ok: false,
       state: "error",
-      deployTail,
       message: error instanceof Error ? `연결 실패: ${error.message}` : "연결 실패"
     });
   }
+}
+
+// ── Apps Script 웹앱 주소 정규화 (서버리스 번들 안정성을 위해 파일 내 인라인) ──
+function resolveWebAppUrl(raw: string): string {
+  const value = raw.trim();
+  if (/^https?:\/\//i.test(value)) return ensureExec(value);
+  if (value.startsWith("script.google.com")) return ensureExec(`https://${value}`);
+  if (value.startsWith("/macros/")) return ensureExec(`https://script.google.com${value}`);
+  const id = value.replace(/^\/+|\/+$/g, "");
+  return `https://script.google.com/macros/s/${id}/exec`;
+}
+
+function ensureExec(url: string): string {
+  const cleaned = url.replace(/\/+$/, "");
+  if (/\/macros\/s\/[^/]+$/.test(cleaned)) return `${cleaned}/exec`;
+  return cleaned;
+}
+
+function deployTailOf(url: string): string {
+  return url.match(/\/s\/([^/]+)/)?.[1]?.slice(-10) ?? "?";
 }
