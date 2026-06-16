@@ -98,6 +98,76 @@ function naverBlogApi(): Plugin {
           res.end("Image fetch failed");
         }
       });
+
+      // 구글 시트 → xlsx export 프록시(dev). 시트는 '링크가 있는 모든 사용자 보기'여야 함.
+      server.middlewares.use("/api/sheet-export", async (req, res) => {
+        const id = (new URL(req.url || "", "http://localhost").searchParams.get("id") || "").trim();
+        if (!/^[a-zA-Z0-9-_]+$/.test(id)) {
+          res.statusCode = 400;
+          res.end("Invalid sheet id");
+          return;
+        }
+        try {
+          const upstream = await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`, {
+            redirect: "follow",
+            headers: { "User-Agent": "Mozilla/5.0", Accept: "*/*" }
+          });
+          const contentType = upstream.headers.get("content-type") || "";
+          if (!upstream.ok || contentType.includes("text/html")) {
+            throw new Error(`Sheet not accessible (${upstream.status})`);
+          }
+          const buffer = Buffer.from(await upstream.arrayBuffer());
+          res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+          res.setHeader("Cache-Control", "no-store");
+          res.end(buffer);
+        } catch {
+          res.statusCode = 502;
+          res.end("Google Sheet is not accessible.");
+        }
+      });
+
+      // 견적 → 구글시트 생성: 대표님 Apps Script 웹앱으로 프록시(dev). 비밀키는 서버에서만 부착.
+      server.middlewares.use("/api/create-quote-sheet", async (req, res) => {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        if (req.method !== "POST") {
+          res.statusCode = 405;
+          res.end(JSON.stringify({ error: "POST만 허용됩니다." }));
+          return;
+        }
+        const env = loadEnv(server.config.mode, process.cwd(), "");
+        const webAppUrl = env.QUOTE_SHEET_WEBAPP_URL;
+        const secret = env.QUOTE_SHEET_SECRET;
+        if (!webAppUrl || !secret) {
+          res.statusCode = 503;
+          res.end(JSON.stringify({ error: "구글시트 연동 미설정(QUOTE_SHEET_WEBAPP_URL/QUOTE_SHEET_SECRET)" }));
+          return;
+        }
+        try {
+          const chunks: Buffer[] = [];
+          for await (const chunk of req) chunks.push(chunk as Buffer);
+          const payload = chunks.length ? JSON.parse(Buffer.concat(chunks).toString("utf-8")) : {};
+          const upstream = await fetch(webAppUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ secret, ...payload }),
+            redirect: "follow"
+          });
+          const text = await upstream.text();
+          let data: { sheetUrl?: string; pdfUrl?: string; error?: string } | null = null;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = null;
+          }
+          if (!upstream.ok || !data || !data.sheetUrl) {
+            throw new Error(data?.error || `Apps Script 응답 오류 (${upstream.status})`);
+          }
+          res.end(JSON.stringify({ sheetUrl: data.sheetUrl, pdfUrl: data.pdfUrl ?? null }));
+        } catch (error) {
+          res.statusCode = 502;
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : "구글시트 생성 실패" }));
+        }
+      });
     }
   };
 }

@@ -29,7 +29,7 @@ import { images } from "./assets/images";
 export const business: BusinessProfile = {
   name: "집수리클라쓰",
   introduction:
-    "모든 공사에 품격을 더하는 종합 집수리·설비공사업체 집수리클라쓰입니다. 7개의 국가공인 건축자격이 있는 대표가 모든 공사에 직접 함께하며, 고객님의 니즈에 맞는 품격 있는 시공을 약속드립니다.",
+    "7개의 국가공인 건축자격을 보유한 대표가 모든 현장을 직접 시공하는 종합 집수리·설비 업체입니다. 불필요한 공사를 권하지 않고, 꼭 필요한 작업만 정직하게 견적내어 생활 집수리부터 전체 리모델링까지 책임지고 진행합니다.",
   strengths: ["대표 직접 참여 시공", "7개 국가공인 건축자격 보유", "네이버·카카오톡 집수리클라쓰 검색"],
   specialties: [
     "수도 배관",
@@ -201,7 +201,7 @@ export const cases: ConstructionCase[] = [
   },
   {
     title: "천장 결로로 인한 단열 공사",
-    area: "길음뉴타운11단지롯데캐슬골든힐스",
+    area: "길음뉴타운 11단지 롯데캐슬 골든힐스",
     problem: "안방·작은방의 심한 냉기와 결로 우려. 단열재 이음부 틈새와 창호 주변 빈 공간으로 외벽 온도 4~12℃까지 저하",
     solution: "뉴골드폭스보드 22T 단열재를 빈틈없이 밀착 시공하고 천장 단열폼 보강·걸레받이 재시공으로 외벽 온도 14~16℃ 이상 회복",
     link: "https://blog.naver.com/it77khy/224212491748",
@@ -209,7 +209,7 @@ export const cases: ConstructionCase[] = [
   },
   {
     title: "거실 LED등 및 스위치 교체",
-    area: "의정부 회룡역풍림아이원아파트",
+    area: "의정부 회룡역 풍림아이원아파트",
     problem: "노후 조명과 스위치로 실내가 어둡고 안전이 우려되는 상황",
     solution: "리모컨 제어·색 변환이 가능한 LED 조명과 스위치로 교체하여 밝기와 안전성 확보",
     link: "https://blog.naver.com/it77khy/224244962003",
@@ -225,7 +225,7 @@ export const cases: ConstructionCase[] = [
   },
   {
     title: "누수 피해 복구",
-    area: "남양주 이편한세상다산",
+    area: "남양주 이편한세상 다산",
     problem: "누수로 인한 베란다 천장 얼룩과 도장 들뜸, 습기·곰팡이 확산 우려",
     solution: "손상된 석고보드 교체 후 결로 방지 탄성코트 시공으로 마감 복구",
     link: "https://blog.naver.com/it77khy/224246265335",

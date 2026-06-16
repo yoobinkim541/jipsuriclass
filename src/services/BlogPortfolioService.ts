@@ -190,7 +190,8 @@ export class BlogPortfolioService {
         : undefined,
       cardTitle: item.cardTitle ? this.stripHtml(item.cardTitle) : undefined,
       summary: Array.isArray(item.summary) ? item.summary.map((line) => this.stripHtml(line)).filter(Boolean) : undefined,
-      keywords: Array.isArray(item.keywords) ? item.keywords.map((keyword) => this.stripHtml(keyword)).filter(Boolean) : undefined
+      keywords: Array.isArray(item.keywords) ? item.keywords.map((keyword) => this.stripHtml(keyword)).filter(Boolean) : undefined,
+      popularity: typeof item.popularity === "number" ? item.popularity : undefined
     };
   }
 

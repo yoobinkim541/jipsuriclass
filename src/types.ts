@@ -49,6 +49,8 @@ export type PortfolioPost = {
   cardTitle?: string;
   summary?: string[];
   keywords?: string[];
+  /** 인기도 점수(공감 + 댓글*2). '블로그 인기글' 정렬용. */
+  popularity?: number;
 };
 
 export type NaverBlogItem = {
@@ -61,6 +63,7 @@ export type NaverBlogItem = {
   cardTitle?: string;
   summary?: string[];
   keywords?: string[];
+  popularity?: number;
 };
 
 export type WorkProcessStep = {
@@ -326,6 +329,16 @@ export type InquiryQuoteSnapshot = {
   materialCharges: InquiryQuoteCharge[];
   extraCharges: InquiryQuoteCharge[];
   vatRate: number;
+  /** 이윤율(기본 0.08). 직원이 케이스별로 조정 가능. */
+  profitRate?: number;
+  /** 천원/만원 절삭 보정(음수). 미지정 시 만원 미만 자동 절삭. */
+  roundingAdjust?: number;
+  /** 계약금(선수금). 매번 달라 직원이 수기 입력. 잔금=합계-계약금. */
+  deposit?: number;
+  /** 구글시트로 발행한 견적서 시트 링크. */
+  sheetUrl?: string | null;
+  /** 발행한 견적서 PDF 링크. */
+  pdfUrl?: string | null;
   memo: string;
   updatedAt: string | null;
 };

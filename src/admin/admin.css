@@ -128,6 +128,9 @@
   .adm-top { grid-template-columns: auto 1fr auto; }
 }
 @media (max-width: 767px) {
+  /* 모바일: 검색 숨김 + 2열(브랜드 1fr / 우측 auto)로 단순화, 여백·간격 축소.
+     (메타·칩·외부링크 숨김은 베이스 규칙 뒤에서 처리 — 소스 순서상 이 위치에선 안 먹음) */
+  .adm-top { grid-template-columns: 1fr auto; gap: 8px; padding: 0 12px; }
   .adm-top__center { display: none !important; }
 }
 .adm-brand { display: inline-flex; align-items: center; gap: 10px; }
@@ -137,6 +140,7 @@
   font-weight: 800;
   font-size: var(--fs-md);
   color: var(--navy-900);
+  white-space: nowrap;
 }
 .adm-brand em { font-style: normal; color: var(--gold-700); }
 .adm-top__pill {
@@ -153,6 +157,8 @@
   letter-spacing: 0.06em;
   margin-left: 6px;
   box-shadow: 0 1px 3px rgba(8, 22, 40, 0.15);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .adm-top__pill::before {
   content: "";
@@ -263,8 +269,15 @@
   white-space: nowrap;
 }
 .adm-top__user > svg { width: 14px; height: 14px; color: var(--ink-4); }
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
+  /* 태블릿: 이메일·이름 메타가 브랜드 트랙(auto)을 짓눌러 워드마크가 세로로 쌓임
+     → 숨겨 폭 확보(아바타만 노출). 베이스 .adm-top__user-meta 뒤라 소스 순서로 이김. */
   .adm-top__user-meta { display: none; }
+}
+@media (max-width: 767px) {
+  /* 모바일: 장식용 '관리자' 칩 + 중복 외부링크(유저메뉴 '사이트 홈'과 동일)를 숨겨 한 줄 유지. */
+  .adm-top__pill { display: none; }
+  .adm-top__right a.adm-top__btn[target="_blank"] { display: none; }
 }
 
 /* 알림·사용자 드롭다운 */
@@ -1820,6 +1833,7 @@
   .adm-root .quote-editor__table-wrap,
   .adm-root .quote-editor__panel,
   .adm-root .quote-editor__summary div,
+  .adm-root .quote-editor__summary label,
   .adm-root .editor-upload-trigger {
     background: var(--paper);
     border-color: var(--hair);
@@ -1829,6 +1843,14 @@
     background: var(--cream-2);
     color: var(--ink-2);
   }
+  /* 입력칸: #fff 하드코딩 → 다크 표면 위에서 흰 박스+밝은 글씨로 안 보이던 것 보정 */
+  .adm-root .quote-field {
+    background: rgba(3, 10, 22, 0.35);
+    color: var(--ink);
+    border-color: var(--hair);
+  }
+  .adm-root .quote-field::placeholder { color: var(--ink-3); }
+  .adm-root .quote-editor__catalog { background: rgba(124, 152, 240, 0.1); border-color: var(--hair); }
   .adm-root .quote-editor__meta span {
     background: rgba(124, 152, 240, 0.18);
     color: var(--ink-2);
