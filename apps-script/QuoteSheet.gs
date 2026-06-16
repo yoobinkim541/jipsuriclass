@@ -1,67 +1,59 @@
 /**
- * 집수리클라쓰 — 견적서 자동 생성 Apps Script 웹앱
+ * 집수리클라쓰 — 견적서 자동 생성 Apps Script 웹앱 (양식 그대로 채우기 버전)
  *
  * 사이트(/api/create-quote-sheet)가 POST로 견적 데이터를 보내면
- * '견적완료건' 템플릿을 복제해 값을 채우고, 시트/PDF 링크를 돌려준다.
+ * '견적완료건' 템플릿을 복제해, 토큰 치환 + 공종별 행 자동 삽입으로
+ * 상단 요약표 / 하단 상세내역(소계 포함)을 채우고 시트·PDF 링크를 돌려준다.
  *
- * [배포]
- *  1) 빈 견적서 '템플릿' 스프레드시트 1개를 만들고 ID를 TEMPLATE_ID에 입력
- *  2) 생성본을 저장할 폴더(예: '견적완료건') ID를 DEST_FOLDER_ID에 입력
- *  3) SECRET을 임의의 긴 문자열로 정하고, 사이트 환경변수 QUOTE_SHEET_SECRET과 동일하게 설정
- *  4) 확장 프로그램 > Apps Script에 이 파일을 붙여넣고 저장
- *  5) 배포 > 새 배포 > 유형: 웹 앱 / 실행: 나 / 액세스: 모든 사용자
- *  6) 배포 URL(.../exec)을 사이트 환경변수 QUOTE_SHEET_WEBAPP_URL에 등록
+ * ── 템플릿 준비(한 번만): 아래 토큰을 템플릿 셀에 넣어두세요 ──
+ *   고객 연락처 칸     → {{phone}}
+ *   주소 칸           → {{address}}
+ *   견적 대상 칸       → {{target}}
+ *   (선택) 발행일 칸   → {{date}}
+ *   상단 요약표 첫 행의 '코드' 칸 → {{summary}}   (그 행에 공종별 [코드,공사명, ,금액]이 채워짐)
+ *   상세내역 첫 데이터 행의 '코드' 칸 → {{detail}}  (공종별 헤더+항목+소계가 채워짐)
+ *   공사비합계 금액칸  → {{workCost}}
+ *   이윤 금액칸       → {{profit}}     (이윤율 표기칸 → {{profitPct}})
+ *   절삭 금액칸       → {{rounding}}
+ *   합계(부가세 별도) → {{subtotal}}
+ *   부가세 칸         → {{vat}}
+ *   계약금 칸         → {{deposit}}
+ *   잔금 칸           → {{balance}}
+ *   (선택) 메모 칸     → {{memo}}
+ *   ※ 토큰만 단독으로 들어있는 금액칸은 '숫자'로 채워집니다(수식 대신 값). 문장 안에 섞어 써도 됩니다.
  *
- * [셀 매핑] 아래 CELL 주소를 실제 템플릿 양식에 맞게 조정하세요.
+ * ── 배포 ──
+ *   배포 > 새 배포 > 웹 앱 / 실행: 나 / 액세스: 모든 사용자 → URL(.../exec)을 사이트에 등록
  */
 
-// ===== 설정 (대표님이 채워주세요) =====
+// ===== 설정 =====
 var SECRET = 'CHANGE_ME_비밀키';               // 사이트 QUOTE_SHEET_SECRET과 동일하게
-var TEMPLATE_ID = 'TEMPLATE_SPREADSHEET_ID';   // 빈 견적서 템플릿 스프레드시트 ID
+var TEMPLATE_ID = 'TEMPLATE_SPREADSHEET_ID';   // 토큰을 넣어둔 템플릿 스프레드시트 ID
 var DEST_FOLDER_ID = 'DEST_FOLDER_ID';         // 생성본 저장 폴더(견적완료건) ID
-var SHEET_TAB = '';                            // 값 채울 탭 이름(비우면 첫 번째 탭)
-var EXPORT_PDF = true;                          // PDF도 함께 생성할지
+var SHEET_TAB = '';                            // 값 채울 탭(비우면 첫 번째 탭)
+var EXPORT_PDF = true;
 
-// 셀 매핑 — 템플릿 양식의 실제 셀 주소로 바꿔주세요.
-var CELL = {
-  customerName: 'C3',
-  customerPhone: 'E3',
-  customerAddress: 'C4',
-  target: 'C5',
-  // 상세내역 첫 데이터 행의 '첫 칸'. 한 행에 [코드, 공사명, 공사내용, 단가, 수량, 단위, 금액] 순으로 채움.
-  detailAnchor: 'A9',
-  workCost: 'F30',
-  profit: 'F31',
-  rounding: 'F32',
-  subtotal: 'F33',
-  vat: 'F34',
-  total: 'F35',
-  deposit: 'F36',
-  balance: 'F37',
-  memo: 'A40'
-};
+// 상세내역/요약표가 시작하는 '열'(템플릿 기준). 기본 B열(=2): 코드,공사명,(요약:빈칸,금액 / 상세:내용,단가,수량,단위,금액)
+var DETAIL_START_COL = 2; // B
+var SUMMARY_START_COL = 2; // B
 
 function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
-    if (body.secret !== SECRET) {
-      return json_({ error: '인증 실패(secret 불일치)' });
-    }
+    if (body.secret !== SECRET) return json_({ error: '인증 실패(secret 불일치)' });
 
-    var template = DriveApp.getFileById(TEMPLATE_ID);
     var folder = DriveApp.getFolderById(DEST_FOLDER_ID);
-    var fileName = body.fileName || ('견적서 ' + new Date().toISOString().slice(0, 10));
-    var copy = template.makeCopy(fileName, folder);
-
+    var fileName = body.fileName || ('견적서 ' + today_());
+    var copy = DriveApp.getFileById(TEMPLATE_ID).makeCopy(fileName, folder);
     var ss = SpreadsheetApp.openById(copy.getId());
     var sheet = SHEET_TAB ? ss.getSheetByName(SHEET_TAB) : ss.getSheets()[0];
-    writeQuote_(sheet, body);
+
+    fillTemplate_(sheet, body);
     SpreadsheetApp.flush();
 
     var pdfUrl = null;
     if (EXPORT_PDF) {
-      var pdf = folder.createFile(ss.getAs('application/pdf').setName(fileName + '.pdf'));
-      pdfUrl = pdf.getUrl();
+      pdfUrl = folder.createFile(ss.getAs('application/pdf').setName(fileName + '.pdf')).getUrl();
     }
     return json_({ sheetUrl: ss.getUrl(), pdfUrl: pdfUrl });
   } catch (err) {
@@ -69,42 +61,119 @@ function doPost(e) {
   }
 }
 
-function writeQuote_(sheet, body) {
-  var c = body.customer || {};
-  setCell_(sheet, CELL.customerName, c.name);
-  setCell_(sheet, CELL.customerPhone, c.phone);
-  setCell_(sheet, CELL.customerAddress, c.address);
-  setCell_(sheet, CELL.target, body.target);
-
-  var rows = (body.rows || []).map(function (r, i) {
-    return [(i + 1) * 100, r.name, r.detail, r.unitPrice, r.qty, r.unit, r.amount];
-  });
-  if (rows.length && CELL.detailAnchor) {
-    var anchor = sheet.getRange(CELL.detailAnchor);
-    sheet.getRange(anchor.getRow(), anchor.getColumn(), rows.length, 7).setValues(rows);
-  }
-
+function fillTemplate_(sheet, body) {
   var t = body.totals || {};
-  setCell_(sheet, CELL.workCost, t.workCost);
-  setCell_(sheet, CELL.profit, t.profit);
-  setCell_(sheet, CELL.rounding, t.rounding);
-  setCell_(sheet, CELL.subtotal, t.subtotal);
-  setCell_(sheet, CELL.vat, t.vat);
-  setCell_(sheet, CELL.total, t.total);
-  setCell_(sheet, CELL.deposit, t.deposit);
-  setCell_(sheet, CELL.balance, t.balance);
-  setCell_(sheet, CELL.memo, body.memo);
+  var c = body.customer || {};
+  var groups = groupRows_(body.rows || []);
+
+  // 1) 행을 늘리는 마커(detail/summary)를 '아래쪽 먼저' 처리해 위쪽 마커 행번호가 안 꼬이게 한다.
+  var markers = findMarkers_(sheet).sort(function (a, b) { return b.row - a.row; });
+  markers.forEach(function (m) {
+    if (m.token === '{{detail}}') writeDetail_(sheet, m.row, groups);
+    else if (m.token === '{{summary}}') writeSummary_(sheet, m.row, groups);
+  });
+
+  // 2) 스칼라 토큰 치환(행 삽입 후 위치가 바뀌었어도 전체 재스캔)
+  replaceScalars_(sheet, {
+    '{{phone}}': c.phone,
+    '{{address}}': c.address,
+    '{{target}}': body.target,
+    '{{name}}': c.name,
+    '{{date}}': today_(),
+    '{{memo}}': body.memo,
+    '{{workCost}}': t.workCost,
+    '{{profit}}': t.profit,
+    '{{profitPct}}': Math.round((t.profitRate || 0) * 100) + '%',
+    '{{rounding}}': t.rounding,
+    '{{subtotal}}': t.subtotal,
+    '{{vat}}': t.vat,
+    '{{total}}': t.total,
+    '{{deposit}}': t.deposit,
+    '{{balance}}': t.balance
+  });
 }
 
-function setCell_(sheet, a1, value) {
-  if (!a1) return;
-  sheet.getRange(a1).setValue(value == null ? '' : value);
+// 공종(group)별로 묶기 — 입력 순서 유지
+function groupRows_(rows) {
+  var map = {}, order = [];
+  rows.forEach(function (r) {
+    var key = r.group || '공사';
+    if (!map[key]) { map[key] = { name: key, total: 0, lines: [] }; order.push(key); }
+    map[key].lines.push(r);
+    map[key].total += Number(r.amount) || 0;
+  });
+  return order.map(function (k) { return map[k]; });
 }
 
-function json_(obj) {
-  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+// 상세내역: 공종별 [코드,공사명] 헤더 → 각 줄 [ , ,내용,단가,수량,단위,금액] → [소계,…,금액]
+function writeDetail_(sheet, row, groups) {
+  var out = [];
+  groups.forEach(function (g, gi) {
+    out.push([(gi + 1) * 100, g.name, '', '', '', '', '']);
+    g.lines.forEach(function (l) {
+      out.push(['', '', detailText_(l), num_(l.unitPrice), num_(l.qty), l.unit || '', num_(l.amount)]);
+    });
+    out.push(['소계', '', '', '', '', '', g.total]);
+  });
+  if (!out.length) { sheet.getRange(row, DETAIL_START_COL).setValue(''); return; }
+  if (out.length > 1) sheet.insertRowsAfter(row, out.length - 1);
+  sheet.getRange(row, DETAIL_START_COL, out.length, 7).setValues(out);
 }
 
-function doGet() {
-  return json_({ ok: true });
+// 상단 요약표: 공종별 [코드,공사명,빈칸,금액]
+function writeSummary_(sheet, row, groups) {
+  if (!groups.length) { sheet.getRange(row, SUMMARY_START_COL).setValue(''); return; }
+  var out = groups.map(function (g, gi) { return [(gi + 1) * 100, g.name, '', g.total]; });
+  if (out.length > 1) sheet.insertRowsAfter(row, out.length - 1);
+  sheet.getRange(row, SUMMARY_START_COL, out.length, 4).setValues(out);
 }
+
+function detailText_(l) {
+  var name = l.name || '';
+  var detail = l.detail || '';
+  if (name && detail && name !== detail) return name + '\n' + detail;
+  return detail || name;
+}
+
+function findMarkers_(sheet) {
+  var vals = sheet.getDataRange().getValues();
+  var out = [];
+  for (var r = 0; r < vals.length; r++) {
+    for (var c = 0; c < vals[r].length; c++) {
+      var v = vals[r][c];
+      if (typeof v !== 'string') continue;
+      if (v.indexOf('{{detail}}') >= 0) out.push({ row: r + 1, col: c + 1, token: '{{detail}}' });
+      else if (v.indexOf('{{summary}}') >= 0) out.push({ row: r + 1, col: c + 1, token: '{{summary}}' });
+    }
+  }
+  return out;
+}
+
+function replaceScalars_(sheet, map) {
+  var range = sheet.getDataRange();
+  var vals = range.getValues();
+  var changed = false;
+  for (var r = 0; r < vals.length; r++) {
+    for (var c = 0; c < vals[r].length; c++) {
+      var v = vals[r][c];
+      if (typeof v !== 'string' || v.indexOf('{{') < 0) continue;
+      if (map.hasOwnProperty(v)) {
+        // 토큰만 단독 → 원래 타입(숫자) 그대로 넣음
+        vals[r][c] = map[v] == null ? '' : map[v];
+        changed = true;
+      } else {
+        var nv = v;
+        for (var key in map) {
+          if (nv.indexOf(key) >= 0) nv = nv.split(key).join(map[key] == null ? '' : String(map[key]));
+        }
+        if (nv !== v) { vals[r][c] = nv; changed = true; }
+      }
+    }
+  }
+  if (changed) range.setValues(vals);
+}
+
+function num_(v) { var n = Number(v); return isNaN(n) ? (v || '') : n; }
+function today_() { return Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy.MM.dd'); }
+function json_(obj) { return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON); }
+function doGet() { return json_({ ok: true }); }

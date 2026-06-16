@@ -70,7 +70,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
     };
   }, [fullscreen]);
 
-  function addCatalogItem(item: (typeof priceCatalog)[number]["items"][number]) {
+  function addCatalogItem(item: (typeof priceCatalog)[number]["items"][number], group: string) {
     setDraft((current) => ({
       ...current,
       lineItems: [
@@ -82,7 +82,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           unit: item.unit,
           qty: 1,
           unitPrice: item.price,
-          categoryTitle: null,
+          categoryTitle: group,
           note: item.materialNote === "별도" ? "자재 별도" : item.note,
           materialNote: item.materialNote
         }
@@ -414,8 +414,9 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           value=""
           onChange={(event) => {
             const [groupIndex, itemIndex] = event.target.value.split(":").map(Number);
-            const item = priceCatalog[groupIndex]?.items[itemIndex];
-            if (item) addCatalogItem(item);
+            const group = priceCatalog[groupIndex];
+            const item = group?.items[itemIndex];
+            if (item) addCatalogItem(item, group.serviceLabel);
             event.target.value = "";
           }}
         >
