@@ -316,6 +316,8 @@ export type InquiryQuoteCharge = {
   qty: number;
   unitPrice: number;
   amount: number;
+  /** 자재비를 묶을 공종(상세내역에서 해당 작업 그룹에 합쳐진다). 미지정 시 '자재'. */
+  group?: string;
 };
 
 export type InquiryQuoteSnapshot = {
@@ -329,12 +331,20 @@ export type InquiryQuoteSnapshot = {
   materialCharges: InquiryQuoteCharge[];
   extraCharges: InquiryQuoteCharge[];
   vatRate: number;
+  /** 부가세 직접입력 모드. true면 vatRate를 그대로 쓰고, false/미지정이면 항상 10% 규칙. */
+  vatManual?: boolean;
   /** 이윤율(기본 0.08). 직원이 케이스별로 조정 가능. */
   profitRate?: number;
   /** 천원/만원 절삭 보정(음수). 미지정 시 만원 미만 자동 절삭. */
   roundingAdjust?: number;
-  /** 계약금(선수금). 매번 달라 직원이 수기 입력. 잔금=합계-계약금. */
+  /** 계약금(선수금). depositManual=true일 때만 사용. 기본은 총액 30%·만원 올림 규칙. */
   deposit?: number;
+  /** 계약금 직접입력 모드. true면 deposit를 그대로 쓰고, false/미지정이면 30% 규칙. */
+  depositManual?: boolean;
+  /** 공사 규모(예: 24평 아파트 / 욕실 1개). 담당자 직접 입력. */
+  workScale?: string;
+  /** 총 공사기간(예: 3일 / 2주). 담당자 직접 입력. */
+  workPeriod?: string;
   /** 구글시트로 발행한 견적서 시트 링크. */
   sheetUrl?: string | null;
   /** 발행한 견적서 PDF 링크. */

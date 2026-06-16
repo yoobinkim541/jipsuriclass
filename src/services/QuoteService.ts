@@ -170,6 +170,52 @@ export function buildEstimateHref(options: {
   return query ? `/estimate?${query}` : "/estimate";
 }
 
+/** 거주 상태가 '거주중/살면서 공사'면 보양작업이 필요하다고 본다(공실·신축입주는 제외). */
+function isOccupiedDuringWork(propertyStatus?: string | null): boolean {
+  const status = typeof propertyStatus === "string" ? propertyStatus : "";
+  if (!status) return false;
+  if (/공실|신축입주/.test(status)) return false;
+  return /거주중|살면서/.test(status);
+}
+
+/** 거주중 현장 보양작업 기본 항목(코드 100·식·3만원, 자재비 포함). */
+function buildProtectionLineItem(): InquiryQuoteLineItem {
+  return {
+    id: `protection-${Date.now()}`,
+    sourceId: null,
+    name: "거주중\n- 비닐 커버링, 바닥 시트\n- 자재비 포함",
+    unit: "식",
+    qty: 1,
+    unitPrice: 30000,
+    categoryTitle: "보양작업",
+    note: null,
+    materialNote: null
+  };
+}
+
+// 공과 잡비(식사 및 음료) 1식 단가 및 식수 산정 기준.
+const MEAL_UNIT_PRICE = 20000;
+const MEAL_COST_PER_UNIT = 500000; // 공사비 약 50만원당 1식(소요 규모 비례 추정)
+
+/**
+ * '기타'의 공과 잡비(식사 및 음료) 항목 — 예상 공사 규모(공사비 합계)에 비례해 식수를
+ * 자동 산정한다(약 50만원당 1식, 1~10식). 소요 시간 필드가 없어 규모를 대용 지표로 쓴다.
+ */
+function buildMealAllowanceLineItem(workCost: number): InquiryQuoteLineItem {
+  const meals = Math.min(10, Math.max(1, Math.round(workCost / MEAL_COST_PER_UNIT)));
+  return {
+    id: `meal-${Date.now()}`,
+    sourceId: null,
+    name: "공과 잡비 (식사 및 음료)",
+    unit: "식",
+    qty: meals,
+    unitPrice: MEAL_UNIT_PRICE,
+    categoryTitle: "기타",
+    note: null,
+    materialNote: null
+  };
+}
+
 export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSnapshot {
   const intake = inquiry.intake ?? {};
   const existing = isQuoteSnapshot(intake.quoteSnapshot) ? intake.quoteSnapshot : null;
@@ -195,6 +241,18 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
     works: selectedWorks
   });
 
+  const lineItems = resolvedItems.map((item, index) => createQuoteLineItem(item, index));
+  // 거주중(살면서 공사)이면 보양작업을 첫 줄(코드 100)에 자동 추가 — 대표님 표준 견적서 관행.
+  // 초안에만 넣으므로 담당자가 편집기에서 수정·삭제할 수 있고, 저장본에는 중복되지 않는다.
+  if (isOccupiedDuringWork(intake.propertyStatus)) {
+    lineItems.unshift(buildProtectionLineItem());
+  }
+  // '기타' 공과 잡비(식사 및 음료)를 공사 규모에 비례해 마지막 줄에 자동 추가.
+  const workCostBase = lineItems.reduce((sum, item) => sum + item.qty * item.unitPrice, 0);
+  if (workCostBase > 0) {
+    lineItems.push(buildMealAllowanceLineItem(workCostBase));
+  }
+
   return normalizeQuoteSnapshot(
     {
       sourceServicePath: source?.servicePath ?? null,
@@ -203,12 +261,15 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
       confirmedAt: null,
       selectedWorks,
       selectedWorkIds,
-      lineItems: resolvedItems.map((item, index) => createQuoteLineItem(item, index)),
+      lineItems,
       materialCharges: [],
       extraCharges: [],
       vatRate: 0,
       profitRate: 0.08,
       deposit: 0,
+      // 공사 규모는 상담 정보(공간형태·면적)로 프리필, 담당자가 편집기에서 수정 가능.
+      workScale: [getStringField(intake.spaceType), getStringField(intake.areaBand)].filter(Boolean).join(" · "),
+      workPeriod: "",
       memo: "",
       updatedAt: null
     },
@@ -231,6 +292,9 @@ export function mergeQuoteIntoIntake(intake: InquiryIntake | null, quote: Inquir
   };
 }
 
+// 부가가치세율 — 정책상 항상 합계(부가세 별도)의 10%.
+const VAT_RATE = 0.1;
+
 export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   const workSubtotal = quote.lineItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
   const materialSubtotal = quote.materialCharges.reduce((sum, item) => sum + item.amount, 0);
@@ -247,11 +311,15 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   // 합계(부가세 별도). 절삭 입력 실수로 음수가 되지 않도록 0 하한.
   const subtotal = Math.max(0, beforeRounding + rounding);
 
-  const vatRate = Math.max(0, typeof quote.vatRate === "number" ? quote.vatRate : 0);
+  // 부가가치세: 기본은 항상 합계의 10%. 단, 직접입력 모드면 저장된 vatRate를 사용.
+  const vatRate = quote.vatManual ? normalizeRate(quote.vatRate, VAT_RATE) : VAT_RATE;
   const vat = Math.round(subtotal * vatRate);
   const total = subtotal + vat;
-  const deposit = typeof quote.deposit === "number" && quote.deposit >= 0 ? quote.deposit : 0;
-  // 계약금이 총액보다 커도 잔금이 음수가 되지 않도록 0 하한.
+  // 계약금: 기본은 총액(부가세 포함)의 30%를 만원 단위로 올림. 직접입력 모드면 저장값 사용.
+  const deposit = quote.depositManual
+    ? Math.max(0, typeof quote.deposit === "number" ? quote.deposit : 0)
+    : Math.ceil((total * 0.3) / 10000) * 10000;
+  // 잔금 = 총액 − 계약금. 계약금이 더 커도 음수가 되지 않도록 0 하한.
   const balance = Math.max(0, total - deposit);
 
   return { workSubtotal, materialSubtotal, extraSubtotal, workCost, profit, rounding, subtotal, vat, total, deposit, balance };
@@ -261,6 +329,8 @@ export type QuoteSheetPayload = {
   fileName: string;
   customer: { name: string; phone: string; address: string };
   target: string;
+  scale: string;
+  period: string;
   rows: Array<{ kind: "work" | "material" | "extra"; group: string; detail: string; remark: string; unit: string; qty: number; unitPrice: number; amount: number }>;
   totals: { workCost: number; profit: number; profitRate: number; rounding: number; subtotal: number; vat: number; total: number; deposit: number; balance: number };
   memo: string;
@@ -290,7 +360,8 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     })),
     ...quote.materialCharges.map((charge) => ({
       kind: "material" as const,
-      group: "자재",
+      // 자재비는 지정된 공종에 묶이고(상세내역에서 해당 작업 그룹에 합쳐짐), 미지정 시 '자재'.
+      group: charge.group?.trim() ? charge.group.trim() : "자재",
       detail: charge.label,
       remark: "자재 별도",
       unit: "",
@@ -310,11 +381,16 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     }))
   ];
 
+  // '기타' 공종은 항상 맨 뒤에(다른 공종 먼저, 기타를 마지막에) — 코드도 자연히 마지막 번호.
+  const orderedRows = [...rows.filter((row) => row.group !== "기타"), ...rows.filter((row) => row.group === "기타")];
+
   return {
     fileName,
     customer: { name: inquiry.name ?? "", phone: inquiry.phone ?? "", address: inquiry.service_area ?? "" },
     target,
-    rows,
+    scale: quote.workScale ?? "",
+    period: quote.workPeriod ?? "",
+    rows: orderedRows,
     totals: {
       workCost: totals.workCost,
       profit: totals.profit,
@@ -347,6 +423,21 @@ export async function createQuoteSheet(input: { inquiry: InquiryRow; quote: Inqu
     throw new Error(typeof data.error === "string" ? data.error : "구글시트 생성에 실패했습니다. Apps Script 연동(환경변수) 설정을 확인해 주세요.");
   }
   return { sheetUrl: data.sheetUrl, pdfUrl: data.pdfUrl ?? null };
+}
+
+/**
+ * 구글시트 연동 상태를 점검한다(발행 누르지 않고 확인). /api/check-quote-sheet가
+ * Apps Script 웹앱에 GET 핑을 보내 정상/로그인필요/미설정/오류를 돌려준다.
+ */
+export async function checkQuoteSheetConnection(): Promise<{ ok: boolean; message: string }> {
+  const endpoint = new URL("/api/check-quote-sheet", typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  try {
+    const response = await fetch(endpoint.toString());
+    const data = (await response.json().catch(() => ({}))) as { ok?: boolean; message?: string };
+    return { ok: data.ok === true, message: typeof data.message === "string" ? data.message : "상태를 확인할 수 없습니다." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? `점검 실패: ${error.message}` : "점검 실패" };
+  }
 }
 
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
@@ -782,9 +873,13 @@ function normalizeQuoteSnapshot(snapshot: InquiryQuoteSnapshot, inquiry: Inquiry
     materialCharges,
     extraCharges,
     vatRate: normalizeVatRate(snapshot.vatRate),
+    vatManual: snapshot.vatManual === true,
     profitRate: normalizeRate(snapshot.profitRate, 0.08),
     roundingAdjust: typeof snapshot.roundingAdjust === "number" && Number.isFinite(snapshot.roundingAdjust) ? snapshot.roundingAdjust : undefined,
     deposit: normalizeNonNegativeNumber(snapshot.deposit, 0),
+    depositManual: snapshot.depositManual === true,
+    workScale: typeof snapshot.workScale === "string" ? snapshot.workScale : "",
+    workPeriod: typeof snapshot.workPeriod === "string" ? snapshot.workPeriod : "",
     memo: typeof snapshot.memo === "string" ? snapshot.memo : "",
     updatedAt: typeof snapshot.updatedAt === "string" ? snapshot.updatedAt : inquiry.created_at ?? null
   };
@@ -805,7 +900,8 @@ function normalizeChargeList(list: InquiryQuoteCharge[], kind: "material" | "ext
             item.amount,
             normalizePositiveInt(item.qty, 1) * normalizeNonNegativeNumber(item.unitPrice, normalizeNonNegativeNumber(item.amount, 0))
           )
-        : normalizeNonNegativeNumber(item.amount, 0)
+        : normalizeNonNegativeNumber(item.amount, 0),
+    ...(kind === "material" && typeof item.group === "string" && item.group.trim() ? { group: item.group.trim() } : {})
   }));
 }
 

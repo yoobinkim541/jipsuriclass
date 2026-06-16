@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { resolveWebAppUrl, deployTailOf } from "./_quoteSheetUrl";
 
 /**
  * 견적을 대표님 구글 계정의 Apps Script 웹앱으로 보내 '견적완료건' 템플릿 시트를 생성한다.
@@ -42,7 +43,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
     // 진단용: 실제 호출한 배포 ID 꼬리표(비밀 아님)와 상태를 남긴다 — 환경변수가
     // 최신 배포를 가리키는지, 401/404가 어느 배포에서 나는지 한눈에 확인하기 위함.
-    const deployTail = webAppUrl.match(/\/s\/([^/]+)/)?.[1]?.slice(-10) ?? "?";
+    const deployTail = deployTailOf(webAppUrl);
     const finalHost = (() => {
       try {
         return new URL(upstream.url).host;
@@ -73,29 +74,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
   } catch (error) {
     response.status(502).json({ error: error instanceof Error ? error.message : "구글시트 생성에 실패했습니다." });
   }
-}
-
-/**
- * Apps Script 웹앱 주소를 정규화한다.
- *  - 전체 URL(https://…/exec) → 그대로(단, /exec 누락 시 보강)
- *  - script.google.com/…       → https:// 보강
- *  - /macros/s/…/exec          → 호스트 보강
- *  - 배포 ID만(AKfycb…)         → https://script.google.com/macros/s/<id>/exec
- */
-function resolveWebAppUrl(raw: string): string {
-  const value = raw.trim();
-  if (/^https?:\/\//i.test(value)) return ensureExec_(value);
-  if (value.startsWith("script.google.com")) return ensureExec_(`https://${value}`);
-  if (value.startsWith("/macros/")) return ensureExec_(`https://script.google.com${value}`);
-  const id = value.replace(/^\/+|\/+$/g, "");
-  return `https://script.google.com/macros/s/${id}/exec`;
-}
-
-/** Apps Script 배포 URL인데 끝의 /exec 가 빠진 경우 붙여준다(붙어 있으면 그대로). */
-function ensureExec_(url: string): string {
-  const cleaned = url.replace(/\/+$/, "");
-  if (/\/macros\/s\/[^/]+$/.test(cleaned)) return `${cleaned}/exec`;
-  return cleaned;
 }
 
 function safeParse(value: string): unknown {

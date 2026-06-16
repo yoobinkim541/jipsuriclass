@@ -7234,30 +7234,151 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   margin-left: auto;
 }
 
-/* 가격표에서 항목 골라 담기 */
-.quote-editor__catalog {
+/* 가격표에서 항목 추가 — 모던 드롭다운 */
+.catalog-picker {
+  position: relative;
+}
+.catalog-picker__trigger {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
-  padding: 12px;
-  border: 1px dashed var(--hair, #e6dfd0);
-  border-radius: 12px;
-  background: rgba(16, 40, 74, 0.03);
-}
-.quote-editor__catalog label {
-  font-weight: 700;
-  font-size: 13px;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 14px;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: var(--r-md, 12px);
+  background: var(--paper, #fff);
   color: var(--ink, #0b1a30);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.quote-editor__catalog select {
-  flex: 1 1 280px;
+.catalog-picker__trigger:hover {
+  border-color: var(--navy-700, #10284a);
+}
+.catalog-picker--open .catalog-picker__trigger {
+  border-color: var(--navy-700, #10284a);
+  box-shadow: 0 0 0 3px rgba(16, 40, 74, 0.12);
+}
+.catalog-picker__trigger-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2, #2a3a55);
+}
+.catalog-picker__chevron {
+  color: var(--ink-3, #5b6781);
+  transition: transform 0.18s ease;
+}
+.catalog-picker__chevron--open {
+  transform: rotate(180deg);
+}
+.catalog-picker__panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 360px;
+  background: var(--paper, #fff);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: var(--r-md, 12px);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(8, 22, 40, 0.16));
+  overflow: hidden;
+}
+.catalog-picker__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--hair, #e6dfd0);
+  color: var(--ink-3, #5b6781);
+}
+.catalog-picker__search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--ink, #0b1a30);
+  outline: none;
+}
+.catalog-picker__list {
+  overflow-y: auto;
+  padding: 6px;
+}
+.catalog-picker__group + .catalog-picker__group {
+  margin-top: 4px;
+}
+.catalog-picker__group-label {
+  position: sticky;
+  top: 0;
+  background: var(--cream-2, #f1ece1);
+  color: var(--ink-3, #5b6781);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 6px;
+  margin: 2px 0;
+}
+.catalog-picker__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 0;
+  background: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.catalog-picker__item:hover {
+  background: rgba(16, 40, 74, 0.06);
+}
+.catalog-picker__item-name {
+  color: var(--ink, #0b1a30);
+  font-size: 13px;
+  font-weight: 600;
   min-width: 0;
 }
-.quote-editor__catalog-hint {
-  flex: 1 1 100%;
-  font-size: 12px;
+.catalog-picker__item-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--ink-3, #5b6781);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.catalog-picker__badge {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--gold-700, #b4894b);
+  background: rgba(215, 174, 107, 0.18);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.catalog-picker__empty {
+  color: var(--ink-3, #5b6781);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px 0;
+  margin: 0;
+}
+.catalog-picker__foot {
+  border-top: 1px solid var(--hair, #e6dfd0);
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--ink-4, #94a0b8);
 }
 
 /* 구글 시트 링크로 불러오기 */
@@ -7362,6 +7483,40 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   background: rgba(215, 174, 107, 0.26);
 }
 
+/* 편집 카드 내 구역 구분 라벨(견적 항목 / 추가 비용 / 금액 요약) */
+.quote-editor__section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 -6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3, #5b6781);
+}
+.quote-editor__section::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hair, #e6dfd0);
+}
+
+.quote-editor__info {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.quote-editor__info label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-3, #5b6781);
+}
+
 .quote-editor__upload {
   align-items: stretch;
 }
@@ -7451,10 +7606,20 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 .quote-editor__lineitem-note {
-  align-items: center;
+  align-items: start;
   display: grid;
   gap: 8px;
   grid-template-columns: minmax(0, 1fr) auto;
+}
+
+/* 비고: 내용이 길어지면 자동으로 높이가 늘어 다단(여러 줄)이 모두 보이게 한다. */
+.quote-editor__note-field {
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.45;
+  min-height: 38px;
 }
 
 .quote-editor__empty-state {
@@ -7515,7 +7680,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 .quote-editor__charge-row--material {
-  grid-template-columns: minmax(0, 1.4fr) 84px 112px 124px auto;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr) 60px 92px 100px auto;
 }
 
 .quote-editor__charge-total {
@@ -7582,6 +7747,27 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.quote-editor__manual-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-4, #94a0b8);
+  cursor: pointer;
+}
+.quote-editor__manual-toggle input {
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
 }
 
 .quote-editor__summary strong {
