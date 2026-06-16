@@ -7,6 +7,7 @@ import {
   buildQuoteSourceLabel,
   calculateQuoteTotals,
   checkQuoteSheetConnection,
+  createQuotePdf,
   createQuoteSheet,
   downloadQuoteAsPdf,
   downloadQuoteAsXlsx,
@@ -163,6 +164,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   const [sheetUrl, setSheetUrl] = useState("");
   const [publishing, setPublishing] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [makingPdf, setMakingPdf] = useState(false);
   // 발행 시점의 견적 서명. 이후 항목을 추가/수정하면 현재 서명과 달라져 '저장하기'로 전환된다.
   const [publishedSig, setPublishedSig] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -392,6 +394,27 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
     }
   }
 
+  async function handleCreatePdf() {
+    if (!draft.sheetUrl) {
+      setFeedback("PDF를 만들려면 먼저 '구글시트로 발행'을 해주세요.");
+      return;
+    }
+    setMakingPdf(true);
+    setFeedback(null);
+    try {
+      const { pdfUrl } = await createQuotePdf({ sheetUrl: draft.sheetUrl });
+      const nextQuote: InquiryQuoteSnapshot = { ...draft, pdfUrl, updatedAt: new Date().toISOString() };
+      await onSave(mergeQuoteIntoIntake(inquiry.intake, nextQuote));
+      setDraft(nextQuote);
+      setPublishedSig(quoteSignature(nextQuote));
+      setFeedback("PDF를 생성했습니다. 위 'PDF' 링크에서 확인하세요.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "PDF 생성에 실패했습니다.");
+    } finally {
+      setMakingPdf(false);
+    }
+  }
+
   async function handlePublishSheet() {
     setPublishing(true);
     setFeedback(null);
@@ -470,6 +493,16 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             <FileSpreadsheet size={14} />
             {publishLabel}
             {sheetChangedSincePublish ? " ●" : ""}
+          </button>
+          <button
+            className="admin-status-button"
+            type="button"
+            onClick={() => void handleCreatePdf()}
+            disabled={makingPdf || !draft.sheetUrl}
+            title={draft.sheetUrl ? "발행된 구글시트를 PDF로 내보냅니다" : "먼저 구글시트로 발행하세요"}
+          >
+            <Download size={14} />
+            {makingPdf ? "PDF 생성 중" : "PDF 만들기"}
           </button>
           <button className="admin-status-button" type="button" onClick={() => void handleCheckConnection()} disabled={checking} title="발행 누르지 않고 구글시트 연동 상태만 확인">
             <PlugZap size={14} />

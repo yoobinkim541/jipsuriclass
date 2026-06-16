@@ -153,16 +153,16 @@ function naverBlogApi(): Plugin {
             redirect: "follow"
           });
           const text = await upstream.text();
-          let data: { sheetUrl?: string; pdfUrl?: string; error?: string } | null = null;
+          let data: { sheetUrl?: string; pdfUrl?: string; sheetId?: string; error?: string } | null = null;
           try {
             data = JSON.parse(text);
           } catch {
             data = null;
           }
-          if (!upstream.ok || !data || !data.sheetUrl) {
+          if (!upstream.ok || !data || data.error || (!data.sheetUrl && !data.pdfUrl)) {
             throw new Error(data?.error || `Apps Script 응답 오류 (${upstream.status})`);
           }
-          res.end(JSON.stringify({ sheetUrl: data.sheetUrl, pdfUrl: data.pdfUrl ?? null }));
+          res.end(JSON.stringify({ sheetUrl: data.sheetUrl ?? null, sheetId: data.sheetId ?? null, pdfUrl: data.pdfUrl ?? null }));
         } catch (error) {
           res.statusCode = 502;
           res.end(JSON.stringify({ error: error instanceof Error ? error.message : "구글시트 생성 실패" }));

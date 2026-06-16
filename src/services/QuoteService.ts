@@ -426,6 +426,24 @@ export async function createQuoteSheet(input: { inquiry: InquiryRow; quote: Inqu
 }
 
 /**
+ * 이미 발행한 구글시트를 PDF로 내보낸다(시트 생성과 분리된 별도 동작).
+ * action:'pdf'로 호출하면 Apps Script가 해당 시트를 PDF로 만들어 링크를 돌려준다.
+ */
+export async function createQuotePdf(input: { sheetUrl: string }): Promise<{ pdfUrl: string }> {
+  const endpoint = new URL("/api/create-quote-sheet", typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "pdf", sheetUrl: input.sheetUrl })
+  });
+  const data = (await response.json().catch(() => ({}))) as { pdfUrl?: string; error?: string };
+  if (!response.ok || !data.pdfUrl) {
+    throw new Error(typeof data.error === "string" ? data.error : "PDF 생성에 실패했습니다. 먼저 구글시트를 발행했는지 확인해 주세요.");
+  }
+  return { pdfUrl: data.pdfUrl };
+}
+
+/**
  * 구글시트 연동 상태를 점검한다(발행 누르지 않고 확인). /api/check-quote-sheet가
  * Apps Script 웹앱에 GET 핑을 보내 정상/로그인필요/미설정/오류를 돌려준다.
  */
