@@ -255,6 +255,94 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   return { workSubtotal, materialSubtotal, extraSubtotal, workCost, profit, rounding, subtotal, vat, total, deposit, balance };
 }
 
+export type QuoteSheetPayload = {
+  fileName: string;
+  customer: { name: string; phone: string; address: string };
+  target: string;
+  rows: Array<{ kind: "work" | "material" | "extra"; name: string; detail: string; unit: string; qty: number; unitPrice: number; amount: number }>;
+  totals: { workCost: number; profit: number; profitRate: number; rounding: number; subtotal: number; vat: number; total: number; deposit: number; balance: number };
+  memo: string;
+};
+
+/** 견적 스냅샷을 Apps Script(구글시트 생성)로 보낼 페이로드로 변환한다. */
+export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteSnapshot): QuoteSheetPayload {
+  const totals = calculateQuoteTotals(quote);
+  const profitRate = typeof quote.profitRate === "number" ? quote.profitRate : 0.08;
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, ".");
+  const target = quote.selectedWorks.length
+    ? quote.selectedWorks.join(", ")
+    : quote.lineItems.map((item) => item.name).filter(Boolean).slice(0, 4).join(", ") || "부분 공사";
+  const fileName = `${date} ${inquiry.name ?? "현장"} ${target}`.replace(/[\\/:*?"<>|]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120);
+
+  const rows: QuoteSheetPayload["rows"] = [
+    ...quote.lineItems.map((item) => ({
+      kind: "work" as const,
+      name: item.name,
+      detail: item.note ?? "",
+      unit: item.unit,
+      qty: item.qty,
+      unitPrice: item.unitPrice,
+      amount: item.qty * item.unitPrice
+    })),
+    ...quote.materialCharges.map((charge) => ({
+      kind: "material" as const,
+      name: charge.label,
+      detail: "자재",
+      unit: "",
+      qty: charge.qty,
+      unitPrice: charge.unitPrice,
+      amount: charge.amount
+    })),
+    ...quote.extraCharges.map((charge) => ({
+      kind: "extra" as const,
+      name: charge.label,
+      detail: "부대비용",
+      unit: "",
+      qty: 1,
+      unitPrice: charge.amount,
+      amount: charge.amount
+    }))
+  ];
+
+  return {
+    fileName,
+    customer: { name: inquiry.name ?? "", phone: inquiry.phone ?? "", address: inquiry.service_area ?? "" },
+    target,
+    rows,
+    totals: {
+      workCost: totals.workCost,
+      profit: totals.profit,
+      profitRate,
+      rounding: totals.rounding,
+      subtotal: totals.subtotal,
+      vat: totals.vat,
+      total: totals.total,
+      deposit: totals.deposit,
+      balance: totals.balance
+    },
+    memo: quote.memo ?? ""
+  };
+}
+
+/**
+ * 견적을 구글시트(견적완료건 템플릿)로 발행한다.
+ * /api/create-quote-sheet 가 대표님 계정의 Apps Script 웹앱을 호출해 시트를 생성하고 링크를 돌려준다.
+ */
+export async function createQuoteSheet(input: { inquiry: InquiryRow; quote: InquiryQuoteSnapshot }): Promise<{ sheetUrl: string; pdfUrl: string | null }> {
+  const payload = buildQuoteSheetPayload(input.inquiry, input.quote);
+  const endpoint = new URL("/api/create-quote-sheet", typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  const response = await fetch(endpoint.toString(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = (await response.json().catch(() => ({}))) as { sheetUrl?: string; pdfUrl?: string; error?: string };
+  if (!response.ok || !data.sheetUrl) {
+    throw new Error(typeof data.error === "string" ? data.error : "구글시트 생성에 실패했습니다. Apps Script 연동(환경변수) 설정을 확인해 주세요.");
+  }
+  return { sheetUrl: data.sheetUrl, pdfUrl: data.pdfUrl ?? null };
+}
+
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
   const buffer = await input.file.arrayBuffer();
   return parseQuoteWorkbookBuffer(buffer, input.inquiry);
