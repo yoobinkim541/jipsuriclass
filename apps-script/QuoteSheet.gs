@@ -9,6 +9,8 @@
  *   고객 연락처 칸     → {{phone}}
  *   주소 칸           → {{address}}
  *   견적 대상 칸       → {{target}}
+ *   (선택) 공사 규모 칸 → {{scale}}
+ *   (선택) 총 공사기간 칸 → {{period}}
  *   (선택) 발행일 칸   → {{date}}
  *   상단 요약표 첫 행의 '코드' 칸 → {{summary}}   (그 행에 공종별 [코드,공사명, ,금액]이 채워짐)
  *   상세내역 첫 데이터 행의 '코드' 칸 → {{detail}}  (공종별 헤더+항목+소계가 채워짐)
@@ -82,6 +84,8 @@ function fillTemplate_(sheet, body) {
     '{{address}}': c.address,
     '{{target}}': body.target,
     '{{name}}': c.name,
+    '{{scale}}': body.scale,
+    '{{period}}': body.period,
     '{{date}}': today_(),
     '{{memo}}': body.memo,
     '{{workCost}}': t.workCost,

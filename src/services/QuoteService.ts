@@ -267,6 +267,9 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
       vatRate: 0,
       profitRate: 0.08,
       deposit: 0,
+      // 공사 규모는 상담 정보(공간형태·면적)로 프리필, 담당자가 편집기에서 수정 가능.
+      workScale: [getStringField(intake.spaceType), getStringField(intake.areaBand)].filter(Boolean).join(" · "),
+      workPeriod: "",
       memo: "",
       updatedAt: null
     },
@@ -326,6 +329,8 @@ export type QuoteSheetPayload = {
   fileName: string;
   customer: { name: string; phone: string; address: string };
   target: string;
+  scale: string;
+  period: string;
   rows: Array<{ kind: "work" | "material" | "extra"; group: string; detail: string; remark: string; unit: string; qty: number; unitPrice: number; amount: number }>;
   totals: { workCost: number; profit: number; profitRate: number; rounding: number; subtotal: number; vat: number; total: number; deposit: number; balance: number };
   memo: string;
@@ -355,7 +360,8 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     })),
     ...quote.materialCharges.map((charge) => ({
       kind: "material" as const,
-      group: "자재",
+      // 자재비는 지정된 공종에 묶이고(상세내역에서 해당 작업 그룹에 합쳐짐), 미지정 시 '자재'.
+      group: charge.group?.trim() ? charge.group.trim() : "자재",
       detail: charge.label,
       remark: "자재 별도",
       unit: "",
@@ -382,6 +388,8 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     fileName,
     customer: { name: inquiry.name ?? "", phone: inquiry.phone ?? "", address: inquiry.service_area ?? "" },
     target,
+    scale: quote.workScale ?? "",
+    period: quote.workPeriod ?? "",
     rows: orderedRows,
     totals: {
       workCost: totals.workCost,
@@ -870,6 +878,8 @@ function normalizeQuoteSnapshot(snapshot: InquiryQuoteSnapshot, inquiry: Inquiry
     roundingAdjust: typeof snapshot.roundingAdjust === "number" && Number.isFinite(snapshot.roundingAdjust) ? snapshot.roundingAdjust : undefined,
     deposit: normalizeNonNegativeNumber(snapshot.deposit, 0),
     depositManual: snapshot.depositManual === true,
+    workScale: typeof snapshot.workScale === "string" ? snapshot.workScale : "",
+    workPeriod: typeof snapshot.workPeriod === "string" ? snapshot.workPeriod : "",
     memo: typeof snapshot.memo === "string" ? snapshot.memo : "",
     updatedAt: typeof snapshot.updatedAt === "string" ? snapshot.updatedAt : inquiry.created_at ?? null
   };
@@ -890,7 +900,8 @@ function normalizeChargeList(list: InquiryQuoteCharge[], kind: "material" | "ext
             item.amount,
             normalizePositiveInt(item.qty, 1) * normalizeNonNegativeNumber(item.unitPrice, normalizeNonNegativeNumber(item.amount, 0))
           )
-        : normalizeNonNegativeNumber(item.amount, 0)
+        : normalizeNonNegativeNumber(item.amount, 0),
+    ...(kind === "material" && typeof item.group === "string" && item.group.trim() ? { group: item.group.trim() } : {})
   }));
 }
 
