@@ -7205,6 +7205,12 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   backdrop-filter: blur(2px);
   overflow: auto;
 }
+/* 오버레이에 adm-root를 함께 부여하므로(.adm-root 토큰/다크 재사용),
+   .adm-root 기본값(불투명 배경·min-height:100vh)이 백드롭을 덮지 않게 되돌린다. */
+.quote-editor__overlay.adm-root {
+  background: rgba(8, 16, 30, 0.55);
+  min-height: 0;
+}
 .quote-editor--fullscreen {
   width: min(1280px, 100%);
   max-height: calc(100vh - 24px);

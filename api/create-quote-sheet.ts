@@ -14,14 +14,17 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
-  const webAppUrl = process.env.QUOTE_SHEET_WEBAPP_URL;
+  const rawWebAppUrl = process.env.QUOTE_SHEET_WEBAPP_URL;
   const secret = process.env.QUOTE_SHEET_SECRET;
-  if (!webAppUrl || !secret) {
+  if (!rawWebAppUrl || !secret) {
     response.status(503).json({
       error: "구글시트 연동이 아직 설정되지 않았습니다. QUOTE_SHEET_WEBAPP_URL / QUOTE_SHEET_SECRET 환경변수를 등록해 주세요."
     });
     return;
   }
+  // QUOTE_SHEET_WEBAPP_URL에 전체 URL이 아니라 Apps Script 배포 ID(AKfycb…)나
+  // 경로만 넣은 경우에도 동작하도록 전체 exec URL로 보정한다.
+  const webAppUrl = resolveWebAppUrl(rawWebAppUrl);
 
   const payload = typeof request.body === "string" ? safeParse(request.body) : request.body;
   if (!payload || typeof payload !== "object") {
@@ -50,6 +53,22 @@ export default async function handler(request: VercelRequest, response: VercelRe
   } catch (error) {
     response.status(502).json({ error: error instanceof Error ? error.message : "구글시트 생성에 실패했습니다." });
   }
+}
+
+/**
+ * Apps Script 웹앱 주소를 정규화한다.
+ *  - 전체 URL(https://…/exec) → 그대로
+ *  - script.google.com/…       → https:// 보강
+ *  - /macros/s/…/exec          → 호스트 보강
+ *  - 배포 ID만(AKfycb…)         → https://script.google.com/macros/s/<id>/exec
+ */
+function resolveWebAppUrl(raw: string): string {
+  const value = raw.trim();
+  if (/^https?:\/\//i.test(value)) return value;
+  if (value.startsWith("script.google.com")) return `https://${value}`;
+  if (value.startsWith("/macros/")) return `https://script.google.com${value}`;
+  const id = value.replace(/^\/+|\/+$/g, "");
+  return `https://script.google.com/macros/s/${id}/exec`;
 }
 
 function safeParse(value: string): unknown {

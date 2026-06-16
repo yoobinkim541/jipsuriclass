@@ -642,7 +642,9 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   // body로 포털해 진짜 전체 화면 오버레이로 띄운다.
   return createPortal(
     <div
-      className="quote-editor__overlay"
+      // body로 포털되면 .adm-root 밖이라 어드민 토큰/다크 오버라이드가 끊긴다.
+      // adm-root를 함께 부여해 토큰·다크 스타일을 그대로 재사용한다(백드롭은 CSS로 복구).
+      className="quote-editor__overlay adm-root"
       role="dialog"
       aria-modal="true"
       onClick={(event) => {
