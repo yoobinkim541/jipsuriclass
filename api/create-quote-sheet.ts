@@ -64,18 +64,25 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
 /**
  * Apps Script 웹앱 주소를 정규화한다.
- *  - 전체 URL(https://…/exec) → 그대로
+ *  - 전체 URL(https://…/exec) → 그대로(단, /exec 누락 시 보강)
  *  - script.google.com/…       → https:// 보강
  *  - /macros/s/…/exec          → 호스트 보강
  *  - 배포 ID만(AKfycb…)         → https://script.google.com/macros/s/<id>/exec
  */
 function resolveWebAppUrl(raw: string): string {
   const value = raw.trim();
-  if (/^https?:\/\//i.test(value)) return value;
-  if (value.startsWith("script.google.com")) return `https://${value}`;
-  if (value.startsWith("/macros/")) return `https://script.google.com${value}`;
+  if (/^https?:\/\//i.test(value)) return ensureExec_(value);
+  if (value.startsWith("script.google.com")) return ensureExec_(`https://${value}`);
+  if (value.startsWith("/macros/")) return ensureExec_(`https://script.google.com${value}`);
   const id = value.replace(/^\/+|\/+$/g, "");
   return `https://script.google.com/macros/s/${id}/exec`;
+}
+
+/** Apps Script 배포 URL인데 끝의 /exec 가 빠진 경우 붙여준다(붙어 있으면 그대로). */
+function ensureExec_(url: string): string {
+  const cleaned = url.replace(/\/+$/, "");
+  if (/\/macros\/s\/[^/]+$/.test(cleaned)) return `${cleaned}/exec`;
+  return cleaned;
 }
 
 function safeParse(value: string): unknown {
