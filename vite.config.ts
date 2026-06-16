@@ -125,6 +125,49 @@ function naverBlogApi(): Plugin {
           res.end("Google Sheet is not accessible.");
         }
       });
+
+      // 견적 → 구글시트 생성: 대표님 Apps Script 웹앱으로 프록시(dev). 비밀키는 서버에서만 부착.
+      server.middlewares.use("/api/create-quote-sheet", async (req, res) => {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        if (req.method !== "POST") {
+          res.statusCode = 405;
+          res.end(JSON.stringify({ error: "POST만 허용됩니다." }));
+          return;
+        }
+        const env = loadEnv(server.config.mode, process.cwd(), "");
+        const webAppUrl = env.QUOTE_SHEET_WEBAPP_URL;
+        const secret = env.QUOTE_SHEET_SECRET;
+        if (!webAppUrl || !secret) {
+          res.statusCode = 503;
+          res.end(JSON.stringify({ error: "구글시트 연동 미설정(QUOTE_SHEET_WEBAPP_URL/QUOTE_SHEET_SECRET)" }));
+          return;
+        }
+        try {
+          const chunks: Buffer[] = [];
+          for await (const chunk of req) chunks.push(chunk as Buffer);
+          const payload = chunks.length ? JSON.parse(Buffer.concat(chunks).toString("utf-8")) : {};
+          const upstream = await fetch(webAppUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ secret, ...payload }),
+            redirect: "follow"
+          });
+          const text = await upstream.text();
+          let data: { sheetUrl?: string; pdfUrl?: string; error?: string } | null = null;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            data = null;
+          }
+          if (!upstream.ok || !data || !data.sheetUrl) {
+            throw new Error(data?.error || `Apps Script 응답 오류 (${upstream.status})`);
+          }
+          res.end(JSON.stringify({ sheetUrl: data.sheetUrl, pdfUrl: data.pdfUrl ?? null }));
+        } catch (error) {
+          res.statusCode = 502;
+          res.end(JSON.stringify({ error: error instanceof Error ? error.message : "구글시트 생성 실패" }));
+        }
+      });
     }
   };
 }

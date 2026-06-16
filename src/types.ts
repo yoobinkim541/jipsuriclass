@@ -335,6 +335,10 @@ export type InquiryQuoteSnapshot = {
   roundingAdjust?: number;
   /** 계약금(선수금). 매번 달라 직원이 수기 입력. 잔금=합계-계약금. */
   deposit?: number;
+  /** 구글시트로 발행한 견적서 시트 링크. */
+  sheetUrl?: string | null;
+  /** 발행한 견적서 PDF 링크. */
+  pdfUrl?: string | null;
   memo: string;
   updatedAt: string | null;
 };

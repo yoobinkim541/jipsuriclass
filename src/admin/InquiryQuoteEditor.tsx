@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ChangeEvent, DragEvent } from "react";
-import { CheckCircle2, Download, FileUp, Maximize2, Minimize2, Plus, Save, Trash2, X } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, Save, Trash2, X } from "lucide-react";
 import {
   buildQuoteDraftFromInquiry,
   buildQuoteSourceLabel,
   calculateQuoteTotals,
+  createQuoteSheet,
   downloadQuoteAsPdf,
   downloadQuoteAsXlsx,
   downloadQuoteTemplateAsXlsx,
@@ -50,6 +52,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   const [feedback, setFeedback] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [sheetUrl, setSheetUrl] = useState("");
+  const [publishing, setPublishing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const totals = useMemo(() => calculateQuoteTotals(draft), [draft]);
 
@@ -67,7 +70,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
     };
   }, [fullscreen]);
 
-  function addCatalogItem(item: (typeof priceCatalog)[number]["items"][number]) {
+  function addCatalogItem(item: (typeof priceCatalog)[number]["items"][number], group: string) {
     setDraft((current) => ({
       ...current,
       lineItems: [
@@ -79,7 +82,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           unit: item.unit,
           qty: 1,
           unitPrice: item.price,
-          categoryTitle: null,
+          categoryTitle: group,
           note: item.materialNote === "별도" ? "자재 별도" : item.note,
           materialNote: item.materialNote
         }
@@ -263,6 +266,22 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
     await downloadQuoteAsPdf({ inquiry, quote: draft, totals });
   }
 
+  async function handlePublishSheet() {
+    setPublishing(true);
+    setFeedback(null);
+    try {
+      const { sheetUrl: createdSheetUrl, pdfUrl } = await createQuoteSheet({ inquiry, quote: draft });
+      const nextQuote: InquiryQuoteSnapshot = { ...draft, sheetUrl: createdSheetUrl, pdfUrl, updatedAt: new Date().toISOString() };
+      await onSave(mergeQuoteIntoIntake(inquiry.intake, nextQuote));
+      setDraft(nextQuote);
+      setFeedback("구글시트 견적서를 생성했습니다. 아래 링크에서 확인하세요.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "구글시트 생성에 실패했습니다.");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
   const sourceLabel = buildQuoteSourceLabel(draft);
 
   const editorBody = (
@@ -295,6 +314,10 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             <Download size={14} />
             PDF 다운로드
           </button>
+          <button className="admin-status-button" type="button" onClick={() => void handlePublishSheet()} disabled={publishing}>
+            <FileSpreadsheet size={14} />
+            {publishing ? "발행 중" : "구글시트로 발행"}
+          </button>
           <button className="admin-status-button" type="button" onClick={applyBasicTemplate} disabled={saving || importing}>
             <Plus size={14} />
             기본 템플릿
@@ -320,6 +343,16 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
         <span>기준: {draft.selectedWorks.length ? draft.selectedWorks.join(", ") : "직접 작성"}</span>
         <span>{draft.confirmedAt ? `컨펌일: ${new Date(draft.confirmedAt).toLocaleString("ko-KR")}` : "컨펌 전"}</span>
         <span>최종 수정: {draft.updatedAt ? new Date(draft.updatedAt).toLocaleString("ko-KR") : "-"}</span>
+        {draft.sheetUrl ? (
+          <a className="quote-editor__sheet-link" href={draft.sheetUrl} target="_blank" rel="noreferrer">
+            구글시트 견적서 <ExternalLink size={12} />
+          </a>
+        ) : null}
+        {draft.pdfUrl ? (
+          <a className="quote-editor__sheet-link" href={draft.pdfUrl} target="_blank" rel="noreferrer">
+            PDF <ExternalLink size={12} />
+          </a>
+        ) : null}
       </div>
 
       <div
@@ -381,8 +414,9 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           value=""
           onChange={(event) => {
             const [groupIndex, itemIndex] = event.target.value.split(":").map(Number);
-            const item = priceCatalog[groupIndex]?.items[itemIndex];
-            if (item) addCatalogItem(item);
+            const group = priceCatalog[groupIndex];
+            const item = group?.items[itemIndex];
+            if (item) addCatalogItem(item, group.serviceLabel);
             event.target.value = "";
           }}
         >
@@ -589,8 +623,10 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
     </section>
   );
 
-  if (!fullscreen) return editorBody;
-  return (
+  if (!fullscreen || typeof document === "undefined") return editorBody;
+  // 문의 상세 드로어가 transform/fixed로 포함 블록을 만들어 position:fixed가 갇히므로
+  // body로 포털해 진짜 전체 화면 오버레이로 띄운다.
+  return createPortal(
     <div
       className="quote-editor__overlay"
       role="dialog"
@@ -600,7 +636,8 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
       }}
     >
       {editorBody}
-    </div>
+    </div>,
+    document.body
   );
 }
 
