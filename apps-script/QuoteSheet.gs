@@ -96,12 +96,11 @@ function fillTemplate_(sheet, body) {
   });
 }
 
-// 공종(group)별로 묶기 — 입력(공사명) 등장 순서 유지. 코드는 100,200,300… 순번제.
-// (대표님 실제 견적서가 '등장 순서대로 100씩 증가'하는 방식이라 그에 맞춘다.)
+// 공종(group)별로 묶기 — 입력 순서 유지
 function groupRows_(rows) {
   var map = {}, order = [];
-  (rows || []).forEach(function (r) {
-    var key = r.group || '기타';
+  rows.forEach(function (r) {
+    var key = r.group || '공사';
     if (!map[key]) { map[key] = { name: key, total: 0, lines: [] }; order.push(key); }
     map[key].lines.push(r);
     map[key].total += Number(r.amount) || 0;

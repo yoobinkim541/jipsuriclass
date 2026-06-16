@@ -368,11 +368,14 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     }))
   ];
 
+  // '기타' 공종은 항상 맨 뒤에(다른 공종 먼저, 기타를 마지막에) — 코드도 자연히 마지막 번호.
+  const orderedRows = [...rows.filter((row) => row.group !== "기타"), ...rows.filter((row) => row.group === "기타")];
+
   return {
     fileName,
     customer: { name: inquiry.name ?? "", phone: inquiry.phone ?? "", address: inquiry.service_area ?? "" },
     target,
-    rows,
+    rows: orderedRows,
     totals: {
       workCost: totals.workCost,
       profit: totals.profit,
