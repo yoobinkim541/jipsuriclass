@@ -5,8 +5,9 @@ import { business } from "../data";
 import { InquiryService } from "../services/InquiryService";
 import { MediaService } from "../services/MediaService";
 import { SiteContentService, defaultEstimatePageContent } from "../services/SiteContentService";
+import { buildQuoteDraftFromInquiry, mergeQuoteIntoIntake } from "../services/QuoteService";
 import { trackEvent } from "../lib/analytics";
-import type { EstimatePageContent } from "../types";
+import type { EstimatePageContent, InquiryIntake, InquiryRow } from "../types";
 
 const inquiryService = new InquiryService();
 const mediaService = new MediaService();
@@ -218,37 +219,49 @@ export function EstimatePage() {
         .filter(Boolean)
         .join("\n");
 
+      const baseIntake: InquiryIntake = {
+        spaceType: draft.spaceType,
+        areaBand: draft.areaBand,
+        propertyStatus: draft.propertyStatus,
+        reason: draft.reason,
+        selectedRooms: draft.selectedRooms,
+        otherRoomDetail: draft.otherRoomDetail,
+        budget: draft.budget,
+        startTiming: draft.startTiming,
+        selectedWorks: presetWorks,
+        name: draft.name,
+        phone: draft.phone,
+        postalCode: draft.postalCode,
+        address: draft.address,
+        detailAddress: draft.detailAddress,
+        requestNote: draft.requestNote,
+        consent: draft.consent,
+        selectedWorkIds: presetWorkIds,
+        quoteSource: {
+          servicePath: presetSourceServicePath || null,
+          pricingPath: presetSourcePricingPath || null,
+          works: presetWorks,
+          workIds: presetWorkIds
+        }
+      };
+
+      // 모의견적에서 작업을 선택해 온 경우, 제출 시점에 가격표 기반 견적 초안을 미리 생성해
+      // intake.quoteSnapshot에 보관(미컨펌=검토대기). 직원은 열자마자 초안을 보고 자재만 채우면 된다.
+      const intake =
+        presetWorks.length || presetWorkIds.length
+          ? mergeQuoteIntoIntake(
+              baseIntake,
+              buildQuoteDraftFromInquiry({ intake: baseIntake, created_at: new Date().toISOString() } as InquiryRow)
+            )
+          : baseIntake;
+
       await inquiryService.createInquiry({
         name: draft.name,
         phone: draft.phone,
         serviceArea: addressLine || draft.address,
         message,
         attachments: uploadedAttachments,
-        intake: {
-          spaceType: draft.spaceType,
-          areaBand: draft.areaBand,
-          propertyStatus: draft.propertyStatus,
-          reason: draft.reason,
-          selectedRooms: draft.selectedRooms,
-          otherRoomDetail: draft.otherRoomDetail,
-          budget: draft.budget,
-          startTiming: draft.startTiming,
-          selectedWorks: presetWorks,
-          name: draft.name,
-          phone: draft.phone,
-          postalCode: draft.postalCode,
-          address: draft.address,
-          detailAddress: draft.detailAddress,
-          requestNote: draft.requestNote,
-          consent: draft.consent,
-          selectedWorkIds: presetWorkIds,
-          quoteSource: {
-            servicePath: presetSourceServicePath || null,
-            pricingPath: presetSourcePricingPath || null,
-            works: presetWorks,
-            workIds: presetWorkIds
-          }
-        }
+        intake
       });
 
       setStatus("success");

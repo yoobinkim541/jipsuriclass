@@ -36,8 +36,14 @@ type QuoteTotals = {
   workSubtotal: number;
   materialSubtotal: number;
   extraSubtotal: number;
+  workCost: number;
+  profit: number;
+  rounding: number;
+  subtotal: number;
   vat: number;
   total: number;
+  deposit: number;
+  balance: number;
 };
 
 type QuoteDownloadContext = {
@@ -95,6 +101,39 @@ const quoteSourceDefinitions: QuoteSourceDefinition[] = [
 
 const quoteSourceByPricingPath = new Map(quoteSourceDefinitions.map((source) => [source.pricingPath, source]));
 const quoteSourceByServicePath = new Map(quoteSourceDefinitions.map((source) => [source.servicePath, source]));
+
+export type QuotePriceCatalogItem = {
+  sourceId: string | null;
+  name: string;
+  unit: string;
+  price: number;
+  materialNote: string | null;
+  note: string | null;
+};
+
+export type QuotePriceCatalogGroup = {
+  serviceLabel: string;
+  servicePath: string;
+  items: QuotePriceCatalogItem[];
+};
+
+/** 웹 가격표(서비스별) 전체 항목을 편집기에서 '골라 담기' 위해 평탄화해 제공한다. */
+export function getQuotePriceCatalog(): QuotePriceCatalogGroup[] {
+  return quoteSourceDefinitions.map((source) => ({
+    serviceLabel: source.serviceLabel,
+    servicePath: source.servicePath,
+    items: source.categories.flatMap((category) =>
+      category.items.map((item) => ({
+        sourceId: item.sourceId,
+        name: category.title && category.title !== item.name ? `${item.name}` : item.name,
+        unit: item.unit,
+        price: item.price,
+        materialNote: item.materialNote,
+        note: item.note
+      }))
+    )
+  }));
+}
 const fontCache = { promise: null as Promise<string> | null };
 const koreanFontUrl = "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf";
 
@@ -167,7 +206,9 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
       lineItems: resolvedItems.map((item, index) => createQuoteLineItem(item, index)),
       materialCharges: [],
       extraCharges: [],
-      vatRate: 0.1,
+      vatRate: 0,
+      profitRate: 0.08,
+      deposit: 0,
       memo: "",
       updatedAt: null
     },
@@ -194,29 +235,70 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   const workSubtotal = quote.lineItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
   const materialSubtotal = quote.materialCharges.reduce((sum, item) => sum + item.amount, 0);
   const extraSubtotal = quote.extraCharges.reduce((sum, item) => sum + item.amount, 0);
-  const vat = Math.round((workSubtotal + materialSubtotal + extraSubtotal) * quote.vatRate);
+  // 공사비합계 = 공임(작업) + 자재 + 부대비용
+  const workCost = workSubtotal + materialSubtotal + extraSubtotal;
 
-  return {
-    workSubtotal,
-    materialSubtotal,
-    extraSubtotal,
-    vat,
-    total: workSubtotal + materialSubtotal + extraSubtotal + vat
-  };
+  // 이윤(기본 8%, 직원 조정 가능)
+  const profitRate = typeof quote.profitRate === "number" && quote.profitRate >= 0 ? quote.profitRate : 0.08;
+  const profit = Math.round(workCost * profitRate);
+  const beforeRounding = workCost + profit;
+  // 천원이하 절삭: roundingAdjust 지정 시 그 값, 미지정 시 만원 미만 자동 절삭(음수)
+  const rounding = typeof quote.roundingAdjust === "number" ? quote.roundingAdjust : -(beforeRounding % 10000);
+  // 합계(부가세 별도)
+  const subtotal = beforeRounding + rounding;
+
+  const vat = Math.round(subtotal * (typeof quote.vatRate === "number" ? quote.vatRate : 0));
+  const total = subtotal + vat;
+  const deposit = typeof quote.deposit === "number" && quote.deposit >= 0 ? quote.deposit : 0;
+  const balance = total - deposit;
+
+  return { workSubtotal, materialSubtotal, extraSubtotal, workCost, profit, rounding, subtotal, vat, total, deposit, balance };
 }
 
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
-  const XLSX = await import("xlsx");
   const buffer = await input.file.arrayBuffer();
+  return parseQuoteWorkbookBuffer(buffer, input.inquiry);
+}
+
+/** 구글 시트 링크에서 spreadsheet ID를 뽑는다. */
+export function extractGoogleSheetId(url: string): string | null {
+  const match = url.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/) ?? url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * 구글 시트 링크로 견적을 불러온다. 시트를 xlsx로 export하는 서버 프록시(/api/sheet-export)를
+ * 거쳐 받아 동일한 템플릿 파서로 처리한다. 시트는 '링크가 있는 모든 사용자: 보기'로 공유돼 있어야 한다.
+ */
+export async function importQuoteFromGoogleSheetUrl(input: { inquiry: InquiryRow; url: string }): Promise<InquiryQuoteSnapshot> {
+  const sheetId = extractGoogleSheetId(input.url.trim());
+  if (!sheetId) {
+    throw new Error("구글 시트 링크 형식이 아닙니다. https://docs.google.com/spreadsheets/d/... 링크를 붙여넣어 주세요.");
+  }
+
+  const endpoint = new URL("/api/sheet-export", typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  endpoint.searchParams.set("id", sheetId);
+
+  const response = await fetch(endpoint.toString(), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("구글 시트를 불러오지 못했습니다. 시트가 '링크가 있는 모든 사용자 보기'로 공유돼 있는지 확인해 주세요.");
+  }
+
+  const buffer = await response.arrayBuffer();
+  return parseQuoteWorkbookBuffer(buffer, input.inquiry);
+}
+
+async function parseQuoteWorkbookBuffer(buffer: ArrayBuffer, inquiry: InquiryRow): Promise<InquiryQuoteSnapshot> {
+  const XLSX = await import("xlsx");
   const workbook = XLSX.read(buffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   if (!sheetName) {
-    throw new Error("엑셀 파일에 시트가 없습니다. 샘플 템플릿 형식으로 다시 저장해 주세요.");
+    throw new Error("시트가 없습니다. 샘플 템플릿 형식으로 작성해 주세요.");
   }
 
   const sheet = workbook.Sheets[sheetName];
   if (!sheet) {
-    throw new Error("엑셀 시트를 읽지 못했습니다. 샘플 템플릿을 내려받아 같은 형식으로 작성해 주세요.");
+    throw new Error("시트를 읽지 못했습니다. 샘플 템플릿을 내려받아 같은 형식으로 작성해 주세요.");
   }
 
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "", blankrows: false }) as Array<
@@ -224,10 +306,10 @@ export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: Fi
   >;
 
   if (!rows.length) {
-    throw new Error("엑셀 시트가 비어 있습니다. 샘플 템플릿을 내려받아 작성한 뒤 업로드해 주세요.");
+    throw new Error("시트가 비어 있습니다. 샘플 템플릿을 내려받아 작성한 뒤 사용해 주세요.");
   }
 
-  return normalizeQuoteSnapshot(parseQuoteRows(rows), input.inquiry);
+  return normalizeQuoteSnapshot(parseQuoteRows(rows), inquiry);
 }
 
 export async function downloadQuoteTemplateAsXlsx() {
@@ -320,9 +402,17 @@ export async function downloadQuoteAsXlsx(input: QuoteDownloadContext) {
 
   rows.push(
     [],
-    ["공급가액", "", "", "", totals.workSubtotal + totals.materialSubtotal + totals.extraSubtotal, ""],
-    ["부가세", "", "", "", totals.vat, ""],
-    ["합계", "", "", "", totals.total, ""],
+    ["공사비합계", "", "", "", totals.workCost, ""],
+    ["이윤", "", "", "", totals.profit, ""],
+    ["천원이하 절삭", "", "", "", totals.rounding, ""],
+    ["합계 금액 (부가세 별도)", "", "", "", totals.subtotal, ""]
+  );
+  if (totals.vat > 0) {
+    rows.push(["부가세", "", "", "", totals.vat, ""], ["합계 금액", "", "", "", totals.total, ""]);
+  }
+  rows.push(
+    ["계약금(선수금)", "", "", "", totals.deposit, ""],
+    ["잔금", "", "", "", totals.balance, ""],
     [],
     ["메모", input.quote.memo || "-"]
   );
@@ -420,15 +510,27 @@ export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
     margin: { left: margin, right: margin }
   });
 
-  const summaryY = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? materialStart) + 18;
+  let summaryY = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? materialStart) + 18;
   doc.setFont("NotoSansKR", "bold");
   doc.setFontSize(11);
-  doc.text(`공급가액: ${formatCurrency(totals.workSubtotal + totals.materialSubtotal + totals.extraSubtotal)}`, margin, summaryY);
-  doc.text(`부가세: ${formatCurrency(totals.vat)}`, margin, summaryY + 16);
-  doc.text(`합계: ${formatCurrency(totals.total)}`, margin, summaryY + 32);
+  const summaryLines: string[] = [
+    `공사비합계: ${formatCurrency(totals.workCost)}`,
+    `이윤: ${formatCurrency(totals.profit)}`,
+    `천원이하 절삭: ${formatCurrency(totals.rounding)}`,
+    `합계 금액 (부가세 별도): ${formatCurrency(totals.subtotal)}`,
+    ...(totals.vat > 0 ? [`부가세: ${formatCurrency(totals.vat)}`, `합계 금액: ${formatCurrency(totals.total)}`] : []),
+    `계약금(선수금): ${formatCurrency(totals.deposit)}`,
+    `잔금: ${formatCurrency(totals.balance)}`
+  ];
+  for (const line of summaryLines) {
+    doc.text(line, margin, summaryY);
+    summaryY += 16;
+  }
   doc.setFont("NotoSansKR", "normal");
   doc.setFontSize(9);
-  doc.text(`메모: ${input.quote.memo || "-"}`, margin, summaryY + 54);
+  doc.text("상기 견적서는 발행일로부터 약 2주간 유효합니다. 무상하자 보증 기간은 만 1년입니다.", margin, summaryY + 6);
+  doc.text("입금계좌: 신한은행 110-330-187270 (김헌영) · 집수리클라쓰 김헌영 실장", margin, summaryY + 20);
+  doc.text(`메모: ${input.quote.memo || "-"}`, margin, summaryY + 38);
 
   doc.save(buildQuoteFilename(input.inquiry.name, documentTitle, "pdf"));
 }
@@ -586,6 +688,9 @@ function normalizeQuoteSnapshot(snapshot: InquiryQuoteSnapshot, inquiry: Inquiry
     materialCharges,
     extraCharges,
     vatRate: normalizeVatRate(snapshot.vatRate),
+    profitRate: normalizeRate(snapshot.profitRate, 0.08),
+    roundingAdjust: typeof snapshot.roundingAdjust === "number" && Number.isFinite(snapshot.roundingAdjust) ? snapshot.roundingAdjust : undefined,
+    deposit: normalizeNonNegativeNumber(snapshot.deposit, 0),
     memo: typeof snapshot.memo === "string" ? snapshot.memo : "",
     updatedAt: typeof snapshot.updatedAt === "string" ? snapshot.updatedAt : inquiry.created_at ?? null
   };
@@ -793,7 +898,13 @@ function normalizeNonNegativeNumber(value: unknown, fallback: number) {
 
 function normalizeVatRate(value: unknown) {
   const next = Number(value);
-  return Number.isFinite(next) && next >= 0 && next <= 1 ? next : 0.1;
+  // 대표님 견적서는 부가세 별도(0)가 기본. 값이 없거나 잘못되면 0.
+  return Number.isFinite(next) && next >= 0 && next <= 1 ? next : 0;
+}
+
+function normalizeRate(value: unknown, fallback: number) {
+  const next = Number(value);
+  return Number.isFinite(next) && next >= 0 && next <= 1 ? next : fallback;
 }
 
 function formatCurrency(value: number) {

@@ -329,6 +329,12 @@ export type InquiryQuoteSnapshot = {
   materialCharges: InquiryQuoteCharge[];
   extraCharges: InquiryQuoteCharge[];
   vatRate: number;
+  /** 이윤율(기본 0.08). 직원이 케이스별로 조정 가능. */
+  profitRate?: number;
+  /** 천원/만원 절삭 보정(음수). 미지정 시 만원 미만 자동 절삭. */
+  roundingAdjust?: number;
+  /** 계약금(선수금). 매번 달라 직원이 수기 입력. 잔금=합계-계약금. */
+  deposit?: number;
   memo: string;
   updatedAt: string | null;
 };

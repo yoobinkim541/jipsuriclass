@@ -98,6 +98,33 @@ function naverBlogApi(): Plugin {
           res.end("Image fetch failed");
         }
       });
+
+      // 구글 시트 → xlsx export 프록시(dev). 시트는 '링크가 있는 모든 사용자 보기'여야 함.
+      server.middlewares.use("/api/sheet-export", async (req, res) => {
+        const id = (new URL(req.url || "", "http://localhost").searchParams.get("id") || "").trim();
+        if (!/^[a-zA-Z0-9-_]+$/.test(id)) {
+          res.statusCode = 400;
+          res.end("Invalid sheet id");
+          return;
+        }
+        try {
+          const upstream = await fetch(`https://docs.google.com/spreadsheets/d/${id}/export?format=xlsx`, {
+            redirect: "follow",
+            headers: { "User-Agent": "Mozilla/5.0", Accept: "*/*" }
+          });
+          const contentType = upstream.headers.get("content-type") || "";
+          if (!upstream.ok || contentType.includes("text/html")) {
+            throw new Error(`Sheet not accessible (${upstream.status})`);
+          }
+          const buffer = Buffer.from(await upstream.arrayBuffer());
+          res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+          res.setHeader("Cache-Control", "no-store");
+          res.end(buffer);
+        } catch {
+          res.statusCode = 502;
+          res.end("Google Sheet is not accessible.");
+        }
+      });
     }
   };
 }
