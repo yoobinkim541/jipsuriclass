@@ -1506,6 +1506,18 @@ function scorePostForQuery(post: PortfolioPost, tokens: string[]): number {
   return score;
 }
 
+// 네이버 블로그 글의 고유 식별자(logNo)를 링크에서 추출해 정규화 키로 쓴다.
+// pinnedPosts는 desktop 포맷(blog.naver.com/{id}/{logNo}), 모바일 API는
+// query 포맷(...PostView.naver?...&logNo={logNo})이라 raw 링크로 dedup하면
+// 같은 글이 두 장(큐레이션 + API)으로 중복 노출된다 → logNo 기준으로 합친다.
+function postKey(link: string): string {
+  const byQuery = link.match(/[?&]logNo=(\d+)/);
+  if (byQuery) return byQuery[1];
+  const byPath = link.match(/blog\.naver\.com\/[^/?#]+\/(\d+)/);
+  if (byPath) return byPath[1];
+  return link;
+}
+
 // 현재 URL 쿼리(?q=&cat=&sort=)에서 현장사례 필터 상태를 읽는다. 공유·새로고침·딥링크 복원용.
 function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "popular" } {
   if (typeof window === "undefined") {
@@ -1568,12 +1580,20 @@ function PortfolioPage() {
   }, []);
 
   const allPosts = useMemo(() => {
-    const seen = new Set<string>();
-    return [...pinnedPosts, ...posts].filter((post) => {
-      if (seen.has(post.link)) return false;
-      seen.add(post.link);
-      return true;
-    });
+    // logNo 기준 dedup(중복 카드 방지). pinnedPosts를 먼저 넣어 큐레이션 메타(제목·요약·
+    // 이미지·노출 순서)를 유지하되, 같은 글의 API 버전이 들고 온 실제 인기도(popularity)는
+    // 큐레이션 글에 보강한다 → '인기글' 정렬에서 대표글이 0점으로 묻히지 않는다.
+    const byKey = new Map<string, PortfolioPost>();
+    for (const post of [...pinnedPosts, ...posts]) {
+      const key = postKey(post.link);
+      const existing = byKey.get(key);
+      if (!existing) {
+        byKey.set(key, post);
+      } else if (existing.popularity == null && post.popularity != null) {
+        byKey.set(key, { ...existing, popularity: post.popularity });
+      }
+    }
+    return [...byKey.values()];
   }, [posts]);
 
   const filteredPosts = useMemo(() => {

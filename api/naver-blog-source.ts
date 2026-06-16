@@ -348,10 +348,13 @@ function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlo
       ...(item.thumbnailList ?? []).flatMap((thumb) => [thumb.encodedThumbnailUrl, thumb.thumbnailUrl])
     ]),
     keywords: categoryName ? [categoryName] : undefined,
-    // 공감수 + 댓글수*2(댓글이 더 깊은 참여) = 인기도 점수.
-    popularity:
+    // 인기도 = 공감수 + 댓글수. 댓글엔 블로그 주인 답글이 섞여 신호가 약하므로
+    // 공감과 동일 가중(과거 *2는 주인 답글을 과대평가해 제거). 음수 방어로 0 하한.
+    popularity: Math.max(
+      0,
       (typeof item.sympathyCnt === "number" ? item.sympathyCnt : 0) +
-      (typeof item.commentCnt === "number" ? item.commentCnt : 0) * 2
+        (typeof item.commentCnt === "number" ? item.commentCnt : 0)
+    )
   };
 }
 
