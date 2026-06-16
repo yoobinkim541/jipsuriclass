@@ -53,10 +53,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
     })();
 
     const text = await upstream.text();
-    const data = safeParse(text);
-    if (!upstream.ok || !data || typeof data !== "object" || !(data as { sheetUrl?: string }).sheetUrl) {
+    const data = safeParse(text) as { sheetUrl?: string; pdfUrl?: string; sheetId?: string; error?: string } | null;
+    // 시트 생성은 sheetUrl, PDF 생성은 pdfUrl을 돌려준다 — 둘 중 하나라도 있으면 성공.
+    if (!upstream.ok || !data || typeof data !== "object" || data.error || (!data.sheetUrl && !data.pdfUrl)) {
       console.error(`[create-quote-sheet] 실패 status=${upstream.status} deploy=…${deployTail} finalHost=${finalHost} bodyHead=${text.slice(0, 120)}`);
-      const upstreamError = (data as { error?: string })?.error;
+      const upstreamError = data?.error;
       if (!upstreamError && (upstream.status === 401 || upstream.status === 403)) {
         // 401/403 = 웹앱이 익명 접근을 허용하지 않음(로그인 요구 페이지로 응답).
         throw new Error(
@@ -68,8 +69,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
     }
 
     response.status(200).json({
-      sheetUrl: (data as { sheetUrl: string }).sheetUrl,
-      pdfUrl: (data as { pdfUrl?: string }).pdfUrl ?? null
+      sheetUrl: data.sheetUrl ?? null,
+      sheetId: data.sheetId ?? null,
+      pdfUrl: data.pdfUrl ?? null
     });
   } catch (error) {
     response.status(502).json({ error: error instanceof Error ? error.message : "구글시트 생성에 실패했습니다." });

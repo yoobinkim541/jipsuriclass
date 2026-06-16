@@ -35,7 +35,7 @@ var SECRET = PropertiesService.getScriptProperties().getProperty('SECRET') || ''
 var TEMPLATE_ID = 'TEMPLATE_SPREADSHEET_ID';   // 토큰을 넣어둔 템플릿 스프레드시트 ID
 var DEST_FOLDER_ID = 'DEST_FOLDER_ID';         // 생성본 저장 폴더(견적완료건) ID
 var SHEET_TAB = '';                            // 값 채울 탭(비우면 첫 번째 탭)
-var EXPORT_PDF = true;
+// PDF는 시트 생성과 분리된 별도 동작이다(action:'pdf'). 시트 생성 시 자동 PDF는 만들지 않는다.
 
 // 상세내역/요약표가 시작하는 '열'(템플릿 기준). 기본 B열(=2): 코드,공사명,(요약:빈칸,금액 / 상세:내용,단가,수량,단위,금액)
 var DETAIL_START_COL = 2; // B
@@ -47,6 +47,10 @@ function doPost(e) {
     if (!SECRET) return json_({ error: '서버 설정 오류: 스크립트 속성 SECRET 미설정' });
     if (body.secret !== SECRET) return json_({ error: '인증 실패(secret 불일치)' });
 
+    // PDF 생성은 시트 생성과 분리된 별도 동작 — 기존 시트를 PDF로 내보낸다.
+    if (body.action === 'pdf') return makePdf_(body);
+
+    // 기본 동작: 시트만 생성(자동 PDF 없음).
     var folder = DriveApp.getFolderById(DEST_FOLDER_ID);
     var fileName = body.fileName || ('견적서 ' + today_());
     var copy = DriveApp.getFileById(TEMPLATE_ID).makeCopy(fileName, folder);
@@ -56,14 +60,27 @@ function doPost(e) {
     fillTemplate_(sheet, body);
     SpreadsheetApp.flush();
 
-    var pdfUrl = null;
-    if (EXPORT_PDF) {
-      pdfUrl = folder.createFile(ss.getAs('application/pdf').setName(fileName + '.pdf')).getUrl();
-    }
-    return json_({ sheetUrl: ss.getUrl(), pdfUrl: pdfUrl });
+    return json_({ sheetUrl: ss.getUrl(), sheetId: copy.getId(), pdfUrl: null });
   } catch (err) {
     return json_({ error: String(err) });
   }
+}
+
+// 기존 시트를 PDF로 내보내 같은 폴더에 저장한다(시트 생성과 분리 호출).
+function makePdf_(body) {
+  var sheetId = body.sheetId || extractSheetId_(body.sheetUrl || '');
+  if (!sheetId) return json_({ error: 'PDF로 만들 시트를 찾을 수 없습니다(sheetId 또는 sheetUrl 필요).' });
+  var ss = SpreadsheetApp.openById(sheetId);
+  var file = DriveApp.getFileById(sheetId);
+  var parents = file.getParents();
+  var folder = parents.hasNext() ? parents.next() : DriveApp.getFolderById(DEST_FOLDER_ID);
+  var pdf = folder.createFile(ss.getAs('application/pdf').setName(ss.getName() + '.pdf'));
+  return json_({ pdfUrl: pdf.getUrl() });
+}
+
+function extractSheetId_(url) {
+  var m = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : '';
 }
 
 function fillTemplate_(sheet, body) {
