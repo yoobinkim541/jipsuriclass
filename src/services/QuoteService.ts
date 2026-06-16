@@ -899,6 +899,10 @@ function normalizeQuoteSnapshot(snapshot: InquiryQuoteSnapshot, inquiry: Inquiry
     workScale: typeof snapshot.workScale === "string" ? snapshot.workScale : "",
     workPeriod: typeof snapshot.workPeriod === "string" ? snapshot.workPeriod : "",
     memo: typeof snapshot.memo === "string" ? snapshot.memo : "",
+    // 이전에 발행한 구글시트/PDF 링크를 보존한다 — 이게 없으면 견적을 다시 열 때마다
+    // 링크가 사라져 '구글시트 재발행'이 새 시트를 만들어버린다(기존 시트와 단절).
+    sheetUrl: typeof snapshot.sheetUrl === "string" ? snapshot.sheetUrl : null,
+    pdfUrl: typeof snapshot.pdfUrl === "string" ? snapshot.pdfUrl : null,
     updatedAt: typeof snapshot.updatedAt === "string" ? snapshot.updatedAt : inquiry.created_at ?? null
   };
 }
