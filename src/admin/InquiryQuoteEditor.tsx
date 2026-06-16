@@ -606,20 +606,22 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             onChange={(event) => setDraft((current) => ({ ...current, roundingAdjust: Number(event.target.value) || 0 }))}
           />
         </label>
-        <div className="quote-editor__summary-headline">
+        <div>
           <span>합계(부가세 별도)</span>
           <strong>{totals.subtotal.toLocaleString()}원</strong>
         </div>
-        <label>
-          <span>계약금</span>
-          <input
-            className="quote-field quote-field--number"
-            type="number"
-            min={0}
-            value={draft.deposit ?? 0}
-            onChange={(event) => setDraft((current) => ({ ...current, deposit: Math.max(0, Number(event.target.value) || 0) }))}
-          />
-        </label>
+        <div>
+          <span>부가세(10%)</span>
+          <strong>{totals.vat.toLocaleString()}원</strong>
+        </div>
+        <div className="quote-editor__summary-headline">
+          <span>합계금액(부가세 포함)</span>
+          <strong>{totals.total.toLocaleString()}원</strong>
+        </div>
+        <div>
+          <span>계약금(30%·만원 올림)</span>
+          <strong>{totals.deposit.toLocaleString()}원</strong>
+        </div>
         <div>
           <span>잔금</span>
           <strong>{totals.balance.toLocaleString()}원</strong>

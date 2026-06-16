@@ -289,6 +289,9 @@ export function mergeQuoteIntoIntake(intake: InquiryIntake | null, quote: Inquir
   };
 }
 
+// 부가가치세율 — 정책상 항상 합계(부가세 별도)의 10%.
+const VAT_RATE = 0.1;
+
 export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   const workSubtotal = quote.lineItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
   const materialSubtotal = quote.materialCharges.reduce((sum, item) => sum + item.amount, 0);
@@ -305,11 +308,12 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   // 합계(부가세 별도). 절삭 입력 실수로 음수가 되지 않도록 0 하한.
   const subtotal = Math.max(0, beforeRounding + rounding);
 
-  const vatRate = Math.max(0, typeof quote.vatRate === "number" ? quote.vatRate : 0);
-  const vat = Math.round(subtotal * vatRate);
+  // 부가가치세는 항상 합계(부가세 별도)의 10%로 고정한다(저장값과 무관하게 강제).
+  const vat = Math.round(subtotal * VAT_RATE);
   const total = subtotal + vat;
-  const deposit = typeof quote.deposit === "number" && quote.deposit >= 0 ? quote.deposit : 0;
-  // 계약금이 총액보다 커도 잔금이 음수가 되지 않도록 0 하한.
+  // 계약금 = 총액(부가세 포함)의 30%를 만원 단위로 올림(정책 고정).
+  const deposit = Math.ceil((total * 0.3) / 10000) * 10000;
+  // 잔금 = 총액 − 계약금. (계약금이 총액을 넘지 않으므로 음수 없음)
   const balance = Math.max(0, total - deposit);
 
   return { workSubtotal, materialSubtotal, extraSubtotal, workCost, profit, rounding, subtotal, vat, total, deposit, balance };
