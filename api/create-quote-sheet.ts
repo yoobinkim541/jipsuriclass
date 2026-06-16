@@ -40,17 +40,30 @@ export default async function handler(request: VercelRequest, response: VercelRe
       redirect: "follow"
     });
 
+    // 진단용: 실제 호출한 배포 ID 꼬리표(비밀 아님)와 상태를 남긴다 — 환경변수가
+    // 최신 배포를 가리키는지, 401/404가 어느 배포에서 나는지 한눈에 확인하기 위함.
+    const deployTail = webAppUrl.match(/\/s\/([^/]+)/)?.[1]?.slice(-10) ?? "?";
+    const finalHost = (() => {
+      try {
+        return new URL(upstream.url).host;
+      } catch {
+        return "?";
+      }
+    })();
+
     const text = await upstream.text();
     const data = safeParse(text);
     if (!upstream.ok || !data || typeof data !== "object" || !(data as { sheetUrl?: string }).sheetUrl) {
+      console.error(`[create-quote-sheet] 실패 status=${upstream.status} deploy=…${deployTail} finalHost=${finalHost} bodyHead=${text.slice(0, 120)}`);
       const upstreamError = (data as { error?: string })?.error;
       if (!upstreamError && (upstream.status === 401 || upstream.status === 403)) {
         // 401/403 = 웹앱이 익명 접근을 허용하지 않음(로그인 요구 페이지로 응답).
         throw new Error(
-          "Apps Script 웹앱이 로그인 필요 상태입니다(401). 배포 > 배포 관리에서 '액세스 권한이 있는 사용자'를 '모든 사용자'로 바꾼 뒤 다시 배포해 주세요."
+          `Apps Script 웹앱이 로그인 필요 상태입니다(${upstream.status}). 호출한 배포 …${deployTail}. ` +
+            "① 환경변수 QUOTE_SHEET_WEBAPP_URL이 '모든 사용자'로 배포한 최신 주소인지, ② 변경 후 Vercel을 재배포했는지 확인해 주세요."
         );
       }
-      throw new Error(upstreamError || `Apps Script 응답 오류 (${upstream.status})`);
+      throw new Error(upstreamError || `Apps Script 응답 오류 (${upstream.status}) · 배포 …${deployTail}`);
     }
 
     response.status(200).json({
