@@ -334,6 +334,8 @@ export type QuoteSheetPayload = {
   rows: Array<{ kind: "work" | "material" | "extra"; group: string; detail: string; remark: string; unit: string; qty: number; unitPrice: number; amount: number }>;
   totals: { workCost: number; profit: number; profitRate: number; rounding: number; subtotal: number; vat: number; total: number; deposit: number; balance: number };
   memo: string;
+  /** 이미 발행한 시트가 있으면 그 ID — Apps Script가 새로 만들지 않고 이 시트를 갱신한다. */
+  sheetId?: string;
 };
 
 /** 견적 스냅샷을 Apps Script(구글시트 생성)로 보낼 페이로드로 변환한다. */
@@ -384,8 +386,12 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
   // '기타' 공종은 항상 맨 뒤에(다른 공종 먼저, 기타를 마지막에) — 코드도 자연히 마지막 번호.
   const orderedRows = [...rows.filter((row) => row.group !== "기타"), ...rows.filter((row) => row.group === "기타")];
 
+  // 이미 발행한 시트가 있으면 그 ID를 함께 보낸다 → 재발행 시 새 파일을 만들지 않고 같은 시트를 갱신.
+  const existingSheetId = quote.sheetUrl ? extractGoogleSheetId(quote.sheetUrl) : null;
+
   return {
     fileName,
+    ...(existingSheetId ? { sheetId: existingSheetId } : {}),
     customer: { name: inquiry.name ?? "", phone: inquiry.phone ?? "", address: inquiry.service_area ?? "" },
     target,
     scale: quote.workScale ?? "",

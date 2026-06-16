@@ -54,18 +54,33 @@ function doPost(e) {
     // PDF 생성은 시트 생성과 분리된 별도 동작 — 기존 시트를 PDF로 내보낸다.
     if (body.action === 'pdf') return makePdf_(body);
 
-    // 기본 동작: 시트만 생성(자동 PDF 없음).
+    // 기본 동작: 시트 생성/갱신(자동 PDF 없음).
     if (!TEMPLATE_ID || !DEST_FOLDER_ID) return json_({ error: '서버 설정 오류: 스크립트 속성 TEMPLATE_SPREADSHEET_ID/DEST_FOLDER_ID 미설정' });
-    var folder = DriveApp.getFolderById(DEST_FOLDER_ID);
+
     var fileName = body.fileName || ('견적서 ' + today_());
-    var copy = DriveApp.getFileById(TEMPLATE_ID).makeCopy(fileName, folder);
-    var ss = SpreadsheetApp.openById(copy.getId());
-    var sheet = SHEET_TAB ? ss.getSheetByName(SHEET_TAB) : ss.getSheets()[0];
+    // 이미 발행한 시트 ID가 오고 그 파일이 살아있으면 → 새로 만들지 않고 같은 파일을 갱신(URL 유지).
+    var existingId = body.sheetId || extractSheetId_(body.sheetUrl || '');
+    var ss = null;
+    if (existingId) {
+      try { ss = SpreadsheetApp.openById(existingId); } catch (e) { ss = null; } // 휴지통/삭제 시 새로 생성
+    }
+
+    var sheet;
+    if (ss) {
+      // 같은 파일 유지(견적-시트 링크 불변) + 내용만 새로: 템플릿 탭을 새로 복사해 넣고 기존 탭 제거.
+      sheet = refreshSheetFromTemplate_(ss);
+      DriveApp.getFileById(ss.getId()).setName(fileName);
+    } else {
+      var folder = DriveApp.getFolderById(DEST_FOLDER_ID);
+      var copy = DriveApp.getFileById(TEMPLATE_ID).makeCopy(fileName, folder);
+      ss = SpreadsheetApp.openById(copy.getId());
+      sheet = SHEET_TAB ? ss.getSheetByName(SHEET_TAB) : ss.getSheets()[0];
+    }
 
     fillTemplate_(sheet, body);
     SpreadsheetApp.flush();
 
-    return json_({ sheetUrl: ss.getUrl(), sheetId: copy.getId(), pdfUrl: null });
+    return json_({ sheetUrl: ss.getUrl(), sheetId: ss.getId(), pdfUrl: null });
   } catch (err) {
     return json_({ error: String(err) });
   }
@@ -81,6 +96,20 @@ function makePdf_(body) {
   var folder = parents.hasNext() ? parents.next() : DriveApp.getFolderById(DEST_FOLDER_ID);
   var pdf = folder.createFile(ss.getAs('application/pdf').setName(ss.getName() + '.pdf'));
   return json_({ pdfUrl: pdf.getUrl() });
+}
+
+// 기존 스프레드시트의 내용을 템플릿으로 새로 채우기 위해: 템플릿 탭을 새 복사본으로 넣고
+// 그 외 기존 탭을 모두 지운다. 파일 ID·URL은 그대로 유지되어 견적과의 링크가 끊기지 않는다.
+function refreshSheetFromTemplate_(ss) {
+  var templateSS = SpreadsheetApp.openById(TEMPLATE_ID);
+  var templateSheet = SHEET_TAB ? templateSS.getSheetByName(SHEET_TAB) : templateSS.getSheets()[0];
+  var fresh = templateSheet.copyTo(ss);
+  var keepId = fresh.getSheetId();
+  // 이름 충돌 방지: 기존 탭(템플릿과 같은 이름 포함)을 먼저 모두 지운 뒤 새 탭 이름을 맞춘다.
+  ss.getSheets().forEach(function (s) { if (s.getSheetId() !== keepId) ss.deleteSheet(s); });
+  fresh.setName(templateSheet.getName());
+  ss.setActiveSheet(fresh);
+  return fresh;
 }
 
 function extractSheetId_(url) {
