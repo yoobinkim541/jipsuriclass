@@ -1613,8 +1613,7 @@ textarea {
   animation: rotIn .5s cubic-bezier(.16,1,.3,1) both;
 }
 
-/* 다크모드: navy-700이 밝은 파랑이라 회전 단어가 골드→파랑으로 갈라져
-   바로 뒤 흰색 조사와 3색으로 보였음 → 단어를 균일한 골드로 통일 */
+/* 다크모드: navy-700이 밝은 파랑이라 골드→파랑으로 갈라지므로 균일한 골드로 통일 */
 :root[data-theme="dark"] .hero__rotator em {
   background: linear-gradient(120deg, #f2c879, #ffe2ab 70%);
   -webkit-background-clip: text;
