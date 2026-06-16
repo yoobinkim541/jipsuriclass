@@ -7471,7 +7471,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.quote-editor__summary div {
+.quote-editor__summary > div,
+.quote-editor__summary > label {
   background: linear-gradient(180deg, #fff, #f8fafc);
   border: 1px solid var(--hair, #e6dfd0);
   border-radius: 12px;

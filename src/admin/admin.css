@@ -1826,10 +1826,19 @@
   .adm-root .quote-editor__table-wrap,
   .adm-root .quote-editor__panel,
   .adm-root .quote-editor__summary div,
+  .adm-root .quote-editor__summary label,
   .adm-root .editor-upload-trigger {
     background: var(--paper);
     border-color: var(--hair);
   }
+  /* 입력칸: #fff 하드코딩 → 다크 표면 위에서 흰 박스+밝은 글씨로 안 보이던 것 보정 */
+  .adm-root .quote-field {
+    background: rgba(3, 10, 22, 0.35);
+    color: var(--ink);
+    border-color: var(--hair);
+  }
+  .adm-root .quote-field::placeholder { color: var(--ink-3); }
+  .adm-root .quote-editor__catalog { background: rgba(124, 152, 240, 0.1); border-color: var(--hair); }
   .adm-root .quote-editor__meta span {
     background: rgba(124, 152, 240, 0.18);
     color: var(--ink-2);
