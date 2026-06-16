@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ChangeEvent, DragEvent } from "react";
 import { CheckCircle2, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, Save, Trash2, X } from "lucide-react";
 import {
@@ -621,8 +622,10 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
     </section>
   );
 
-  if (!fullscreen) return editorBody;
-  return (
+  if (!fullscreen || typeof document === "undefined") return editorBody;
+  // 문의 상세 드로어가 transform/fixed로 포함 블록을 만들어 position:fixed가 갇히므로
+  // body로 포털해 진짜 전체 화면 오버레이로 띄운다.
+  return createPortal(
     <div
       className="quote-editor__overlay"
       role="dialog"
@@ -632,7 +635,8 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
       }}
     >
       {editorBody}
-    </div>
+    </div>,
+    document.body
   );
 }
 
