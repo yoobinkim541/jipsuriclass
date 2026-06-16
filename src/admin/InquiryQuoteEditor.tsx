@@ -303,7 +303,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           </p>
         </div>
         <div className="quote-editor__actions">
-          <button className="admin-status-button" type="button" onClick={() => void handleSave()} disabled={saving}>
+          <button className="admin-status-button quote-editor__action--primary" type="button" onClick={() => void handleSave()} disabled={saving}>
             <Save size={14} />
             {saving ? "저장 중" : "견적 저장"}
           </button>
@@ -319,7 +319,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             <Download size={14} />
             PDF 다운로드
           </button>
-          <button className="admin-status-button" type="button" onClick={() => void handlePublishSheet()} disabled={publishing}>
+          <button className="admin-status-button quote-editor__action--accent" type="button" onClick={() => void handlePublishSheet()} disabled={publishing}>
             <FileSpreadsheet size={14} />
             {publishing ? "발행 중" : "구글시트로 발행"}
           </button>
@@ -604,7 +604,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             onChange={(event) => setDraft((current) => ({ ...current, roundingAdjust: Number(event.target.value) || 0 }))}
           />
         </label>
-        <div>
+        <div className="quote-editor__summary-headline">
           <span>합계(부가세 별도)</span>
           <strong>{totals.subtotal.toLocaleString()}원</strong>
         </div>
@@ -642,7 +642,9 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   // body로 포털해 진짜 전체 화면 오버레이로 띄운다.
   return createPortal(
     <div
-      className="quote-editor__overlay"
+      // body로 포털되면 .adm-root 밖이라 어드민 토큰/다크 오버라이드가 끊긴다.
+      // adm-root를 함께 부여해 토큰·다크 스타일을 그대로 재사용한다(백드롭은 CSS로 복구).
+      className="quote-editor__overlay adm-root"
       role="dialog"
       aria-modal="true"
       onClick={(event) => {
