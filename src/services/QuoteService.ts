@@ -238,19 +238,21 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   // 공사비합계 = 공임(작업) + 자재 + 부대비용
   const workCost = workSubtotal + materialSubtotal + extraSubtotal;
 
-  // 이윤(기본 8%, 직원 조정 가능)
-  const profitRate = typeof quote.profitRate === "number" && quote.profitRate >= 0 ? quote.profitRate : 0.08;
+  // 이윤(기본 8%, 직원 조정 가능). [0,1] 밖(예: 500% 오타)은 기본값으로 차단(normalizeRate 재사용).
+  const profitRate = normalizeRate(quote.profitRate, 0.08);
   const profit = Math.round(workCost * profitRate);
   const beforeRounding = workCost + profit;
   // 천원이하 절삭: roundingAdjust 지정 시 그 값, 미지정 시 만원 미만 자동 절삭(음수)
   const rounding = typeof quote.roundingAdjust === "number" ? quote.roundingAdjust : -(beforeRounding % 10000);
-  // 합계(부가세 별도)
-  const subtotal = beforeRounding + rounding;
+  // 합계(부가세 별도). 절삭 입력 실수로 음수가 되지 않도록 0 하한.
+  const subtotal = Math.max(0, beforeRounding + rounding);
 
-  const vat = Math.round(subtotal * (typeof quote.vatRate === "number" ? quote.vatRate : 0));
+  const vatRate = Math.max(0, typeof quote.vatRate === "number" ? quote.vatRate : 0);
+  const vat = Math.round(subtotal * vatRate);
   const total = subtotal + vat;
   const deposit = typeof quote.deposit === "number" && quote.deposit >= 0 ? quote.deposit : 0;
-  const balance = total - deposit;
+  // 계약금이 총액보다 커도 잔금이 음수가 되지 않도록 0 하한.
+  const balance = Math.max(0, total - deposit);
 
   return { workSubtotal, materialSubtotal, extraSubtotal, workCost, profit, rounding, subtotal, vat, total, deposit, balance };
 }
@@ -267,7 +269,8 @@ export type QuoteSheetPayload = {
 /** 견적 스냅샷을 Apps Script(구글시트 생성)로 보낼 페이로드로 변환한다. */
 export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteSnapshot): QuoteSheetPayload {
   const totals = calculateQuoteTotals(quote);
-  const profitRate = typeof quote.profitRate === "number" ? quote.profitRate : 0.08;
+  // 시트에 찍히는 이윤율(%)도 합계 계산과 동일하게 [0,1]로 정규화(불일치 방지).
+  const profitRate = normalizeRate(quote.profitRate, 0.08);
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, ".");
   const target = quote.selectedWorks.length
     ? quote.selectedWorks.join(", ")
@@ -943,7 +946,9 @@ function parseQuoteRows(rows: Array<Array<string | number>>): InquiryQuoteSnapsh
     lineItems,
     materialCharges,
     extraCharges,
-    vatRate: 0.1,
+    // 대표님 견적서는 부가세 별도(0)가 기본. 신규 견적(line 209)과 동일하게 0으로
+    // (과거 0.1은 엑셀/시트에서 불러온 견적에 10% 부가세를 임의 부과하는 버그였음).
+    vatRate: 0,
     memo,
     confirmedAt,
     updatedAt: metadata.get("최종수정") ?? new Date().toISOString()
