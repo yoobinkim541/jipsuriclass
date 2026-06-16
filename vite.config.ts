@@ -168,6 +168,34 @@ function naverBlogApi(): Plugin {
           res.end(JSON.stringify({ error: error instanceof Error ? error.message : "구글시트 생성 실패" }));
         }
       });
+
+      server.middlewares.use("/api/check-quote-sheet", async (_req, res) => {
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        const env = loadEnv(server.config.mode, process.cwd(), "");
+        const raw = env.QUOTE_SHEET_WEBAPP_URL;
+        const secret = env.QUOTE_SHEET_SECRET;
+        if (!raw || !secret) {
+          res.end(JSON.stringify({ ok: false, state: "unconfigured", message: "환경변수 미설정(QUOTE_SHEET_WEBAPP_URL/QUOTE_SHEET_SECRET)" }));
+          return;
+        }
+        const url = /^https?:\/\//i.test(raw) ? raw : `https://script.google.com/macros/s/${raw.replace(/^\/+|\/+$/g, "")}/exec`;
+        try {
+          const upstream = await fetch(url, { method: "GET", redirect: "follow" });
+          const text = await upstream.text();
+          let pingedOk = false;
+          try {
+            pingedOk = JSON.parse(text)?.ok === true;
+          } catch {
+            pingedOk = false;
+          }
+          if (pingedOk) res.end(JSON.stringify({ ok: true, state: "ok", message: "정상 연결됨" }));
+          else if (upstream.status === 401 || upstream.status === 403)
+            res.end(JSON.stringify({ ok: false, state: "unauthorized", message: `로그인 필요(${upstream.status}) — 웹앱 액세스 '모든 사용자' 확인` }));
+          else res.end(JSON.stringify({ ok: false, state: "error", message: `웹앱 응답 이상 (HTTP ${upstream.status})` }));
+        } catch (error) {
+          res.end(JSON.stringify({ ok: false, state: "error", message: error instanceof Error ? error.message : "연결 실패" }));
+        }
+      });
     }
   };
 }

@@ -308,12 +308,15 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   // 합계(부가세 별도). 절삭 입력 실수로 음수가 되지 않도록 0 하한.
   const subtotal = Math.max(0, beforeRounding + rounding);
 
-  // 부가가치세는 항상 합계(부가세 별도)의 10%로 고정한다(저장값과 무관하게 강제).
-  const vat = Math.round(subtotal * VAT_RATE);
+  // 부가가치세: 기본은 항상 합계의 10%. 단, 직접입력 모드면 저장된 vatRate를 사용.
+  const vatRate = quote.vatManual ? normalizeRate(quote.vatRate, VAT_RATE) : VAT_RATE;
+  const vat = Math.round(subtotal * vatRate);
   const total = subtotal + vat;
-  // 계약금 = 총액(부가세 포함)의 30%를 만원 단위로 올림(정책 고정).
-  const deposit = Math.ceil((total * 0.3) / 10000) * 10000;
-  // 잔금 = 총액 − 계약금. (계약금이 총액을 넘지 않으므로 음수 없음)
+  // 계약금: 기본은 총액(부가세 포함)의 30%를 만원 단위로 올림. 직접입력 모드면 저장값 사용.
+  const deposit = quote.depositManual
+    ? Math.max(0, typeof quote.deposit === "number" ? quote.deposit : 0)
+    : Math.ceil((total * 0.3) / 10000) * 10000;
+  // 잔금 = 총액 − 계약금. 계약금이 더 커도 음수가 되지 않도록 0 하한.
   const balance = Math.max(0, total - deposit);
 
   return { workSubtotal, materialSubtotal, extraSubtotal, workCost, profit, rounding, subtotal, vat, total, deposit, balance };
@@ -412,6 +415,21 @@ export async function createQuoteSheet(input: { inquiry: InquiryRow; quote: Inqu
     throw new Error(typeof data.error === "string" ? data.error : "구글시트 생성에 실패했습니다. Apps Script 연동(환경변수) 설정을 확인해 주세요.");
   }
   return { sheetUrl: data.sheetUrl, pdfUrl: data.pdfUrl ?? null };
+}
+
+/**
+ * 구글시트 연동 상태를 점검한다(발행 누르지 않고 확인). /api/check-quote-sheet가
+ * Apps Script 웹앱에 GET 핑을 보내 정상/로그인필요/미설정/오류를 돌려준다.
+ */
+export async function checkQuoteSheetConnection(): Promise<{ ok: boolean; message: string }> {
+  const endpoint = new URL("/api/check-quote-sheet", typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  try {
+    const response = await fetch(endpoint.toString());
+    const data = (await response.json().catch(() => ({}))) as { ok?: boolean; message?: string };
+    return { ok: data.ok === true, message: typeof data.message === "string" ? data.message : "상태를 확인할 수 없습니다." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? `점검 실패: ${error.message}` : "점검 실패" };
+  }
 }
 
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
@@ -847,9 +865,11 @@ function normalizeQuoteSnapshot(snapshot: InquiryQuoteSnapshot, inquiry: Inquiry
     materialCharges,
     extraCharges,
     vatRate: normalizeVatRate(snapshot.vatRate),
+    vatManual: snapshot.vatManual === true,
     profitRate: normalizeRate(snapshot.profitRate, 0.08),
     roundingAdjust: typeof snapshot.roundingAdjust === "number" && Number.isFinite(snapshot.roundingAdjust) ? snapshot.roundingAdjust : undefined,
     deposit: normalizeNonNegativeNumber(snapshot.deposit, 0),
+    depositManual: snapshot.depositManual === true,
     memo: typeof snapshot.memo === "string" ? snapshot.memo : "",
     updatedAt: typeof snapshot.updatedAt === "string" ? snapshot.updatedAt : inquiry.created_at ?? null
   };

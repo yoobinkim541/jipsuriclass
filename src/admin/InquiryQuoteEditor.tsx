@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ChangeEvent, DragEvent } from "react";
-import { CheckCircle2, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, Save, Trash2, X } from "lucide-react";
+import { CheckCircle2, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, PlugZap, Save, Trash2, X } from "lucide-react";
 import {
   buildQuoteDraftFromInquiry,
   buildQuoteSourceLabel,
   calculateQuoteTotals,
+  checkQuoteSheetConnection,
   createQuoteSheet,
   downloadQuoteAsPdf,
   downloadQuoteAsXlsx,
@@ -60,6 +61,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   const [fullscreen, setFullscreen] = useState(false);
   const [sheetUrl, setSheetUrl] = useState("");
   const [publishing, setPublishing] = useState(false);
+  const [checking, setChecking] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const totals = useMemo(() => calculateQuoteTotals(draft), [draft]);
 
@@ -273,6 +275,17 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
     await downloadQuoteAsPdf({ inquiry, quote: draft, totals });
   }
 
+  async function handleCheckConnection() {
+    setChecking(true);
+    setFeedback(null);
+    try {
+      const result = await checkQuoteSheetConnection();
+      setFeedback(result.ok ? `구글시트 연동 정상 — ${result.message}` : `구글시트 연동 오류 — ${result.message}`);
+    } finally {
+      setChecking(false);
+    }
+  }
+
   async function handlePublishSheet() {
     setPublishing(true);
     setFeedback(null);
@@ -324,6 +337,10 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           <button className="admin-status-button quote-editor__action--accent" type="button" onClick={() => void handlePublishSheet()} disabled={publishing}>
             <FileSpreadsheet size={14} />
             {publishing ? "발행 중" : "구글시트로 발행"}
+          </button>
+          <button className="admin-status-button" type="button" onClick={() => void handleCheckConnection()} disabled={checking} title="발행 누르지 않고 구글시트 연동 상태만 확인">
+            <PlugZap size={14} />
+            {checking ? "점검 중" : "연동 점검"}
           </button>
           <button className="admin-status-button" type="button" onClick={applyBasicTemplate} disabled={saving || importing}>
             <Plus size={14} />
@@ -611,16 +628,58 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           <strong>{totals.subtotal.toLocaleString()}원</strong>
         </div>
         <div>
-          <span>부가세(10%)</span>
-          <strong>{totals.vat.toLocaleString()}원</strong>
+          <span>
+            부가세{draft.vatManual ? "" : "(10%)"}
+            <label className="quote-editor__manual-toggle">
+              <input
+                type="checkbox"
+                checked={draft.vatManual ?? false}
+                onChange={(event) => setDraft((current) => ({ ...current, vatManual: event.target.checked }))}
+              />
+              직접
+            </label>
+          </span>
+          {draft.vatManual ? (
+            <input
+              className="quote-field quote-field--number"
+              type="number"
+              min={0}
+              max={100}
+              step={1}
+              value={Math.round((draft.vatRate ?? 0.1) * 100)}
+              onChange={(event) => setDraft((current) => ({ ...current, vatRate: Math.min(100, Math.max(0, Number(event.target.value) || 0)) / 100 }))}
+            />
+          ) : (
+            <strong>{totals.vat.toLocaleString()}원</strong>
+          )}
         </div>
         <div className="quote-editor__summary-headline">
           <span>합계금액(부가세 포함)</span>
           <strong>{totals.total.toLocaleString()}원</strong>
         </div>
         <div>
-          <span>계약금(30%·만원 올림)</span>
-          <strong>{totals.deposit.toLocaleString()}원</strong>
+          <span>
+            계약금{draft.depositManual ? "" : "(30%)"}
+            <label className="quote-editor__manual-toggle">
+              <input
+                type="checkbox"
+                checked={draft.depositManual ?? false}
+                onChange={(event) => setDraft((current) => ({ ...current, depositManual: event.target.checked }))}
+              />
+              직접
+            </label>
+          </span>
+          {draft.depositManual ? (
+            <input
+              className="quote-field quote-field--number"
+              type="number"
+              min={0}
+              value={draft.deposit ?? 0}
+              onChange={(event) => setDraft((current) => ({ ...current, deposit: Math.max(0, Number(event.target.value) || 0) }))}
+            />
+          ) : (
+            <strong>{totals.deposit.toLocaleString()}원</strong>
+          )}
         </div>
         <div>
           <span>잔금</span>

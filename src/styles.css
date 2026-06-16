@@ -7582,6 +7582,27 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.quote-editor__manual-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-4, #94a0b8);
+  cursor: pointer;
+}
+.quote-editor__manual-toggle input {
+  width: 12px;
+  height: 12px;
+  cursor: pointer;
 }
 
 .quote-editor__summary strong {
