@@ -101,6 +101,39 @@ const quoteSourceDefinitions: QuoteSourceDefinition[] = [
 
 const quoteSourceByPricingPath = new Map(quoteSourceDefinitions.map((source) => [source.pricingPath, source]));
 const quoteSourceByServicePath = new Map(quoteSourceDefinitions.map((source) => [source.servicePath, source]));
+
+export type QuotePriceCatalogItem = {
+  sourceId: string | null;
+  name: string;
+  unit: string;
+  price: number;
+  materialNote: string | null;
+  note: string | null;
+};
+
+export type QuotePriceCatalogGroup = {
+  serviceLabel: string;
+  servicePath: string;
+  items: QuotePriceCatalogItem[];
+};
+
+/** 웹 가격표(서비스별) 전체 항목을 편집기에서 '골라 담기' 위해 평탄화해 제공한다. */
+export function getQuotePriceCatalog(): QuotePriceCatalogGroup[] {
+  return quoteSourceDefinitions.map((source) => ({
+    serviceLabel: source.serviceLabel,
+    servicePath: source.servicePath,
+    items: source.categories.flatMap((category) =>
+      category.items.map((item) => ({
+        sourceId: item.sourceId,
+        name: category.title && category.title !== item.name ? `${item.name}` : item.name,
+        unit: item.unit,
+        price: item.price,
+        materialNote: item.materialNote,
+        note: item.note
+      }))
+    )
+  }));
+}
 const fontCache = { promise: null as Promise<string> | null };
 const koreanFontUrl = "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf";
 
@@ -223,17 +256,49 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
 }
 
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
-  const XLSX = await import("xlsx");
   const buffer = await input.file.arrayBuffer();
+  return parseQuoteWorkbookBuffer(buffer, input.inquiry);
+}
+
+/** 구글 시트 링크에서 spreadsheet ID를 뽑는다. */
+export function extractGoogleSheetId(url: string): string | null {
+  const match = url.match(/spreadsheets\/d\/([a-zA-Z0-9-_]+)/) ?? url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+  return match ? match[1] : null;
+}
+
+/**
+ * 구글 시트 링크로 견적을 불러온다. 시트를 xlsx로 export하는 서버 프록시(/api/sheet-export)를
+ * 거쳐 받아 동일한 템플릿 파서로 처리한다. 시트는 '링크가 있는 모든 사용자: 보기'로 공유돼 있어야 한다.
+ */
+export async function importQuoteFromGoogleSheetUrl(input: { inquiry: InquiryRow; url: string }): Promise<InquiryQuoteSnapshot> {
+  const sheetId = extractGoogleSheetId(input.url.trim());
+  if (!sheetId) {
+    throw new Error("구글 시트 링크 형식이 아닙니다. https://docs.google.com/spreadsheets/d/... 링크를 붙여넣어 주세요.");
+  }
+
+  const endpoint = new URL("/api/sheet-export", typeof window !== "undefined" ? window.location.origin : "http://localhost");
+  endpoint.searchParams.set("id", sheetId);
+
+  const response = await fetch(endpoint.toString(), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("구글 시트를 불러오지 못했습니다. 시트가 '링크가 있는 모든 사용자 보기'로 공유돼 있는지 확인해 주세요.");
+  }
+
+  const buffer = await response.arrayBuffer();
+  return parseQuoteWorkbookBuffer(buffer, input.inquiry);
+}
+
+async function parseQuoteWorkbookBuffer(buffer: ArrayBuffer, inquiry: InquiryRow): Promise<InquiryQuoteSnapshot> {
+  const XLSX = await import("xlsx");
   const workbook = XLSX.read(buffer, { type: "array" });
   const sheetName = workbook.SheetNames[0];
   if (!sheetName) {
-    throw new Error("엑셀 파일에 시트가 없습니다. 샘플 템플릿 형식으로 다시 저장해 주세요.");
+    throw new Error("시트가 없습니다. 샘플 템플릿 형식으로 작성해 주세요.");
   }
 
   const sheet = workbook.Sheets[sheetName];
   if (!sheet) {
-    throw new Error("엑셀 시트를 읽지 못했습니다. 샘플 템플릿을 내려받아 같은 형식으로 작성해 주세요.");
+    throw new Error("시트를 읽지 못했습니다. 샘플 템플릿을 내려받아 같은 형식으로 작성해 주세요.");
   }
 
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "", blankrows: false }) as Array<
@@ -241,10 +306,10 @@ export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: Fi
   >;
 
   if (!rows.length) {
-    throw new Error("엑셀 시트가 비어 있습니다. 샘플 템플릿을 내려받아 작성한 뒤 업로드해 주세요.");
+    throw new Error("시트가 비어 있습니다. 샘플 템플릿을 내려받아 작성한 뒤 사용해 주세요.");
   }
 
-  return normalizeQuoteSnapshot(parseQuoteRows(rows), input.inquiry);
+  return normalizeQuoteSnapshot(parseQuoteRows(rows), inquiry);
 }
 
 export async function downloadQuoteTemplateAsXlsx() {

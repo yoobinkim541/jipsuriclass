@@ -7184,6 +7184,72 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   padding: 16px;
 }
 
+/* 전체 화면 편집: 좁은 사이드 패널 대신 넓게 작업 */
+.quote-editor__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: clamp(12px, 2.5vh, 32px) clamp(12px, 2.5vw, 40px);
+  background: rgba(8, 16, 30, 0.55);
+  backdrop-filter: blur(2px);
+  overflow: auto;
+}
+.quote-editor--fullscreen {
+  width: min(1280px, 100%);
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+  box-shadow: 0 24px 70px rgba(8, 22, 40, 0.35);
+}
+.quote-editor__close {
+  margin-left: auto;
+}
+
+/* 가격표에서 항목 골라 담기 */
+.quote-editor__catalog {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 12px;
+  border: 1px dashed var(--hair, #e6dfd0);
+  border-radius: 12px;
+  background: rgba(16, 40, 74, 0.03);
+}
+.quote-editor__catalog label {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink, #0b1a30);
+}
+.quote-editor__catalog select {
+  flex: 1 1 280px;
+  min-width: 0;
+}
+.quote-editor__catalog-hint {
+  flex: 1 1 100%;
+  font-size: 12px;
+  color: var(--ink-3, #5b6781);
+}
+
+/* 구글 시트 링크로 불러오기 */
+.quote-editor__gsheet {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.quote-editor__gsheet input {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.quote-editor__gsheet-hint {
+  flex: 1 1 100%;
+  font-size: 12px;
+  color: var(--ink-3, #5b6781);
+}
+
 .quote-editor__header {
   align-items: start;
   display: flex;
