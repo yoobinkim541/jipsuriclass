@@ -27,7 +27,9 @@
  */
 
 // ===== 설정 =====
-var SECRET = 'CHANGE_ME_비밀키';               // 사이트 QUOTE_SHEET_SECRET과 동일하게
+// 비밀키는 소스에 박지 않고 스크립트 속성(파일 > 프로젝트 속성 > 스크립트 속성, 키 'SECRET')에 둔다.
+// 미설정 시 빈 값 → doPost가 fail-closed로 막는다(공개 기본키로 실수 배포 방지).
+var SECRET = PropertiesService.getScriptProperties().getProperty('SECRET') || '';
 var TEMPLATE_ID = 'TEMPLATE_SPREADSHEET_ID';   // 토큰을 넣어둔 템플릿 스프레드시트 ID
 var DEST_FOLDER_ID = 'DEST_FOLDER_ID';         // 생성본 저장 폴더(견적완료건) ID
 var SHEET_TAB = '';                            // 값 채울 탭(비우면 첫 번째 탭)
@@ -40,6 +42,7 @@ var SUMMARY_START_COL = 2; // B
 function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (!SECRET) return json_({ error: '서버 설정 오류: 스크립트 속성 SECRET 미설정' });
     if (body.secret !== SECRET) return json_({ error: '인증 실패(secret 불일치)' });
 
     var folder = DriveApp.getFolderById(DEST_FOLDER_ID);
@@ -110,9 +113,9 @@ function groupRows_(rows) {
 function writeDetail_(sheet, row, groups) {
   var out = [];
   groups.forEach(function (g, gi) {
-    out.push([(gi + 1) * 100, g.name, '', '', '', '', '', '']);
+    out.push([(gi + 1) * 100, safe_(g.name), '', '', '', '', '', '']);
     g.lines.forEach(function (l) {
-      out.push(['', '', l.detail || '', num_(l.unitPrice), num_(l.qty), l.unit || '', num_(l.amount), l.remark || '']);
+      out.push(['', '', safe_(l.detail || ''), num_(l.unitPrice), num_(l.qty), safe_(l.unit || ''), num_(l.amount), safe_(l.remark || '')]);
     });
     out.push(['소계', '', '', '', '', '', g.total, '']);
   });
@@ -124,7 +127,7 @@ function writeDetail_(sheet, row, groups) {
 // 상단 요약표: 공종별 [코드,공사명,빈칸,금액]
 function writeSummary_(sheet, row, groups) {
   if (!groups.length) { sheet.getRange(row, SUMMARY_START_COL).setValue(''); return; }
-  var out = groups.map(function (g, gi) { return [(gi + 1) * 100, g.name, '', g.total]; });
+  var out = groups.map(function (g, gi) { return [(gi + 1) * 100, safe_(g.name), '', g.total]; });
   if (out.length > 1) sheet.insertRowsAfter(row, out.length - 1);
   sheet.getRange(row, SUMMARY_START_COL, out.length, 4).setValues(out);
 }
@@ -152,15 +155,15 @@ function replaceScalars_(sheet, map) {
       var v = vals[r][c];
       if (typeof v !== 'string' || v.indexOf('{{') < 0) continue;
       if (map.hasOwnProperty(v)) {
-        // 토큰만 단독 → 원래 타입(숫자) 그대로 넣음
-        vals[r][c] = map[v] == null ? '' : map[v];
+        // 토큰만 단독 → 원래 타입(숫자)은 그대로, 문자열은 수식주입 방지 이스케이프
+        vals[r][c] = map[v] == null ? '' : safe_(map[v]);
         changed = true;
       } else {
         var nv = v;
         for (var key in map) {
           if (nv.indexOf(key) >= 0) nv = nv.split(key).join(map[key] == null ? '' : String(map[key]));
         }
-        if (nv !== v) { vals[r][c] = nv; changed = true; }
+        if (nv !== v) { vals[r][c] = safe_(nv); changed = true; }
       }
     }
   }
@@ -168,6 +171,9 @@ function replaceScalars_(sheet, map) {
 }
 
 function num_(v) { var n = Number(v); return isNaN(n) ? (v || '') : n; }
+// 수식/CSV 주입 방지: =,+,-,@,탭,CR로 시작하는 문자열은 작은따옴표를 붙여 '텍스트'로 강제한다.
+// (setValues는 '='로 시작하는 값을 수식으로 평가 → 대표님이 시트 열 때 =IMPORTXML 등이 실행될 수 있음)
+function safe_(v) { return (typeof v === 'string' && /^[=+\-@\t\r]/.test(v)) ? "'" + v : v; }
 function today_() { return Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy.MM.dd'); }
 function json_(obj) { return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON); }
 function doGet() { return json_({ ok: true }); }
