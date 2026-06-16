@@ -44,9 +44,11 @@ const emptyLineItem = (index: number): InquiryQuoteLineItem => ({
   materialNote: null
 });
 
-/** 피드백 문구가 오류성인지(빨간 배너로 강조) 판별 — 한국어 실패 표현 휴리스틱. */
+/** 피드백 문구가 오류성인지(빨간 배너로 강조) 판별 — 한국어 실패 표현 휴리스틱.
+ * "확인"은 제외: 성공 안내("…아래 링크에서 확인하세요")에도 흔히 쓰여, 발행 성공 메시지가
+ * 빨간 오류 배너로 잘못 표시되던 문제가 있었음. 실제 오류는 실패/못/없습니다 등으로 잡힌다. */
 function isErrorFeedback(message: string): boolean {
-  return /(실패|못|오류|않았|아직|없습니다|에러|확인)/.test(message);
+  return /(실패|못|오류|않았|아직|없습니다|에러)/.test(message);
 }
 
 export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps) {
