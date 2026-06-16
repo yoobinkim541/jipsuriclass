@@ -570,9 +570,10 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             className="quote-field quote-field--number"
             type="number"
             min={0}
+            max={100}
             step={1}
             value={Math.round((draft.profitRate ?? 0.08) * 100)}
-            onChange={(event) => setDraft((current) => ({ ...current, profitRate: Math.max(0, Number(event.target.value) || 0) / 100 }))}
+            onChange={(event) => setDraft((current) => ({ ...current, profitRate: Math.min(100, Math.max(0, Number(event.target.value) || 0)) / 100 }))}
           />
         </label>
         <div>
