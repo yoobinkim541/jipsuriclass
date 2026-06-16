@@ -5,9 +5,36 @@ import { symptomCategories, type SymptomCategory } from "../data";
 import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
 import { MobileQuickCta } from "../components/site/SiteFooter";
 import { trackEvent } from "../lib/analytics";
+import { SiteContentService, defaultDiagnosisPageContent } from "../services/SiteContentService";
+import type { DiagnosisPageContent } from "../types";
+
+const siteContentService = new SiteContentService();
 
 export function DiagnosisPage() {
   const query = useMemo(() => new URLSearchParams(window.location.search), []);
+  const [content, setContent] = useState<DiagnosisPageContent>(defaultDiagnosisPageContent);
+
+  useEffect(() => {
+    let mounted = true;
+    void siteContentService
+      .loadDiagnosisContent()
+      .then((loaded) => {
+        if (mounted) setContent(loaded);
+      })
+      .catch(() => {
+        /* 로드 실패 시 기본 문구 유지 */
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // 관리자 편집 내용(content.topics)을 코드의 토픽에 id 기준으로 덧입혀 화면에 반영한다.
+  const topicOverrides = useMemo(() => new Map(content.topics.map((topic) => [topic.id, topic])), [content]);
+  const viewTopic = (topic: DiagnosisTopic): DiagnosisTopic => {
+    const override = topicOverrides.get(topic.id);
+    return override ? { ...topic, ...override } : topic;
+  };
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrollPct, setScrollPct] = useState(0);
   const [scrolled, setScrolled] = useState(false);
@@ -144,14 +171,11 @@ export function DiagnosisPage() {
 
       <main className="diagnosis-page" id="top">
         <section className="diagnosis-hero section" aria-labelledby="diagnosis-title">
-          <span className="landing-kicker">간편 자가진단</span>
+          <span className="landing-kicker">{content.hero.kicker}</span>
           <div className="diagnosis-hero-grid">
             <div className="diagnosis-hero-copy">
-              <h1 id="diagnosis-title">증상을 클릭하면 바로 원인과 다음 행동이 보입니다</h1>
-              <p>
-                "문이 좀 뻑뻑해요" 같은 생활 증상을 먼저 고르고, 원인 후보와 자가 점검 포인트를 확인한 뒤
-                필요한 경우 바로 상담으로 이어갑니다.
-              </p>
+              <h1 id="diagnosis-title">{content.hero.title}</h1>
+              <p>{content.hero.description}</p>
               <div className="hero-actions">
                 <a className="primary-button" href={business.phoneHref}>
                   <Phone size={20} />
@@ -170,9 +194,9 @@ export function DiagnosisPage() {
             <aside className="diagnosis-hero-panel">
               <span className="landing-panel-label">빠른 흐름</span>
               <ul className="landing-highlight-list">
-                <li>카테고리 선택</li>
-                <li>증상 클릭</li>
-                <li>원인 확인 후 상담 연결</li>
+                {content.hero.quickFlow.map((step, index) => (
+                  <li key={`${step}-${index}`}>{step}</li>
+                ))}
               </ul>
             </aside>
           </div>
@@ -181,8 +205,8 @@ export function DiagnosisPage() {
         {/* 1단: 카테고리 */}
         <section className="diagnosis-section section" aria-labelledby="diagnosis-cat-title">
           <div className="section-heading">
-            <h2 id="diagnosis-cat-title">어떤 부분이 문제인가요?</h2>
-            <p>해당하는 카테고리를 먼저 선택하세요.</p>
+            <h2 id="diagnosis-cat-title">{content.sections.categoryTitle}</h2>
+            <p>{content.sections.categoryDescription}</p>
           </div>
           <div className="diagnosis-cat-grid">
             {symptomCategories.map((cat) => (
@@ -202,13 +226,14 @@ export function DiagnosisPage() {
         {/* 2단: 세부 증상 */}
         <section ref={symptomListRef} className="diagnosis-section section" aria-labelledby="diagnosis-list-title">
           <div className="section-heading">
-            <h2 id="diagnosis-list-title">어떤 증상인가요?</h2>
-            <p>가장 비슷한 증상을 클릭하세요.</p>
+            <h2 id="diagnosis-list-title">{content.sections.symptomTitle}</h2>
+            <p>{content.sections.symptomDescription}</p>
           </div>
           <div className="diagnosis-topic-grid">
             {selectedCategory.symptoms.map((s) => {
-              const topic = diagnosisTopics.find((t) => t.id === s.id);
-              if (!topic) return null;
+              const base = diagnosisTopics.find((t) => t.id === s.id);
+              if (!base) return null;
+              const topic = viewTopic(base);
               return (
                 <button
                   key={topic.id}
@@ -228,25 +253,28 @@ export function DiagnosisPage() {
         {/* 답변 */}
         <section ref={answerRef} className="diagnosis-section section" aria-labelledby="diagnosis-answer-title">
           <div className="section-heading">
-            <h2 id="diagnosis-answer-title">답변</h2>
-            <p>선택한 증상에 따라 바로 확인해야 할 포인트를 정리합니다.</p>
+            <h2 id="diagnosis-answer-title">{content.sections.answerTitle}</h2>
+            <p>{content.sections.answerDescription}</p>
           </div>
 
+          {(() => {
+            const answer = viewTopic(selectedTopic);
+            return (
           <article className="diagnosis-answer-card">
             <div className="diagnosis-answer-header">
               <span className="admin-kicker">
                 <CheckCircle2 size={16} />
-                {selectedTopic.trigger}
+                {answer.trigger}
               </span>
-              <h3>{selectedTopic.title}</h3>
-              <p>{selectedTopic.summary}</p>
+              <h3>{answer.title}</h3>
+              <p>{answer.summary}</p>
             </div>
 
             <div className="diagnosis-answer-grid">
               <div className="diagnosis-answer-panel">
                 <strong>가능한 원인</strong>
                 <ul>
-                  {selectedTopic.likelyCauses.map((item) => (
+                  {answer.likelyCauses.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
@@ -254,7 +282,7 @@ export function DiagnosisPage() {
               <div className="diagnosis-answer-panel">
                 <strong>먼저 확인할 것</strong>
                 <ul>
-                  {selectedTopic.firstChecks.map((item) => (
+                  {answer.firstChecks.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
@@ -263,7 +291,7 @@ export function DiagnosisPage() {
 
             <div className="diagnosis-answer-note">
               <strong>이럴 때 상담하세요</strong>
-              <p>{selectedTopic.whenToCall}</p>
+              <p>{answer.whenToCall}</p>
             </div>
 
             {/* 증상을 확인한 직후(의도 정점)에 바로 연락할 수 있도록 전화·카톡을 1순위로.
@@ -282,12 +310,14 @@ export function DiagnosisPage() {
                 견적상담
               </a>
             </div>
-            {selectedTopic.ctaHref?.startsWith("/service/") && (
-              <a className="diagnosis-answer-servicelink" href={selectedTopic.ctaHref}>
-                {selectedTopic.ctaLabel} ›
+            {answer.ctaHref?.startsWith("/service/") && (
+              <a className="diagnosis-answer-servicelink" href={answer.ctaHref}>
+                {answer.ctaLabel} ›
               </a>
             )}
           </article>
+            );
+          })()}
         </section>
         <div className="mobile-cta-spacer" aria-hidden="true" />
       </main>

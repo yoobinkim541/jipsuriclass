@@ -3,13 +3,17 @@ import { images } from "../assets/images";
 import { defaultLandingPageContent, getLandingPageDefaultContent, landingPageDefinitions, mergeLandingPageContent, type LandingPageContent } from "../landingPages";
 import { defaultHomepageSectionOrder, normalizeSectionOrder } from "../contentSections";
 import { supabase } from "../lib/supabaseClient";
+import { diagnosisTopics } from "../diagnosis/diagnosisData";
 import type {
   AccountPageContent,
+  DiagnosisPageContent,
+  DiagnosisTopicContent,
   EstimatePageContent,
   EstimateSurveyStepContent,
   HomepageContent,
   HomepageHeroProof,
-  HomepageHeroTrustItem
+  HomepageHeroTrustItem,
+  PrivacyPageContent
 } from "../types";
 
 type SiteContentRow = {
@@ -21,7 +25,9 @@ const CONTENT_IDS = {
   homepage: "homepage",
   account: "account",
   estimate: "estimate",
-  landingPages: "landing-pages"
+  landingPages: "landing-pages",
+  privacy: "privacy",
+  diagnosis: "diagnosis"
 } as const;
 
 export type LandingPagesContent = Record<string, LandingPageContent>;
@@ -328,6 +334,58 @@ export const defaultEstimatePageContent: EstimatePageContent = {
   }
 };
 
+export const defaultPrivacyPageContent: PrivacyPageContent = {
+  intro: {
+    kicker: "개인정보처리방침",
+    title: "문의와 상담에 필요한 최소 정보만 처리합니다",
+    description:
+      "집수리클라쓰는 견적 문의, 고객 응대, 시공 상담, 사후 확인을 위해 이름, 연락처, 지역, 문의 내용, 첨부 사진, 로그인 계정 정보를 처리합니다."
+  },
+  sections: [
+    { heading: "수집 항목", body: "이름, 연락처, 지역, 문의 내용, 사진 첨부, 로그인 이메일, 문의 작성 시각과 상태 정보." },
+    { heading: "이용 목적", body: "견적 안내, 현장 상담, 시공 관리, 고객 계정 제공, 관리자 응대, 문의 이력 보관." },
+    {
+      heading: "보관과 삭제",
+      body: "상담과 시공 완료 후에도 분쟁 대응과 사후 관리가 필요한 기간 동안 보관할 수 있으며, 삭제 요청 시 관련 법령과 내부 보관 기준에 따라 처리합니다."
+    },
+    {
+      heading: "제3자 제공",
+      body: "원칙적으로 외부에 제공하지 않으며, 사용자가 선택한 저장·알림 서비스는 운영 목적 범위 내에서만 사용합니다."
+    },
+    { heading: "문의", body: `개인정보 관련 문의는 전화 ${business.phone} 또는 사이트 문의 채널로 접수할 수 있습니다.` }
+  ],
+  contactNote: business.name
+};
+
+export const defaultDiagnosisPageContent: DiagnosisPageContent = {
+  hero: {
+    kicker: "간편 자가진단",
+    title: "증상을 클릭하면 바로 원인과 다음 행동이 보입니다",
+    description:
+      '"문이 좀 뻑뻑해요" 같은 생활 증상을 먼저 고르고, 원인 후보와 자가 점검 포인트를 확인한 뒤 필요한 경우 바로 상담으로 이어갑니다.',
+    quickFlow: ["카테고리 선택", "증상 클릭", "원인 확인 후 상담 연결"]
+  },
+  sections: {
+    categoryTitle: "어떤 부분이 문제인가요?",
+    categoryDescription: "해당하는 카테고리를 먼저 선택하세요.",
+    symptomTitle: "어떤 증상인가요?",
+    symptomDescription: "가장 비슷한 증상을 클릭하세요.",
+    answerTitle: "답변",
+    answerDescription: "선택한 증상에 따라 바로 확인해야 할 포인트를 정리합니다."
+  },
+  topics: diagnosisTopics.map((topic) => ({
+    id: topic.id,
+    trigger: topic.trigger,
+    title: topic.title,
+    summary: topic.summary,
+    likelyCauses: [...topic.likelyCauses],
+    firstChecks: [...topic.firstChecks],
+    whenToCall: topic.whenToCall,
+    ctaLabel: topic.ctaLabel,
+    ctaHref: topic.ctaHref
+  }))
+};
+
 export class SiteContentService {
   async loadHomepageContent(): Promise<HomepageContent> {
     return this.loadContent(CONTENT_IDS.homepage, defaultHomepageContent, mergeHomepageContent, isHomepageContent);
@@ -351,6 +409,22 @@ export class SiteContentService {
 
   async saveEstimateContent(content: EstimatePageContent) {
     await this.saveContent(CONTENT_IDS.estimate, content, isEstimatePageContent);
+  }
+
+  async loadPrivacyContent(): Promise<PrivacyPageContent> {
+    return this.loadContent(CONTENT_IDS.privacy, defaultPrivacyPageContent, mergePrivacyPageContent, isPrivacyPageContent);
+  }
+
+  async savePrivacyContent(content: PrivacyPageContent) {
+    await this.saveContent(CONTENT_IDS.privacy, content, isPrivacyPageContent);
+  }
+
+  async loadDiagnosisContent(): Promise<DiagnosisPageContent> {
+    return this.loadContent(CONTENT_IDS.diagnosis, defaultDiagnosisPageContent, mergeDiagnosisPageContent, isDiagnosisPageContent);
+  }
+
+  async saveDiagnosisContent(content: DiagnosisPageContent) {
+    await this.saveContent(CONTENT_IDS.diagnosis, content, isDiagnosisPageContent);
   }
 
   async loadLandingPagesContent(): Promise<LandingPagesContent> {
@@ -682,6 +756,119 @@ function mergeEstimatePageContent(base: EstimatePageContent, override: unknown):
       ...(input.reviewLabels ?? {})
     }
   };
+}
+
+function mergePrivacyPageContent(base: PrivacyPageContent, override: unknown): PrivacyPageContent {
+  if (!override || typeof override !== "object") {
+    return base;
+  }
+
+  const input = override as Partial<PrivacyPageContent>;
+
+  return {
+    intro: { ...base.intro, ...(input.intro ?? {}) },
+    sections: Array.isArray(input.sections)
+      ? input.sections
+          .filter((item): item is { heading: string; body: string } => isRecord(item) && isString(item.heading) && isString(item.body))
+          .map((item) => ({ heading: item.heading, body: item.body }))
+      : base.sections,
+    contactNote: typeof input.contactNote === "string" ? input.contactNote : base.contactNote
+  };
+}
+
+function isPrivacyPageContent(value: unknown): value is PrivacyPageContent {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isRecord(value.intro) &&
+    isString(value.intro.kicker) &&
+    isString(value.intro.title) &&
+    isString(value.intro.description) &&
+    Array.isArray(value.sections) &&
+    value.sections.every((item) => isRecord(item) && isString(item.heading) && isString(item.body)) &&
+    isString(value.contactNote)
+  );
+}
+
+function mergeDiagnosisPageContent(base: DiagnosisPageContent, override: unknown): DiagnosisPageContent {
+  if (!override || typeof override !== "object") {
+    return base;
+  }
+
+  const input = override as Partial<DiagnosisPageContent>;
+  const overrideTopics = Array.isArray(input.topics) ? input.topics : [];
+
+  return {
+    hero: {
+      ...base.hero,
+      ...(input.hero ?? {}),
+      quickFlow: Array.isArray(input.hero?.quickFlow)
+        ? input.hero!.quickFlow.filter((item): item is string => typeof item === "string")
+        : base.hero.quickFlow
+    },
+    sections: { ...base.sections, ...(input.sections ?? {}) },
+    // 토픽은 코드의 카테고리 매핑(id 기준)과 연결되므로 id로 병합해 구조를 보존한다
+    // (편집기는 텍스트만 수정하고 토픽 추가·삭제는 하지 않는다).
+    topics: base.topics.map((topic) => {
+      const incoming = overrideTopics.find((item) => isRecord(item) && item.id === topic.id) as
+        | Partial<DiagnosisTopicContent>
+        | undefined;
+      if (!incoming) {
+        return topic;
+      }
+      return {
+        ...topic,
+        ...incoming,
+        id: topic.id,
+        likelyCauses: Array.isArray(incoming.likelyCauses)
+          ? incoming.likelyCauses.filter((item): item is string => typeof item === "string")
+          : topic.likelyCauses,
+        firstChecks: Array.isArray(incoming.firstChecks)
+          ? incoming.firstChecks.filter((item): item is string => typeof item === "string")
+          : topic.firstChecks
+      };
+    })
+  };
+}
+
+function isDiagnosisTopicContent(value: unknown): value is DiagnosisTopicContent {
+  return (
+    isRecord(value) &&
+    isString(value.id) &&
+    isString(value.trigger) &&
+    isString(value.title) &&
+    isString(value.summary) &&
+    isStringArray(value.likelyCauses) &&
+    isStringArray(value.firstChecks) &&
+    isString(value.whenToCall) &&
+    isString(value.ctaLabel) &&
+    isString(value.ctaHref)
+  );
+}
+
+function isDiagnosisPageContent(value: unknown): value is DiagnosisPageContent {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isRecord(value.hero) &&
+    isString(value.hero.kicker) &&
+    isString(value.hero.title) &&
+    isString(value.hero.description) &&
+    isStringArray(value.hero.quickFlow) &&
+    isRecord(value.sections) &&
+    isString(value.sections.categoryTitle) &&
+    isString(value.sections.categoryDescription) &&
+    isString(value.sections.symptomTitle) &&
+    isString(value.sections.symptomDescription) &&
+    isString(value.sections.answerTitle) &&
+    isString(value.sections.answerDescription) &&
+    Array.isArray(value.topics) &&
+    value.topics.every(isDiagnosisTopicContent)
+  );
 }
 
 function isAccountPageContent(value: unknown): value is AccountPageContent {
