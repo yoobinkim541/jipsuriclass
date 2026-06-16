@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { resolveWebAppUrl, deployTailOf } from "./_quoteSheetUrl";
 
 /**
  * 견적을 대표님 구글 계정의 Apps Script 웹앱으로 보내 '견적완료건' 템플릿 시트를 생성한다.
@@ -15,25 +14,26 @@ export default async function handler(request: VercelRequest, response: VercelRe
     return;
   }
 
-  const rawWebAppUrl = process.env.QUOTE_SHEET_WEBAPP_URL;
-  const secret = process.env.QUOTE_SHEET_SECRET;
-  if (!rawWebAppUrl || !secret) {
-    response.status(503).json({
-      error: "구글시트 연동이 아직 설정되지 않았습니다. QUOTE_SHEET_WEBAPP_URL / QUOTE_SHEET_SECRET 환경변수를 등록해 주세요."
-    });
-    return;
-  }
-  // QUOTE_SHEET_WEBAPP_URL에 전체 URL이 아니라 Apps Script 배포 ID(AKfycb…)나
-  // 경로만 넣은 경우에도 동작하도록 전체 exec URL로 보정한다.
-  const webAppUrl = resolveWebAppUrl(rawWebAppUrl);
-
-  const payload = typeof request.body === "string" ? safeParse(request.body) : request.body;
-  if (!payload || typeof payload !== "object") {
-    response.status(400).json({ error: "잘못된 요청 본문입니다." });
-    return;
-  }
-
+  // 어떤 예외든 platform 500(불투명 에러 페이지) 대신 JSON 오류로 돌려준다.
   try {
+    const rawWebAppUrl = process.env.QUOTE_SHEET_WEBAPP_URL;
+    const secret = process.env.QUOTE_SHEET_SECRET;
+    if (!rawWebAppUrl || !secret) {
+      response.status(503).json({
+        error: "구글시트 연동이 아직 설정되지 않았습니다. QUOTE_SHEET_WEBAPP_URL / QUOTE_SHEET_SECRET 환경변수를 등록해 주세요."
+      });
+      return;
+    }
+    // QUOTE_SHEET_WEBAPP_URL에 전체 URL이 아니라 Apps Script 배포 ID(AKfycb…)나
+    // 경로만 넣은 경우에도 동작하도록 전체 exec URL로 보정한다.
+    const webAppUrl = resolveWebAppUrl(rawWebAppUrl);
+
+    const payload = typeof request.body === "string" ? safeParse(request.body) : request.body;
+    if (!payload || typeof payload !== "object") {
+      response.status(400).json({ error: "잘못된 요청 본문입니다." });
+      return;
+    }
+
     const upstream = await fetch(webAppUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -84,4 +84,26 @@ function safeParse(value: string): unknown {
   } catch {
     return null;
   }
+}
+
+// ── Apps Script 웹앱 주소 정규화 (서버리스 번들 안정성을 위해 파일 내 인라인) ──
+// 전체 URL / script.google.com / /macros/… / 배포ID(AKfycb…) 어떤 형태든 …/exec로 보정.
+function resolveWebAppUrl(raw: string): string {
+  const value = raw.trim();
+  if (/^https?:\/\//i.test(value)) return ensureExec(value);
+  if (value.startsWith("script.google.com")) return ensureExec(`https://${value}`);
+  if (value.startsWith("/macros/")) return ensureExec(`https://script.google.com${value}`);
+  const id = value.replace(/^\/+|\/+$/g, "");
+  return `https://script.google.com/macros/s/${id}/exec`;
+}
+
+function ensureExec(url: string): string {
+  const cleaned = url.replace(/\/+$/, "");
+  if (/\/macros\/s\/[^/]+$/.test(cleaned)) return `${cleaned}/exec`;
+  return cleaned;
+}
+
+// 배포 ID 끝 10자리(비밀 아님) — 진단 메시지용.
+function deployTailOf(url: string): string {
+  return url.match(/\/s\/([^/]+)/)?.[1]?.slice(-10) ?? "?";
 }
