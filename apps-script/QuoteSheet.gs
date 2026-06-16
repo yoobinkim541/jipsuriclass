@@ -105,19 +105,20 @@ function groupRows_(rows) {
   return order.map(function (k) { return map[k]; });
 }
 
-// 상세내역: 공종별 [코드,공사명] 헤더 → 각 줄 [ , ,내용,단가,수량,단위,금액] → [소계,…,금액]
+// 상세내역: 공종별 [코드,공사명] 헤더 → 각 줄 [ , ,내용,단가,수량,단위,금액,비고] → [소계,…,금액]
+// 8열: B코드 C공사명 D내용 E단가 F수량 G단위 H금액 I비고
 function writeDetail_(sheet, row, groups) {
   var out = [];
   groups.forEach(function (g, gi) {
-    out.push([(gi + 1) * 100, g.name, '', '', '', '', '']);
+    out.push([(gi + 1) * 100, g.name, '', '', '', '', '', '']);
     g.lines.forEach(function (l) {
-      out.push(['', '', detailText_(l), num_(l.unitPrice), num_(l.qty), l.unit || '', num_(l.amount)]);
+      out.push(['', '', l.detail || '', num_(l.unitPrice), num_(l.qty), l.unit || '', num_(l.amount), l.remark || '']);
     });
-    out.push(['소계', '', '', '', '', '', g.total]);
+    out.push(['소계', '', '', '', '', '', g.total, '']);
   });
   if (!out.length) { sheet.getRange(row, DETAIL_START_COL).setValue(''); return; }
   if (out.length > 1) sheet.insertRowsAfter(row, out.length - 1);
-  sheet.getRange(row, DETAIL_START_COL, out.length, 7).setValues(out);
+  sheet.getRange(row, DETAIL_START_COL, out.length, 8).setValues(out);
 }
 
 // 상단 요약표: 공종별 [코드,공사명,빈칸,금액]
@@ -126,13 +127,6 @@ function writeSummary_(sheet, row, groups) {
   var out = groups.map(function (g, gi) { return [(gi + 1) * 100, g.name, '', g.total]; });
   if (out.length > 1) sheet.insertRowsAfter(row, out.length - 1);
   sheet.getRange(row, SUMMARY_START_COL, out.length, 4).setValues(out);
-}
-
-function detailText_(l) {
-  var name = l.name || '';
-  var detail = l.detail || '';
-  if (name && detail && name !== detail) return name + '\n' + detail;
-  return detail || name;
 }
 
 function findMarkers_(sheet) {

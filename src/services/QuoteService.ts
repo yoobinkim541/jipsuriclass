@@ -259,7 +259,7 @@ export type QuoteSheetPayload = {
   fileName: string;
   customer: { name: string; phone: string; address: string };
   target: string;
-  rows: Array<{ kind: "work" | "material" | "extra"; group: string; name: string; detail: string; unit: string; qty: number; unitPrice: number; amount: number }>;
+  rows: Array<{ kind: "work" | "material" | "extra"; group: string; detail: string; remark: string; unit: string; qty: number; unitPrice: number; amount: number }>;
   totals: { workCost: number; profit: number; profitRate: number; rounding: number; subtotal: number; vat: number; total: number; deposit: number; balance: number };
   memo: string;
 };
@@ -278,8 +278,8 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     ...quote.lineItems.map((item) => ({
       kind: "work" as const,
       group: item.categoryTitle ?? "공사",
-      name: item.name,
-      detail: item.note ?? "",
+      detail: item.name, // 내용(D)
+      remark: item.note ?? "", // 비고(I) — 편집기 비고 입력값
       unit: item.unit,
       qty: item.qty,
       unitPrice: item.unitPrice,
@@ -288,8 +288,8 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     ...quote.materialCharges.map((charge) => ({
       kind: "material" as const,
       group: "자재",
-      name: charge.label,
-      detail: "자재",
+      detail: charge.label,
+      remark: "자재 별도",
       unit: "",
       qty: charge.qty,
       unitPrice: charge.unitPrice,
@@ -298,8 +298,8 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
     ...quote.extraCharges.map((charge) => ({
       kind: "extra" as const,
       group: "기타",
-      name: charge.label,
-      detail: "부대비용",
+      detail: charge.label,
+      remark: "",
       unit: "",
       qty: 1,
       unitPrice: charge.amount,
