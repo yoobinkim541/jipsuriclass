@@ -36,8 +36,14 @@ type QuoteTotals = {
   workSubtotal: number;
   materialSubtotal: number;
   extraSubtotal: number;
+  workCost: number;
+  profit: number;
+  rounding: number;
+  subtotal: number;
   vat: number;
   total: number;
+  deposit: number;
+  balance: number;
 };
 
 type QuoteDownloadContext = {
@@ -167,7 +173,9 @@ export function buildQuoteDraftFromInquiry(inquiry: InquiryRow): InquiryQuoteSna
       lineItems: resolvedItems.map((item, index) => createQuoteLineItem(item, index)),
       materialCharges: [],
       extraCharges: [],
-      vatRate: 0.1,
+      vatRate: 0,
+      profitRate: 0.08,
+      deposit: 0,
       memo: "",
       updatedAt: null
     },
@@ -194,15 +202,24 @@ export function calculateQuoteTotals(quote: InquiryQuoteSnapshot): QuoteTotals {
   const workSubtotal = quote.lineItems.reduce((sum, item) => sum + item.unitPrice * item.qty, 0);
   const materialSubtotal = quote.materialCharges.reduce((sum, item) => sum + item.amount, 0);
   const extraSubtotal = quote.extraCharges.reduce((sum, item) => sum + item.amount, 0);
-  const vat = Math.round((workSubtotal + materialSubtotal + extraSubtotal) * quote.vatRate);
+  // 공사비합계 = 공임(작업) + 자재 + 부대비용
+  const workCost = workSubtotal + materialSubtotal + extraSubtotal;
 
-  return {
-    workSubtotal,
-    materialSubtotal,
-    extraSubtotal,
-    vat,
-    total: workSubtotal + materialSubtotal + extraSubtotal + vat
-  };
+  // 이윤(기본 8%, 직원 조정 가능)
+  const profitRate = typeof quote.profitRate === "number" && quote.profitRate >= 0 ? quote.profitRate : 0.08;
+  const profit = Math.round(workCost * profitRate);
+  const beforeRounding = workCost + profit;
+  // 천원이하 절삭: roundingAdjust 지정 시 그 값, 미지정 시 만원 미만 자동 절삭(음수)
+  const rounding = typeof quote.roundingAdjust === "number" ? quote.roundingAdjust : -(beforeRounding % 10000);
+  // 합계(부가세 별도)
+  const subtotal = beforeRounding + rounding;
+
+  const vat = Math.round(subtotal * (typeof quote.vatRate === "number" ? quote.vatRate : 0));
+  const total = subtotal + vat;
+  const deposit = typeof quote.deposit === "number" && quote.deposit >= 0 ? quote.deposit : 0;
+  const balance = total - deposit;
+
+  return { workSubtotal, materialSubtotal, extraSubtotal, workCost, profit, rounding, subtotal, vat, total, deposit, balance };
 }
 
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
@@ -320,9 +337,17 @@ export async function downloadQuoteAsXlsx(input: QuoteDownloadContext) {
 
   rows.push(
     [],
-    ["공급가액", "", "", "", totals.workSubtotal + totals.materialSubtotal + totals.extraSubtotal, ""],
-    ["부가세", "", "", "", totals.vat, ""],
-    ["합계", "", "", "", totals.total, ""],
+    ["공사비합계", "", "", "", totals.workCost, ""],
+    ["이윤", "", "", "", totals.profit, ""],
+    ["천원이하 절삭", "", "", "", totals.rounding, ""],
+    ["합계 금액 (부가세 별도)", "", "", "", totals.subtotal, ""]
+  );
+  if (totals.vat > 0) {
+    rows.push(["부가세", "", "", "", totals.vat, ""], ["합계 금액", "", "", "", totals.total, ""]);
+  }
+  rows.push(
+    ["계약금(선수금)", "", "", "", totals.deposit, ""],
+    ["잔금", "", "", "", totals.balance, ""],
     [],
     ["메모", input.quote.memo || "-"]
   );
@@ -420,15 +445,27 @@ export async function downloadQuoteAsPdf(input: QuoteDownloadContext) {
     margin: { left: margin, right: margin }
   });
 
-  const summaryY = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? materialStart) + 18;
+  let summaryY = ((doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? materialStart) + 18;
   doc.setFont("NotoSansKR", "bold");
   doc.setFontSize(11);
-  doc.text(`공급가액: ${formatCurrency(totals.workSubtotal + totals.materialSubtotal + totals.extraSubtotal)}`, margin, summaryY);
-  doc.text(`부가세: ${formatCurrency(totals.vat)}`, margin, summaryY + 16);
-  doc.text(`합계: ${formatCurrency(totals.total)}`, margin, summaryY + 32);
+  const summaryLines: string[] = [
+    `공사비합계: ${formatCurrency(totals.workCost)}`,
+    `이윤: ${formatCurrency(totals.profit)}`,
+    `천원이하 절삭: ${formatCurrency(totals.rounding)}`,
+    `합계 금액 (부가세 별도): ${formatCurrency(totals.subtotal)}`,
+    ...(totals.vat > 0 ? [`부가세: ${formatCurrency(totals.vat)}`, `합계 금액: ${formatCurrency(totals.total)}`] : []),
+    `계약금(선수금): ${formatCurrency(totals.deposit)}`,
+    `잔금: ${formatCurrency(totals.balance)}`
+  ];
+  for (const line of summaryLines) {
+    doc.text(line, margin, summaryY);
+    summaryY += 16;
+  }
   doc.setFont("NotoSansKR", "normal");
   doc.setFontSize(9);
-  doc.text(`메모: ${input.quote.memo || "-"}`, margin, summaryY + 54);
+  doc.text("상기 견적서는 발행일로부터 약 2주간 유효합니다. 무상하자 보증 기간은 만 1년입니다.", margin, summaryY + 6);
+  doc.text("입금계좌: 신한은행 110-330-187270 (김헌영) · 집수리클라쓰 김헌영 실장", margin, summaryY + 20);
+  doc.text(`메모: ${input.quote.memo || "-"}`, margin, summaryY + 38);
 
   doc.save(buildQuoteFilename(input.inquiry.name, documentTitle, "pdf"));
 }
@@ -586,6 +623,9 @@ function normalizeQuoteSnapshot(snapshot: InquiryQuoteSnapshot, inquiry: Inquiry
     materialCharges,
     extraCharges,
     vatRate: normalizeVatRate(snapshot.vatRate),
+    profitRate: normalizeRate(snapshot.profitRate, 0.08),
+    roundingAdjust: typeof snapshot.roundingAdjust === "number" && Number.isFinite(snapshot.roundingAdjust) ? snapshot.roundingAdjust : undefined,
+    deposit: normalizeNonNegativeNumber(snapshot.deposit, 0),
     memo: typeof snapshot.memo === "string" ? snapshot.memo : "",
     updatedAt: typeof snapshot.updatedAt === "string" ? snapshot.updatedAt : inquiry.created_at ?? null
   };
@@ -793,7 +833,13 @@ function normalizeNonNegativeNumber(value: unknown, fallback: number) {
 
 function normalizeVatRate(value: unknown) {
   const next = Number(value);
-  return Number.isFinite(next) && next >= 0 && next <= 1 ? next : 0.1;
+  // 대표님 견적서는 부가세 별도(0)가 기본. 값이 없거나 잘못되면 0.
+  return Number.isFinite(next) && next >= 0 && next <= 1 ? next : 0;
+}
+
+function normalizeRate(value: unknown, fallback: number) {
+  const next = Number(value);
+  return Number.isFinite(next) && next >= 0 && next <= 1 ? next : fallback;
 }
 
 function formatCurrency(value: number) {

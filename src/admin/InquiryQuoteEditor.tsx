@@ -412,16 +412,50 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
 
       <div className="quote-editor__summary">
         <div>
-          <span>공급가액</span>
-          <strong>{(totals.workSubtotal + totals.materialSubtotal + totals.extraSubtotal).toLocaleString()}원</strong>
+          <span>공사비합계</span>
+          <strong>{totals.workCost.toLocaleString()}원</strong>
         </div>
+        <label>
+          <span>이윤율(%)</span>
+          <input
+            className="quote-field quote-field--number"
+            type="number"
+            min={0}
+            step={1}
+            value={Math.round((draft.profitRate ?? 0.08) * 100)}
+            onChange={(event) => setDraft((current) => ({ ...current, profitRate: Math.max(0, Number(event.target.value) || 0) / 100 }))}
+          />
+        </label>
         <div>
-          <span>부가세</span>
-          <strong>{totals.vat.toLocaleString()}원</strong>
+          <span>이윤</span>
+          <strong>{totals.profit.toLocaleString()}원</strong>
         </div>
+        <label>
+          <span>절삭</span>
+          <input
+            className="quote-field quote-field--number"
+            type="number"
+            value={totals.rounding}
+            onChange={(event) => setDraft((current) => ({ ...current, roundingAdjust: Number(event.target.value) || 0 }))}
+          />
+        </label>
         <div>
-          <span>합계</span>
-          <strong>{totals.total.toLocaleString()}원</strong>
+          <span>합계(부가세 별도)</span>
+          <strong>{totals.subtotal.toLocaleString()}원</strong>
+        </div>
+        <label>
+          <span>계약금</span>
+          <input
+            className="quote-field quote-field--number"
+            type="number"
+            min={0}
+            value={draft.deposit ?? 0}
+            onChange={(event) => setDraft((current) => ({ ...current, deposit: Math.max(0, Number(event.target.value) || 0) }))}
+          />
+        </label>
+        <div>
+          <span>잔금</span>
+          <strong>{totals.balance.toLocaleString()}원</strong>
         </div>
       </div>
 
