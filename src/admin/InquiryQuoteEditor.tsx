@@ -44,6 +44,11 @@ const emptyLineItem = (index: number): InquiryQuoteLineItem => ({
   materialNote: null
 });
 
+/** 피드백 문구가 오류성인지(빨간 배너로 강조) 판별 — 한국어 실패 표현 휴리스틱. */
+function isErrorFeedback(message: string): boolean {
+  return /(실패|못|오류|않았|아직|없습니다|에러|확인)/.test(message);
+}
+
 export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps) {
   const [draft, setDraft] = useState<InquiryQuoteSnapshot>(() => ensureEditableDraft(buildQuoteDraftFromInquiry(inquiry)));
   const [saving, setSaving] = useState(false);
@@ -338,6 +343,16 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
         </div>
       </div>
 
+      {feedback ? (
+        <p
+          className={`quote-editor__feedback ${isErrorFeedback(feedback) ? "quote-editor__feedback--error" : "quote-editor__feedback--ok"}`}
+          role="status"
+          aria-live="polite"
+        >
+          {feedback}
+        </p>
+      ) : null}
+
       <div className="quote-editor__meta">
         <span>출처: {sourceLabel}</span>
         <span>기준: {draft.selectedWorks.length ? draft.selectedWorks.join(", ") : "직접 작성"}</span>
@@ -619,8 +634,6 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           placeholder="견적 조건, 자재 선택 이유, 추가 안내 등을 적습니다."
         />
       </label>
-
-      {feedback ? <p className="quote-editor__feedback">{feedback}</p> : null}
     </section>
   );
 

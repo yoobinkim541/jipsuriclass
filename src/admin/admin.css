@@ -1851,6 +1851,18 @@
   }
   .adm-root .quote-field::placeholder { color: var(--ink-3); }
   .adm-root .quote-editor__catalog { background: rgba(124, 152, 240, 0.1); border-color: var(--hair); }
+  /* 발행/저장 결과 배너: 밝은 파스텔 배경 → 다크 반투명 + 밝은 글씨로 */
+  .adm-root .quote-editor__feedback { color: var(--ink-2); border-color: var(--hair); }
+  .adm-root .quote-editor__feedback--ok {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #6ee7b7;
+  }
+  .adm-root .quote-editor__feedback--error {
+    background: rgba(220, 38, 38, 0.14);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #fca5a5;
+  }
   .adm-root .quote-editor__meta span {
     background: rgba(124, 152, 240, 0.18);
     color: var(--ink-2);
