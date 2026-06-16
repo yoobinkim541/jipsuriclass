@@ -455,74 +455,26 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
       aria-labelledby={`quote-editor-${inquiry.id}`}
     >
       <div className="quote-editor__header">
-        <div>
+        <div className="quote-editor__title">
           <span className="admin-kicker">견적 편집</span>
-          <h3 id={`quote-editor-${inquiry.id}`}>엑셀 표처럼 편집하고 바로 다운로드합니다</h3>
-          <p>
-            선택 항목을 견적서 초안으로 불러와 자재비와 부대비용을 바로 수정할 수 있습니다. 엑셀 파일을 드래그 앤 드롭하면 현재 견적 초안을 그 내용으로 교체할 수 있습니다. 저장한 내용은 문의의 `intake.quoteSnapshot`에 보관됩니다.
-          </p>
+          <h3 id={`quote-editor-${inquiry.id}`}>견적서 작성</h3>
+          <p>항목을 추가하고 금액을 다듬은 뒤, 아래에서 구글시트·PDF로 발행합니다.</p>
         </div>
         <div className="quote-editor__actions">
+          <button className="admin-status-button quote-editor__icon-button" type="button" onClick={() => setFullscreen((value) => !value)} title={fullscreen ? "전체 화면 축소" : "전체 화면으로 편집"}>
+            {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+          </button>
           <button className="admin-status-button quote-editor__action--primary" type="button" onClick={() => void handleSave()} disabled={saving}>
             <Save size={14} />
             {saving ? "저장 중" : "견적 저장"}
-          </button>
-          <button className="admin-status-button" type="button" onClick={() => void handleXlsxDownload()}>
-            <Download size={14} />
-            엑셀 다운로드
-          </button>
-          <button className="admin-status-button" type="button" onClick={() => void handleTemplateDownload()}>
-            <Download size={14} />
-            샘플 템플릿
-          </button>
-          <button className="admin-status-button" type="button" onClick={() => void handlePdfDownload()}>
-            <Download size={14} />
-            PDF 다운로드
-          </button>
-          <button
-            className={
-              !draft.sheetUrl || sheetChangedSincePublish
-                ? "admin-status-button quote-editor__action--accent"
-                : "admin-status-button"
-            }
-            type="button"
-            onClick={() => void handlePublishSheet()}
-            disabled={publishing}
-            title={sheetChangedSincePublish ? "변경된 내용으로 구글시트를 다시 발행합니다" : undefined}
-          >
-            <FileSpreadsheet size={14} />
-            {publishLabel}
-            {sheetChangedSincePublish ? " ●" : ""}
-          </button>
-          <button
-            className="admin-status-button"
-            type="button"
-            onClick={() => void handleCreatePdf()}
-            disabled={makingPdf || !draft.sheetUrl}
-            title={draft.sheetUrl ? "발행된 구글시트를 PDF로 내보냅니다" : "먼저 구글시트로 발행하세요"}
-          >
-            <Download size={14} />
-            {makingPdf ? "PDF 생성 중" : "PDF 만들기"}
-          </button>
-          <button className="admin-status-button" type="button" onClick={() => void handleCheckConnection()} disabled={checking} title="발행 누르지 않고 구글시트 연동 상태만 확인">
-            <PlugZap size={14} />
-            {checking ? "점검 중" : "연동 점검"}
-          </button>
-          <button className="admin-status-button" type="button" onClick={applyBasicTemplate} disabled={saving || importing}>
-            <Plus size={14} />
-            기본 템플릿
-          </button>
-          <button className="admin-status-button" type="button" onClick={() => setFullscreen((value) => !value)}>
-            {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-            {fullscreen ? "축소" : "전체 화면"}
           </button>
           <button className="admin-primary-button quote-editor__confirm-button" type="button" onClick={() => void handleConfirmToggle()} disabled={saving}>
             <CheckCircle2 size={14} />
             {draft.confirmedAt ? "컨펌 취소" : "견적 컨펌"}
           </button>
           {fullscreen ? (
-            <button className="admin-status-button quote-editor__close" type="button" onClick={() => setFullscreen(false)} aria-label="전체 화면 닫기">
-              <X size={14} />
+            <button className="admin-status-button quote-editor__icon-button quote-editor__close" type="button" onClick={() => setFullscreen(false)} aria-label="전체 화면 닫기">
+              <X size={15} />
             </button>
           ) : null}
         </div>
@@ -576,56 +528,69 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
         </label>
       </div>
 
-      <div
-        className={dragActive ? "editor-upload-field active quote-editor__upload" : "editor-upload-field quote-editor__upload"}
-        onDragEnter={(event) => {
-          event.preventDefault();
-          setDragActive(true);
-        }}
-        onDragOver={(event) => {
-          event.preventDefault();
-          setDragActive(true);
-        }}
-        onDragLeave={(event) => {
-          event.preventDefault();
-          setDragActive(false);
-        }}
-        onDrop={handleDrop}
-      >
-        <label className="editor-upload-trigger quote-editor__dropzone">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-            onChange={handleFileInputChange}
-            disabled={importing}
-          />
-          <strong>엑셀 드래그 앤 드롭으로 견적 교체</strong>
-          <span className="editor-upload-hint">
-            엑셀 견적서를 넣으면 현재 초안을 그 내용으로 바꿉니다. {importing ? "불러오는 중..." : "클릭해서 파일을 선택할 수도 있습니다."}
-          </span>
-        </label>
-        <button className="admin-status-button quote-editor__upload-button" type="button" onClick={() => fileInputRef.current?.click()} disabled={importing}>
-          <FileUp size={14} />
-          {importing ? "불러오는 중" : "엑셀 불러오기"}
-        </button>
-      </div>
+      <details className="quote-editor__import">
+        <summary className="quote-editor__import-summary">
+          <span><FileUp size={14} /> 견적 가져오기 · 템플릿 불러오기</span>
+          <ChevronDown size={16} className="quote-editor__import-chevron" />
+        </summary>
+        <div className="quote-editor__import-body">
+          <div
+            className={dragActive ? "editor-upload-field active quote-editor__upload" : "editor-upload-field quote-editor__upload"}
+            onDragEnter={(event) => {
+              event.preventDefault();
+              setDragActive(true);
+            }}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragActive(true);
+            }}
+            onDragLeave={(event) => {
+              event.preventDefault();
+              setDragActive(false);
+            }}
+            onDrop={handleDrop}
+          >
+            <label className="editor-upload-trigger quote-editor__dropzone">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                onChange={handleFileInputChange}
+                disabled={importing}
+              />
+              <strong>엑셀 드래그 앤 드롭으로 견적 교체</strong>
+              <span className="editor-upload-hint">
+                엑셀 견적서를 넣으면 현재 초안을 그 내용으로 바꿉니다. {importing ? "불러오는 중..." : "클릭해서 파일을 선택할 수도 있습니다."}
+              </span>
+            </label>
+            <button className="admin-status-button quote-editor__upload-button" type="button" onClick={() => fileInputRef.current?.click()} disabled={importing}>
+              <FileUp size={14} />
+              {importing ? "불러오는 중" : "엑셀 불러오기"}
+            </button>
+          </div>
 
-      <div className="quote-editor__gsheet">
-        <input
-          className="quote-field"
-          type="url"
-          value={sheetUrl}
-          onChange={(event) => setSheetUrl(event.target.value)}
-          placeholder="구글 시트 링크 붙여넣기 (https://docs.google.com/spreadsheets/d/...)"
-          disabled={importing}
-        />
-        <button className="admin-status-button" type="button" onClick={() => void importFromSheetUrl()} disabled={importing || !sheetUrl.trim()}>
-          <FileUp size={14} />
-          구글 시트 불러오기
-        </button>
-        <span className="quote-editor__gsheet-hint">시트를 ‘링크가 있는 모든 사용자: 보기’로 공유하고, 샘플 템플릿과 같은 형식이어야 합니다.</span>
-      </div>
+          <div className="quote-editor__gsheet">
+            <input
+              className="quote-field"
+              type="url"
+              value={sheetUrl}
+              onChange={(event) => setSheetUrl(event.target.value)}
+              placeholder="구글 시트 링크 붙여넣기 (https://docs.google.com/spreadsheets/d/...)"
+              disabled={importing}
+            />
+            <button className="admin-status-button" type="button" onClick={() => void importFromSheetUrl()} disabled={importing || !sheetUrl.trim()}>
+              <FileUp size={14} />
+              구글 시트 불러오기
+            </button>
+            <span className="quote-editor__gsheet-hint">시트를 ‘링크가 있는 모든 사용자: 보기’로 공유하고, 샘플 템플릿과 같은 형식이어야 합니다.</span>
+          </div>
+
+          <button className="admin-status-button" type="button" onClick={applyBasicTemplate} disabled={saving || importing}>
+            <Plus size={14} />
+            기본 상담 템플릿으로 시작
+          </button>
+        </div>
+      </details>
 
       <CatalogPicker onPick={(item, label) => addCatalogItem(item, label)} />
 
@@ -885,6 +850,57 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           placeholder="견적 조건, 자재 선택 이유, 추가 안내 등을 적습니다."
         />
       </label>
+
+      <p className="quote-editor__section">발행 · 내보내기</p>
+      <div className="quote-editor__publish-bar">
+        <div className="quote-editor__publish-group">
+          <span className="quote-editor__publish-label">구글시트</span>
+          <button
+            className={
+              !draft.sheetUrl || sheetChangedSincePublish
+                ? "admin-status-button quote-editor__action--accent"
+                : "admin-status-button"
+            }
+            type="button"
+            onClick={() => void handlePublishSheet()}
+            disabled={publishing}
+            title={sheetChangedSincePublish ? "변경된 내용으로 구글시트를 다시 발행합니다" : undefined}
+          >
+            <FileSpreadsheet size={14} />
+            {publishLabel}
+            {sheetChangedSincePublish ? " ●" : ""}
+          </button>
+          <button
+            className="admin-status-button"
+            type="button"
+            onClick={() => void handleCreatePdf()}
+            disabled={makingPdf || !draft.sheetUrl}
+            title={draft.sheetUrl ? "발행된 구글시트를 PDF로 내보냅니다" : "먼저 구글시트로 발행하세요"}
+          >
+            <Download size={14} />
+            {makingPdf ? "PDF 생성 중" : "PDF 만들기"}
+          </button>
+          <button className="admin-status-button" type="button" onClick={() => void handleCheckConnection()} disabled={checking} title="발행 누르지 않고 구글시트 연동 상태만 확인">
+            <PlugZap size={14} />
+            {checking ? "점검 중" : "연동 점검"}
+          </button>
+        </div>
+        <div className="quote-editor__publish-group">
+          <span className="quote-editor__publish-label">로컬 내보내기</span>
+          <button className="admin-status-button" type="button" onClick={() => void handleXlsxDownload()}>
+            <Download size={14} />
+            엑셀 다운로드
+          </button>
+          <button className="admin-status-button" type="button" onClick={() => void handlePdfDownload()}>
+            <Download size={14} />
+            PDF 다운로드
+          </button>
+          <button className="admin-status-button" type="button" onClick={() => void handleTemplateDownload()}>
+            <Download size={14} />
+            샘플 템플릿
+          </button>
+        </div>
+      </div>
     </section>
   );
 

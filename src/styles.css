@@ -6889,7 +6889,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   }
 
   .quote-editor__grid,
-  .quote-editor__summary {
+  .quote-editor__summary,
+  .quote-editor__publish-bar {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -7446,6 +7447,80 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 .quote-editor__action--accent:hover {
   background: linear-gradient(180deg, var(--gold-400, #e6c48f), var(--gold-500, #d7ae6b));
+}
+
+.quote-editor__title {
+  min-width: 0;
+}
+
+/* 전체화면 등 아이콘 단독 버튼은 정사각형으로 */
+.quote-editor__icon-button {
+  padding: 8px;
+  aspect-ratio: 1;
+}
+
+/* 가져오기·템플릿: 평소엔 접혀 있어 작업 영역을 어지럽히지 않는다 */
+.quote-editor__import {
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: var(--r-md, 12px);
+  background: var(--cream-2, #f1ece1);
+}
+.quote-editor__import-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--ink-2, #2a3a55);
+}
+.quote-editor__import-summary::-webkit-details-marker {
+  display: none;
+}
+.quote-editor__import-summary > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.quote-editor__import-chevron {
+  transition: transform 0.18s ease;
+  color: var(--ink-3, #5b6781);
+}
+.quote-editor__import[open] .quote-editor__import-chevron {
+  transform: rotate(180deg);
+}
+.quote-editor__import-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+
+/* 발행·내보내기 바: 작업을 마친 뒤 누르는 출력 액션들을 한곳에 모은다 */
+.quote-editor__publish-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.quote-editor__publish-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: var(--r-md, 12px);
+  background: var(--cream-2, #f1ece1);
+}
+.quote-editor__publish-label {
+  flex: 1 1 100%;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-3, #5b6781);
 }
 
 .quote-editor__meta {
