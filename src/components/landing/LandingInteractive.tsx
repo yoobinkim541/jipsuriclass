@@ -602,7 +602,6 @@ export function LandingBlogSection({ content }: { content: LandingPageDefinition
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, landingPosts, landingSearchTerms]);
 
-  const portfolioPosts = pinnedPosts.slice(0, 5);
   const pricingConfig = getServicePricingConfig(content.path);
 
   return (
@@ -618,9 +617,6 @@ export function LandingBlogSection({ content }: { content: LandingPageDefinition
         max={content.pageType === "Place" ? 8 : 5}
         emptyText="키워드가 맞는 최신 게시물을 찾지 못했습니다."
       />
-      {content.pageType !== "Place" && (
-        <BlogShowcase label="포트폴리오" posts={portfolioPosts} emptyText="추가 포트폴리오를 찾지 못했습니다." />
-      )}
       {pricingConfig && <ServiceEstimator config={pricingConfig} />}
     </section>
   );

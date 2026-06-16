@@ -1790,8 +1790,6 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
     if (matchedPosts.length) return matchedPosts;
     return landingPosts.slice(0, 6);
   }, [content, landingPosts, landingSearchTerms]);
-  // Portfolio: fixed curated posts managed via admin editor — never changes automatically
-  const portfolioPosts = pinnedPosts.slice(0, 5);
   const landingSectionOrder = content.sections ?? defaultLandingSectionOrder;
 
   return (
@@ -1918,11 +1916,6 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
                     posts={referencePosts}
                     emptyText="키워드가 맞는 최신 게시물을 찾지 못했습니다."
                   />
-                  <BlogShowcase
-                    label="포트폴리오"
-                    posts={portfolioPosts}
-                    emptyText="추가 포트폴리오를 찾지 못했습니다."
-                  />
                   {getServicePricingConfig(content.path) && <ServiceEstimator config={getServicePricingConfig(content.path)!} />}
                 </section>
               );
@@ -1950,7 +1943,11 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
                   <SectionHeading
                     id="landing-related-title"
                     title="함께 보면 좋은 페이지"
-                    description="관련 서비스나 인근 지역 상담 페이지로 바로 이동할 수 있습니다."
+                    description={
+                      content.categoryLabel === "지역"
+                        ? "인근·연관 지역 상담 페이지로 바로 이동할 수 있습니다."
+                        : "비슷한 서비스 페이지로 바로 이동할 수 있습니다."
+                    }
                   />
                   <div className="landing-related-links">
                     {content.relatedLinks.map((link) => (

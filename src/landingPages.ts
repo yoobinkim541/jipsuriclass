@@ -1254,7 +1254,7 @@ const areaPages: LandingPageDefinition[] = [
   }
 ];
 
-const servicePages = servicePagesBase.map((page) => ({
+const servicePagesWithBlog = servicePagesBase.map((page) => ({
   ...page,
   ...(() => {
     const profile = getServiceBlogProfile(page.path);
@@ -1268,7 +1268,95 @@ const servicePages = servicePagesBase.map((page) => ({
   })()
 }));
 
-export const landingPageDefinitions = [...servicePages, ...areaPages];
+// 연관 페이지 자동 연결 ---------------------------------------------------------
+// 서비스 하위 페이지는 "비슷한 서비스"끼리, 지역 하위 페이지는 "다른 지역"끼리
+// 연결한다. 아래 우선순위 맵으로 관련도가 높은 순서를 잡고, 부족하면 같은
+// 카테고리의 나머지 페이지로 채운다(MAX_RELATED 개까지). 우선순위 맵에 항목이
+// 없으면 각 정의에 하드코딩된 relatedLinks 중 같은 카테고리 링크를 시드로 쓴다.
+// (관리자 override가 있으면 mergeLandingPageContent 단계에서 대체된다.)
+const MAX_RELATED = 6;
+
+// 서비스 → 비슷한 서비스 (관련도 높은 순)
+const SERVICE_RELATED: Record<string, string[]> = {
+  "/service/leak": ["/service/plumbing", "/service/waterproofing", "/service/bathroom", "/service/waterproofing-tile"],
+  "/service/bathroom": ["/service/tile", "/service/waterproofing", "/service/leak", "/service/plumbing", "/service/waterproofing-tile"],
+  "/service/wallpaper": ["/service/wallpaper-floor", "/service/paint", "/service/film", "/service/carpentry"],
+  "/service/door": ["/service/carpentry", "/service/window", "/service/film", "/service/electric"],
+  "/service/carpentry": ["/service/door", "/service/film", "/service/wallpaper", "/service/window"],
+  "/service/waterproofing": ["/service/waterproofing-tile", "/service/leak", "/service/tile", "/service/exterior", "/service/bathroom"],
+  "/service/paint": ["/service/wallpaper", "/service/film", "/service/exterior", "/service/wallpaper-floor"],
+  "/service/window": ["/service/door", "/service/exterior", "/service/film", "/service/carpentry"],
+  "/service/electric": ["/service/door", "/service/carpentry", "/service/window"],
+  "/service/tile": ["/service/waterproofing-tile", "/service/bathroom", "/service/waterproofing", "/service/leak"],
+  "/service/plumbing": ["/service/leak", "/service/bathroom", "/service/waterproofing-tile", "/service/waterproofing"],
+  "/service/waterproofing-tile": ["/service/waterproofing", "/service/tile", "/service/bathroom", "/service/leak", "/service/plumbing"],
+  "/service/wallpaper-floor": ["/service/wallpaper", "/service/paint", "/service/film", "/service/carpentry"],
+  "/service/film": ["/service/carpentry", "/service/paint", "/service/wallpaper-floor", "/service/door"],
+  "/service/exterior": ["/service/paint", "/service/waterproofing", "/service/window", "/service/waterproofing-tile"]
+};
+
+// 지역 → 인근/연관 지역 (거리·생활권 가까운 순)
+const AREA_RELATED: Record<string, string[]> = {
+  "/area/namyangju": ["/area/guri", "/area/hanam", "/area/uijeongbu", "/area/yangpyeong", "/area/seoul"],
+  "/area/guri": ["/area/namyangju", "/area/hanam", "/area/gangdong", "/area/seoul", "/area/uijeongbu"],
+  "/area/hanam": ["/area/gangdong", "/area/guri", "/area/namyangju", "/area/seongnam", "/area/seoul"],
+  "/area/seoul": ["/area/gangdong", "/area/gangnam", "/area/nowon", "/area/guri", "/area/gyeonggi"],
+  "/area/gyeonggi": ["/area/seongnam", "/area/suwon", "/area/goyang", "/area/bucheon", "/area/anyang", "/area/uijeongbu"],
+  "/area/yangpyeong": ["/area/namyangju", "/area/guri", "/area/hanam", "/area/uijeongbu", "/area/gyeonggi"],
+  "/area/uijeongbu": ["/area/nowon", "/area/namyangju", "/area/goyang", "/area/seoul", "/area/gyeonggi"],
+  "/area/seongnam": ["/area/gangnam", "/area/hanam", "/area/suwon", "/area/anyang", "/area/seoul"],
+  "/area/gangnam": ["/area/gangdong", "/area/seoul", "/area/seongnam", "/area/hanam", "/area/suwon"],
+  "/area/gangdong": ["/area/seoul", "/area/gangnam", "/area/hanam", "/area/guri", "/area/namyangju"],
+  "/area/nowon": ["/area/uijeongbu", "/area/seoul", "/area/gangdong", "/area/namyangju", "/area/goyang"],
+  "/area/suwon": ["/area/seongnam", "/area/anyang", "/area/gyeonggi", "/area/bucheon", "/area/gangnam"],
+  "/area/goyang": ["/area/paju", "/area/bucheon", "/area/uijeongbu", "/area/gyeonggi", "/area/seoul"],
+  "/area/bucheon": ["/area/goyang", "/area/anyang", "/area/suwon", "/area/gyeonggi", "/area/paju"],
+  "/area/paju": ["/area/goyang", "/area/uijeongbu", "/area/bucheon", "/area/gyeonggi", "/area/seoul"],
+  "/area/anyang": ["/area/suwon", "/area/seongnam", "/area/bucheon", "/area/gyeonggi", "/area/gangnam"]
+};
+
+function relatedLinkLabel(def: LandingPageDefinition): string {
+  if (def.categoryLabel === "지역") {
+    return def.areaLabel ?? getLandingPageShortLabel(def);
+  }
+  return def.serviceType ?? getLandingPageShortLabel(def);
+}
+
+function buildRelatedLinks(page: LandingPageDefinition, priority: string[], pool: LandingPageDefinition[]): LandingLink[] {
+  const byPath = new Map(pool.map((item) => [item.path, item]));
+  const seen = new Set<string>([page.path]);
+  const ordered: string[] = [];
+
+  const pushPath = (path: string) => {
+    if (seen.has(path) || !byPath.has(path) || ordered.length >= MAX_RELATED) return;
+    seen.add(path);
+    ordered.push(path);
+  };
+
+  // 1) 명시적 우선순위 맵
+  priority.forEach(pushPath);
+  // 2) 우선순위 맵에 없을 때를 대비한 시드 — 기존 정의의 같은 카테고리 링크
+  page.relatedLinks.forEach((link) => pushPath(link.href));
+  // 3) 같은 카테고리의 나머지 페이지로 채움
+  pool.forEach((item) => pushPath(item.path));
+
+  return ordered.map((path) => {
+    const target = byPath.get(path)!;
+    return { label: relatedLinkLabel(target), href: target.path };
+  });
+}
+
+const servicePages = servicePagesWithBlog.map((page) => ({
+  ...page,
+  relatedLinks: buildRelatedLinks(page, SERVICE_RELATED[page.path] ?? [], servicePagesWithBlog)
+}));
+
+const areaPagesLinked = areaPages.map((page) => ({
+  ...page,
+  relatedLinks: buildRelatedLinks(page, AREA_RELATED[page.path] ?? [], areaPages)
+}));
+
+export const landingPageDefinitions = [...servicePages, ...areaPagesLinked];
 
 export const defaultLandingPageContent: Record<string, LandingPageContent> = Object.fromEntries(
   landingPageDefinitions.map((page) => [
@@ -1341,7 +1429,7 @@ export function mergeLandingPageContent(page: LandingPageDefinition, override?: 
 export function getLandingPageIndexLinks() {
   return {
     services: servicePages,
-    areas: areaPages
+    areas: areaPagesLinked
   };
 }
 
