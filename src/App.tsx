@@ -1507,7 +1507,7 @@ function scorePostForQuery(post: PortfolioPost, tokens: string[]): number {
 }
 
 // 현재 URL 쿼리(?q=&cat=&sort=)에서 현장사례 필터 상태를 읽는다. 공유·새로고침·딥링크 복원용.
-function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "oldest" } {
+function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "popular" } {
   if (typeof window === "undefined") {
     return { q: "", cat: "all", sort: "latest" };
   }
@@ -1517,7 +1517,7 @@ function readPortfolioParams(): { q: string; cat: string; sort: "latest" | "olde
   return {
     q: params.get("q") || "",
     cat: validCat,
-    sort: params.get("sort") === "oldest" ? "oldest" : "latest"
+    sort: params.get("sort") === "popular" ? "popular" : "latest"
   };
 }
 
@@ -1528,7 +1528,7 @@ function PortfolioPage() {
   const [postSource, setPostSource] = useState<"loading" | "naver" | "fallback">("loading");
   const [activeChip, setActiveChip] = useState(() => readPortfolioParams().cat);
   const [query, setQuery] = useState(() => readPortfolioParams().q);
-  const [sort, setSort] = useState<"latest" | "oldest">(() => readPortfolioParams().sort);
+  const [sort, setSort] = useState<"latest" | "popular">(() => readPortfolioParams().sort);
   const [visibleCount, setVisibleCount] = useState(12);
 
   useEffect(() => {
@@ -1606,8 +1606,12 @@ function PortfolioPage() {
       if (tokens.length && right.score !== left.score) {
         return right.score - left.score;
       }
-      const comparison = (right.post.date || "").localeCompare(left.post.date || "");
-      return sort === "latest" ? comparison : -comparison;
+      // 인기글: 공감+댓글 기반 인기도 내림차순(동점이면 최신순).
+      if (sort === "popular") {
+        const popDiff = (right.post.popularity ?? 0) - (left.post.popularity ?? 0);
+        if (popDiff !== 0) return popDiff;
+      }
+      return (right.post.date || "").localeCompare(left.post.date || "");
     });
 
     return scored.map((entry) => entry.post);
@@ -1677,9 +1681,9 @@ function PortfolioPage() {
               )}
             </p>
             <label className="catalog-sort">
-              <select aria-label="정렬 기준" value={sort} onChange={(event) => setSort(event.target.value as "latest" | "oldest")}>
+              <select aria-label="정렬 기준" value={sort} onChange={(event) => setSort(event.target.value as "latest" | "popular")}>
                 <option value="latest">최신순</option>
-                <option value="oldest">오래된순</option>
+                <option value="popular">블로그 인기글</option>
               </select>
             </label>
           </div>

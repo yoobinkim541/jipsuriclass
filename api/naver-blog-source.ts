@@ -6,6 +6,8 @@ type NaverBlogItem = {
   image?: string;
   imageCandidates?: string[];
   keywords?: string[];
+  // 인기도 점수(공감 + 댓글*2). '블로그 인기글' 정렬에 사용.
+  popularity?: number;
 };
 
 type RankedBlogCandidate = {
@@ -31,6 +33,9 @@ type MobilePostItem = {
   addDate?: number;
   categoryNo?: number;
   categoryName?: string;
+  // 인기도 신호: 공감수·댓글수는 익명 요청에도 노출됨(readCount/조회수는 블로그 주인만 보여 null).
+  sympathyCnt?: number;
+  commentCnt?: number;
   thumbnailList?: Array<{
     encodedThumbnailUrl?: string;
     thumbnailUrl?: string;
@@ -342,7 +347,11 @@ function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlo
       item.thumbnailUrl,
       ...(item.thumbnailList ?? []).flatMap((thumb) => [thumb.encodedThumbnailUrl, thumb.thumbnailUrl])
     ]),
-    keywords: categoryName ? [categoryName] : undefined
+    keywords: categoryName ? [categoryName] : undefined,
+    // 공감수 + 댓글수*2(댓글이 더 깊은 참여) = 인기도 점수.
+    popularity:
+      (typeof item.sympathyCnt === "number" ? item.sympathyCnt : 0) +
+      (typeof item.commentCnt === "number" ? item.commentCnt : 0) * 2
   };
 }
 

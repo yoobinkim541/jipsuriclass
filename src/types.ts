@@ -49,6 +49,8 @@ export type PortfolioPost = {
   cardTitle?: string;
   summary?: string[];
   keywords?: string[];
+  /** 인기도 점수(공감 + 댓글*2). '블로그 인기글' 정렬용. */
+  popularity?: number;
 };
 
 export type NaverBlogItem = {
@@ -61,6 +63,7 @@ export type NaverBlogItem = {
   cardTitle?: string;
   summary?: string[];
   keywords?: string[];
+  popularity?: number;
 };
 
 export type WorkProcessStep = {
