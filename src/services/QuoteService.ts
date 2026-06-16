@@ -418,9 +418,20 @@ export async function createQuoteSheet(input: { inquiry: InquiryRow; quote: Inqu
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   });
-  const data = (await response.json().catch(() => ({}))) as { sheetUrl?: string; pdfUrl?: string; error?: string };
-  if (!response.ok || !data.sheetUrl) {
-    throw new Error(typeof data.error === "string" ? data.error : "구글시트 생성에 실패했습니다. Apps Script 연동(환경변수) 설정을 확인해 주세요.");
+  const data = (await response.json().catch(() => null)) as { sheetUrl?: string; pdfUrl?: string; error?: string } | null;
+  if (!response.ok || !data || !data.sheetUrl) {
+    // 서버가 구체적 오류를 돌려줬으면 그대로 보여준다(환경변수 미설정·401 안내 등).
+    if (data && typeof data.error === "string") {
+      throw new Error(data.error);
+    }
+    // 응답 자체가 비정상(JSON 아님·타임아웃 등).
+    if (!response.ok) {
+      throw new Error(`구글시트 발행 요청이 실패했습니다 (HTTP ${response.status}). 상단 '연동 점검'으로 Apps Script 상태를 확인해 주세요.`);
+    }
+    // 200인데 sheetUrl이 없다 = 배포된 Apps Script가 시트 링크를 돌려주지 않음(구버전 배포일 가능성).
+    throw new Error(
+      "Apps Script가 시트 링크를 돌려주지 않았습니다. 최신 QuoteSheet.gs(시트/PDF 분리 버전)로 '새 배포'했는지 확인해 주세요. 상단 '연동 점검'으로 상태를 점검할 수 있습니다."
+    );
   }
   return { sheetUrl: data.sheetUrl, pdfUrl: data.pdfUrl ?? null };
 }
