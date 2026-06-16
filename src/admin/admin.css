@@ -1863,6 +1863,16 @@
     border-color: rgba(220, 38, 38, 0.4);
     color: #fca5a5;
   }
+  /* '저장'(네이비) 버튼이 다크 헤더(--paper)에 묻히지 않게 한 단계 밝은 네이비로 */
+  .adm-root .quote-editor__action--primary {
+    background: var(--navy-500, #2b528a);
+    border-color: var(--navy-500, #2b528a);
+    color: #fff;
+  }
+  .adm-root .quote-editor__action--primary:hover {
+    background: #356099;
+    border-color: #356099;
+  }
   .adm-root .quote-editor__meta span {
     background: rgba(124, 152, 240, 0.18);
     color: var(--ink-2);

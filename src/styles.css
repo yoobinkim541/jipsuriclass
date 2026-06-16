@@ -7181,15 +7181,16 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 .quote-editor {
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 1));
+  background: var(--paper, #fff);
   border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 16px;
+  border-radius: var(--r-lg, 18px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(8, 22, 40, 0.04));
   display: grid;
   /* minmax(0,1fr): 단일 컬럼이 내용(960px 견적 테이블) 대신 컨테이너에 맞게 줄어들도록
      해서, 좁은 상세 패널에서 카드가 넘치지 않고 테이블만 내부 가로 스크롤되게 한다. */
   grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-  padding: 16px;
+  gap: 18px;
+  padding: 20px;
 }
 
 /* 전체 화면 편집: 좁은 사이드 패널 대신 넓게 작업 */
@@ -7212,10 +7213,22 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   min-height: 0;
 }
 .quote-editor--fullscreen {
-  width: min(1280px, 100%);
+  width: min(1180px, 100%);
   max-height: calc(100vh - 24px);
   overflow: auto;
+  padding: 0 24px 24px;
+  border-radius: var(--r-lg, 18px);
   box-shadow: 0 24px 70px rgba(8, 22, 40, 0.35);
+}
+/* 전체화면에서는 제목·액션 바를 상단에 고정해 스크롤해도 항상 보이게 한다. */
+.quote-editor--fullscreen .quote-editor__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 -24px;
+  padding: 18px 24px;
+  background: var(--paper, #fff);
+  border-bottom: 1px solid var(--hair, #e6dfd0);
 }
 .quote-editor__close {
   margin-left: auto;
@@ -7273,16 +7286,18 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .quote-editor__header h3 {
   color: var(--ink, #0b1a30);
-  font-size: 18px;
-  margin: 6px 0 8px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 4px 0 6px;
 }
 
 .quote-editor__header p {
   color: var(--ink-3, #5b6781);
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.6;
   margin: 0;
-  max-width: 64ch;
+  max-width: 60ch;
 }
 
 .quote-editor__actions {
@@ -7293,20 +7308,58 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   justify-content: flex-end;
 }
 
+/* 액션 버튼 위계: 저장=네이비 강조, 발행=골드 강조, 나머지=고스트 */
+.quote-editor__action--primary {
+  background: var(--navy-700, #10284a);
+  border-color: var(--navy-700, #10284a);
+  color: #fff;
+}
+.quote-editor__action--primary:hover {
+  background: var(--navy-800, #0b1d34);
+  border-color: var(--navy-800, #0b1d34);
+}
+.quote-editor__action--accent {
+  background: linear-gradient(180deg, var(--gold-500, #d7ae6b), var(--gold-600, #c9a063));
+  border-color: var(--gold-600, #c9a063);
+  color: #0b1220;
+}
+.quote-editor__action--accent:hover {
+  background: linear-gradient(180deg, var(--gold-400, #e6c48f), var(--gold-500, #d7ae6b));
+}
+
 .quote-editor__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
 .quote-editor__meta span {
-  background: #eef2ff;
-  border: 1px solid #dbe2ff;
+  background: var(--cream-2, #f1ece1);
+  border: 1px solid var(--hair, #e6dfd0);
   border-radius: 999px;
-  color: #334155;
+  color: var(--ink-2, #2a3a55);
   font-size: 12px;
   font-weight: 700;
-  padding: 5px 10px;
+  padding: 5px 11px;
+}
+
+/* 생성된 시트/PDF 링크는 골드 강조 칩으로 */
+.quote-editor__sheet-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(215, 174, 107, 0.16);
+  border: 1px solid rgba(201, 160, 99, 0.5);
+  border-radius: 999px;
+  color: var(--gold-700, #b4894b);
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 11px;
+  text-decoration: none;
+}
+.quote-editor__sheet-link:hover {
+  background: rgba(215, 174, 107, 0.26);
 }
 
 .quote-editor__upload {
@@ -7329,9 +7382,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .quote-editor__table-wrap {
   border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 12px;
+  border-radius: var(--r-md, 12px);
   overflow: auto;
-  background: #fff;
+  background: var(--paper, #fff);
 }
 
 .quote-editor__table-toolbar {
@@ -7358,21 +7411,39 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .quote-editor__table th,
 .quote-editor__table td {
   border-bottom: 1px solid var(--hair, #e6dfd0);
-  padding: 10px 12px;
+  padding: 9px 12px;
   text-align: left;
   vertical-align: middle;
 }
 
 .quote-editor__table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   background: var(--cream-2, #f1ece1);
-  color: var(--ink-2, #2a3a55);
-  font-size: 12px;
+  color: var(--ink-3, #5b6781);
+  font-size: 11px;
   font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .quote-editor__table td {
   color: var(--ink, #0b1a30);
   font-size: 13px;
+}
+
+/* 행 호버로 편집 위치를 또렷하게 */
+.quote-editor__table tbody tr:hover td {
+  background: rgba(16, 40, 74, 0.035);
+}
+
+/* 금액 열(5번째)은 우측 정렬 + 강조 */
+.quote-editor__table td:nth-child(5) {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .quote-editor__table tr:last-child td {
@@ -7409,12 +7480,12 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 .quote-editor__panel {
-  background: #fff;
+  background: var(--paper, #fff);
   border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 12px;
+  border-radius: var(--r-md, 14px);
   display: grid;
   gap: 12px;
-  padding: 12px;
+  padding: 14px;
 }
 
 .quote-editor__panel-head {
@@ -7427,6 +7498,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 /* 좁은 패널에서 제목(자재비/부대비용)이 글자 단위로 세로 줄바꿈되지 않게 한다. */
 .quote-editor__panel-head > strong {
   white-space: nowrap;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink, #0b1a30);
 }
 
 .quote-editor__charge-list {
@@ -7453,24 +7527,26 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 .quote-field {
-  background: #fff;
+  background: var(--paper, #fff);
   border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 10px;
+  border-radius: var(--r-sm, 9px);
   color: var(--ink, #0b1a30);
   font: inherit;
   min-width: 0;
-  padding: 9px 10px;
+  padding: 9px 11px;
   width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .quote-field:focus {
   border-color: var(--navy-700, #10284a);
-  box-shadow: 0 0 0 3px rgba(16, 40, 74, 0.1);
+  box-shadow: 0 0 0 3px rgba(16, 40, 74, 0.12);
   outline: none;
 }
 
 .quote-field--number {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .quote-editor__empty {
@@ -7487,23 +7563,44 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .quote-editor__summary > div,
 .quote-editor__summary > label {
-  background: linear-gradient(180deg, #fff, #f8fafc);
+  background: var(--paper, #fff);
   border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 12px;
+  border-radius: var(--r-md, 12px);
   display: grid;
-  gap: 4px;
-  padding: 12px;
+  gap: 6px;
+  padding: 12px 14px;
+}
+
+/* 입력형 요약 셀(이윤율/절삭/계약금)은 살짝 구분 */
+.quote-editor__summary > label {
+  background: var(--cream, #faf7f2);
 }
 
 .quote-editor__summary span {
   color: var(--ink-3, #5b6781);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .quote-editor__summary strong {
   color: var(--ink, #0b1a30);
   font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 헤드라인(합계) 카드는 네이비로 강조 */
+.quote-editor__summary-headline {
+  background: var(--navy-700, #10284a) !important;
+  border-color: var(--navy-700, #10284a) !important;
+}
+.quote-editor__summary-headline span {
+  color: rgba(255, 255, 255, 0.72);
+}
+.quote-editor__summary-headline strong {
+  color: #fff;
 }
 
 .quote-editor__memo {

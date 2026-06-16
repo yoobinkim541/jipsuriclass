@@ -303,7 +303,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
           </p>
         </div>
         <div className="quote-editor__actions">
-          <button className="admin-status-button" type="button" onClick={() => void handleSave()} disabled={saving}>
+          <button className="admin-status-button quote-editor__action--primary" type="button" onClick={() => void handleSave()} disabled={saving}>
             <Save size={14} />
             {saving ? "저장 중" : "견적 저장"}
           </button>
@@ -319,7 +319,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             <Download size={14} />
             PDF 다운로드
           </button>
-          <button className="admin-status-button" type="button" onClick={() => void handlePublishSheet()} disabled={publishing}>
+          <button className="admin-status-button quote-editor__action--accent" type="button" onClick={() => void handlePublishSheet()} disabled={publishing}>
             <FileSpreadsheet size={14} />
             {publishing ? "발행 중" : "구글시트로 발행"}
           </button>
@@ -604,7 +604,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             onChange={(event) => setDraft((current) => ({ ...current, roundingAdjust: Number(event.target.value) || 0 }))}
           />
         </label>
-        <div>
+        <div className="quote-editor__summary-headline">
           <span>합계(부가세 별도)</span>
           <strong>{totals.subtotal.toLocaleString()}원</strong>
         </div>
