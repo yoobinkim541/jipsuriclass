@@ -1599,7 +1599,8 @@ textarea {
   line-height: 1.0;
   letter-spacing: -0.04em;
   margin: 0 0 6vh;
-  color: var(--ink, #0b1a30);
+  /* 라이트모드: navy(--ink #0b1a30)는 푸른 끼가 있어 중립 검정으로. 다크는 :root[data-theme=dark] override. */
+  color: #111111;
 }
 
 .hero__rotator em {
@@ -1615,7 +1616,14 @@ textarea {
 
 /* 회전 단어(골드) 뒤의 조사+서술어는 항상 타이틀과 같은 색으로(골드 아님) */
 .hero__rotator-suffix {
-  color: var(--ink, #0b1a30);
+  color: #111111;
+}
+
+/* 다크모드: --ink(#f8fafc)는 골드 단어 옆에서 푸르스름해 보여 타이틀·조사를 순백으로 강제.
+   (모바일 풀블리드 히어로는 @media max-width:720px에서 이미 흰색 처리됨) */
+:root[data-theme="dark"] .hero__title,
+:root[data-theme="dark"] .hero__rotator-suffix {
+  color: #ffffff;
 }
 
 @keyframes rotIn {
@@ -9744,7 +9752,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   }
 
   .hero {
-    padding-top: 20px;
+    /* 모바일: 상단 바와 히어로 타이틀 사이 여백 확대 (20 → 48px) */
+    padding-top: 48px;
   }
 
   .hero h1,
