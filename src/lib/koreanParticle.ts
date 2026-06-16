@@ -20,7 +20,9 @@ export function directionalParticle(word: string): "로" | "으로" {
  */
 export function stripDirectionalParticle(word: string): string {
   const trimmed = word.trim();
-  for (const particle of ["으로", "로"] as const) {
+  // "으로"/"로"뿐 아니라, 조사가 잘려 끝에 "으"만 매달려 들어온 경우("사진 몇 장으")도 떼어
+  // 조사 전체가 골드 단어에서 분리되도록 한다.
+  for (const particle of ["으로", "로", "으"] as const) {
     if (trimmed.length > particle.length && trimmed.endsWith(particle)) {
       return trimmed.slice(0, -particle.length).trimEnd();
     }
