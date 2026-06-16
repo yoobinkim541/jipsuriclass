@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { ChangeEvent, DragEvent } from "react";
-import { CheckCircle2, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, PlugZap, Save, Trash2, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, Download, ExternalLink, FileSpreadsheet, FileUp, Maximize2, Minimize2, Plus, PlugZap, Save, Search, Trash2, X } from "lucide-react";
 import {
   buildQuoteDraftFromInquiry,
   buildQuoteSourceLabel,
@@ -68,6 +68,89 @@ function quoteSignature(quote: InquiryQuoteSnapshot): string {
     workPeriod: quote.workPeriod,
     memo: quote.memo
   });
+}
+
+type CatalogItem = (typeof priceCatalog)[number]["items"][number];
+
+/** 가격표에서 항목 추가 — 검색 + 공종 그룹 + 클릭 추가하는 모던 드롭다운. */
+function CatalogPicker({ onPick }: { onPick: (item: CatalogItem, group: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDocPointer = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  const groups = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return priceCatalog;
+    return priceCatalog
+      .map((group) => ({ ...group, items: group.items.filter((item) => item.name.toLowerCase().includes(q) || group.serviceLabel.toLowerCase().includes(q)) }))
+      .filter((group) => group.items.length);
+  }, [query]);
+
+  const totalCount = useMemo(() => groups.reduce((sum, group) => sum + group.items.length, 0), [groups]);
+
+  return (
+    <div className={open ? "catalog-picker catalog-picker--open" : "catalog-picker"} ref={rootRef}>
+      <button type="button" className="catalog-picker__trigger" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+        <span className="catalog-picker__trigger-label">
+          <Plus size={15} />
+          가격표에서 항목 추가
+        </span>
+        <ChevronDown size={16} className={open ? "catalog-picker__chevron catalog-picker__chevron--open" : "catalog-picker__chevron"} />
+      </button>
+      {open ? (
+        <div className="catalog-picker__panel">
+          <div className="catalog-picker__search">
+            <Search size={15} />
+            <input
+              autoFocus
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="항목·공정 검색 (예: 타일, 수전, 도배)"
+            />
+          </div>
+          <div className="catalog-picker__list">
+            {groups.map((group) => (
+              <div className="catalog-picker__group" key={group.servicePath}>
+                <div className="catalog-picker__group-label">{group.serviceLabel}</div>
+                {group.items.map((item, itemIndex) => (
+                  <button
+                    type="button"
+                    className="catalog-picker__item"
+                    key={`${group.servicePath}-${itemIndex}`}
+                    onClick={() => onPick(item, group.serviceLabel)}
+                  >
+                    <span className="catalog-picker__item-name">{item.name}</span>
+                    <span className="catalog-picker__item-meta">
+                      {item.price.toLocaleString()}원/{item.unit}
+                      {item.materialNote === "별도" ? <em className="catalog-picker__badge">자재별도</em> : null}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ))}
+            {totalCount === 0 ? <p className="catalog-picker__empty">검색 결과가 없습니다.</p> : null}
+          </div>
+          <div className="catalog-picker__foot">클릭하면 견적에 바로 추가됩니다 · 여러 개 연속 선택 가능</div>
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps) {
@@ -511,35 +594,9 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
         <span className="quote-editor__gsheet-hint">시트를 ‘링크가 있는 모든 사용자: 보기’로 공유하고, 샘플 템플릿과 같은 형식이어야 합니다.</span>
       </div>
 
-      <div className="quote-editor__catalog">
-        <label htmlFor={`catalog-${inquiry.id}`}>가격표에서 항목 추가</label>
-        <select
-          id={`catalog-${inquiry.id}`}
-          className="quote-field"
-          value=""
-          onChange={(event) => {
-            const [groupIndex, itemIndex] = event.target.value.split(":").map(Number);
-            const group = priceCatalog[groupIndex];
-            const item = group?.items[itemIndex];
-            if (item) addCatalogItem(item, group.serviceLabel);
-            event.target.value = "";
-          }}
-        >
-          <option value="">+ 가격표에서 공정 항목 선택…</option>
-          {priceCatalog.map((group, groupIndex) => (
-            <optgroup key={group.servicePath} label={group.serviceLabel}>
-              {group.items.map((item, itemIndex) => (
-                <option key={`${groupIndex}:${itemIndex}`} value={`${groupIndex}:${itemIndex}`}>
-                  {item.name} · {item.price.toLocaleString()}원/{item.unit}
-                  {item.materialNote === "별도" ? " (자재 별도)" : ""}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-        <span className="quote-editor__catalog-hint">선택하면 이름·단위·단가가 자동 입력됩니다. 자재비는 아래에서 수기로 추가하세요.</span>
-      </div>
+      <CatalogPicker onPick={(item, label) => addCatalogItem(item, label)} />
 
+      <p className="quote-editor__section">견적 항목</p>
       <div className="quote-editor__table-wrap">
         <div className="quote-editor__table-toolbar">
           <span className="quote-editor__table-hint">
@@ -630,6 +687,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
         </table>
       </div>
 
+      <p className="quote-editor__section">추가 비용 · 자재 / 부대</p>
       <div className="quote-editor__grid">
         <div className="quote-editor__panel">
           <div className="quote-editor__panel-head">
@@ -689,6 +747,7 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
         </div>
       </div>
 
+      <p className="quote-editor__section">금액 요약</p>
       <div className="quote-editor__summary">
         <div>
           <span>공사비합계</span>
