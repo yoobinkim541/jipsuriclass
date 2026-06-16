@@ -29,11 +29,15 @@
  */
 
 // ===== 설정 =====
-// 비밀키는 소스에 박지 않고 스크립트 속성(파일 > 프로젝트 속성 > 스크립트 속성, 키 'SECRET')에 둔다.
-// 미설정 시 빈 값 → doPost가 fail-closed로 막는다(공개 기본키로 실수 배포 방지).
-var SECRET = PropertiesService.getScriptProperties().getProperty('SECRET') || '';
-var TEMPLATE_ID = 'TEMPLATE_SPREADSHEET_ID';   // 토큰을 넣어둔 템플릿 스프레드시트 ID
-var DEST_FOLDER_ID = 'DEST_FOLDER_ID';         // 생성본 저장 폴더(견적완료건) ID
+// 비밀키·ID는 소스에 박지 않고 스크립트 속성(⚙️ 프로젝트 설정 > 스크립트 속성)에 둔다.
+//   SECRET                  : 사이트(QUOTE_SHEET_SECRET)와 공유하는 비밀키
+//   TEMPLATE_SPREADSHEET_ID : 토큰을 넣어둔 템플릿 스프레드시트 ID
+//   DEST_FOLDER_ID          : 생성본 저장 폴더(견적완료건) ID
+// 미설정 시 빈 값 → doPost가 fail-closed로 막고 어떤 키가 빠졌는지 알려준다.
+var SCRIPT_PROPS = PropertiesService.getScriptProperties();
+var SECRET = SCRIPT_PROPS.getProperty('SECRET') || '';
+var TEMPLATE_ID = SCRIPT_PROPS.getProperty('TEMPLATE_SPREADSHEET_ID') || '';
+var DEST_FOLDER_ID = SCRIPT_PROPS.getProperty('DEST_FOLDER_ID') || '';
 var SHEET_TAB = '';                            // 값 채울 탭(비우면 첫 번째 탭)
 // PDF는 시트 생성과 분리된 별도 동작이다(action:'pdf'). 시트 생성 시 자동 PDF는 만들지 않는다.
 
@@ -51,6 +55,7 @@ function doPost(e) {
     if (body.action === 'pdf') return makePdf_(body);
 
     // 기본 동작: 시트만 생성(자동 PDF 없음).
+    if (!TEMPLATE_ID || !DEST_FOLDER_ID) return json_({ error: '서버 설정 오류: 스크립트 속성 TEMPLATE_SPREADSHEET_ID/DEST_FOLDER_ID 미설정' });
     var folder = DriveApp.getFolderById(DEST_FOLDER_ID);
     var fileName = body.fileName || ('견적서 ' + today_());
     var copy = DriveApp.getFileById(TEMPLATE_ID).makeCopy(fileName, folder);
