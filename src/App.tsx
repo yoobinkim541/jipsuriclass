@@ -1946,7 +1946,11 @@ function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLa
                   <SectionHeading
                     id="landing-related-title"
                     title="함께 보면 좋은 페이지"
-                    description="관련 서비스나 인근 지역 상담 페이지로 바로 이동할 수 있습니다."
+                    description={
+                      content.categoryLabel === "지역"
+                        ? "인근·연관 지역 상담 페이지로 바로 이동할 수 있습니다."
+                        : "비슷한 서비스 페이지로 바로 이동할 수 있습니다."
+                    }
                   />
                   <div className="landing-related-links">
                     {content.relatedLinks.map((link) => (
