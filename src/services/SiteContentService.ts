@@ -12,6 +12,8 @@ import type {
   EstimateSurveyStepContent,
   HomepageContent,
   SiteSettingsContent,
+  BlogSnapshotContent,
+  NaverBlogItem,
   HomepageHeroProof,
   HomepageHeroTrustItem,
   PrivacyPageContent
@@ -29,7 +31,8 @@ const CONTENT_IDS = {
   landingPages: "landing-pages",
   privacy: "privacy",
   diagnosis: "diagnosis",
-  siteSettings: "site-settings"
+  siteSettings: "site-settings",
+  blogSnapshot: "blog-snapshot"
 } as const;
 
 export type LandingPagesContent = Record<string, LandingPageContent>;
@@ -402,6 +405,11 @@ export const defaultSiteSettingsContent: SiteSettingsContent = {
   certifications: [...defaultCertifications]
 };
 
+export const defaultBlogSnapshotContent: BlogSnapshotContent = {
+  items: [],
+  syncedAt: ""
+};
+
 export class SiteContentService {
   async loadHomepageContent(): Promise<HomepageContent> {
     return this.loadContent(CONTENT_IDS.homepage, defaultHomepageContent, mergeHomepageContent, isHomepageContent);
@@ -445,6 +453,14 @@ export class SiteContentService {
 
   async loadSiteSettingsContent(): Promise<SiteSettingsContent> {
     return this.loadContent(CONTENT_IDS.siteSettings, defaultSiteSettingsContent, mergeSiteSettingsContent, isSiteSettingsContent);
+  }
+
+  async loadBlogSnapshotContent(): Promise<BlogSnapshotContent> {
+    return this.loadContent(CONTENT_IDS.blogSnapshot, defaultBlogSnapshotContent, mergeBlogSnapshotContent, isBlogSnapshotContent);
+  }
+
+  async saveBlogSnapshotContent(content: BlogSnapshotContent) {
+    await this.saveContent(CONTENT_IDS.blogSnapshot, content, isBlogSnapshotContent);
   }
 
   async saveSiteSettingsContent(content: SiteSettingsContent) {
@@ -573,7 +589,8 @@ export function contentLabel(id: string): string {
     "landing-pages": "랜딩페이지",
     privacy: "개인정보처리방침",
     diagnosis: "자기진단",
-    "site-settings": "사이트 설정"
+    "site-settings": "사이트 설정",
+    "blog-snapshot": "블로그 스냅샷"
   };
   return map[id] ?? id;
 }
@@ -1010,6 +1027,20 @@ function isSiteSettingsContent(value: unknown): value is SiteSettingsContent {
     isString(value.registrationNumber) &&
     isStringArray(value.certifications)
   );
+}
+
+function mergeBlogSnapshotContent(base: BlogSnapshotContent, override: unknown): BlogSnapshotContent {
+  if (!isRecord(override) || !Array.isArray(override.items)) {
+    return base;
+  }
+  return {
+    items: override.items as NaverBlogItem[],
+    syncedAt: isString(override.syncedAt) ? override.syncedAt : base.syncedAt
+  };
+}
+
+function isBlogSnapshotContent(value: unknown): value is BlogSnapshotContent {
+  return isRecord(value) && Array.isArray(value.items) && isString(value.syncedAt);
 }
 
 function isAccountPageContent(value: unknown): value is AccountPageContent {

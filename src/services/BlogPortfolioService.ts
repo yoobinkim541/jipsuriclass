@@ -26,6 +26,11 @@ export class BlogPortfolioService {
     private readonly maxPosts = 8
   ) {}
 
+  /** 스냅샷 등 외부에서 받은 원본 아이템 배열을 표시용 PortfolioPost로 변환(공개 메서드). */
+  postsFromItems(items: NaverBlogItem[]): PortfolioPost[] {
+    return items.map((item, index) => this.toPortfolioPost(item, index));
+  }
+
   async loadLatestPortfolioPosts(): Promise<{ posts: PortfolioPost[]; source: "naver" | "fallback" }> {
     const result = await this.fetchFromApi("latest");
     if (result.source === "naver") {

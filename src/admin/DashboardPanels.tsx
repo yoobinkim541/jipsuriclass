@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { applySiteSettings, business } from "../data";
 import { landingPageDefinitions, type LandingPageDefinition } from "../landingPages";
-import type { InquiryRow, SiteSettingsContent } from "../types";
+import type { InquiryRow, NaverBlogItem, SiteSettingsContent } from "../types";
 import { SiteContentEditor, type EditorPage } from "./SiteContentEditor";
 import { SiteContentService, contentLabel, defaultSiteSettingsContent, type ContentAuditRow } from "../services/SiteContentService";
 import { buildDisplay } from "./InquiriesTab";
@@ -438,6 +438,8 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
   const [loading, setLoading] = useState(false);
   const [syncedAt, setSyncedAt] = useState<string | null>(null);
   const [source, setSource] = useState<string>("-");
+  const [syncing, setSyncing] = useState(false);
+  const [snapshotInfo, setSnapshotInfo] = useState<{ count: number; syncedAt: string } | null>(null);
 
   async function load(notify = false) {
     setLoading(true);
@@ -455,8 +457,42 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
     }
   }
 
+  async function loadSnapshotInfo() {
+    try {
+      const snapshot = await dashboardSiteContentService.loadBlogSnapshotContent();
+      setSnapshotInfo({ count: snapshot.items.length, syncedAt: snapshot.syncedAt });
+    } catch {
+      setSnapshotInfo(null);
+    }
+  }
+
+  // 전체 글(mode=all)을 받아 DB 스냅샷에 저장 → 공개 사이트가 네이버 장애와 무관하게 표시.
+  async function syncSnapshot() {
+    setSyncing(true);
+    try {
+      const response = await fetch("/api/naver-blog?mode=all");
+      const payload = (await response.json()) as { items?: BlogItem[] };
+      const blogItems = Array.isArray(payload.items) ? payload.items : [];
+      if (!blogItems.length) {
+        toast("불러온 글이 없어 스냅샷을 갱신하지 않았습니다(기존 스냅샷 유지).");
+        return;
+      }
+      await dashboardSiteContentService.saveBlogSnapshotContent({
+        items: blogItems as unknown as NaverBlogItem[],
+        syncedAt: new Date().toISOString()
+      });
+      await loadSnapshotInfo();
+      toast(`블로그 스냅샷을 갱신했습니다 (${blogItems.length}건). 공개 사이트에 즉시 반영됩니다.`);
+    } catch (error) {
+      toast(error instanceof Error ? `스냅샷 갱신 실패: ${error.message}` : "스냅샷 갱신에 실패했습니다.");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   useEffect(() => {
     void load();
+    void loadSnapshotInfo();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -466,14 +502,17 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
         <div>
           <span className="adm-tab__kicker">콘텐츠 · 블로그 연동</span>
           <h1>네이버 블로그 글 자동 연동</h1>
-          <p>최근 글이 메인의 블로그 카드와 랜딩페이지 참고글에 자동으로 표시됩니다. 메인 큐레이션은 홈페이지 편집기에서 관리합니다.</p>
+          <p>‘스냅샷 동기화’를 누르면 현재 블로그 글을 DB에 저장해, 네이버 장애와 무관하게 홈·포트폴리오에 안정적으로 표시합니다. (매일 자동 동기화 + 필요 시 수동 갱신)</p>
         </div>
         <div className="adm-tab__actions">
           <a className="adm-btn adm-btn--ghost" href={business.naverBlogUrl} target="_blank" rel="noreferrer">
             <ExternalLink />네이버 블로그 열기
           </a>
-          <button className="adm-btn adm-btn--primary" type="button" disabled={loading} onClick={() => void load(true)}>
-            {loading ? <LoaderCircle className="spin" /> : <RefreshCcw />}지금 새로 불러오기
+          <button className="adm-btn adm-btn--ghost" type="button" disabled={loading} onClick={() => void load(true)}>
+            {loading ? <LoaderCircle className="spin" /> : <RefreshCcw />}미리보기 새로고침
+          </button>
+          <button className="adm-btn adm-btn--primary" type="button" disabled={syncing} onClick={() => void syncSnapshot()}>
+            {syncing ? <LoaderCircle className="spin" /> : <Save />}스냅샷 동기화
           </button>
         </div>
       </header>
@@ -488,8 +527,16 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
           <strong>{source === "naver" ? "네이버 API" : source}</strong>
         </div>
         <div className="adm-blog-status__item">
-          <span className="adm-blog-status__label">노출 글</span>
+          <span className="adm-blog-status__label">미리보기 글</span>
           <strong>{items.length}건</strong>
+        </div>
+        <div className="adm-blog-status__item">
+          <span className="adm-blog-status__label">저장된 스냅샷</span>
+          <strong>
+            {snapshotInfo && snapshotInfo.count
+              ? `${snapshotInfo.count}건 · ${snapshotInfo.syncedAt ? new Date(snapshotInfo.syncedAt).toLocaleString("ko-KR") : "-"}`
+              : "없음(동기화 필요)"}
+          </strong>
         </div>
       </div>
 

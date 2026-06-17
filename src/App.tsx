@@ -231,11 +231,26 @@ function HomePage() {
       setContentReady(true);
     });
 
-    blogPortfolioService.loadLatestPortfolioPosts().then(({ posts, source }) => {
-      if (!mounted) return;
-      setBlogPosts(posts);
-      setBlogSource(source);
-    });
+    // DB 스냅샷(외부 장애와 무관)을 우선 사용하고, 없을 때만 라이브 네이버 호출로 폴백.
+    const loadLive = () =>
+      blogPortfolioService.loadLatestPortfolioPosts().then(({ posts, source }) => {
+        if (!mounted) return;
+        setBlogPosts(posts);
+        setBlogSource(source);
+      });
+
+    void siteContentService
+      .loadBlogSnapshotContent()
+      .then((snapshot) => {
+        if (!mounted) return undefined;
+        if (snapshot.items.length) {
+          setBlogPosts(blogPortfolioService.postsFromItems(snapshot.items).slice(0, 8));
+          setBlogSource("naver");
+          return undefined;
+        }
+        return loadLive();
+      })
+      .catch(() => loadLive());
 
     return () => {
       mounted = false;
@@ -1548,11 +1563,34 @@ function PortfolioPage() {
   const [visibleCount, setVisibleCount] = useState(12);
 
   useEffect(() => {
-    blogPortfolioService.loadAllPortfolioPosts().then(({ posts: loaded, totalCount: total, source }) => {
-      setPosts(loaded);
-      setTotalCount(total);
-      setPostSource(source);
-    });
+    let mounted = true;
+    const loadLive = () =>
+      blogPortfolioService.loadAllPortfolioPosts().then(({ posts: loaded, totalCount: total, source }) => {
+        if (!mounted) return;
+        setPosts(loaded);
+        setTotalCount(total);
+        setPostSource(source);
+      });
+
+    // 홈과 동일하게 DB 스냅샷 우선, 없으면 라이브로 폴백.
+    void siteContentService
+      .loadBlogSnapshotContent()
+      .then((snapshot) => {
+        if (!mounted) return undefined;
+        if (snapshot.items.length) {
+          const loaded = blogPortfolioService.postsFromItems(snapshot.items);
+          setPosts(loaded);
+          setTotalCount(loaded.length);
+          setPostSource("naver");
+          return undefined;
+        }
+        return loadLive();
+      })
+      .catch(() => loadLive());
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // 검색·필터·정렬이 바뀌면 더보기 카운트를 처음으로 되돌린다.

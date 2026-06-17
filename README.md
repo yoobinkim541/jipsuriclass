@@ -80,7 +80,17 @@ VITE_SUPABASE_PUBLISHABLE_KEY=
 # 이메일 알림 (선택)
 ADMIN_EMAIL=
 RESEND_API_KEY=
+
+# 텔레그램 알림 (선택)
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+
+# 블로그 스냅샷 자동 동기화 cron (선택 — /api/sync-blog-snapshot 보호)
+SUPABASE_SERVICE_ROLE_KEY=
+BLOG_SYNC_SECRET=
 ```
+
+> 블로그 스냅샷 cron: GitHub Actions(`.github/workflows/sync-blog-snapshot.yml`)가 매일 `/api/sync-blog-snapshot`을 호출합니다. 저장소 시크릿 `BLOG_SYNC_SECRET`(엔드포인트 값과 동일)이 필요하고, 엔드포인트는 `SUPABASE_SERVICE_ROLE_KEY`로 RLS를 우회해 스냅샷을 저장합니다. 관리자 ‘블로그 연동 → 스냅샷 동기화’ 버튼으로 수동 동기화도 가능합니다(이 경우 위 두 변수 불필요).
 
 ---
 
@@ -257,7 +267,7 @@ insert into public.admin_users (email) values ('admin@jipsuriclass.kr');
 |--------|------|
 | `inquiries` | 견적 문의 저장 (고객 정보·설문·첨부·상태·견적 스냅샷) |
 | `admin_users` | 관리자 이메일 허용 목록 |
-| `site_content` | 관리자 편집 콘텐츠 (홈·랜딩·견적상담·계정·자기진단·개인정보처리방침·사이트설정) |
+| `site_content` | 관리자 편집 콘텐츠 (홈·랜딩·견적상담·계정·자기진단·개인정보처리방침·사이트설정·블로그스냅샷) |
 | `content_audit` | 콘텐츠 편집 이력 (누가·언제·어느 영역·변경 항목, `payload` 스냅샷으로 **되돌리기** 지원) |
 
 > `site_content`는 RLS로 허용 id를 제한합니다. 새 편집 영역을 추가하면 `supabase/migrations/`의 정책 갱신 SQL을 Supabase SQL Editor에서 1회 실행해야 저장이 됩니다(예: 자기진단·개인정보·사이트설정 id 추가 마이그레이션).

@@ -51,6 +51,9 @@ const defaultDraft: EstimateState = {
 
 const stepFields = ["spaceType", "areaBand", "propertyStatus", "reason", "selectedRooms", "budget", "startTiming", undefined] as const;
 
+// 부분 작성 내용을 브라우저에 보관(이름·전화·동의는 개인정보라 제외). 중간 이탈 후 복귀 시 이어서 작성.
+const ESTIMATE_DRAFT_KEY = "jipsuri.estimateDraft.v1";
+
 export function EstimatePage() {
   const query = new URLSearchParams(window.location.search);
   const presetProject = query.get("project") ?? "";
@@ -75,8 +78,67 @@ export function EstimatePage() {
   const [postcodeLoading, setPostcodeLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [resumed, setResumed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const surveyFormRef = useRef<HTMLFormElement | null>(null);
+
+  const hasPresetContext = Boolean(
+    presetProject || presetIssue || presetWorks.length || presetSourceServicePath || presetSourcePricingPath
+  );
+
+  // 복귀 시 저장된 부분 작성 내용을 복원(서비스 링크로 들어온 경우엔 그 맥락을 우선).
+  useEffect(() => {
+    if (hasPresetContext || typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(ESTIMATE_DRAFT_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as { step?: number; draft?: Partial<EstimateState> };
+      if (!saved?.draft) return;
+      const hasAnswers = Object.values(saved.draft).some((value) =>
+        Array.isArray(value) ? value.length > 0 : typeof value === "string" && value.trim().length > 0
+      );
+      if (!hasAnswers) return;
+      setDraft((current) => ({ ...current, ...saved.draft, name: current.name, phone: current.phone, consent: false }));
+      if (typeof saved.step === "number" && saved.step >= 1 && saved.step <= 8) {
+        setStep(saved.step as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8);
+      }
+      setStage("survey");
+      setResumed(true);
+    } catch {
+      /* 손상된 값은 무시 */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 작성 중 자동 저장(개인정보 필드 제외). 제출 완료 후에는 저장하지 않는다.
+  useEffect(() => {
+    if (typeof window === "undefined" || status === "success") return;
+    try {
+      const { name: _name, phone: _phone, consent: _consent, ...rest } = draft;
+      void _name;
+      void _phone;
+      void _consent;
+      window.localStorage.setItem(ESTIMATE_DRAFT_KEY, JSON.stringify({ step, draft: rest }));
+    } catch {
+      /* 저장 용량 초과 등은 무시 */
+    }
+  }, [draft, step, status]);
+
+  function clearSavedDraft() {
+    try {
+      window.localStorage.removeItem(ESTIMATE_DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function restartSurvey() {
+    clearSavedDraft();
+    setDraft({ ...defaultDraft });
+    setStep(1);
+    setResumed(false);
+    setStage("intro");
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -265,6 +327,7 @@ export function EstimatePage() {
       });
 
       setStatus("success");
+      clearSavedDraft(); // 제출 완료 → 임시 저장 내용 정리
       // 전환 완료 이벤트 — 범주형 퍼널 데이터만(이름·전화·주소 등 PII는 보내지 않음)
       trackEvent("estimate_submit", {
         spaceType: draft.spaceType || null,
@@ -427,6 +490,15 @@ export function EstimatePage() {
             <div className="estimate-progress" aria-hidden="true">
               <span style={{ width: `${(step / 8) * 100}%` }} />
             </div>
+
+            {resumed ? (
+              <div className="estimate-resume-note" role="note">
+                <span>이전에 작성하던 내용을 불러왔어요. 이어서 진행하시면 됩니다.</span>
+                <button type="button" onClick={restartSurvey}>
+                  처음부터
+                </button>
+              </div>
+            ) : null}
 
             {presetWorks.length > 0 ? (
               <div className="estimate-survey-summary" role="note" aria-label="모의견적 선택 작업">

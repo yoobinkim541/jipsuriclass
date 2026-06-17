@@ -82,6 +82,12 @@ export type NaverBlogItem = {
   popularity?: number;
 };
 
+/** 네이버 블로그 글 스냅샷(site_content id="blog-snapshot"). 외부 장애와 무관하게 표시하기 위한 DB 캐시. */
+export type BlogSnapshotContent = {
+  items: NaverBlogItem[];
+  syncedAt: string;
+};
+
 export type WorkProcessStep = {
   title: string;
   text: string;
