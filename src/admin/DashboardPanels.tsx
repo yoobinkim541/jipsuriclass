@@ -24,7 +24,7 @@ import { applySiteSettings, business } from "../data";
 import { landingPageDefinitions, type LandingPageDefinition } from "../landingPages";
 import type { InquiryRow, SiteSettingsContent } from "../types";
 import { SiteContentEditor, type EditorPage } from "./SiteContentEditor";
-import { SiteContentService, defaultSiteSettingsContent } from "../services/SiteContentService";
+import { SiteContentService, contentLabel, defaultSiteSettingsContent, type ContentAuditRow } from "../services/SiteContentService";
 import { buildDisplay } from "./InquiriesTab";
 
 const dashboardSiteContentService = new SiteContentService();
@@ -527,6 +527,18 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
   );
 }
 
+function formatAuditTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
 function formatPostDate(postdate?: string) {
   if (!postdate) return "";
   if (/^\d{8}$/.test(postdate)) {
@@ -724,41 +736,62 @@ export function SettingsTab({ toast }: { toast: (message: string) => void }) {
 
 /* ──────────── 편집 이력 ──────────── */
 
-const sampleAudit = [
-  { when: "2026.06.02 14:08", who: "이보미", path: "homepage.hero.title", change: "히어로 카피 수정" },
-  { when: "2026.06.01 13:22", who: "이보미", path: "landing./service/leak.faq.0", change: "출장비 정책 답변 보강" },
-  { when: "2026.05.30 10:14", who: "이보미", path: "estimate.terms", change: "약관 문구 다듬기" },
-  { when: "2026.05.28 09:50", who: "이보미", path: "homepage.cases", change: "대표 사례 교체" }
-];
-
 export function AuditTab() {
+  const [rows, setRows] = useState<ContentAuditRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    setLoading(true);
+    try {
+      setRows(await dashboardSiteContentService.listContentAudit());
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <section className="adm-tab">
       <header className="adm-tab__head">
         <div>
           <span className="adm-tab__kicker">사이트 · 편집 이력</span>
           <h1>누가, 언제, 무엇을 바꿨나요?</h1>
-          <p>
-            편집기에서 저장된 변경 사항을 시간순으로 기록하는 기능은 준비 중입니다. 아래는 화면 구성 확인용 예시입니다.
-          </p>
+          <p>편집기에서 콘텐츠를 저장할 때마다 기록됩니다. 최근 {rows.length || 0}건을 시간순으로 보여줍니다.</p>
         </div>
         <div className="adm-tab__actions">
-          <span className="adm-badge-sample" style={{ alignSelf: "center" }}>예시 데이터</span>
+          <button className="adm-btn adm-btn--ghost" type="button" onClick={() => void load()} disabled={loading}>
+            {loading ? <LoaderCircle className="spin" /> : <RefreshCcw />}새로고침
+          </button>
         </div>
       </header>
       <div className="adm-audit-list">
-        {sampleAudit.map((row) => (
-          <div className="adm-audit-row" key={`${row.when}-${row.path}`}>
-            <span className="adm-when">{row.when}</span>
-            <span className="adm-who">
-              <span className="adm-who-avatar">{row.who[0]}</span>
-              {row.who}
-            </span>
-            <span className="adm-path">{row.path}</span>
-            <span className="adm-change">{row.change}</span>
-            <span className="adm-undo-off">기록</span>
-          </div>
-        ))}
+        {loading && !rows.length ? (
+          <p className="adm-rank-empty">불러오는 중…</p>
+        ) : rows.length === 0 ? (
+          <p className="adm-rank-empty">아직 편집 이력이 없습니다. 편집기에서 콘텐츠를 저장하면 여기에 기록됩니다.</p>
+        ) : (
+          rows.map((row) => {
+            const who = row.actor_email ?? "관리자";
+            return (
+              <div className="adm-audit-row" key={row.id}>
+                <span className="adm-when">{formatAuditTime(row.created_at)}</span>
+                <span className="adm-who">
+                  <span className="adm-who-avatar">{who[0]?.toUpperCase() ?? "관"}</span>
+                  {who}
+                </span>
+                <span className="adm-path">{row.content_id}</span>
+                <span className="adm-change">{row.label ?? contentLabel(row.content_id)} 저장</span>
+                <span className="adm-undo-off">기록</span>
+              </div>
+            );
+          })
+        )}
       </div>
     </section>
   );
