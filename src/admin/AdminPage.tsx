@@ -399,7 +399,7 @@ export function AdminPage() {
               ) : null}
               {tab === "blog" ? <BlogTab toast={toast} /> : null}
               {tab === "settings" ? <SettingsTab toast={toast} /> : null}
-              {tab === "audit" ? <AuditTab /> : null}
+              {tab === "audit" ? <AuditTab toast={toast} /> : null}
             </>
           )}
         </main>

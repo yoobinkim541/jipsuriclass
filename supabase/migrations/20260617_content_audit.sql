@@ -7,8 +7,11 @@ create table if not exists public.content_audit (
   content_id text not null,
   label text,
   actor_email text,
+  payload jsonb,
   created_at timestamptz not null default now()
 );
+-- 롤백용 스냅샷 컬럼(기존 테이블에 없으면 추가)
+alter table public.content_audit add column if not exists payload jsonb;
 
 comment on table public.content_audit is '관리자 콘텐츠 편집 이력(편집 이력 탭)';
 alter table public.content_audit enable row level security;
