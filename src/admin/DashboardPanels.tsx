@@ -385,6 +385,39 @@ export function ContentTab({
 
 /* ──────────── 블로그 연동 ──────────── */
 
+const NAVER_IMAGE_HOST = /(?:^|\.)(?:pstatic\.net|naver\.net|naver\.com)$/i;
+
+/**
+ * 네이버 블로그 이미지는 브라우저에서 직접 부르면 핫링크 차단(403)으로 깨진다.
+ * 같은 오리진의 /api/blog-image 프록시(서버가 Referer를 붙여 받아옴)를 거치게 한다.
+ */
+function toDisplayBlogImage(rawUrl: string): string {
+  const url = (rawUrl || "").trim();
+  if (!url || url.startsWith("/")) return url;
+  try {
+    const parsed = new URL(url);
+    if (NAVER_IMAGE_HOST.test(parsed.hostname)) {
+      return `/api/blog-image?url=${encodeURIComponent(url)}`;
+    }
+  } catch {
+    return url;
+  }
+  return url;
+}
+
+/** 블로그 카드 썸네일 — 프록시로 불러오고, 실패하면 기본 플레이스홀더로 폴백. */
+function BlogThumb({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <div className="adm-blog-card__noimg">
+        <Image />
+      </div>
+    );
+  }
+  return <img src={toDisplayBlogImage(src)} alt={alt} loading="lazy" onError={() => setFailed(true)} />;
+}
+
 type BlogItem = {
   title: string;
   link: string;
@@ -462,7 +495,7 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
           items.map((item) => (
             <article className="adm-blog-card" key={item.link}>
               {item.image ? (
-                <img src={item.image} alt={item.title} loading="lazy" />
+                <BlogThumb src={item.image} alt={item.title} />
               ) : (
                 <div className="adm-blog-card__noimg">
                   <Image />
