@@ -686,10 +686,41 @@ function SymptomsSection({ categories }: { symptoms: string[]; categories: typeo
   );
 }
 
+/** 자가진단 공간 픽토그램(모던 라인 아이콘, currentColor). */
+function DiagPicto({ id }: { id: string }) {
+  const c = {
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true
+  };
+  switch (id) {
+    case "leak":
+      return (<svg {...c}><path d="M12 3c3 3.9 6 7 6 10.2A6 6 0 0 1 6 13.2C6 10 9 6.9 12 3z" /></svg>);
+    case "bathroom":
+      return (<svg {...c}><path d="M9 6 6.6 3.6a1.5 1.5 0 0 0-1.1-.6C4.7 3 4 3.7 4 4.6V12" /><path d="M3 12h18" /><path d="M5 12v3a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4v-3" /><path d="M7 19l-1.2 2M17 19l1.2 2" /></svg>);
+    case "kitchen":
+      return (<svg {...c}><path d="M7 21v-4.5a2 2 0 0 1 2-2h1.5" /><path d="M10.5 14.5V6H15a4 4 0 0 1 4 4v1.5" /><path d="M15 6V4h3.5" /><path d="M16.8 11.5h4.4" /></svg>);
+    case "door":
+      return (<svg {...c}><path d="M6 20V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v15" /><path d="M4 20h16" /><path d="M14.5 12v.01" /></svg>);
+    case "electric":
+      return (<svg {...c}><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13l1-8z" /></svg>);
+    case "wall":
+      return (<svg {...c}><rect x="3" y="5" width="18" height="14" rx="1.5" /><path d="M3 9.7h18M3 14.3h18M9 5v4.7M15 9.7v4.6M9 14.3V19" /></svg>);
+    default:
+      return null;
+  }
+}
+
 /**
- * 인터랙티브 집 단면도 자가진단.
- * 지붕(누수)·2x2 방(욕실·주방·문·전기)·바닥(벽·바닥·천장) 6개 공간을 누르면
- * 우측 패널에 해당 공간의 증상이 나오고, 각 증상은 /diagnosis로 연결된다.
+ * 집 단면도 자가진단(사진 + 라인 픽토그램).
+ * 지붕(누수)·2x2 방(욕실·주방·문·전기)·기초(벽·바닥·천장)를 누르면
+ * 우측 패널에 해당 공간 증상이 나오고, 각 증상은 /diagnosis로 연결된다.
  */
 function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }) {
   const [activeId, setActiveId] = useState(categories[0]?.id ?? "");
@@ -698,7 +729,7 @@ function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }
 
   const select = (id: string) => {
     setActiveId(id);
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches) {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches) {
       requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
     }
   };
@@ -739,7 +770,7 @@ function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }
         <span className="dh2__photo" aria-hidden="true" />
         <span className="dh2__shade" aria-hidden="true" />
         <span className="dh2__plate">
-          <span className="dh2__ico" aria-hidden="true">{cat.icon}</span>
+          <span className="dh2__ico" aria-hidden="true"><DiagPicto id={id} /></span>
           <span className="dh2__name">{cat.label}</span>
         </span>
       </button>
@@ -749,20 +780,25 @@ function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }
   return (
     <div className="dh2">
       <div className="dh2__house" role="group" aria-label="집 단면도에서 불편한 곳을 선택하세요">
-        {part("leak", "roof")}
-        <div className="dh2__rooms">
-          {part("bathroom", "room")}
-          {part("kitchen", "room")}
-          {part("door", "room")}
-          {part("electric", "room")}
+        <div className="dh2__roofwrap">
+          <span className="dh2__chimney" aria-hidden="true" />
+          {part("leak", "roof")}
         </div>
-        {part("wall", "found")}
+        <div className="dh2__body">
+          <div className="dh2__rooms">
+            {part("bathroom", "room")}
+            {part("kitchen", "room")}
+            {part("door", "room")}
+            {part("electric", "room")}
+          </div>
+          {part("wall", "found")}
+        </div>
         <p className="dh2__hint">공간을 누르면 자주 나타나는 증상이 표시됩니다</p>
       </div>
 
       <div className="dh2__panel" data-cat={active?.id} ref={panelRef} aria-live="polite">
         <div className="dh2__phead">
-          <span className="dh2__badge" aria-hidden="true">{active?.icon}</span>
+          <span className="dh2__badge" aria-hidden="true"><DiagPicto id={active?.id ?? ""} /></span>
           <span className="dh2__ptitle">
             <strong>{active?.label}</strong>
             <span>이런 증상이 있으신가요?</span>

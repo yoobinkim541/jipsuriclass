@@ -4267,10 +4267,10 @@ main.home-page .cases .row-heading a {
    집 단면도 v2 — 사진으로 채운 다크 프리미엄 UI (.dh2)
    섹션 자체를 다크로 전환(.diag-dark). 활성 공간은 시안 글로우.
    ========================================================================= */
-.symptoms.diag-dark { background: #0b1622; }
-main.home-page .diag-dark .row-heading h2 { color: #f5f8fc; }
-main.home-page .diag-dark .row-heading p { color: #9fb0c2; }
-main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
+/* 섹션 배경/제목은 테마를 따른다(라이트=크림, 다크=다크 — 사이트 기본).
+   집 단면도·패널은 사진이 어두워 항상 '다크 카드 유닛'으로 둔다. */
+:root[data-theme="dark"] main.home-page .diag-dark .row-heading h2 { color: #f5f8fc; }
+:root[data-theme="dark"] main.home-page .diag-dark .row-heading p { color: #9fb0c2; }
 
 .dh2 {
   --glow: #5cc6ff;
@@ -4283,13 +4283,38 @@ main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
 .dh2__house {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+}
+
+.dh2__roofwrap { position: relative; }
+
+/* 굴뚝 — 지붕 우측 경사에 솟음 */
+.dh2__chimney {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  left: 66%;
+  width: 22px;
+  height: 42px;
+  border-radius: 4px 4px 0 0;
+  background: #26384e;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* 집 본체(벽) — 방 사이 간격이 벽처럼 보이도록 다크 프레임 */
+.dh2__body {
+  background: #0e1a28;
+  border-radius: 3px 3px 20px 20px;
+  padding: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  box-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.7);
 }
 
 .dh2__rooms {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 9px;
 }
 
 /* 공통 공간 버튼 */
@@ -4317,7 +4342,7 @@ main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
 .dh2__shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(8, 15, 24, 0.12) 0%, rgba(8, 15, 24, 0.4) 45%, rgba(8, 15, 24, 0.82) 100%);
+  background: linear-gradient(180deg, rgba(7, 13, 22, 0.04) 0%, rgba(7, 13, 22, 0.18) 55%, rgba(7, 13, 22, 0.58) 100%);
 }
 .dh2__plate {
   position: relative;
@@ -4330,25 +4355,31 @@ main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
   gap: 7px;
   color: #eef3f8;
 }
-.dh2__ico { font-size: 26px; line-height: 1; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); }
-.dh2__name { font-size: 14px; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+.dh2__ico { display: inline-flex; color: #ffffff; line-height: 1; filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.55)); }
+.dh2__ico svg { width: 30px; height: 30px; }
+.dh2__name { font-size: 14px; font-weight: 800; letter-spacing: -0.01em; color: #fff; text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7); }
 
 .dh2__part:hover { box-shadow: inset 0 0 0 1.5px rgba(92, 198, 255, 0.5); transform: translateY(-2px); }
 .dh2__part.is-active {
   box-shadow: inset 0 0 0 2px var(--glow), 0 0 24px -2px rgba(92, 198, 255, 0.6);
 }
 .dh2__part.is-active .dh2__shade {
-  background: linear-gradient(180deg, rgba(92, 198, 255, 0.12) 0%, rgba(8, 15, 24, 0.35) 45%, rgba(8, 15, 24, 0.78) 100%);
+  background: linear-gradient(180deg, rgba(92, 198, 255, 0.14) 0%, rgba(7, 13, 22, 0.16) 55%, rgba(7, 13, 22, 0.55) 100%);
 }
 .dh2__part:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--glow), 0 0 0 3px rgba(92, 198, 255, 0.35); }
 
 /* 지붕(박공) = 물·누수 — 사진을 박공 모양으로 클립 */
 .dh2__roof {
-  min-height: 96px;
-  border-radius: 16px 16px 0 0;
-  clip-path: polygon(50% 4%, 100% 100%, 0 100%);
+  min-height: 106px;
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 100% 100%, 0 100%);
+  background: repeating-linear-gradient(180deg, #213245 0 13px, #1b293a 13px 14px);
 }
-.dh2__roof .dh2__plate { justify-content: flex-end; padding-bottom: 12px; }
+.dh2__roof .dh2__photo,
+.dh2__roof .dh2__shade { display: none; }
+.dh2__roof .dh2__plate { justify-content: flex-end; padding-bottom: 14px; }
+.dh2__roof:hover { transform: none; background: repeating-linear-gradient(180deg, #26384e 0 13px, #1f2e41 13px 14px); }
+.dh2__roof.is-active { box-shadow: none; background: repeating-linear-gradient(180deg, #2a4a68 0 13px, #213a53 13px 14px); }
 
 /* 방 */
 .dh2__room { min-height: 134px; }
@@ -4356,7 +4387,7 @@ main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
 /* 기초 = 벽·바닥·천장(가로 띠) */
 .dh2__found { min-height: 58px; border-radius: 14px; }
 .dh2__found .dh2__plate { flex-direction: row; gap: 10px; }
-.dh2__found .dh2__ico { font-size: 22px; }
+.dh2__found .dh2__ico svg { width: 23px; height: 23px; }
 
 .dh2__hint { margin: 12px 2px 0; font-size: 12.5px; color: #7f8ea0; text-align: center; }
 
@@ -4383,10 +4414,11 @@ main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-size: 26px;
+  color: #d6ecfb;
   background: #0f1a27;
   box-shadow: inset 0 0 0 1.5px rgba(92, 198, 255, 0.4);
 }
+.dh2__badge svg { width: 27px; height: 27px; }
 .dh2__ptitle { display: flex; flex-direction: column; gap: 2px; }
 .dh2__ptitle strong { font-size: 20px; font-weight: 800; color: #f5f8fc; }
 .dh2__ptitle span { font-size: 13px; color: #93a2b5; }
@@ -4427,8 +4459,18 @@ main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
 }
 .dh2__cta:hover { background: #d2e6f4; }
 
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .dh2 { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 520px) {
+  .dh2__room { min-height: 116px; }
+  .dh2__roof { min-height: 92px; }
+  .dh2__ico svg { width: 26px; height: 26px; }
+  .dh2__name { font-size: 13px; }
+  .dh2__panel { padding: 18px; border-radius: 16px; }
+  .dh2__badge { width: 48px; height: 48px; }
+  .dh2__ptitle strong { font-size: 18px; }
+  .dh2__symptoms a { padding: 13px 2px; font-size: 14px; }
 }
 
 /* 지붕 기와 결 */
