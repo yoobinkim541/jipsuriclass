@@ -4094,13 +4094,13 @@ main.home-page .cases .row-heading a {
   align-items: start;
 }
 
-/* 분야별 accent (집 공간 색상 코딩) */
-.diaghouse [data-cat="door"] { --cat-accent: #c08a4e; }
-.diaghouse [data-cat="leak"] { --cat-accent: #3f97d6; }
-.diaghouse [data-cat="wall"] { --cat-accent: #9a8478; }
-.diaghouse [data-cat="electric"] { --cat-accent: #e0a92e; }
-.diaghouse [data-cat="bathroom"] { --cat-accent: #2fa6a0; }
-.diaghouse [data-cat="kitchen"] { --cat-accent: #5fa55a; }
+/* 분야별 accent (집 공간 색상 코딩) — 채도 낮춘 차분한 톤 */
+.diaghouse [data-cat="door"] { --cat-accent: #b08d68; }
+.diaghouse [data-cat="leak"] { --cat-accent: #7596ad; }
+.diaghouse [data-cat="wall"] { --cat-accent: #9d9286; }
+.diaghouse [data-cat="electric"] { --cat-accent: #c2a05a; }
+.diaghouse [data-cat="bathroom"] { --cat-accent: #74a39c; }
+.diaghouse [data-cat="kitchen"] { --cat-accent: #8aa173; }
 
 .diaghouse__map {
   display: grid;
@@ -4133,8 +4133,8 @@ main.home-page .cases .row-heading a {
   padding: 12px;
   border: 0;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--z) 13%, #ffffff);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--z) 26%, transparent);
+  background: color-mix(in srgb, var(--z) 9%, #faf6ef);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--z) 22%, transparent);
   color: var(--navy-700, #10284a);
   font: inherit;
   cursor: pointer;
@@ -4156,18 +4156,91 @@ main.home-page .cases .row-heading a {
 }
 
 .diaghouse__zone:hover {
-  background: color-mix(in srgb, var(--z) 22%, #ffffff);
+  background: color-mix(in srgb, var(--z) 15%, #faf6ef);
   transform: translateY(-2px);
 }
 
 .diaghouse__zone.is-active {
-  background: color-mix(in srgb, var(--z) 28%, #ffffff);
-  box-shadow: inset 0 0 0 2px var(--z), 0 10px 24px -14px color-mix(in srgb, var(--z) 75%, transparent);
+  background: color-mix(in srgb, var(--z) 22%, #faf6ef);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--z) 70%, #ffffff), 0 10px 24px -16px color-mix(in srgb, var(--z) 55%, transparent);
 }
 
 .diaghouse__emoji {
   font-size: 25px;
   line-height: 1;
+}
+
+/* 이모지·라벨은 일러스트(기와·창문·벽돌) 위 레이어 */
+.diaghouse__emoji,
+.diaghouse__zlabel {
+  position: relative;
+  z-index: 1;
+}
+
+/* 굴뚝 — 지붕 위로 솟게 (무대 상단 기준) */
+.diaghouse__stage {
+  position: relative;
+  padding-top: 14px;
+}
+.diaghouse__stage::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 23%;
+  width: 19px;
+  height: 30px;
+  border-radius: 3px 3px 0 0;
+  background: #ad9f8e;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+  z-index: 1;
+}
+
+/* 지붕 기와 결 */
+.diaghouse__zone--leak::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 8px,
+    color-mix(in srgb, var(--z) 32%, transparent) 8px 9px
+  );
+  opacity: 0.55;
+}
+
+/* 방 창문 — 욕실·주방(좌상단 작은 창) */
+.diaghouse__zone--bathroom::before,
+.diaghouse__zone--kitchen::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 14px;
+  width: 22px;
+  height: 18px;
+  z-index: 0;
+  pointer-events: none;
+  border: 1.5px solid color-mix(in srgb, var(--z) 52%, transparent);
+  border-radius: 3px;
+  background:
+    linear-gradient(color-mix(in srgb, var(--z) 52%, transparent) 0 0) center / 100% 1.5px no-repeat,
+    linear-gradient(color-mix(in srgb, var(--z) 52%, transparent) 0 0) center / 1.5px 100% no-repeat;
+  opacity: 0.6;
+}
+
+/* 바닥 벽돌 결 */
+.diaghouse__zone--wall::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 12px, color-mix(in srgb, var(--z) 28%, transparent) 12px 13px),
+    repeating-linear-gradient(90deg, transparent 0 26px, color-mix(in srgb, var(--z) 28%, transparent) 26px 27px);
+  opacity: 0.4;
 }
 
 .diaghouse__zlabel {

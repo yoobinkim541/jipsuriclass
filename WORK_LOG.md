@@ -10,6 +10,7 @@ Implemented behavior:
   - 집 실루엣: 지붕(물·누수, 사다리꼴 clip-path) + 2×2 방(욕실·주방·문·전기) + 바닥 슬래브(벽·바닥·천장)를 CSS grid-template-areas로 배치.
   - 공간(버튼)을 누르면 우측(모바일은 하단) 패널에 그 공간의 증상이 표시되고, 각 증상은 `/diagnosis?issue=`, 하단 CTA는 `/diagnosis?category=`로 연결. 모바일은 선택 시 패널로 스크롤.
   - 분야별 `--cat-accent` 색상 코딩(존 배경/링/활성 글로우, 패널 헤더 스트립, 증상 호버·셰브론)을 `color-mix`로. 접근성: 존은 `<button>` + `aria-pressed`, 패널 `aria-live`.
+  - (피드백 반영) 더 집답게 + 차분한 색감으로 보강: accent 채도↓·따뜻한 페이퍼(#faf6ef) 베이스·틴트↓, 지붕 기와결(repeating-linear-gradient)+굴뚝(stage::before), 욕실·주방 창문 모티프(::before), 바닥 벽돌결, 활성 링/그림자 톤다운. 이모지·라벨은 z-index로 일러스트 위 유지.
 - 다크모드 대응(존/패널/헤더/텍스트/CTA). CTA는 라이트=네이비, 다크=골드.
 - 버그 수정: CSS 변수 `--navy`가 :root에 미정의(빈 값)라 `background: var(--navy)`가 투명→흰 글씨 묻힘. `var(--navy-700, #10284a)`로 교체.
 
