@@ -501,16 +501,17 @@ export class SiteContentService {
     }
 
     // 편집 이력 기록(best-effort) — 실패해도 저장 자체는 성공으로 둔다.
-    await this.logContentSave(id);
+    // payload 스냅샷을 함께 저장해 두면, 나중에 그 시점으로 롤백할 수 있다.
+    await this.logContentSave(id, content);
   }
 
-  /** 콘텐츠 저장을 편집 이력(content_audit)에 남긴다. */
-  private async logContentSave(id: string) {
+  /** 콘텐츠 저장을 편집 이력(content_audit)에 남긴다(payload 스냅샷 포함). */
+  private async logContentSave(id: string, payload: unknown) {
     if (!supabase) return;
     try {
       const { data } = await supabase.auth.getUser();
       const actorEmail = data.user?.email ?? null;
-      await supabase.from("content_audit").insert({ content_id: id, label: contentLabel(id), actor_email: actorEmail });
+      await supabase.from("content_audit").insert({ content_id: id, label: contentLabel(id), actor_email: actorEmail, payload });
     } catch {
       /* 이력 기록 실패는 무시 */
     }
@@ -521,11 +522,26 @@ export class SiteContentService {
     if (!supabase) return [];
     const { data, error } = await supabase
       .from("content_audit")
-      .select("id, content_id, label, actor_email, created_at")
+      .select("id, content_id, label, actor_email, payload, created_at")
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error || !data) return [];
     return data as ContentAuditRow[];
+  }
+
+  /** 편집 이력의 특정 시점 스냅샷으로 콘텐츠를 되돌린다(롤백). 되돌린 것도 새 이력으로 기록. */
+  async restoreSiteContent(contentId: string, payload: unknown) {
+    if (!supabase) {
+      throw new Error("Supabase environment variables are not configured");
+    }
+    if (payload == null) {
+      throw new Error("복원할 스냅샷이 없습니다(이 기록에는 저장된 내용이 없습니다).");
+    }
+    const { error } = await supabase.from("site_content").upsert({ id: contentId, payload }, { onConflict: "id" });
+    if (error) {
+      throw error;
+    }
+    await this.logContentSave(contentId, payload);
   }
 }
 
@@ -534,6 +550,7 @@ export type ContentAuditRow = {
   content_id: string;
   label: string | null;
   actor_email: string | null;
+  payload?: unknown;
   created_at: string;
 };
 

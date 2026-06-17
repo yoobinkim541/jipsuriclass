@@ -65,15 +65,22 @@ export async function loadNaverBlogCandidates({
   limit?: number;
 }): Promise<NaverBlogItem[]> {
   const candidates = new Map<string, RankedBlogCandidate>();
+  // 키워드(지역명·서비스)가 있으면 '매칭되는 글만' 돌려준다(allowUnmatched=false).
+  // 또 최신 24개만으로는 그 지역 시공글이 누락되므로, 키워드가 있으면 더 많은 페이지를 모아 풀을 넓힌다.
+  const hasTerms = terms.some((term) => typeof term === "string" && term.trim().length > 0);
+  const mobilePages = hasTerms ? 6 : 1;
 
-  const mobileItems = await fetchMobileItems(blogId, categoryNos);
+  const mobileItems = await fetchMobileItems(blogId, categoryNos, mobilePages);
   for (const item of mobileItems) {
     addCandidate(candidates, item.item, item.source);
   }
 
   if (candidates.size) {
-    const ranked = rankCandidates([...candidates.values()], terms, true);
-    return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
+    const ranked = rankCandidates([...candidates.values()], terms, !hasTerms);
+    if (ranked.length) {
+      return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
+    }
+    // 키워드 매칭 결과가 0건이면 RSS/카테고리로 한 번 더 시도한다(아래로 진행).
   }
 
   const rssCandidates = new Map<string, RankedBlogCandidate>();
@@ -89,7 +96,7 @@ export async function loadNaverBlogCandidates({
     }
   }
 
-  const ranked = rankCandidates([...rssCandidates.values()], terms, true);
+  const ranked = rankCandidates([...rssCandidates.values()], terms, !hasTerms);
   return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
 }
 
@@ -241,18 +248,25 @@ function getSourcePriority(sources: Set<"mobile" | "mobile-category" | "rss" | "
   return 0;
 }
 
-async function fetchMobileItems(blogId: string, categoryNos: number[]) {
+async function fetchMobileItems(blogId: string, categoryNos: number[], pages = 1) {
   const results: Array<{ item: NaverBlogItem; source: "mobile" | "mobile-category" }> = [];
 
-  const { items: latestItems } = await fetchMobilePostList(blogId, 0, MOBILE_FETCH_LIMIT);
-  for (const item of latestItems) {
-    results.push({ item, source: "mobile" });
+  // 최신 글: 필요한 페이지 수만큼 병렬로 모은다(키워드 매칭 시 풀을 넓혀 지역글 누락 방지).
+  const latestPages = await Promise.all(
+    Array.from({ length: Math.max(1, pages) }, (_, index) => fetchMobilePostList(blogId, 0, MOBILE_FETCH_LIMIT, index + 1))
+  );
+  for (const { items } of latestPages) {
+    for (const item of items) {
+      results.push({ item, source: "mobile" });
+    }
   }
 
   const uniqueCategoryNos = [...new Set(categoryNos.filter((value) => Number.isInteger(value) && value > 0))];
-  for (const categoryNo of uniqueCategoryNos) {
-    const { items: categoryItems } = await fetchMobilePostList(blogId, categoryNo, MOBILE_FETCH_LIMIT);
-    for (const item of categoryItems) {
+  const categoryResults = await Promise.all(
+    uniqueCategoryNos.map((categoryNo) => fetchMobilePostList(blogId, categoryNo, MOBILE_FETCH_LIMIT))
+  );
+  for (const { items } of categoryResults) {
+    for (const item of items) {
       results.push({ item, source: "mobile-category" });
     }
   }

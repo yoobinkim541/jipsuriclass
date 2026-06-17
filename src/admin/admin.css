@@ -1618,9 +1618,32 @@
   font-size: 11px;
   font-weight: 800;
 }
-.adm-audit-row .adm-path { font-family: var(--f-mono); font-size: 12px; color: var(--navy-700); word-break: break-all; }
+.adm-audit-row .adm-path { font-family: var(--f-mono); font-size: 12px; color: var(--ink-2); word-break: break-all; }
 .adm-audit-row .adm-change { color: var(--ink-2); font-size: 12px; }
 .adm-audit-row .adm-undo-off { font-size: 12px; color: var(--ink-4); }
+.adm-audit-restore {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--hair);
+  background: var(--paper);
+  color: var(--ink-2);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.adm-audit-restore:hover:not(:disabled) {
+  border-color: var(--gold-500);
+  color: var(--gold-700);
+  background: var(--gold-100);
+}
+.adm-audit-restore:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
 
 /* ────────────────────── 로그인 요구 화면 ────────────────────── */
 .adm-gate {

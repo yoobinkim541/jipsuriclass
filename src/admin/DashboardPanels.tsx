@@ -13,6 +13,7 @@ import {
   Pin,
   Plus,
   RefreshCcw,
+  RotateCcw,
   Save,
   Search,
   Shield,
@@ -736,9 +737,10 @@ export function SettingsTab({ toast }: { toast: (message: string) => void }) {
 
 /* ──────────── 편집 이력 ──────────── */
 
-export function AuditTab() {
+export function AuditTab({ toast }: { toast: (message: string) => void }) {
   const [rows, setRows] = useState<ContentAuditRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -756,13 +758,31 @@ export function AuditTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function rollback(row: ContentAuditRow) {
+    const label = row.label ?? contentLabel(row.content_id);
+    const when = formatAuditTime(row.created_at);
+    if (typeof window !== "undefined" && !window.confirm(`'${label}'을(를) ${when} 시점으로 되돌릴까요?\n현재 내용은 이 스냅샷으로 덮어써집니다.`)) {
+      return;
+    }
+    setRestoringId(row.id);
+    try {
+      await dashboardSiteContentService.restoreSiteContent(row.content_id, row.payload);
+      toast(`'${label}'을(를) ${when} 시점으로 되돌렸습니다.`);
+      await load();
+    } catch (error) {
+      toast(error instanceof Error ? `되돌리기 실패: ${error.message}` : "되돌리기에 실패했습니다.");
+    } finally {
+      setRestoringId(null);
+    }
+  }
+
   return (
     <section className="adm-tab">
       <header className="adm-tab__head">
         <div>
           <span className="adm-tab__kicker">사이트 · 편집 이력</span>
           <h1>누가, 언제, 무엇을 바꿨나요?</h1>
-          <p>편집기에서 콘텐츠를 저장할 때마다 기록됩니다. 최근 {rows.length || 0}건을 시간순으로 보여줍니다.</p>
+          <p>편집기에서 콘텐츠를 저장할 때마다 기록됩니다. 각 기록의 ‘되돌리기’로 그 시점 내용으로 복원할 수 있습니다.</p>
         </div>
         <div className="adm-tab__actions">
           <button className="adm-btn adm-btn--ghost" type="button" onClick={() => void load()} disabled={loading}>
@@ -778,6 +798,7 @@ export function AuditTab() {
         ) : (
           rows.map((row) => {
             const who = row.actor_email ?? "관리자";
+            const canRestore = row.payload != null;
             return (
               <div className="adm-audit-row" key={row.id}>
                 <span className="adm-when">{formatAuditTime(row.created_at)}</span>
@@ -787,7 +808,20 @@ export function AuditTab() {
                 </span>
                 <span className="adm-path">{row.content_id}</span>
                 <span className="adm-change">{row.label ?? contentLabel(row.content_id)} 저장</span>
-                <span className="adm-undo-off">기록</span>
+                {canRestore ? (
+                  <button
+                    className="adm-audit-restore"
+                    type="button"
+                    onClick={() => void rollback(row)}
+                    disabled={restoringId !== null}
+                    title="이 시점의 내용으로 되돌립니다"
+                  >
+                    {restoringId === row.id ? <LoaderCircle size={13} className="spin" /> : <RotateCcw size={13} />}
+                    되돌리기
+                  </button>
+                ) : (
+                  <span className="adm-undo-off">기록</span>
+                )}
               </div>
             );
           })
