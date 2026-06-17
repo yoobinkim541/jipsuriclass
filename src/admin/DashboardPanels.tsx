@@ -11,17 +11,23 @@ import {
   LoaderCircle,
   PencilLine,
   Pin,
+  Plus,
   RefreshCcw,
+  Save,
   Search,
   Shield,
   Stethoscope,
+  Trash2,
   UserRound
 } from "lucide-react";
-import { business } from "../data";
+import { applySiteSettings, business } from "../data";
 import { landingPageDefinitions, type LandingPageDefinition } from "../landingPages";
-import type { InquiryRow } from "../types";
+import type { InquiryRow, SiteSettingsContent } from "../types";
 import { SiteContentEditor, type EditorPage } from "./SiteContentEditor";
+import { SiteContentService, defaultSiteSettingsContent } from "../services/SiteContentService";
 import { buildDisplay } from "./InquiriesTab";
+
+const dashboardSiteContentService = new SiteContentService();
 
 type PreviewFn = (path: string, label: string) => void;
 
@@ -531,16 +537,6 @@ function formatPostDate(postdate?: string) {
 
 /* ──────────── 사이트 설정 ──────────── */
 
-const certifications = [
-  "건축기능사",
-  "건축도장기능사",
-  "도배기능사",
-  "실내건축기능사",
-  "타일기능사",
-  "방수기능사",
-  "전산응용건축제도기능사"
-];
-
 const brandColors = [
   { name: "네이비", value: "#10284a" },
   { name: "골드", value: "#d7ae6b" },
@@ -548,16 +544,79 @@ const brandColors = [
   { name: "잉크", value: "#0b1a30" }
 ];
 
+const settingsFields: Array<{ key: keyof Omit<SiteSettingsContent, "certifications">; label: string; placeholder?: string }> = [
+  { key: "name", label: "상호" },
+  { key: "owner", label: "대표", placeholder: "예: 대표자 이보미" },
+  { key: "phone", label: "전화", placeholder: "예: 010-0000-0000" },
+  { key: "address", label: "주소" },
+  { key: "hours", label: "운영시간" },
+  { key: "area", label: "영업 지역" },
+  { key: "kakaoUrl", label: "카카오톡 채널" },
+  { key: "naverBlogUrl", label: "네이버 블로그" },
+  { key: "mapUrl", label: "지도 링크" },
+  { key: "registrationNumber", label: "사업자등록번호" }
+];
+
 export function SettingsTab({ toast }: { toast: (message: string) => void }) {
-  const fields: Array<[string, string]> = [
-    ["상호", business.name],
-    ["대표", business.owner.replace("대표자 ", "")],
-    ["전화", business.phone],
-    ["주소", business.address],
-    ["운영시간", business.hours],
-    ["카카오톡 채널", business.kakaoUrl],
-    ["네이버 블로그", business.naverBlogUrl]
-  ];
+  const [draft, setDraft] = useState<SiteSettingsContent>(defaultSiteSettingsContent);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [newCert, setNewCert] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    void dashboardSiteContentService
+      .loadSiteSettingsContent()
+      .then((content) => {
+        if (mounted) setDraft(content);
+      })
+      .catch(() => {
+        /* 실패 시 기본값 유지 */
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  function updateField(key: keyof Omit<SiteSettingsContent, "certifications">, value: string) {
+    setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateCert(index: number, value: string) {
+    setDraft((current) => ({ ...current, certifications: current.certifications.map((cert, i) => (i === index ? value : cert)) }));
+  }
+
+  function removeCert(index: number) {
+    setDraft((current) => ({ ...current, certifications: current.certifications.filter((_, i) => i !== index) }));
+  }
+
+  function addCert() {
+    const value = newCert.trim();
+    if (!value) return;
+    setDraft((current) => ({ ...current, certifications: [...current.certifications, value] }));
+    setNewCert("");
+  }
+
+  async function save() {
+    setSaving(true);
+    try {
+      const payload: SiteSettingsContent = {
+        ...draft,
+        certifications: draft.certifications.map((cert) => cert.trim()).filter(Boolean)
+      };
+      await dashboardSiteContentService.saveSiteSettingsContent(payload);
+      applySiteSettings(payload); // 현재 세션의 공개 페이지에도 즉시 반영
+      setDraft(payload);
+      toast("영업 정보를 저장했습니다. 헤더·푸터·문의 섹션에 반영됩니다.");
+    } catch (error) {
+      toast(error instanceof Error ? `저장 실패: ${error.message}` : "저장에 실패했습니다.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <section className="adm-tab">
@@ -565,34 +624,43 @@ export function SettingsTab({ toast }: { toast: (message: string) => void }) {
         <div>
           <span className="adm-tab__kicker">사이트 · 설정</span>
           <h1>영업 정보, 자격, 브랜드 컬러</h1>
-          <p>현재 값은 <code>src/data.ts</code> 기준입니다. 화면 저장 연동은 준비 중입니다.</p>
+          <p>영업 정보와 대표 자격증을 편집해 저장하면 헤더·푸터·문의 섹션 등 사이트 전역에 반영됩니다.</p>
+        </div>
+        <div className="adm-tab__actions">
+          <button className="adm-btn adm-btn--primary" type="button" onClick={() => void save()} disabled={loading || saving}>
+            {saving ? <LoaderCircle className="spin" /> : <Save />}
+            {saving ? "저장 중" : "저장"}
+          </button>
         </div>
       </header>
       <div className="adm-settings-grid">
         <article className="adm-card">
           <header className="adm-card__head">
             <h3>영업 정보</h3>
-            <span className="adm-badge-sample">읽기 전용</span>
           </header>
-          <dl className="adm-kv">
-            {fields.map(([label, value]) => (
-              <div key={label}>
-                <dt>{label}</dt>
-                <dd>
-                  <input value={value} readOnly />
-                </dd>
-              </div>
-            ))}
-          </dl>
+          {loading ? (
+            <div className="admin-empty">
+              <LoaderCircle size={18} className="spin" />
+              불러오는 중
+            </div>
+          ) : (
+            <dl className="adm-kv">
+              {settingsFields.map((field) => (
+                <div key={field.key}>
+                  <dt>{field.label}</dt>
+                  <dd>
+                    <input
+                      value={draft[field.key]}
+                      placeholder={field.placeholder}
+                      onChange={(event) => updateField(field.key, event.target.value)}
+                    />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
           <footer className="adm-card__foot">
-            <button
-              className="adm-btn adm-btn--primary"
-              type="button"
-              onClick={() => toast("설정 저장은 아직 백엔드에 연결되지 않았습니다 — src/data.ts에서 수정해주세요.")}
-            >
-              저장
-            </button>
-            <span className="adm-card__hint">수정 시 모든 페이지의 헤더·푸터·문의 섹션에 반영됩니다.</span>
+            <span className="adm-card__hint">수정 후 저장하면 모든 페이지의 헤더·푸터·문의 섹션에 반영됩니다.</span>
           </footer>
         </article>
 
@@ -616,16 +684,37 @@ export function SettingsTab({ toast }: { toast: (message: string) => void }) {
 
         <article className="adm-card adm-card--span2">
           <header className="adm-card__head">
-            <h3>대표 자격증 (7종)</h3>
+            <h3>대표 자격증 ({draft.certifications.length}종)</h3>
             <span>
               <Building2 size={14} style={{ verticalAlign: "-2px", marginRight: 4 }} />
-              {business.registrationNumber}
+              {draft.registrationNumber}
             </span>
           </header>
-          <div className="adm-cert-list">
-            {certifications.map((cert) => (
-              <span key={cert}>{cert}</span>
+          <div className="adm-cert-edit-list">
+            {draft.certifications.map((cert, index) => (
+              <div className="adm-cert-edit-row" key={index}>
+                <input value={cert} onChange={(event) => updateCert(index, event.target.value)} />
+                <button type="button" onClick={() => removeCert(index)} aria-label="자격증 삭제">
+                  <Trash2 size={15} />
+                </button>
+              </div>
             ))}
+          </div>
+          <div className="adm-cert-add">
+            <input
+              value={newCert}
+              placeholder="자격증 추가 (예: 건축기능사)"
+              onChange={(event) => setNewCert(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  addCert();
+                }
+              }}
+            />
+            <button className="adm-btn adm-btn--ghost" type="button" onClick={addCert}>
+              <Plus size={15} />추가
+            </button>
           </div>
         </article>
       </div>

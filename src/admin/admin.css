@@ -1523,6 +1523,64 @@
   color: var(--ink);
 }
 
+/* 자격증 편집(추가/삭제) */
+.adm-cert-edit-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.adm-cert-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.adm-cert-edit-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  background: var(--ivory);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+}
+.adm-cert-edit-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.adm-cert-edit-row button:hover {
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.4);
+  background: rgba(220, 38, 38, 0.08);
+}
+.adm-cert-add {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.adm-cert-add input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--hair);
+  border-radius: var(--r-md);
+  background: var(--ivory);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+}
+
 /* ────────────────────── 편집 이력 ────────────────────── */
 .adm-audit-list {
   background: var(--paper);

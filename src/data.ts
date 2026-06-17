@@ -76,6 +76,59 @@ export const business: BusinessProfile = {
   mapUrl: "https://naver.me/FRLt7TOJ"
 };
 
+/** 대표 보유 국가공인 자격증(관리자 사이트 설정에서 편집 가능). */
+export const defaultCertifications: string[] = [
+  "건축기능사",
+  "건축도장기능사",
+  "도배기능사",
+  "실내건축기능사",
+  "타일기능사",
+  "방수기능사",
+  "전산응용건축제도기능사"
+];
+
+/**
+ * 관리자에서 저장한 영업 정보를 런타임에 business 객체에 반영한다.
+ * 공개 페이지는 client:only React SPA라 SSR/hydration 충돌 없이 안전하게 덮어쓸 수 있다.
+ * (모든 모듈이 같은 business 참조를 공유하므로, 적용 후 리렌더하면 전역에 반영된다.)
+ */
+type EditableBusinessKey =
+  | "name"
+  | "owner"
+  | "phone"
+  | "address"
+  | "hours"
+  | "area"
+  | "kakaoUrl"
+  | "naverBlogUrl"
+  | "mapUrl"
+  | "registrationNumber";
+
+export function applySiteSettings(settings: Partial<Record<EditableBusinessKey, string>>) {
+  const editableKeys: EditableBusinessKey[] = [
+    "name",
+    "owner",
+    "phone",
+    "address",
+    "hours",
+    "area",
+    "kakaoUrl",
+    "naverBlogUrl",
+    "mapUrl",
+    "registrationNumber"
+  ];
+  for (const key of editableKeys) {
+    const value = settings[key];
+    if (typeof value === "string" && value.trim()) {
+      business[key] = value;
+    }
+  }
+  // 전화번호가 바뀌면 tel: 링크도 함께 갱신.
+  if (typeof settings.phone === "string" && settings.phone.trim()) {
+    business.phoneHref = `tel:${settings.phone.replace(/[^0-9+]/g, "")}`;
+  }
+}
+
 export const navItems: NavItem[] = [
   { label: "소개", href: "#about" },
   { label: "자가진단", href: "#symptoms" },
