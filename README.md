@@ -185,7 +185,8 @@ jipsuriclass/
 | 지역·서비스 랜딩 편집 (카드 → 해당 페이지로 바로 열림) | `/admin#regions`, `/admin#works` |
 | 핵심 페이지 편집 (홈·견적상담·마이페이지·자기진단·개인정보처리방침) | `/admin#content` |
 | 블로그 연동 (네이버 글 자동 수집·썸네일 프록시) | `/admin#blog` |
-| 사이트 설정 — 영업 정보·대표 자격증 편집(저장 시 전역 반영) | `/admin#settings` |
+| 사이트 설정 — 영업 정보·대표 자격증 편집(저장 시 전역 반영, 자격증은 홈 ‘오시는 길’에 노출) | `/admin#settings` |
+| 편집 이력 — 변경 항목 표시 + 과거 시점으로 되돌리기(롤백) | `/admin#audit` |
 
 > 콘텐츠·설정 편집 내용은 Supabase `site_content`에 저장되어 공개 사이트에 즉시 반영됩니다(코드 수정 불필요). 견적 에디터는 항목·자재·부대비용을 편집해 구글시트 발행(최초 1회 생성 후 같은 시트 갱신)·PDF·엑셀로 내보냅니다.
 
@@ -257,7 +258,7 @@ insert into public.admin_users (email) values ('admin@jipsuriclass.kr');
 | `inquiries` | 견적 문의 저장 (고객 정보·설문·첨부·상태·견적 스냅샷) |
 | `admin_users` | 관리자 이메일 허용 목록 |
 | `site_content` | 관리자 편집 콘텐츠 (홈·랜딩·견적상담·계정·자기진단·개인정보처리방침·사이트설정) |
-| `content_audit` | 콘텐츠 편집 이력 (누가·언제·어느 영역을 저장했는지) |
+| `content_audit` | 콘텐츠 편집 이력 (누가·언제·어느 영역·변경 항목, `payload` 스냅샷으로 **되돌리기** 지원) |
 
 > `site_content`는 RLS로 허용 id를 제한합니다. 새 편집 영역을 추가하면 `supabase/migrations/`의 정책 갱신 SQL을 Supabase SQL Editor에서 1회 실행해야 저장이 됩니다(예: 자기진단·개인정보·사이트설정 id 추가 마이그레이션).
 

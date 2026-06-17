@@ -4655,6 +4655,42 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   text-transform: uppercase;
 }
 
+.office-certs {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair, #e6dfd0);
+}
+.office-certs__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-2, #2a3a55);
+  font-size: 13px;
+  font-weight: 800;
+}
+.office-certs__label svg {
+  color: var(--gold-600, #c9a063);
+}
+.office-certs__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.office-certs__list li {
+  background: var(--cream-2, #f1ece1);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2, #2a3a55);
+}
+
 .office-card h3 {
   color: var(--ink, #0b1a30);
   font-size: 22px;
@@ -6243,7 +6279,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .editor-save-state p {
   color: var(--ink-3);
-  font-size: 14px;
+  font-size: 13px;
   margin: 0;
   max-width: 48ch;
 }
@@ -8253,7 +8289,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .editor-page-tabs {
   display: grid;
   gap: 10px;
-  grid-template-columns: 1fr;
+  /* 탭이 6개로 늘어 세로로 길게 쌓이던 것을 폭에 맞춰 2~3열로 흐르게 정리. */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   min-width: 0;
 }
 
@@ -8886,7 +8923,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .editor-group {
   background: #ffffff;
   border: 1px solid var(--hair);
-  border-radius: 8px;
+  border-radius: var(--r-md, 12px);
   display: grid;
   gap: 12px;
   overflow: hidden;
@@ -8920,7 +8957,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .editor-inline-card {
   background: #f8fafc;
   border: 1px solid var(--hair);
-  border-radius: 8px;
+  border-radius: var(--r-md, 12px);
   display: grid;
   gap: 12px;
   padding: 14px;

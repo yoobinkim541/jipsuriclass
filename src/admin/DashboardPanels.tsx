@@ -528,6 +528,53 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
   );
 }
 
+// 사이트 설정 필드 키 → 사람이 읽는 이름(편집 이력 변경 요약용).
+const siteSettingsFieldLabels: Record<string, string> = {
+  name: "상호",
+  owner: "대표",
+  phone: "전화",
+  address: "주소",
+  hours: "운영시간",
+  area: "영업지역",
+  kakaoUrl: "카카오톡",
+  naverBlogUrl: "네이버블로그",
+  mapUrl: "지도링크",
+  registrationNumber: "사업자번호",
+  certifications: "자격증"
+};
+
+function auditFieldLabel(contentId: string, key: string): string {
+  if (contentId === "site-settings" && siteSettingsFieldLabels[key]) return siteSettingsFieldLabels[key];
+  return key;
+}
+
+/** 두 스냅샷의 최상위 키 중 값(JSON)이 달라진 키 목록. */
+function diffTopLevelKeys(prev: unknown, next: unknown): string[] {
+  if (!prev || !next || typeof prev !== "object" || typeof next !== "object") return [];
+  const prevObj = prev as Record<string, unknown>;
+  const nextObj = next as Record<string, unknown>;
+  const keys = new Set([...Object.keys(prevObj), ...Object.keys(nextObj)]);
+  const changed: string[] = [];
+  for (const key of keys) {
+    if (JSON.stringify(prevObj[key]) !== JSON.stringify(nextObj[key])) changed.push(key);
+  }
+  return changed;
+}
+
+/** 편집 이력 한 줄의 '무엇을 했는지' 요약 — 직전(더 오래된) 같은 영역 저장과 비교한 변경 항목. */
+function describeAuditChange(row: ContentAuditRow, rows: ContentAuditRow[], index: number): string {
+  const label = row.label ?? contentLabel(row.content_id);
+  if (row.payload == null) return `${label} 저장`;
+  // rows는 최신순 → index 이후(더 오래된)에서 같은 영역의 직전 스냅샷을 찾는다.
+  const prev = rows.slice(index + 1).find((item) => item.content_id === row.content_id && item.payload != null);
+  if (!prev) return `${label} 최초 저장`;
+  const changed = diffTopLevelKeys(prev.payload, row.payload);
+  if (!changed.length) return `${label} 재저장(변경 없음)`;
+  const names = changed.map((key) => auditFieldLabel(row.content_id, key));
+  const shown = names.slice(0, 4).join(", ");
+  return `${label} · ${shown}${names.length > 4 ? ` 외 ${names.length - 4}건` : ""} 변경`;
+}
+
 function formatAuditTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
@@ -796,9 +843,10 @@ export function AuditTab({ toast }: { toast: (message: string) => void }) {
         ) : rows.length === 0 ? (
           <p className="adm-rank-empty">아직 편집 이력이 없습니다. 편집기에서 콘텐츠를 저장하면 여기에 기록됩니다.</p>
         ) : (
-          rows.map((row) => {
+          rows.map((row, index) => {
             const who = row.actor_email ?? "관리자";
             const canRestore = row.payload != null;
+            const change = describeAuditChange(row, rows, index);
             return (
               <div className="adm-audit-row" key={row.id}>
                 <span className="adm-when">{formatAuditTime(row.created_at)}</span>
@@ -806,8 +854,8 @@ export function AuditTab({ toast }: { toast: (message: string) => void }) {
                   <span className="adm-who-avatar">{who[0]?.toUpperCase() ?? "관"}</span>
                   {who}
                 </span>
-                <span className="adm-path">{row.content_id}</span>
-                <span className="adm-change">{row.label ?? contentLabel(row.content_id)} 저장</span>
+                <span className="adm-path">{row.label ?? contentLabel(row.content_id)}</span>
+                <span className="adm-change" title={change}>{change}</span>
                 {canRestore ? (
                   <button
                     className="adm-audit-restore"
