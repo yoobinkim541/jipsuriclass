@@ -4263,6 +4263,174 @@ main.home-page .cases .row-heading a {
 :root[data-theme="dark"] .dh-chimney-cap { fill: #5c4e43; }
 :root[data-theme="dark"] .dh-window rect { fill: #2c3942; }
 
+/* =========================================================================
+   집 단면도 v2 — 사진으로 채운 다크 프리미엄 UI (.dh2)
+   섹션 자체를 다크로 전환(.diag-dark). 활성 공간은 시안 글로우.
+   ========================================================================= */
+.symptoms.diag-dark { background: #0b1622; }
+main.home-page .diag-dark .row-heading h2 { color: #f5f8fc; }
+main.home-page .diag-dark .row-heading p { color: #9fb0c2; }
+main.home-page .diag-dark .row-heading a { color: #cfe0ee; }
+
+.dh2 {
+  --glow: #5cc6ff;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 26px;
+  align-items: stretch;
+}
+
+.dh2__house {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dh2__rooms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* 공통 공간 버튼 */
+.dh2__part {
+  position: relative;
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #1b2a3c, #111c29);
+  isolation: isolate;
+  transition: box-shadow 0.16s ease, transform 0.16s ease;
+}
+.dh2__photo {
+  position: absolute;
+  inset: 0;
+  background-image: var(--img);
+  background-size: cover;
+  background-position: center;
+}
+.dh2__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(8, 15, 24, 0.12) 0%, rgba(8, 15, 24, 0.4) 45%, rgba(8, 15, 24, 0.82) 100%);
+}
+.dh2__plate {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #eef3f8;
+}
+.dh2__ico { font-size: 26px; line-height: 1; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); }
+.dh2__name { font-size: 14px; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+
+.dh2__part:hover { box-shadow: inset 0 0 0 1.5px rgba(92, 198, 255, 0.5); transform: translateY(-2px); }
+.dh2__part.is-active {
+  box-shadow: inset 0 0 0 2px var(--glow), 0 0 24px -2px rgba(92, 198, 255, 0.6);
+}
+.dh2__part.is-active .dh2__shade {
+  background: linear-gradient(180deg, rgba(92, 198, 255, 0.12) 0%, rgba(8, 15, 24, 0.35) 45%, rgba(8, 15, 24, 0.78) 100%);
+}
+.dh2__part:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--glow), 0 0 0 3px rgba(92, 198, 255, 0.35); }
+
+/* 지붕(박공) = 물·누수 — 사진을 박공 모양으로 클립 */
+.dh2__roof {
+  min-height: 96px;
+  border-radius: 16px 16px 0 0;
+  clip-path: polygon(50% 4%, 100% 100%, 0 100%);
+}
+.dh2__roof .dh2__plate { justify-content: flex-end; padding-bottom: 12px; }
+
+/* 방 */
+.dh2__room { min-height: 134px; }
+
+/* 기초 = 벽·바닥·천장(가로 띠) */
+.dh2__found { min-height: 58px; border-radius: 14px; }
+.dh2__found .dh2__plate { flex-direction: row; gap: 10px; }
+.dh2__found .dh2__ico { font-size: 22px; }
+
+.dh2__hint { margin: 12px 2px 0; font-size: 12.5px; color: #7f8ea0; text-align: center; }
+
+/* 우측 패널 */
+.dh2__panel {
+  display: flex;
+  flex-direction: column;
+  background: #15212f;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  padding: 22px 22px 20px;
+}
+.dh2__phead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dh2__badge {
+  flex: none;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  background: #0f1a27;
+  box-shadow: inset 0 0 0 1.5px rgba(92, 198, 255, 0.4);
+}
+.dh2__ptitle { display: flex; flex-direction: column; gap: 2px; }
+.dh2__ptitle strong { font-size: 20px; font-weight: 800; color: #f5f8fc; }
+.dh2__ptitle span { font-size: 13px; color: #93a2b5; }
+
+.dh2__symptoms { list-style: none; margin: 0; padding: 4px 0; flex: 1; }
+.dh2__symptoms li + li { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.dh2__symptoms a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 4px;
+  font-size: 15px;
+  color: #d6dfea;
+  text-decoration: none;
+  transition: color 0.13s ease;
+}
+.dh2__symptoms a::after {
+  content: "→";
+  color: #56697d;
+  transition: transform 0.13s ease, color 0.13s ease;
+}
+.dh2__symptoms a:hover { color: #ffffff; }
+.dh2__symptoms a:hover::after { color: var(--glow); transform: translateX(3px); }
+
+.dh2__cta {
+  margin-top: 14px;
+  display: block;
+  text-align: center;
+  padding: 16px;
+  border-radius: 14px;
+  background: #bcd6ea;
+  color: #0c1c2b;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background 0.14s ease;
+}
+.dh2__cta:hover { background: #d2e6f4; }
+
+@media (max-width: 760px) {
+  .dh2 { grid-template-columns: 1fr; gap: 16px; }
+}
+
 /* 지붕 기와 결 */
 .diaghouse__zone--leak::before {
   content: "";

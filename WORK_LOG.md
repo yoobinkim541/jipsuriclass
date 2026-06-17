@@ -1,5 +1,21 @@
 # Work Log
 
+## 2026-06-17 - 간편 자가진단 v2: 사진으로 채운 다크 프리미엄 집 단면도 (.dh2)
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `public/diagnosis/README.md`(신규)
+
+Implemented behavior:
+- 제공받은 목업(다크 + 실사 사진 방 + 시안 글로우)대로 `DiagnosisHouse`를 사진 기반 `.dh2`로 재구성. 섹션을 다크로 전환(`.diag-dark`), 박공 지붕(물·누수, clip-path)·2×2 방(욕실·주방·문·전기)·기초 띠(벽·바닥·천장)를 `<button>`으로, 각 공간 배경은 실사 사진(`--img: url(/diagnosis/<id>.webp)`) + 어두운 오버레이 + 아이콘·라벨. 활성 공간은 시안 글로우(box-shadow). 우측 패널: 원형 아이콘 배지 + 증상 행(→) + 라이트블루 CTA. 접근성(button+aria-pressed), 모바일 1열+스크롤.
+- **이미지 의존**: `public/diagnosis/{roof,bathroom,kitchen,door,electric,wall}.webp` 필요. 없으면 어두운 그라데이션 폴백(레이아웃은 정상). README에 규격 명시.
+- 헤더 다크 대비: `main.home-page .row-heading h2`(특이도 0,2,2)를 이기도록 `main.home-page .diag-dark .row-heading ...`로 흰색 처리.
+
+Verification:
+- `tsc -b`·`npm run build` 통과. Playwright로 폴백(사진 없는) 상태 레이아웃 확인 — 다크 섹션·지붕·방·활성 글로우·패널·CTA·헤더 대비 정상. 사진 투입 후 재확인 예정.
+
+Follow-up:
+- 사진 6장(webp) 투입. 누적된 이전 디자인 CSS(`.symptom-*`, `.diaghouse__*`, `.dh-*`)는 미사용 → 디자인 확정 후 일괄 정리 권장.
+
 ## 2026-06-17 - 간편 자가진단 재설계: 인터랙티브 "집 단면도" (카드 그리드 폐기)
 
 Changed files:

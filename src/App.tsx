@@ -673,7 +673,7 @@ function AboutSection({
 /** 증상 기반 진입 영역: 집 단면도에서 불편한 공간을 누르면 그 공간의 증상을 보여준다. */
 function SymptomsSection({ categories }: { symptoms: string[]; categories: typeof symptomCategories }) {
   return (
-    <section className="symptoms section" id="symptoms" aria-labelledby="symptoms-title">
+    <section className="symptoms section diag-dark" id="symptoms" aria-labelledby="symptoms-title">
       <RowHeading
         id="symptoms-title"
         title="집의 아픈 곳을 눌러 바로 진단하세요"
@@ -710,135 +710,72 @@ function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }
   };
   const byId = (id: string) => categories.find((c) => c.id === id);
 
-  // 단면도 방(SVG) 하나를 그린다: 클릭/키보드 선택 가능한 그룹 + 창문 + 이모지 + 라벨.
-  const room = (id: string, x: number, y: number, w: number, h: number, win?: "l" | "r") => {
+  const HOUSE_IMG: Record<string, string> = {
+    leak: "/diagnosis/roof.webp",
+    bathroom: "/diagnosis/bathroom.webp",
+    kitchen: "/diagnosis/kitchen.webp",
+    door: "/diagnosis/door.webp",
+    electric: "/diagnosis/electric.webp",
+    wall: "/diagnosis/wall.webp"
+  };
+
+  // 집 단면도의 한 공간(버튼). 배경은 실사 사진(--img), 위에 어두운 오버레이 + 아이콘·라벨.
+  const part = (id: string, kind: "roof" | "room" | "found") => {
     const cat = byId(id);
     if (!cat) return null;
     const on = id === active?.id;
-    const wx = win === "l" ? x + 13 : x + w - 37;
     return (
-      <g
+      <button
+        type="button"
         key={id}
-        className={`dh-part dh-room${on ? " is-active" : ""}`}
         data-cat={id}
-        role="button"
-        tabIndex={0}
-        aria-label={`${cat.label} 증상 보기`}
+        className={`dh2__part dh2__${kind}${on ? " is-active" : ""}`}
+        style={{ "--img": `url(${HOUSE_IMG[id]})` } as React.CSSProperties}
         aria-pressed={on}
+        aria-label={`${cat.label} 증상 보기`}
         onClick={() => select(id)}
         onKeyDown={onKey(id)}
       >
-        <rect className="dh-room-fill" x={x} y={y} width={w} height={h} rx={9} />
-        {win ? (
-          <g className="dh-window" aria-hidden="true">
-            <rect x={wx} y={y + 12} width={24} height={20} rx={2} />
-            <line x1={wx + 12} y1={y + 12} x2={wx + 12} y2={y + 32} />
-            <line x1={wx} y1={y + 22} x2={wx + 24} y2={y + 22} />
-          </g>
-        ) : null}
-        <text className="dh-emoji" x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle">{cat.icon}</text>
-        <text className="dh-label" x={x + w / 2} y={y + h - 15} textAnchor="middle">{cat.label}</text>
-      </g>
+        <span className="dh2__photo" aria-hidden="true" />
+        <span className="dh2__shade" aria-hidden="true" />
+        <span className="dh2__plate">
+          <span className="dh2__ico" aria-hidden="true">{cat.icon}</span>
+          <span className="dh2__name">{cat.label}</span>
+        </span>
+      </button>
     );
   };
 
-  const leak = byId("leak");
-  const wall = byId("wall");
-
   return (
-    <div className="diaghouse">
-      <div className="diaghouse__stage">
-        <svg className="dh-svg" viewBox="0 0 480 476" role="group" aria-label="집 단면도에서 불편한 곳을 선택하세요" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <clipPath id="dhRoofClip">
-              <polygon points="240,28 458,164 22,164" />
-            </clipPath>
-          </defs>
-
-          {/* 지면 */}
-          <ellipse className="dh-ground" cx="240" cy="458" rx="208" ry="12" />
-          <rect className="dh-grass" x="0" y="454" width="480" height="22" rx="4" />
-
-          {/* 벽체(방 뒤 배경 = 벽 두께) */}
-          <rect className="dh-body" x="44" y="152" width="392" height="306" rx="8" />
-
-          {/* 방 4개 (욕실·주방 / 문·전기) */}
-          {room("bathroom", 58, 172, 176, 116, "l")}
-          {room("kitchen", 246, 172, 176, 116, "r")}
-          {room("door", 58, 302, 176, 102)}
-          {room("electric", 246, 302, 176, 102)}
-
-          {/* 기초 = 벽·바닥·천장(벽돌 띠) */}
-          {wall ? (
-            <g
-              className={`dh-part dh-found${active?.id === "wall" ? " is-active" : ""}`}
-              data-cat="wall"
-              role="button"
-              tabIndex={0}
-              aria-label={`${wall.label} 증상 보기`}
-              aria-pressed={active?.id === "wall"}
-              onClick={() => select("wall")}
-              onKeyDown={onKey("wall")}
-            >
-              <rect className="dh-found-fill" x="44" y="414" width="392" height="44" rx="5" />
-              <text className="dh-emoji dh-emoji--sm" x="196" y="438" textAnchor="middle">{wall.icon}</text>
-              <text className="dh-label" x="252" y="438" textAnchor="middle">{wall.label}</text>
-            </g>
-          ) : null}
-
-          {/* 지붕 = 물·누수 (박공 + 기와결) */}
-          {leak ? (
-            <g
-              className={`dh-part dh-roof${active?.id === "leak" ? " is-active" : ""}`}
-              data-cat="leak"
-              role="button"
-              tabIndex={0}
-              aria-label={`${leak.label} 증상 보기`}
-              aria-pressed={active?.id === "leak"}
-              onClick={() => select("leak")}
-              onKeyDown={onKey("leak")}
-            >
-              <polygon className="dh-roof-fill" points="240,28 458,164 22,164" />
-              <g className="dh-shingles" clipPath="url(#dhRoofClip)" aria-hidden="true">
-                <line x1="0" y1="66" x2="480" y2="66" />
-                <line x1="0" y1="90" x2="480" y2="90" />
-                <line x1="0" y1="114" x2="480" y2="114" />
-                <line x1="0" y1="138" x2="480" y2="138" />
-              </g>
-              <polygon className="dh-roof-edge" points="240,28 458,164 22,164" />
-              <text className="dh-emoji" x="240" y="118" textAnchor="middle">{leak.icon}</text>
-              <text className="dh-label dh-label--light" x="240" y="150" textAnchor="middle">{leak.label}</text>
-            </g>
-          ) : null}
-
-          {/* 굴뚝 + 연기 */}
-          <rect className="dh-chimney" x="336" y="60" width="28" height="84" rx="2" />
-          <rect className="dh-chimney-cap" x="331" y="56" width="38" height="10" rx="2" />
-          <g className="dh-smoke" aria-hidden="true">
-            <circle cx="350" cy="48" r="6" />
-            <circle cx="361" cy="36" r="5" />
-            <circle cx="354" cy="24" r="4" />
-          </g>
-        </svg>
-        <p className="diaghouse__hint">집의 불편한 곳을 누르면 자주 나타나는 증상이 표시됩니다</p>
+    <div className="dh2">
+      <div className="dh2__house" role="group" aria-label="집 단면도에서 불편한 곳을 선택하세요">
+        {part("leak", "roof")}
+        <div className="dh2__rooms">
+          {part("bathroom", "room")}
+          {part("kitchen", "room")}
+          {part("door", "room")}
+          {part("electric", "room")}
+        </div>
+        {part("wall", "found")}
+        <p className="dh2__hint">공간을 누르면 자주 나타나는 증상이 표시됩니다</p>
       </div>
 
-      <div className="diaghouse__panel" data-cat={active?.id} ref={panelRef} aria-live="polite">
-        <div className="diaghouse__panel-head">
-          <span className="diaghouse__emoji" aria-hidden="true">{active?.icon}</span>
-          <span className="diaghouse__panel-title">
+      <div className="dh2__panel" data-cat={active?.id} ref={panelRef} aria-live="polite">
+        <div className="dh2__phead">
+          <span className="dh2__badge" aria-hidden="true">{active?.icon}</span>
+          <span className="dh2__ptitle">
             <strong>{active?.label}</strong>
             <span>이런 증상이 있으신가요?</span>
           </span>
         </div>
-        <ul className="diaghouse__symptoms">
+        <ul className="dh2__symptoms">
           {active?.symptoms.map((s) => (
             <li key={s.id}>
               <a href={`/diagnosis?issue=${s.id}`}>{s.text}</a>
             </li>
           ))}
         </ul>
-        <a className="diaghouse__all" href={`/diagnosis?category=${active?.id}`}>
+        <a className="dh2__cta" href={`/diagnosis?category=${active?.id}`}>
           {active?.label} 전체 자가진단 보기 →
         </a>
       </div>
