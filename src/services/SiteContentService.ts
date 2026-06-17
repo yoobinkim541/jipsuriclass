@@ -499,7 +499,56 @@ export class SiteContentService {
     if (error) {
       throw error;
     }
+
+    // 편집 이력 기록(best-effort) — 실패해도 저장 자체는 성공으로 둔다.
+    await this.logContentSave(id);
   }
+
+  /** 콘텐츠 저장을 편집 이력(content_audit)에 남긴다. */
+  private async logContentSave(id: string) {
+    if (!supabase) return;
+    try {
+      const { data } = await supabase.auth.getUser();
+      const actorEmail = data.user?.email ?? null;
+      await supabase.from("content_audit").insert({ content_id: id, label: contentLabel(id), actor_email: actorEmail });
+    } catch {
+      /* 이력 기록 실패는 무시 */
+    }
+  }
+
+  /** 최근 편집 이력 조회(관리자 편집 이력 탭). */
+  async listContentAudit(limit = 40): Promise<ContentAuditRow[]> {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from("content_audit")
+      .select("id, content_id, label, actor_email, created_at")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error || !data) return [];
+    return data as ContentAuditRow[];
+  }
+}
+
+export type ContentAuditRow = {
+  id: string;
+  content_id: string;
+  label: string | null;
+  actor_email: string | null;
+  created_at: string;
+};
+
+/** 콘텐츠 id → 사람이 읽는 편집 영역 이름. */
+export function contentLabel(id: string): string {
+  const map: Record<string, string> = {
+    homepage: "홈페이지",
+    account: "마이페이지",
+    estimate: "견적상담",
+    "landing-pages": "랜딩페이지",
+    privacy: "개인정보처리방침",
+    diagnosis: "자기진단",
+    "site-settings": "사이트 설정"
+  };
+  return map[id] ?? id;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
