@@ -222,9 +222,14 @@ create index if not exists inquiries_created_at_idx on public.inquiries (created
 create index if not exists inquiries_notified_at_idx on public.inquiries (notified_at desc);
 create index if not exists inquiries_user_id_idx on public.inquiries (user_id);
 
-insert into storage.buckets (id, name, public)
-values ('jipsuri-media', 'jipsuri-media', true)
-on conflict (id) do update set public = excluded.public;
+-- 이미지 전용 + 10MB 상한(익명 업로드 남용 방지). allowed_mime_types로 이미지만 허용.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('jipsuri-media', 'jipsuri-media', true, 10485760,
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'])
+on conflict (id) do update set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
 
 alter table storage.objects enable row level security;
 drop policy if exists "Anyone can upload jipsuri media" on storage.objects;
