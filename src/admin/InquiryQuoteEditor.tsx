@@ -450,18 +450,19 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
 
   async function handleCreatePdf() {
     if (!draft.sheetUrl) {
-      setFeedback("PDF를 만들려면 먼저 '구글시트로 발행'을 해주세요.");
+      setFeedback("PDF를 만들려면 먼저 구글시트에 저장해 주세요.");
       return;
     }
     setMakingPdf(true);
     setFeedback(null);
     try {
       const { pdfUrl } = await createQuotePdf({ sheetUrl: draft.sheetUrl });
+      // PDF는 '현재 시트' 기준으로 생성된다. 시트 내용/서명(publishedSig)은 건드리지 않는다
+      // (여기서 publishedSig를 갱신하면 저장 안 한 변경의 ● 표시가 잘못 사라진다).
       const nextQuote: InquiryQuoteSnapshot = { ...draft, pdfUrl, updatedAt: new Date().toISOString() };
       await onSave(mergeQuoteIntoIntake(inquiry.intake, nextQuote));
       setDraft(nextQuote);
-      setPublishedSig(quoteSignature(nextQuote));
-      setFeedback("PDF를 생성했습니다. 위 'PDF' 링크에서 확인하세요.");
+      setFeedback("PDF를 생성했습니다. 위쪽 'PDF' 링크에서 확인하세요.");
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "PDF 생성에 실패했습니다.");
     } finally {
@@ -470,6 +471,8 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   }
 
   async function handlePublishSheet() {
+    // 이미 시트가 있으면 같은 시트를 갱신(저장), 없으면 새로 생성(발행).
+    const isUpdate = Boolean(draft.sheetUrl);
     setPublishing(true);
     setFeedback(null);
     try {
@@ -478,9 +481,13 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
       await onSave(mergeQuoteIntoIntake(inquiry.intake, nextQuote));
       setDraft(nextQuote);
       setPublishedSig(quoteSignature(nextQuote));
-      setFeedback("구글시트 견적서를 생성했습니다. 아래 링크에서 확인하세요.");
+      setFeedback(
+        isUpdate
+          ? "구글시트 견적서에 저장했습니다. 아래 링크에서 확인하세요."
+          : "구글시트 견적서를 생성했습니다. 아래 링크에서 확인하세요."
+      );
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : "구글시트 생성에 실패했습니다.");
+      setFeedback(error instanceof Error ? error.message : "구글시트 저장에 실패했습니다.");
     } finally {
       setPublishing(false);
     }
@@ -491,17 +498,16 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
   const workCategories = Array.from(
     new Set(draft.lineItems.map((item) => item.categoryTitle).filter((title): title is string => Boolean(title && title.trim())))
   );
-  // 발행 후 항목/금액이 바뀌었는지 — 바뀌면 '구글시트 저장하기'로 전환해 변경분을 반영 발행.
+  // 발행 후 항목/금액이 바뀌었는지 — 저장 안 한 변경이 있으면 버튼에 ● 표시.
   const sheetChangedSincePublish = Boolean(draft.sheetUrl) && publishedSig !== null && quoteSignature(draft) !== publishedSig;
+  // 시트가 없으면 '발행'(최초 생성), 있으면 '저장'(같은 시트 갱신) — '재발행'은 새 시트로 오해돼 제거.
   const publishLabel = publishing
     ? draft.sheetUrl
       ? "저장 중"
       : "발행 중"
     : !draft.sheetUrl
       ? "구글시트로 발행"
-      : sheetChangedSincePublish
-        ? "구글시트 저장하기"
-        : "구글시트 재발행";
+      : "구글시트에 저장";
 
   const editorBody = (
     <section
@@ -649,39 +655,44 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
       <CatalogPicker onPick={(item, label) => addCatalogItem(item, label)} />
 
       <p className="quote-editor__section">견적 항목</p>
-      <div className="quote-editor__table-wrap">
-        <div className="quote-editor__table-toolbar">
+      <div className="quote-editor__items">
+        <div className="quote-editor__items-toolbar">
           <span className="quote-editor__table-hint">
-            {draft.lineItems.length ? "라인 항목을 직접 수정하거나 추가할 수 있습니다." : "아래 버튼으로 견적 항목을 추가하세요."}
+            {draft.lineItems.length ? "각 항목을 직접 수정하거나 추가할 수 있습니다." : "아래 버튼으로 견적 항목을 추가하세요."}
           </span>
           <button className="admin-status-button" type="button" onClick={addLineItem}>
             <Plus size={14} />
             빈 항목 추가
           </button>
         </div>
-        <table className="quote-editor__table">
-          <thead>
-            <tr>
-              <th>항목</th>
-              <th>단위</th>
-              <th>수량</th>
-              <th>단가</th>
-              <th>금액</th>
-              <th>비고</th>
-            </tr>
-          </thead>
-          <tbody>
-            {draft.lineItems.length ? draft.lineItems.map((item, index) => {
+        {draft.lineItems.length ? (
+          <div className="quote-editor__charge-list">
+            {draft.lineItems.map((item, index) => {
               const amount = item.qty * item.unitPrice;
               return (
-                <tr key={item.id}>
-                  <td>
-                    <input className="quote-field" value={item.name} onChange={(event) => updateLineItem(index, { name: event.target.value })} />
-                  </td>
-                  <td>
-                    <input className="quote-field" value={item.unit} onChange={(event) => updateLineItem(index, { unit: event.target.value })} />
-                  </td>
-                  <td>
+                <div className="quote-editor__charge-card quote-editor__item-card" key={item.id}>
+                  <div className="quote-editor__charge-card-head">
+                    <span className="quote-editor__charge-index">항목 {index + 1}</span>
+                    <button
+                      className="quote-editor__charge-remove"
+                      type="button"
+                      onClick={() => removeLineItem(index)}
+                      disabled={draft.lineItems.length === 1}
+                      aria-label="항목 삭제"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                  <label className="quote-editor__charge-field quote-editor__charge-field--wide">
+                    <span>항목명</span>
+                    <input className="quote-field" value={item.name} placeholder="예: 도배 / 욕실 방수" onChange={(event) => updateLineItem(index, { name: event.target.value })} />
+                  </label>
+                  <label className="quote-editor__charge-field">
+                    <span>단위</span>
+                    <input className="quote-field" value={item.unit} placeholder="예: 식 / ㎡ / 개" onChange={(event) => updateLineItem(index, { unit: event.target.value })} />
+                  </label>
+                  <label className="quote-editor__charge-field">
+                    <span>수량</span>
                     <input
                       className="quote-field quote-field--number"
                       type="number"
@@ -689,8 +700,9 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
                       value={item.qty}
                       onChange={(event) => updateLineItem(index, { qty: Math.max(1, Number(event.target.value) || 1) })}
                     />
-                  </td>
-                  <td>
+                  </label>
+                  <label className="quote-editor__charge-field">
+                    <span>단가(원)</span>
                     <input
                       className="quote-field quote-field--number"
                       type="number"
@@ -698,45 +710,40 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
                       value={item.unitPrice}
                       onChange={(event) => updateLineItem(index, { unitPrice: Math.max(0, Number(event.target.value) || 0) })}
                     />
-                  </td>
-                  <td>{amount.toLocaleString()}원</td>
-                  <td>
-                    <div className="quote-editor__lineitem-note">
-                      <textarea
-                        className="quote-field quote-editor__note-field"
-                        rows={1}
-                        value={item.note ?? ""}
-                        placeholder="비고"
-                        onChange={(event) => updateLineItem(index, { note: event.target.value || null })}
-                        ref={(el) => {
-                          if (el) {
-                            el.style.height = "auto";
-                            el.style.height = `${el.scrollHeight}px`;
-                          }
-                        }}
-                      />
-                      <button className="admin-status-button" type="button" onClick={() => removeLineItem(index)} disabled={draft.lineItems.length === 1}>
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            }) : (
-              <tr>
-                <td colSpan={6}>
-                  <div className="quote-editor__empty-state">
-                    <p>모의 견적이 없는 문의입니다. 새 견적 항목을 추가해서 상담 견적서를 작성할 수 있습니다.</p>
-                    <button className="admin-status-button" type="button" onClick={addLineItem}>
-                      <Plus size={14} />
-                      첫 항목 추가
-                    </button>
+                  </label>
+                  <div className="quote-editor__charge-amount">
+                    <span>금액</span>
+                    <strong>{amount.toLocaleString()}원</strong>
                   </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  <label className="quote-editor__charge-field quote-editor__charge-field--wide">
+                    <span>비고</span>
+                    <textarea
+                      className="quote-field quote-editor__note-field"
+                      rows={1}
+                      value={item.note ?? ""}
+                      placeholder="선택 사항"
+                      onChange={(event) => updateLineItem(index, { note: event.target.value || null })}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.height = "auto";
+                          el.style.height = `${el.scrollHeight}px`;
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="quote-editor__empty-state">
+            <p>모의 견적이 없는 문의입니다. 새 견적 항목을 추가해서 상담 견적서를 작성할 수 있습니다.</p>
+            <button className="admin-status-button" type="button" onClick={addLineItem}>
+              <Plus size={14} />
+              첫 항목 추가
+            </button>
+          </div>
+        )}
       </div>
 
       <p className="quote-editor__section">추가 비용 · 자재 / 부대</p>
@@ -937,7 +944,13 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             type="button"
             onClick={() => void handlePublishSheet()}
             disabled={publishing}
-            title={sheetChangedSincePublish ? "변경된 내용으로 구글시트를 다시 발행합니다" : undefined}
+            title={
+              !draft.sheetUrl
+                ? "견적을 구글시트로 처음 발행합니다"
+                : sheetChangedSincePublish
+                  ? "저장하지 않은 변경이 있습니다 — 같은 구글시트에 반영합니다"
+                  : "같은 구글시트에 현재 내용을 다시 저장합니다"
+            }
           >
             <FileSpreadsheet size={14} />
             {publishLabel}
@@ -948,12 +961,12 @@ export function InquiryQuoteEditor({ inquiry, onSave }: InquiryQuoteEditorProps)
             type="button"
             onClick={() => void handleCreatePdf()}
             disabled={makingPdf || !draft.sheetUrl}
-            title={draft.sheetUrl ? "발행된 구글시트를 PDF로 내보냅니다" : "먼저 구글시트로 발행하세요"}
+            title={draft.sheetUrl ? "저장된 구글시트를 PDF로 내보냅니다" : "먼저 구글시트에 저장하세요"}
           >
             <Download size={14} />
             {makingPdf ? "PDF 생성 중" : "PDF 만들기"}
           </button>
-          <button className="admin-status-button" type="button" onClick={() => void handleCheckConnection()} disabled={checking} title="발행 누르지 않고 구글시트 연동 상태만 확인">
+          <button className="admin-status-button" type="button" onClick={() => void handleCheckConnection()} disabled={checking} title="발행 없이 구글시트 연동 상태만 확인합니다">
             <PlugZap size={14} />
             {checking ? "점검 중" : "연동 점검"}
           </button>
