@@ -81,50 +81,52 @@ function App() {
     };
   }, []);
 
-  const landingPage = getLandingPageDefinition(window.location.pathname);
+  // 경로는 페이지 로드 동안 바뀌지 않으므로 한 번만 읽어 분기에 재사용.
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "/";
+  const landingPage = getLandingPageDefinition(pathname);
   const mergedLandingPage = landingPage ? mergeLandingPageContent(landingPage, landingPageOverrides[landingPage.path] ?? null) : null;
 
-  usePageSeo(getSeoConfigForPath(window.location.pathname, mergedLandingPage ?? undefined));
+  usePageSeo(getSeoConfigForPath(pathname, mergedLandingPage ?? undefined));
 
-  if (window.location.pathname.startsWith("/admin/login")) {
+  if (pathname.startsWith("/admin/login")) {
     return <Suspense fallback={null}><AdminLoginPage /></Suspense>;
   }
-  if (window.location.pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin")) {
     return <Suspense fallback={null}><AdminPage /></Suspense>;
   }
-  if (window.location.pathname.startsWith("/mypage") || window.location.pathname.startsWith("/account")) {
+  if (pathname.startsWith("/mypage") || pathname.startsWith("/account")) {
     return <Suspense fallback={null}><AccountPage /></Suspense>;
   }
-  if (window.location.pathname.startsWith("/login")) {
+  if (pathname.startsWith("/login")) {
     return <Suspense fallback={null}><LoginPage /></Suspense>;
   }
-  if (window.location.pathname.startsWith("/privacy")) {
+  if (pathname.startsWith("/privacy")) {
     return <Suspense fallback={null}><PrivacyPolicyPage /></Suspense>;
   }
-  if (window.location.pathname.startsWith("/diagnosis")) {
+  if (pathname.startsWith("/diagnosis")) {
     return <Suspense fallback={null}><DiagnosisPage /></Suspense>;
   }
-  if (window.location.pathname.startsWith("/estimate")) {
+  if (pathname.startsWith("/estimate")) {
     return <Suspense fallback={null}><EstimatePage /></Suspense>;
   }
-  if (window.location.pathname.startsWith("/portfolio")) {
+  if (pathname.startsWith("/portfolio")) {
     return <PortfolioPage />;
   }
-  const pricingPageConfig = getServicePricingConfigByPricingPath(window.location.pathname);
+  const pricingPageConfig = getServicePricingConfigByPricingPath(pathname);
   if (pricingPageConfig) {
     return <ServicePricingPage config={pricingPageConfig} />;
   }
 
-  if (window.location.pathname === "/service/electric/price") {
+  if (pathname === "/service/electric/price") {
     return <Redirect to="/service/electric/pricing" />;
   }
-  if (window.location.pathname === "/service/waterproofing-tile/price") {
+  if (pathname === "/service/waterproofing-tile/price") {
     return <WaterproofingTilePricePage />;
   }
-  if (window.location.pathname === "/service/waterproofing/price") {
+  if (pathname === "/service/waterproofing/price") {
     return <WaterproofingPricePage />;
   }
-  if (window.location.pathname === "/service/tile/price") {
+  if (pathname === "/service/tile/price") {
     return <Redirect to="/service/tile/pricing" />;
   }
 

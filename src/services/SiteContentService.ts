@@ -476,13 +476,23 @@ export class SiteContentService {
 
     const { data, error } = await supabase.from("site_content").select("payload, updated_at").eq("id", id).maybeSingle();
 
-    if (error || !data) {
+    // 권한/네트워크 오류는 조용히 삼키면 "저장했는데 기본값만 보임"을 진단할 수 없으므로 로깅한다.
+    // (data 없음 = 아직 저장 안 된 정상 상태이므로 로깅하지 않는다.)
+    if (error) {
+      console.error(`[site_content] "${id}" 로드 실패 — 기본값으로 폴백합니다:`, error.message);
+      return base;
+    }
+    if (!data) {
       return base;
     }
 
     const row = data as SiteContentRow;
     const merged = merge(base, row.payload);
-    return validate(merged) ? merged : base;
+    if (!validate(merged)) {
+      console.warn(`[site_content] "${id}" 페이로드가 스키마와 맞지 않아 기본값을 사용합니다.`);
+      return base;
+    }
+    return merged;
   }
 
   private async saveContent<T>(id: string, content: T, validate: (value: unknown) => value is T) {

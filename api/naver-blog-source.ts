@@ -132,19 +132,40 @@ function mergeCandidateItem(existing: NaverBlogItem, incoming: NaverBlogItem) {
   };
 }
 
-async function enrichImages(items: NaverBlogItem[]) {
-  return await Promise.all(
-    items.map(async (item) => {
-      const resolved = await loadBlogPost(resolveDesktopPostUrl(item.link));
-      const imageCandidates = [...new Set([...(item.imageCandidates ?? []), ...(resolved.imageCandidates ?? [])])];
-      const liveImage = await resolveFirstLiveImage([resolved.image, item.image, ...imageCandidates].filter((value): value is string => Boolean(value)));
-      return {
-        ...item,
-        image: liveImage || resolved.image || item.image,
-        imageCandidates
-      };
-    })
+const IMAGE_ENRICH_TIMEOUT_MS = 6000;
+
+// 느린 글 한 건이 전체 응답을 막지 않도록, 항목별 이미지 보강을 타임아웃으로 감싼다.
+// 타임아웃/실패 시 원본 항목(이미 목록에서 받은 image 포함)을 그대로 반환한다.
+function withTimeoutFallback<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        resolve(fallback);
+      });
+  });
+}
+
+async function enrichOneImage(item: NaverBlogItem): Promise<NaverBlogItem> {
+  const resolved = await loadBlogPost(resolveDesktopPostUrl(item.link));
+  const imageCandidates = [...new Set([...(item.imageCandidates ?? []), ...(resolved.imageCandidates ?? [])])];
+  const liveImage = await resolveFirstLiveImage(
+    [resolved.image, item.image, ...imageCandidates].filter((value): value is string => Boolean(value))
   );
+  return {
+    ...item,
+    image: liveImage || resolved.image || item.image,
+    imageCandidates
+  };
+}
+
+async function enrichImages(items: NaverBlogItem[]) {
+  return await Promise.all(items.map((item) => withTimeoutFallback(enrichOneImage(item), IMAGE_ENRICH_TIMEOUT_MS, item)));
 }
 
 function resolveDesktopPostUrl(link: string) {

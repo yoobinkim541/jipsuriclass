@@ -18,6 +18,25 @@ const adminEmail = process.env.ADMIN_EMAIL;
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
 const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 
+const MAX_ATTACHMENTS = 8;
+const supabaseHost = (() => {
+  try {
+    return supabaseUrl ? new URL(supabaseUrl).host : "";
+  } catch {
+    return "";
+  }
+})();
+
+// 첨부 URL은 우리 Supabase 스토리지(https)만 허용 — 외부 URL 주입/SSRF 방지.
+function isAllowedAttachmentUrl(raw: string): boolean {
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" && supabaseHost !== "" && url.host === supabaseHost;
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -35,21 +54,26 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const phone = String(payload.phone || "").trim();
   const serviceArea = String(payload.serviceArea || "").trim();
   const message = String(payload.message || "").trim();
-  const attachments = Array.isArray(payload.attachments)
-    ? payload.attachments
-        .map((item) => ({
-          name: String(item?.name || "").trim(),
-          url: String(item?.url || "").trim(),
-          type: String(item?.type || "").trim()
-        }))
-        .filter((item) => item.url)
-    : [];
+  const attachments = (Array.isArray(payload.attachments) ? payload.attachments : [])
+    .map((item) => ({
+      name: String(item?.name || "").trim().slice(0, 200),
+      url: String(item?.url || "").trim(),
+      type: String(item?.type || "").trim().slice(0, 100)
+    }))
+    .filter((item) => item.url && isAllowedAttachmentUrl(item.url))
+    .slice(0, MAX_ATTACHMENTS);
   const intake = payload.intake && typeof payload.intake === "object" ? payload.intake : {};
   const userId = payload.userId ? String(payload.userId).trim() : null;
   const userEmail = payload.userEmail ? String(payload.userEmail).trim() : null;
 
   if (!name || !phone || !message) {
     response.status(400).json({ error: "Required fields missing" });
+    return;
+  }
+
+  // 길이 상한(서버에서도 방어) — RLS 정책과 동일 범위.
+  if (name.length > 80 || phone.length > 30 || message.length > 2000 || serviceArea.length > 120) {
+    response.status(400).json({ error: "입력 값이 허용 범위를 초과했습니다." });
     return;
   }
 
@@ -80,8 +104,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
   });
 
   if (!insertResponse.ok) {
-    const errorText = await insertResponse.text();
-    response.status(insertResponse.status).json({ error: errorText || "Failed to store inquiry" });
+    // 업스트림 응답 본문은 서버 로그에만 남기고, 클라이언트에는 일반 메시지만 반환(스키마 정보 누출 방지).
+    const errorText = await insertResponse.text().catch(() => "");
+    console.error("[inquiries] insert failed", insertResponse.status, errorText);
+    response.status(502).json({ error: "문의 저장에 실패했습니다. 잠시 후 다시 시도해주세요." });
     return;
   }
 
@@ -106,21 +132,26 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
   let emailSent = false;
   if (resendApiKey && adminEmail) {
-    const emailResponse = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: "집수리클라쓰 <onboarding@resend.dev>",
-        to: [adminEmail],
-        subject: `새 견적 문의: ${name}`,
-        html: buildEmailHtml({ name, phone, serviceArea, message, userEmail, attachments, intake })
-      })
-    });
+    // 문의는 이미 저장됨 — 알림 전송 실패가 200 응답을 막지 않도록 가드.
+    try {
+      const emailResponse = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${resendApiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: "집수리클라쓰 <onboarding@resend.dev>",
+          to: [adminEmail],
+          subject: `새 견적 문의: ${name}`,
+          html: buildEmailHtml({ name, phone, serviceArea, message, userEmail, attachments, intake })
+        })
+      });
 
-    emailSent = emailResponse.ok;
+      emailSent = emailResponse.ok;
+    } catch (error) {
+      console.error("[inquiries] resend email failed", error instanceof Error ? error.message : error);
+    }
   }
 
   response.status(200).json({ ok: true, emailSent, telegramSent });
