@@ -1,6 +1,33 @@
 # Work Log
 
-## 2026-06-17 - 블로그 스냅샷 동기화 502 수정: upsert에 on_conflict 명시
+## 2026-06-17 - 블로그 스냅샷 502 진짜 원인: payload 크기 → 필드 슬림
+
+Changed files:
+- `api/sync-blog-snapshot.ts`
+
+Implemented behavior:
+- 앞선 on_conflict 변경(PR #67)으로도 `POST /rest/v1/site_content?on_conflict=id` → **여전히 400**이었음(api 로그로 확인). 진짜 원인은 **payload 크기**: `mode=all` 응답이 글 1073개/~4MB라 한 행 jsonb upsert가 Supabase 요청 본문 한도를 초과해 400. (anon+작은 본문은 형식 통과해 401 권한단계 도달, 동일 형태의 5MB만 400 → 크기 확정.)
+- 라우트에서 upsert 전 `items`를 슬림화: 표시에 쓰는 필드만 남기고 `description`은 150자, `imageCandidates`는 1개로 축소. 글 수(1073)·표시 필드·count는 유지. 실제 데이터로 본문 ~4MB → **~826KB**로 측정됨.
+
+Verification:
+- 로컬에서 실제 mode=all 응답에 동일 슬림 로직 적용 시 직렬화 본문 826KB 확인. 배포 후 수동 POST로 `{"ok":true,"count":N}` + `site_content`의 `blog-snapshot` 행 생성 재확인 예정. (826KB로도 400이면 description/candidates 추가 축소.)
+
+Follow-up:
+- 한도 초과 재발 방지: 글 수가 더 늘면 항목 수 cap 검토.
+
+## 2026-06-17 - 블로그 스냅샷 동기화 시도(on_conflict) — 원인 아님, 효과 없었음
+
+Changed files:
+- `api/sync-blog-snapshot.ts`
+
+Implemented behavior:
+- `/api/sync-blog-snapshot`의 PostgREST upsert가 HTTP 400으로 실패(→ 라우트 502 "Snapshot upsert failed")하던 문제 수정. 헤더에 `Prefer: resolution=merge-duplicates`만 있고 URL에 `on_conflict`이 없어 PostgREST가 충돌 대상을 못 잡았다. 관리자 앱(`SiteContentService.upsert(..., { onConflict: "id" })`)이 쓰는 패턴과 동일하게 fetch URL을 `/rest/v1/site_content?on_conflict=id`로 변경.
+
+Verification:
+- (정정) 배포 후에도 동일하게 400 발생 — on_conflict 누락은 원인이 아니었음. 무해하나 효과 없는 변경. 실제 원인은 위 2026-06-17 항목(payload 크기) 참조.
+
+Follow-up:
+- 없음(다음 항목에서 실제 수정).
 
 Changed files:
 - `api/sync-blog-snapshot.ts`
