@@ -685,7 +685,7 @@ function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categor
       {/* 데스크탑: 2단 — 카테고리 + 세부 증상 칩 */}
       <div className="symptom-categories">
         {categories.map((cat) => (
-          <div className="symptom-cat-card" key={cat.id}>
+          <div className="symptom-cat-card" data-cat={cat.id} key={cat.id}>
             <a className="symptom-cat-label" href={`/diagnosis?category=${cat.id}`}>
               <span className="symptom-cat-icon">{cat.icon}</span>
               {cat.label}
@@ -709,6 +709,7 @@ function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categor
         {categories.map((cat) => (
           <a
             className="symptom-grid-item"
+            data-cat={cat.id}
             href={`/diagnosis?category=${cat.id}`}
             key={cat.id}
           >
