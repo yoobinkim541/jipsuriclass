@@ -4177,23 +4177,91 @@ main.home-page .cases .row-heading a {
   z-index: 1;
 }
 
-/* 굴뚝 — 지붕 위로 솟게 (무대 상단 기준) */
-.diaghouse__stage {
-  position: relative;
-  padding-top: 14px;
+/* ── 집 단면도 일러스트 (SVG) ── */
+.dh-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.dh-ground { fill: rgba(15, 23, 42, 0.1); }
+.dh-grass { fill: #cdd6c0; }
+.dh-body { fill: #e8ddcb; stroke: #d7c8b0; stroke-width: 2; }
+
+.dh-part { cursor: pointer; }
+.dh-part:focus { outline: none; }
+
+.dh-room-fill {
+  fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 12%, #faf6ef);
+  stroke: color-mix(in srgb, var(--cat-accent, var(--gold)) 30%, transparent);
+  stroke-width: 1.5;
+  transition: fill 0.15s ease, stroke 0.15s ease;
 }
-.diaghouse__stage::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 23%;
-  width: 19px;
-  height: 30px;
-  border-radius: 3px 3px 0 0;
-  background: #ad9f8e;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
-  z-index: 1;
+.dh-part:hover .dh-room-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 18%, #faf6ef); }
+.dh-part.is-active .dh-room-fill {
+  fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 26%, #faf6ef);
+  stroke: var(--cat-accent, var(--gold));
+  stroke-width: 2.5;
 }
+.dh-part:focus-visible .dh-room-fill,
+.dh-part:focus-visible .dh-roof-fill,
+.dh-part:focus-visible .dh-found-fill {
+  stroke: var(--navy-700, #10284a);
+  stroke-width: 2.5;
+}
+
+.dh-emoji { font-size: 30px; dominant-baseline: central; }
+.dh-emoji--sm { font-size: 22px; }
+.dh-label {
+  font-size: 14px;
+  font-weight: 800;
+  fill: var(--navy-700, #10284a);
+  dominant-baseline: central;
+}
+.dh-label--light { fill: #1e3a52; }
+
+/* 지붕(박공 + 기와결) */
+.dh-roof-fill {
+  fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 32%, #eef1f4);
+  transition: fill 0.15s ease;
+}
+.dh-part.dh-roof:hover .dh-roof-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 40%, #eef1f4); }
+.dh-part.dh-roof.is-active .dh-roof-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 48%, #eef1f4); }
+.dh-roof-edge { fill: none; stroke: color-mix(in srgb, var(--cat-accent, var(--gold)) 55%, #5a6b78); stroke-width: 2; stroke-linejoin: round; }
+.dh-shingles line { stroke: color-mix(in srgb, var(--cat-accent, var(--gold)) 42%, transparent); stroke-width: 1.4; }
+
+/* 굴뚝 + 연기 */
+.dh-chimney { fill: #b69a86; }
+.dh-chimney-cap { fill: #9c8270; }
+.dh-smoke circle { fill: rgba(110, 116, 122, 0.22); }
+
+/* 창문 */
+.dh-window rect { fill: #e3edf2; stroke: color-mix(in srgb, var(--cat-accent, var(--gold)) 50%, #8aa0ad); stroke-width: 1.3; }
+.dh-window line { stroke: color-mix(in srgb, var(--cat-accent, var(--gold)) 50%, #8aa0ad); stroke-width: 1.2; }
+
+/* 기초(벽·바닥·천장, 벽돌 띠) */
+.dh-found-fill {
+  fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 18%, #f0e8db);
+  stroke: color-mix(in srgb, var(--cat-accent, var(--gold)) 30%, transparent);
+  stroke-width: 1.5;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+.dh-part.dh-found:hover .dh-found-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 26%, #f0e8db); }
+.dh-part.dh-found.is-active .dh-found-fill {
+  fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 34%, #f0e8db);
+  stroke: var(--cat-accent, var(--gold));
+  stroke-width: 2.5;
+}
+
+/* 다크모드 */
+:root[data-theme="dark"] .dh-grass { fill: #2a3325; }
+:root[data-theme="dark"] .dh-ground { fill: rgba(0, 0, 0, 0.3); }
+:root[data-theme="dark"] .dh-body { fill: #28303c; stroke: #3a4350; }
+:root[data-theme="dark"] .dh-room-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 24%, #1a2230); stroke: color-mix(in srgb, var(--cat-accent, var(--gold)) 36%, transparent); }
+:root[data-theme="dark"] .dh-part:hover .dh-room-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 32%, #1a2230); }
+:root[data-theme="dark"] .dh-part.is-active .dh-room-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 42%, #1a2230); }
+:root[data-theme="dark"] .dh-label { fill: var(--ink, #f8fafc); }
+:root[data-theme="dark"] .dh-label--light { fill: #dbe7f2; }
+:root[data-theme="dark"] .dh-roof-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 42%, #1a2230); }
+:root[data-theme="dark"] .dh-found-fill { fill: color-mix(in srgb, var(--cat-accent, var(--gold)) 30%, #1a2230); }
+:root[data-theme="dark"] .dh-chimney { fill: #6f5f52; }
+:root[data-theme="dark"] .dh-chimney-cap { fill: #5c4e43; }
+:root[data-theme="dark"] .dh-window rect { fill: #2c3942; }
 
 /* 지붕 기와 결 */
 .diaghouse__zone--leak::before {
