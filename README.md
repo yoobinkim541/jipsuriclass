@@ -90,7 +90,12 @@ SUPABASE_SERVICE_ROLE_KEY=
 BLOG_SYNC_SECRET=
 ```
 
-> 블로그 스냅샷 cron: GitHub Actions(`.github/workflows/sync-blog-snapshot.yml`)가 매일 `/api/sync-blog-snapshot`을 호출합니다. 저장소 시크릿 `BLOG_SYNC_SECRET`(엔드포인트 값과 동일)이 필요하고, 엔드포인트는 `SUPABASE_SERVICE_ROLE_KEY`로 RLS를 우회해 스냅샷을 저장합니다. 관리자 ‘블로그 연동 → 스냅샷 동기화’ 버튼으로 수동 동기화도 가능합니다(이 경우 위 두 변수 불필요).
+> 블로그 스냅샷 cron: **오라클 클라우드 서버의 crontab**이 `scripts/sync-blog-snapshot.sh`로 매일 `/api/sync-blog-snapshot`을 호출합니다(Vercel/GitHub Actions cron 미사용). 서버에 `BLOG_SYNC_SECRET`(엔드포인트 값과 동일)만 있으면 되고, 엔드포인트는 Vercel에 설정된 `SUPABASE_SERVICE_ROLE_KEY`로 RLS를 우회해 스냅샷을 저장합니다. 설치 방법은 스크립트 상단 주석 참고. 관리자 ‘블로그 연동 → 스냅샷 동기화’ 버튼으로 수동 동기화도 가능합니다.
+>
+> ```bash
+> # 오라클 서버 crontab 예시 (매일 03:00 KST)
+> 0 3 * * * set -a; . /etc/jipsuri-blog-sync.env; set +a; /path/to/jipsuriclass/scripts/sync-blog-snapshot.sh >> /var/log/jipsuri-blog-sync.log 2>&1
+> ```
 
 ---
 
