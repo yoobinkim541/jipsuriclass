@@ -1,5 +1,49 @@
 # Work Log
 
+## 2026-06-17 - 간편 자가진단 v2: 사진으로 채운 다크 프리미엄 집 단면도 (.dh2)
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `public/diagnosis/README.md`(신규)
+
+Implemented behavior:
+- 제공받은 목업(다크 + 실사 사진 방 + 시안 글로우)대로 `DiagnosisHouse`를 사진 기반 `.dh2`로 재구성. 섹션을 다크로 전환(`.diag-dark`), 박공 지붕(물·누수, clip-path)·2×2 방(욕실·주방·문·전기)·기초 띠(벽·바닥·천장)를 `<button>`으로, 각 공간 배경은 실사 사진(`--img: url(/diagnosis/<id>.webp)`) + 어두운 오버레이 + 아이콘·라벨. 활성 공간은 시안 글로우(box-shadow). 우측 패널: 원형 아이콘 배지 + 증상 행(→) + 라이트블루 CTA. 접근성(button+aria-pressed), 모바일 1열+스크롤.
+- **이미지 의존**: `public/diagnosis/{roof,bathroom,kitchen,door,electric,wall}.webp` 필요. 없으면 어두운 그라데이션 폴백(레이아웃은 정상). README에 규격 명시.
+- 헤더 다크 대비: `main.home-page .row-heading h2`(특이도 0,2,2)를 이기도록 `main.home-page .diag-dark .row-heading ...`로 흰색 처리.
+
+Verification:
+- `tsc -b`·`npm run build` 통과. Playwright로 폴백(사진 없는) 상태 레이아웃 확인 — 다크 섹션·지붕·방·활성 글로우·패널·CTA·헤더 대비 정상. 사진 투입 후 재확인 예정.
+
+Follow-up:
+- 사진 6장(webp) 투입. 누적된 이전 디자인 CSS(`.symptom-*`, `.diaghouse__*`, `.dh-*`)는 미사용 → 디자인 확정 후 일괄 정리 권장.
+
+### 후속 보정(피드백)
+- 이모지 → **인라인 SVG 라인 픽토그램**(`DiagPicto`: 물방울·욕조·수전·문·번개·벽돌). 방/패널 배지 모두 교체.
+- 방 사진 **오버레이 농도↓**(어둡다는 피드백) + 픽토그램·라벨 흰색.
+- 목업 근접: 지붕을 사진클립 → **솔리드 박공(기와결 그라데이션)+굴뚝**, 방을 **다크 본체(.dh2__body) 프레임** 안에 넣어 간격이 벽처럼.
+- **라이트모드**: 섹션 배경/제목은 테마를 따르고(크림+다크 제목) 집·패널만 항상 다크 카드 유닛. 흰 제목은 다크 테마에서만 오버라이드.
+- **태블릿/모바일**: 스택 분기 760→**900px**(태블릿 세로 스택), ≤520px 방 높이·아이콘·패널 축소. select() 스크롤 분기도 900으로.
+
+## 2026-06-17 - 간편 자가진단 재설계: 인터랙티브 "집 단면도" (카드 그리드 폐기)
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`
+
+Implemented behavior:
+- 기존 "아이콘 카드 그리드"가 식상하다는 피드백 → 구조 자체를 교체. `SymptomsSection`을 **인터랙티브 집 단면도**(`DiagnosisHouse`)로 재설계.
+  - 집 실루엣: 지붕(물·누수, 사다리꼴 clip-path) + 2×2 방(욕실·주방·문·전기) + 바닥 슬래브(벽·바닥·천장)를 CSS grid-template-areas로 배치.
+  - 공간(버튼)을 누르면 우측(모바일은 하단) 패널에 그 공간의 증상이 표시되고, 각 증상은 `/diagnosis?issue=`, 하단 CTA는 `/diagnosis?category=`로 연결. 모바일은 선택 시 패널로 스크롤.
+  - 분야별 `--cat-accent` 색상 코딩(존 배경/링/활성 글로우, 패널 헤더 스트립, 증상 호버·셰브론)을 `color-mix`로. 접근성: 존은 `<button>` + `aria-pressed`, 패널 `aria-live`.
+  - (피드백 반영) 더 집답게 + 차분한 색감으로 보강: accent 채도↓·따뜻한 페이퍼(#faf6ef) 베이스·틴트↓, 지붕 기와결(repeating-linear-gradient)+굴뚝(stage::before), 욕실·주방 창문 모티프(::before), 바닥 벽돌결, 활성 링/그림자 톤다운. 이모지·라벨은 z-index로 일러스트 위 유지.
+  - (피드백 반영 2 "진짜 집같이") CSS 박스 그리드를 폐기하고 **SVG 집 단면도 일러스트**로 전환: 박공 지붕(폴리곤+기와결 라인+처마)·굴뚝+연기·벽체 두께(dh-body)·방 4개(rect+창문)·벽돌 기초 띠·잔디/지면 그림자. 각 부위는 `<g role=button tabindex aria-pressed>` + Enter/Space 키 지원. 색은 `--cat-accent`(muted) color-mix로 fill. 클래스 `.dh-*`. 기존 `.diaghouse__map/__zone*` CSS는 미사용(추후 정리).
+- 다크모드 대응(존/패널/헤더/텍스트/CTA). CTA는 라이트=네이비, 다크=골드.
+- 버그 수정: CSS 변수 `--navy`가 :root에 미정의(빈 값)라 `background: var(--navy)`가 투명→흰 글씨 묻힘. `var(--navy-700, #10284a)`로 교체.
+
+Verification:
+- `tsc -b` 통과, `npm run build`(astro) 통과(color-mix 포함). Playwright로 라이트/선택전환(욕실·전기)/다크/모바일 + 패널 단독 캡처 육안 확인 — 집 실루엣·존 활성 링·패널 증상·CTA(네이비/골드)·다크 대비 모두 정상.
+
+Follow-up:
+- 기존 `.symptom-*`(카드 그리드) CSS는 이제 미사용 → 추후 정리 가능(이번엔 위험 회피 위해 보존).
+
 ## 2026-06-17 - 스냅샷 슬림 공용화(관리자 버튼 수정) + 현장사례 분야 필터 정밀화
 
 Changed files:

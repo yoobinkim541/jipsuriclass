@@ -670,54 +670,152 @@ function AboutSection({
   );
 }
 
-/** 증상 기반 진입 영역: 고객이 전문 공종명을 몰라도 문의할 수 있게 돕습니다. */
-function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categories: typeof symptomCategories }) {
+/** 증상 기반 진입 영역: 집 단면도에서 불편한 공간을 누르면 그 공간의 증상을 보여준다. */
+function SymptomsSection({ categories }: { symptoms: string[]; categories: typeof symptomCategories }) {
   return (
-    <section className="symptoms section" id="symptoms" aria-labelledby="symptoms-title">
+    <section className="symptoms section diag-dark" id="symptoms" aria-labelledby="symptoms-title">
       <RowHeading
         id="symptoms-title"
-        title="고객이 말하는 증상부터 간편 자가진단을 시작합니다"
-        description="전문 용어를 몰라도 괜찮습니다. 지금 보이는 문제를 클릭하면 바로 원인과 다음 행동이 나옵니다."
+        title="집의 아픈 곳을 눌러 바로 진단하세요"
+        description="전문 용어를 몰라도 괜찮습니다. 불편한 공간을 누르면 증상과 원인·다음 행동이 바로 나옵니다."
         linkLabel="자가진단 페이지로 이동"
         href="/diagnosis"
       />
-
-      {/* 데스크탑: 2단 — 카테고리 + 세부 증상 칩 */}
-      <div className="symptom-categories">
-        {categories.map((cat) => (
-          <div className="symptom-cat-card" key={cat.id}>
-            <a className="symptom-cat-label" href={`/diagnosis?category=${cat.id}`}>
-              <span className="symptom-cat-icon">{cat.icon}</span>
-              {cat.label}
-              <ArrowUpRight size={14} />
-            </a>
-            <ul className="symptom-chip-list">
-              {cat.symptoms.map((s) => (
-                <li key={s.id}>
-                  <a className="symptom-chip" href={`/diagnosis?issue=${s.id}`}>
-                    {s.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      {/* 모바일·태블릿: 1단 — 카테고리 칩만 */}
-      <div className="symptom-grid--mobile">
-        {categories.map((cat) => (
-          <a
-            className="symptom-grid-item"
-            href={`/diagnosis?category=${cat.id}`}
-            key={cat.id}
-          >
-            <span>{cat.icon} {cat.label}</span>
-            <ArrowUpRight size={18} />
-          </a>
-        ))}
-      </div>
+      <DiagnosisHouse categories={categories} />
     </section>
+  );
+}
+
+/** 자가진단 공간 픽토그램(모던 라인 아이콘, currentColor). */
+function DiagPicto({ id }: { id: string }) {
+  const c = {
+    width: 24,
+    height: 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true
+  };
+  switch (id) {
+    case "leak":
+      return (<svg {...c}><path d="M12 3c3 3.9 6 7 6 10.2A6 6 0 0 1 6 13.2C6 10 9 6.9 12 3z" /></svg>);
+    case "bathroom":
+      return (<svg {...c}><path d="M9 6 6.6 3.6a1.5 1.5 0 0 0-1.1-.6C4.7 3 4 3.7 4 4.6V12" /><path d="M3 12h18" /><path d="M5 12v3a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4v-3" /><path d="M7 19l-1.2 2M17 19l1.2 2" /></svg>);
+    case "kitchen":
+      return (<svg {...c}><path d="M7 21v-4.5a2 2 0 0 1 2-2h1.5" /><path d="M10.5 14.5V6H15a4 4 0 0 1 4 4v1.5" /><path d="M15 6V4h3.5" /><path d="M16.8 11.5h4.4" /></svg>);
+    case "door":
+      return (<svg {...c}><path d="M6 20V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v15" /><path d="M4 20h16" /><path d="M14.5 12v.01" /></svg>);
+    case "electric":
+      return (<svg {...c}><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13l1-8z" /></svg>);
+    case "wall":
+      return (<svg {...c}><rect x="3" y="5" width="18" height="14" rx="1.5" /><path d="M3 9.7h18M3 14.3h18M9 5v4.7M15 9.7v4.6M9 14.3V19" /></svg>);
+    default:
+      return null;
+  }
+}
+
+/**
+ * 집 단면도 자가진단(사진 + 라인 픽토그램).
+ * 지붕(누수)·2x2 방(욕실·주방·문·전기)·기초(벽·바닥·천장)를 누르면
+ * 우측 패널에 해당 공간 증상이 나오고, 각 증상은 /diagnosis로 연결된다.
+ */
+function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }) {
+  const [activeId, setActiveId] = useState(categories[0]?.id ?? "");
+  const panelRef = useRef<HTMLDivElement>(null);
+  const active = categories.find((c) => c.id === activeId) ?? categories[0];
+
+  const select = (id: string) => {
+    setActiveId(id);
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 900px)").matches) {
+      requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+    }
+  };
+  const onKey = (id: string) => (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      select(id);
+    }
+  };
+  const byId = (id: string) => categories.find((c) => c.id === id);
+
+  const HOUSE_IMG: Record<string, string> = {
+    leak: "/diagnosis/roof.webp",
+    bathroom: "/diagnosis/bathroom.webp",
+    kitchen: "/diagnosis/kitchen.webp",
+    door: "/diagnosis/door.webp",
+    electric: "/diagnosis/electric.webp",
+    wall: "/diagnosis/wall.webp"
+  };
+
+  // 집 단면도의 한 공간(버튼). 배경은 실사 사진(--img), 위에 어두운 오버레이 + 아이콘·라벨.
+  const part = (id: string, kind: "roof" | "room" | "found") => {
+    const cat = byId(id);
+    if (!cat) return null;
+    const on = id === active?.id;
+    return (
+      <button
+        type="button"
+        key={id}
+        data-cat={id}
+        className={`dh2__part dh2__${kind}${on ? " is-active" : ""}`}
+        style={{ "--img": `url(${HOUSE_IMG[id]})` } as React.CSSProperties}
+        aria-pressed={on}
+        aria-label={`${cat.label} 증상 보기`}
+        onClick={() => select(id)}
+        onKeyDown={onKey(id)}
+      >
+        <span className="dh2__photo" aria-hidden="true" />
+        <span className="dh2__shade" aria-hidden="true" />
+        <span className="dh2__plate">
+          <span className="dh2__ico" aria-hidden="true"><DiagPicto id={id} /></span>
+          <span className="dh2__name">{cat.label}</span>
+        </span>
+      </button>
+    );
+  };
+
+  return (
+    <div className="dh2">
+      <div className="dh2__house" role="group" aria-label="집 단면도에서 불편한 곳을 선택하세요">
+        <div className="dh2__roofwrap">
+          <span className="dh2__chimney" aria-hidden="true" />
+          {part("leak", "roof")}
+        </div>
+        <div className="dh2__body">
+          <div className="dh2__rooms">
+            {part("bathroom", "room")}
+            {part("kitchen", "room")}
+            {part("door", "room")}
+            {part("electric", "room")}
+          </div>
+          {part("wall", "found")}
+        </div>
+        <p className="dh2__hint">공간을 누르면 자주 나타나는 증상이 표시됩니다</p>
+      </div>
+
+      <div className="dh2__panel" data-cat={active?.id} ref={panelRef} aria-live="polite">
+        <div className="dh2__phead">
+          <span className="dh2__badge" aria-hidden="true"><DiagPicto id={active?.id ?? ""} /></span>
+          <span className="dh2__ptitle">
+            <strong>{active?.label}</strong>
+            <span>이런 증상이 있으신가요?</span>
+          </span>
+        </div>
+        <ul className="dh2__symptoms">
+          {active?.symptoms.map((s) => (
+            <li key={s.id}>
+              <a href={`/diagnosis?issue=${s.id}`}>{s.text}</a>
+            </li>
+          ))}
+        </ul>
+        <a className="dh2__cta" href={`/diagnosis?category=${active?.id}`}>
+          {active?.label} 전체 자가진단 보기 →
+        </a>
+      </div>
+    </div>
   );
 }
 
