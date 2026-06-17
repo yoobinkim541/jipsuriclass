@@ -4273,11 +4273,41 @@ main.home-page .cases .row-heading a {
 :root[data-theme="dark"] main.home-page .diag-dark .row-heading p { color: #9fb0c2; }
 
 .dh2 {
-  --glow: #5cc6ff;
+  /* 라이트 기본 — 집 본체/패널을 밝은 카드로(어두운 사진 방은 그대로 유지) */
+  --glow: #2f9fe0;
+  --wall: #e6ecf2;
+  --chimney: #9aa7b4;
+  --panel-bg: #ffffff;
+  --panel-bd: #e3e8ef;
+  --ink: #1f2c3a;
+  --ink-2: #5b6b7c;
+  --row: #33414f;
+  --divider: rgba(20, 30, 45, 0.09);
+  --badge-bg: #eef3f8;
+  --badge-fg: #1f3a57;
+  --cta-bg: #16314e;
+  --cta-fg: #ffffff;
+  --hint: #7a8aa0;
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   gap: 26px;
   align-items: stretch;
+}
+:root[data-theme="dark"] .dh2 {
+  --glow: #5cc6ff;
+  --wall: #0e1a28;
+  --chimney: #26384e;
+  --panel-bg: #15212f;
+  --panel-bd: rgba(255, 255, 255, 0.07);
+  --ink: #f5f8fc;
+  --ink-2: #93a2b5;
+  --row: #d6dfea;
+  --divider: rgba(255, 255, 255, 0.06);
+  --badge-bg: #0f1a27;
+  --badge-fg: #d6ecfb;
+  --cta-bg: #bcd6ea;
+  --cta-fg: #0c1c2b;
+  --hint: #7f8ea0;
 }
 
 .dh2__house {
@@ -4296,19 +4326,19 @@ main.home-page .cases .row-heading a {
   width: 22px;
   height: 42px;
   border-radius: 4px 4px 0 0;
-  background: #26384e;
-  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: var(--chimney);
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.22), inset 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 /* 집 본체(벽) — 방 사이 간격이 벽처럼 보이도록 다크 프레임 */
 .dh2__body {
-  background: #0e1a28;
+  background: var(--wall);
   border-radius: 3px 3px 20px 20px;
   padding: 9px;
   display: flex;
   flex-direction: column;
   gap: 9px;
-  box-shadow: 0 18px 44px -24px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 16px 40px -26px rgba(20, 30, 45, 0.5);
 }
 
 .dh2__rooms {
@@ -4359,27 +4389,30 @@ main.home-page .cases .row-heading a {
 .dh2__ico svg { width: 30px; height: 30px; }
 .dh2__name { font-size: 14px; font-weight: 800; letter-spacing: -0.01em; color: #fff; text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7); }
 
-.dh2__part:hover { box-shadow: inset 0 0 0 1.5px rgba(92, 198, 255, 0.5); transform: translateY(-2px); }
+.dh2__part:hover { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--glow) 55%, transparent); transform: translateY(-2px); }
 .dh2__part.is-active {
-  box-shadow: inset 0 0 0 2px var(--glow), 0 0 24px -2px rgba(92, 198, 255, 0.6);
+  box-shadow: inset 0 0 0 2px var(--glow), 0 0 24px -2px color-mix(in srgb, var(--glow) 60%, transparent);
 }
 .dh2__part.is-active .dh2__shade {
-  background: linear-gradient(180deg, rgba(92, 198, 255, 0.14) 0%, rgba(7, 13, 22, 0.16) 55%, rgba(7, 13, 22, 0.55) 100%);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--glow) 16%, transparent) 0%, rgba(7, 13, 22, 0.16) 55%, rgba(7, 13, 22, 0.55) 100%);
 }
-.dh2__part:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--glow), 0 0 0 3px rgba(92, 198, 255, 0.35); }
+.dh2__part:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--glow), 0 0 0 3px color-mix(in srgb, var(--glow) 35%, transparent); }
 
 /* 지붕(박공) = 물·누수 — 사진을 박공 모양으로 클립 */
 .dh2__roof {
-  min-height: 106px;
+  min-height: 116px;
   border-radius: 0;
   clip-path: polygon(50% 0%, 100% 100%, 0 100%);
-  background: repeating-linear-gradient(180deg, #213245 0 13px, #1b293a 13px 14px);
+  background: #1f2e3e;
 }
-.dh2__roof .dh2__photo,
-.dh2__roof .dh2__shade { display: none; }
-.dh2__roof .dh2__plate { justify-content: flex-end; padding-bottom: 14px; }
-.dh2__roof:hover { transform: none; background: repeating-linear-gradient(180deg, #26384e 0 13px, #1f2e41 13px 14px); }
-.dh2__roof.is-active { box-shadow: none; background: repeating-linear-gradient(180deg, #2a4a68 0 13px, #213a53 13px 14px); }
+/* 지붕은 실사 사진(slate)을 박공으로 클립 — 진짜 지붕 질감. 라벨 가독 위해 하단만 약간 어둡게 */
+.dh2__roof .dh2__photo { background-position: center 42%; }
+.dh2__roof .dh2__shade {
+  background: linear-gradient(180deg, rgba(7, 13, 22, 0) 38%, rgba(7, 13, 22, 0.66) 100%);
+}
+.dh2__roof .dh2__plate { justify-content: flex-end; padding-bottom: 12px; }
+.dh2__roof:hover { transform: none; }
+.dh2__roof.is-active { box-shadow: none; }
 
 /* 방 */
 .dh2__room { min-height: 134px; }
@@ -4389,23 +4422,24 @@ main.home-page .cases .row-heading a {
 .dh2__found .dh2__plate { flex-direction: row; gap: 10px; }
 .dh2__found .dh2__ico svg { width: 23px; height: 23px; }
 
-.dh2__hint { margin: 12px 2px 0; font-size: 12.5px; color: #7f8ea0; text-align: center; }
+.dh2__hint { margin: 12px 2px 0; font-size: 12.5px; color: var(--hint); text-align: center; }
 
 /* 우측 패널 */
 .dh2__panel {
   display: flex;
   flex-direction: column;
-  background: #15212f;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-bd);
   border-radius: 20px;
   padding: 22px 22px 20px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 .dh2__phead {
   display: flex;
   align-items: center;
   gap: 14px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--divider);
 }
 .dh2__badge {
   flex: none;
@@ -4414,17 +4448,17 @@ main.home-page .cases .row-heading a {
   border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #d6ecfb;
-  background: #0f1a27;
-  box-shadow: inset 0 0 0 1.5px rgba(92, 198, 255, 0.4);
+  color: var(--badge-fg);
+  background: var(--badge-bg);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--glow) 55%, transparent);
 }
 .dh2__badge svg { width: 27px; height: 27px; }
 .dh2__ptitle { display: flex; flex-direction: column; gap: 2px; }
-.dh2__ptitle strong { font-size: 20px; font-weight: 800; color: #f5f8fc; }
-.dh2__ptitle span { font-size: 13px; color: #93a2b5; }
+.dh2__ptitle strong { font-size: 20px; font-weight: 800; color: var(--ink); }
+.dh2__ptitle span { font-size: 13px; color: var(--ink-2); }
 
 .dh2__symptoms { list-style: none; margin: 0; padding: 4px 0; flex: 1; }
-.dh2__symptoms li + li { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+.dh2__symptoms li + li { border-top: 1px solid var(--divider); }
 .dh2__symptoms a {
   display: flex;
   align-items: center;
@@ -4432,16 +4466,16 @@ main.home-page .cases .row-heading a {
   gap: 10px;
   padding: 15px 4px;
   font-size: 15px;
-  color: #d6dfea;
+  color: var(--row);
   text-decoration: none;
   transition: color 0.13s ease;
 }
 .dh2__symptoms a::after {
   content: "→";
-  color: #56697d;
+  color: var(--ink-2);
   transition: transform 0.13s ease, color 0.13s ease;
 }
-.dh2__symptoms a:hover { color: #ffffff; }
+.dh2__symptoms a:hover { color: var(--ink); }
 .dh2__symptoms a:hover::after { color: var(--glow); transform: translateX(3px); }
 
 .dh2__cta {
@@ -4450,14 +4484,14 @@ main.home-page .cases .row-heading a {
   text-align: center;
   padding: 16px;
   border-radius: 14px;
-  background: #bcd6ea;
-  color: #0c1c2b;
+  background: var(--cta-bg);
+  color: var(--cta-fg);
   font-size: 15px;
   font-weight: 800;
   text-decoration: none;
-  transition: background 0.14s ease;
+  transition: filter 0.14s ease;
 }
-.dh2__cta:hover { background: #d2e6f4; }
+.dh2__cta:hover { filter: brightness(1.06); }
 
 @media (max-width: 900px) {
   .dh2 { grid-template-columns: 1fr; gap: 16px; }
