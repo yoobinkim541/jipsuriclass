@@ -4083,6 +4083,242 @@ main.home-page .cases .row-heading a {
   border-color: var(--gold);
 }
 
+/* =========================================================================
+   인터랙티브 집 단면도 자가진단 (DiagnosisHouse)
+   지붕(누수)·2x2 방·바닥(벽) 공간을 누르면 우측 패널에 증상 표시.
+   ========================================================================= */
+.diaghouse {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 22px;
+  align-items: start;
+}
+
+/* 분야별 accent (집 공간 색상 코딩) */
+.diaghouse [data-cat="door"] { --cat-accent: #c08a4e; }
+.diaghouse [data-cat="leak"] { --cat-accent: #3f97d6; }
+.diaghouse [data-cat="wall"] { --cat-accent: #9a8478; }
+.diaghouse [data-cat="electric"] { --cat-accent: #e0a92e; }
+.diaghouse [data-cat="bathroom"] { --cat-accent: #2fa6a0; }
+.diaghouse [data-cat="kitchen"] { --cat-accent: #5fa55a; }
+
+.diaghouse__map {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto 1fr 1fr auto;
+  grid-template-areas:
+    "roof  roof"
+    "r1    r2"
+    "r3    r4"
+    "floor floor";
+  gap: 7px;
+}
+
+.diaghouse__zone--leak { grid-area: roof; }
+.diaghouse__zone--bathroom { grid-area: r1; }
+.diaghouse__zone--kitchen { grid-area: r2; }
+.diaghouse__zone--door { grid-area: r3; }
+.diaghouse__zone--electric { grid-area: r4; }
+.diaghouse__zone--wall { grid-area: floor; }
+
+.diaghouse__zone {
+  --z: var(--cat-accent, var(--gold));
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 96px;
+  padding: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--z) 13%, #ffffff);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--z) 26%, transparent);
+  color: var(--navy-700, #10284a);
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* 지붕: 사다리꼴(위가 좁은 박공) */
+.diaghouse__zone--leak {
+  min-height: 64px;
+  border-radius: 14px 14px 0 0;
+  clip-path: polygon(0% 100%, 11% 0%, 89% 0%, 100% 100%);
+}
+
+/* 바닥: 낮은 슬래브 */
+.diaghouse__zone--wall {
+  min-height: 58px;
+  flex-direction: row;
+  gap: 9px;
+}
+
+.diaghouse__zone:hover {
+  background: color-mix(in srgb, var(--z) 22%, #ffffff);
+  transform: translateY(-2px);
+}
+
+.diaghouse__zone.is-active {
+  background: color-mix(in srgb, var(--z) 28%, #ffffff);
+  box-shadow: inset 0 0 0 2px var(--z), 0 10px 24px -14px color-mix(in srgb, var(--z) 75%, transparent);
+}
+
+.diaghouse__emoji {
+  font-size: 25px;
+  line-height: 1;
+}
+
+.diaghouse__zlabel {
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.diaghouse__hint {
+  margin: 10px 2px 0;
+  font-size: 12.5px;
+  color: var(--slate);
+  text-align: center;
+}
+
+/* ── 우측 패널: 선택한 공간의 증상 ── */
+.diaghouse__panel {
+  --z: var(--cat-accent, var(--gold));
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.diaghouse__panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 18px;
+  background: color-mix(in srgb, var(--z) 14%, #ffffff);
+  border-bottom: 1px solid color-mix(in srgb, var(--z) 24%, var(--border));
+}
+
+.diaghouse__panel-head .diaghouse__emoji { font-size: 27px; }
+
+.diaghouse__panel-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.diaghouse__panel-title strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--navy-700, #10284a);
+}
+
+.diaghouse__panel-title span {
+  font-size: 12.5px;
+  color: var(--slate);
+}
+
+.diaghouse__symptoms {
+  list-style: none;
+  margin: 0;
+  padding: 8px 10px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.diaghouse__symptoms a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  color: var(--slate);
+  text-decoration: none;
+  transition: background 0.13s, color 0.13s, border-color 0.13s;
+}
+
+.diaghouse__symptoms a::after {
+  content: "→";
+  margin-left: auto;
+  font-size: 13px;
+  opacity: 0.35;
+  transition: transform 0.13s ease, opacity 0.13s ease, color 0.13s ease;
+}
+
+.diaghouse__symptoms a:hover {
+  background: color-mix(in srgb, var(--z) 11%, transparent);
+  border-color: color-mix(in srgb, var(--z) 40%, transparent);
+  color: var(--navy);
+}
+
+.diaghouse__symptoms a:hover::after {
+  opacity: 1;
+  transform: translateX(3px);
+  color: var(--z);
+}
+
+.diaghouse__all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 12px 0;
+  padding: 11px 16px;
+  border-radius: 11px;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-decoration: none;
+  color: #fff;
+  background: var(--navy-700, #10284a);
+  transition: background 0.14s ease;
+}
+
+.diaghouse__all:hover {
+  background: color-mix(in srgb, var(--navy-700, #10284a) 86%, #000);
+}
+
+@media (max-width: 760px) {
+  .diaghouse {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ── 다크모드 ── */
+:root[data-theme="dark"] .diaghouse__zone {
+  background: color-mix(in srgb, var(--cat-accent, var(--gold)) 24%, var(--panel-strong, #1f2937));
+  color: var(--ink, #f8fafc);
+}
+:root[data-theme="dark"] .diaghouse__zone:hover {
+  background: color-mix(in srgb, var(--cat-accent, var(--gold)) 34%, var(--panel-strong, #1f2937));
+}
+:root[data-theme="dark"] .diaghouse__zone.is-active {
+  background: color-mix(in srgb, var(--cat-accent, var(--gold)) 42%, var(--panel-strong, #1f2937));
+}
+:root[data-theme="dark"] .diaghouse__panel {
+  background: var(--panel, #111827);
+  border-color: var(--hair, rgba(226, 232, 240, 0.18));
+}
+:root[data-theme="dark"] .diaghouse__panel-head {
+  background: color-mix(in srgb, var(--cat-accent, var(--gold)) 22%, var(--panel, #111827));
+  border-bottom-color: var(--hair, rgba(226, 232, 240, 0.18));
+}
+:root[data-theme="dark"] .diaghouse__panel-title strong { color: var(--ink, #f8fafc); }
+:root[data-theme="dark"] .diaghouse__panel-title span,
+:root[data-theme="dark"] .diaghouse__symptoms a { color: var(--ink-2, #d8e1f0); }
+:root[data-theme="dark"] .diaghouse__symptoms a:hover { color: var(--ink, #f8fafc); }
+:root[data-theme="dark"] .diaghouse__hint { color: var(--ink-3, #aebbd0); }
+:root[data-theme="dark"] .diaghouse__all {
+  background: var(--gold-500, #f2c879);
+  color: #0b1220;
+}
+
 .blog-card-grid {
   display: grid;
   gap: 18px;
