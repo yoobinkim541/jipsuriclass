@@ -1485,8 +1485,10 @@ const portfolioChips = [
   { key: "bath", label: "욕실", terms: ["욕실", "화장실", "타일", "변기", "세면", "줄눈", "실리콘"] },
   { key: "kitchen", label: "주방", terms: ["주방", "싱크", "수전", "배수"] },
   { key: "wall", label: "도배·도장", terms: ["도배", "벽지", "페인트", "도장", "몰딩", "장판"] },
-  { key: "door", label: "문·창호", terms: ["문", "도어", "현관", "방충망", "창문", "샷시", "경첩", "손잡이"] },
-  { key: "electric", label: "전기·조명", terms: ["전기", "조명", "콘센트", "스위치", "LED", "등"] }
+  // "문" 단독은 "전문/문의/방문"과 목공 공용 키워드("…,가벽,문")에 걸려 오탐이 커서 구체어만 사용.
+  { key: "door", label: "문·창호", terms: ["도어", "현관", "방문", "중문", "문짝", "문틀", "방충망", "창문", "샷시", "창호", "경첩", "손잡이"] },
+  // "등"은 "타일 등"의 等에 걸려 오탐 → 제거(조명/LED/콘센트/스위치/전기로 충분).
+  { key: "electric", label: "전기·조명", terms: ["전기", "조명", "콘센트", "스위치", "LED"] }
 ];
 
 // 검색은 정확도 우선. '사실상 같은 말'(동의어)만 함께 매칭한다.
@@ -1637,7 +1639,9 @@ function PortfolioPage() {
     const scored: Array<{ post: PortfolioPost; score: number }> = [];
     for (const post of allPosts) {
       if (chip) {
-        const haystack = [post.title, post.cardTitle, post.description, ...(post.summary ?? []), ...(post.keywords ?? [])]
+        // 분야 필터는 제목·카드제목·요약·키워드(분야 신호)로만 매칭한다. description(회사 소개
+        // 보일러플레이트가 여러 분야를 나열)을 넣으면 다른 분야 글이 대거 섞여 들어온다.
+        const haystack = [post.title, post.cardTitle, ...(post.summary ?? []), ...(post.keywords ?? [])]
           .filter(Boolean)
           .join(" ");
         if (!chip.terms.some((term) => haystack.includes(term))) continue;
