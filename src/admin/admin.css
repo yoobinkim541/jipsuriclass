@@ -1719,6 +1719,9 @@
    ===================================================================== */
 :root[data-theme="dark"] {
   .adm-root {
+    /* 폼 컨트롤(색 미지정 input/select)이 기본 검정 글씨로 렌더돼 다크 배경에서
+       안 보이던 문제 방지 — 브라우저가 다크에 맞는 글씨/스크롤바 기본값을 쓰게 한다. */
+    color-scheme: dark;
     /* 표면: 밝은 크림/페이퍼 → 다크 패널 */
     --cream: #0b1220;
     --cream-2: #141d31;
@@ -1883,36 +1886,139 @@
     color: var(--ink);
   }
 
-  /* 임베드 페이지 편집기(홈/랜딩/계정/견적상담/자기진단/개인정보처리방침)는
-     하드코딩 라이트 색(#fff·#f8fafc 등)과 토큰 색(var(--ink) 등)이 섞여 있어,
-     다크 토큰이 적용되면 '라이트 배경 + 라이트 글씨'로 글자가 사라진다.
-     편집기 서브트리에서만 디자인 토큰을 라이트 값으로 되돌려, 토큰 색과
-     하드코딩 라이트 색이 일관되게 맞물리는 '밝은 편집 캔버스'로 만든다. */
+  /* 임베드 페이지 편집기(홈/랜딩/계정/견적상담/자기진단/개인정보처리방침):
+     토큰은 .adm-root 다크값을 그대로 쓰고(라이트핀 제거), 하드코딩 라이트 색만
+     다크 표면/밝은 글씨로 덮어 어드민과 동일한 다크 테마로 통일한다. */
   .adm-editor-host {
-    color-scheme: light;
-    --navy-900: #081628;
-    --navy-800: #0b1d34;
-    --navy-700: #10284a;
-    --navy-600: #1a3a64;
-    --navy-500: #2b528a;
-    --gold-700: #b4894b;
-    --gold-600: #c9a063;
-    --gold-500: #d7ae6b;
-    --gold-400: #e6c48f;
-    --cream: #faf7f2;
-    --cream-2: #f1ece1;
-    --ivory: #fdfbf6;
-    --paper: #ffffff;
-    --ink: #0b1a30;
-    --ink-2: #2a3a55;
-    --ink-3: #5b6781;
-    --ink-4: #94a0b8;
-    --hair: #e6dfd0;
-    --hair-2: #d8d0bd;
-    --success: #2f7a4d;
-    --shadow-sm: 0 1px 2px rgba(8, 22, 40, 0.06), 0 2px 6px rgba(8, 22, 40, 0.05);
-    --shadow-lg: 0 8px 24px rgba(8, 22, 40, 0.12), 0 24px 64px rgba(8, 22, 40, 0.14);
+    color-scheme: dark;
   }
+  /* 흰 배경·흰 그라데이션 표면 → 다크 패널 */
+  .adm-editor-host .editor-studio-hero,
+  .adm-editor-host .editor-studio-rail__card,
+  .adm-editor-host .editor-page-rail__meta,
+  .adm-editor-host .editor-shortcuts--rail,
+  .adm-editor-host .editor-page-chip,
+  .adm-editor-host .editor-page-summary,
+  .adm-editor-host .editor-panel-chip,
+  .adm-editor-host .editor-page-tab,
+  .adm-editor-host .editor-preview-panel,
+  .adm-editor-host .editor-preview-panel-fullscreen,
+  .adm-editor-host .editor-preview-frame,
+  .adm-editor-host .editor-inspector,
+  .adm-editor-host .editor-group,
+  .adm-editor-host .editor-card,
+  .adm-editor-host .editor-shortcuts span,
+  .adm-editor-host .editor-preview-card,
+  .adm-editor-host .editor-preview-labels span,
+  .adm-editor-host .editor-preview-step,
+  .adm-editor-host .editor-preview-stat,
+  .adm-editor-host .editor-section-chip,
+  .adm-editor-host .editor-remove-button,
+  .adm-editor-host .editor-add-button,
+  .adm-editor-host .editor-topic-chip,
+  .adm-editor-host .editor-step-tab,
+  .adm-editor-host .editor-chip,
+  .adm-editor-host .editor-search-chip {
+    background: var(--paper);
+    border-color: var(--hair);
+    color: var(--ink);
+  }
+  /* 한 단계 더 어두운 보조 표면 */
+  .adm-editor-host .editor-group .section-heading,
+  .adm-editor-host .editor-inline-card,
+  .adm-editor-host .editor-preview-card-soft,
+  .adm-editor-host .editor-studio-stat-row > div,
+  .adm-editor-host .editor-studio-metrics span,
+  .adm-editor-host .editor-page-rail__meta span,
+  .adm-editor-host .editor-context-strip span,
+  .adm-editor-host .editor-section-nav {
+    background: var(--cream-2);
+    border-color: var(--hair);
+  }
+  /* 입력칸: 다크 표면 위에서 흰 박스+밝은 글씨로 안 보이던 것 보정 */
+  .adm-editor-host .editor-field input,
+  .adm-editor-host .editor-field textarea,
+  .adm-editor-host .editor-field select {
+    background: rgba(3, 10, 22, 0.35);
+    color: var(--ink);
+    border-color: var(--hair);
+  }
+  .adm-editor-host .editor-field input::placeholder,
+  .adm-editor-host .editor-field textarea::placeholder {
+    color: var(--ink-3);
+  }
+  .adm-editor-host .editor-upload-trigger {
+    background: var(--cream-2);
+    border: 1px dashed var(--hair-2);
+  }
+  /* 본문/보조 텍스트(하드코딩 짙은 회색) → 밝게 */
+  .adm-editor-host .editor-header p,
+  .adm-editor-host .editor-field,
+  .adm-editor-host .editor-add-button,
+  .adm-editor-host .editor-topic-chip,
+  .adm-editor-host .editor-step-tab,
+  .adm-editor-host .editor-chip,
+  .adm-editor-host .editor-preview-policy p {
+    color: var(--ink-2);
+  }
+  .adm-editor-host .editor-topic-empty,
+  .adm-editor-host .editor-step-tab span,
+  .adm-editor-host .editor-remove-button {
+    color: var(--ink-3);
+  }
+  .adm-editor-host .editor-item strong,
+  .adm-editor-host .editor-step-tab strong,
+  .adm-editor-host .editor-preview-policy strong,
+  .adm-editor-host .editor-field select {
+    color: var(--ink);
+  }
+  /* 활성 칩/탭: #111827·navy가 다크 패널에 묻히므로 밝은 네이비 + 흰 글씨로 */
+  .adm-editor-host .editor-step-tab.active,
+  .adm-editor-host .editor-section-chip.active,
+  .adm-editor-host .editor-chip.active,
+  .adm-editor-host .editor-topic-chip.active,
+  .adm-editor-host .editor-panel-chip.active,
+  .adm-editor-host .editor-search-chip.active,
+  .adm-editor-host .editor-page-tab.active,
+  .adm-editor-host .editor-preview-step.active {
+    background: var(--navy-500, #2b528a);
+    border-color: var(--navy-500, #2b528a);
+  }
+  .adm-editor-host .editor-step-tab.active,
+  .adm-editor-host .editor-step-tab.active strong,
+  .adm-editor-host .editor-step-tab.active span,
+  .adm-editor-host .editor-step-tab.active em,
+  .adm-editor-host .editor-topic-chip.active,
+  .adm-editor-host .editor-chip.active,
+  .adm-editor-host .editor-section-chip.active,
+  .adm-editor-host .editor-panel-chip.active span,
+  .adm-editor-host .editor-search-chip.active,
+  .adm-editor-host .editor-page-tab.active strong,
+  .adm-editor-host .editor-page-tab.active em,
+  .adm-editor-host .editor-page-tab.active svg,
+  .adm-editor-host .editor-preview-step.active strong,
+  .adm-editor-host .editor-preview-step.active p,
+  .adm-editor-host .editor-preview-step.active span {
+    color: #ffffff;
+  }
+  /* hover */
+  .adm-editor-host .editor-add-button:hover,
+  .adm-editor-host .editor-topic-chip:hover {
+    background: var(--cream-2);
+    border-color: var(--hair-2);
+    color: var(--ink);
+  }
+  .adm-editor-host .editor-remove-button:hover {
+    background: rgba(220, 38, 38, 0.14);
+    border-color: rgba(220, 38, 38, 0.4);
+    color: #fca5a5;
+  }
+  /* 저장상태 배지: 라이트 파스텔 → 다크 반투명 + 밝은 글씨 */
+  .adm-editor-host .editor-save-state span[data-state="saving"] { background: rgba(56, 189, 248, 0.16); color: #7dd3fc; }
+  .adm-editor-host .editor-save-state span[data-state="dirty"] { background: rgba(245, 158, 11, 0.16); color: #fcd34d; }
+  .adm-editor-host .editor-save-state span[data-state="error"] { background: rgba(220, 38, 38, 0.18); color: #fca5a5; }
+  /* 미리보기 카드 안의 stat(흰 박스) */
+  .adm-editor-host .editor-preview-stat { border-color: var(--hair); }
 
   /* ── 추가 보정: navy 표면 위 paper 글씨가 다크 반전돼 안 보이던 곳들 ──
         (형제 active 칩들은 위에서 이미 밝게 했으나 아래 셀렉터들은 누락돼 있었음) */
@@ -1933,13 +2039,4 @@
     border-color: rgba(220, 38, 38, 0.3);
   }
 
-  /* 라이브 미리보기 패널/프레임: styles.css에서 #ffffff/#fffdf8 흰색 하드코딩 →
-     다크에서 흰 섬이 되고, .adm-root에서 밝게 반전된 미리보기 글씨(var(--ink))가
-     흰 배경에 묻힌다. 어드민 스코프로만 다크 표면으로 덮는다(공개 사이트 무영향). */
-  .adm-root .editor-preview-panel,
-  .adm-root .editor-preview-panel-fullscreen,
-  .adm-root .editor-preview-frame {
-    background: var(--cream-2);
-    border-color: var(--hair);
-  }
 }

@@ -75,6 +75,8 @@ export function AdminPage() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [contentEditorPage, setContentEditorPage] = useState<EditorPage | null>(null);
+  // 지역/작업 카드의 '편집'에서 넘어온 특정 랜딩 페이지 경로(랜딩 편집기가 이 페이지로 열린다).
+  const [contentEditorLandingPath, setContentEditorLandingPath] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ path: string; label: string } | null>(null);
   const toastTimer = useRef<number | null>(null);
@@ -366,8 +368,9 @@ export function AdminPage() {
               {tab === "regions" ? (
                 <RegionsTab
                   onPreview={(path, label) => setPreview({ path, label })}
-                  onEdit={() => {
+                  onEdit={(path) => {
                     setContentEditorPage("landing");
+                    setContentEditorLandingPath(path);
                     gotoTab("content");
                   }}
                 />
@@ -375,8 +378,9 @@ export function AdminPage() {
               {tab === "works" ? (
                 <WorksTab
                   onPreview={(path, label) => setPreview({ path, label })}
-                  onEdit={() => {
+                  onEdit={(path) => {
                     setContentEditorPage("landing");
+                    setContentEditorLandingPath(path);
                     gotoTab("content");
                   }}
                 />
@@ -385,7 +389,11 @@ export function AdminPage() {
                 <ContentTab
                   isAuthenticated={isAuthenticated}
                   editorPage={contentEditorPage}
-                  onEditorPageChange={setContentEditorPage}
+                  editorLandingPath={contentEditorLandingPath}
+                  onEditorPageChange={(page) => {
+                    setContentEditorPage(page);
+                    if (page !== "landing") setContentEditorLandingPath(null);
+                  }}
                   onPreview={(path, label) => setPreview({ path, label })}
                 />
               ) : null}
