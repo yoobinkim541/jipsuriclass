@@ -49,14 +49,15 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return;
     }
 
-    // 한 행 jsonb로 저장하므로 payload를 슬림화한다. 원본 mode=all은 글이 많아 수 MB가 되어
-    // Supabase 요청 본문 한도를 넘기면 upsert가 400으로 실패한다. 표시(BlogPortfolioService)에서
-    // 쓰는 필드만 남기고 description은 요약 길이로, imageCandidates는 1개로 줄인다.
-    const DESC_MAX = 150;
+    // 한 행 jsonb로 저장하므로 payload를 슬림화한다. mode=all은 글이 많아(현재 1073개) 본문이
+    // Supabase 요청 본문 한도(~1MB)를 넘으면 게이트웨이가 본문을 잘라 PostgREST가
+    // PGRST102("Empty or invalid json", 400)를 낸다. 표시(BlogPortfolioService)에 쓰는 필드만
+    // 남기고, 가장 무거운 imageCandidates는 저장하지 않으며(폴백 표시는 image로 충분), description은
+    // 요약 길이로 자른다. 실측 약 0.79MB. (글이 더 늘면 항목 수 cap 필요.)
+    const DESC_MAX = 100;
     const snapshotItems = (items as Array<Record<string, unknown>>).map((raw) => {
       const item = raw ?? {};
       const description = typeof item.description === "string" ? item.description : "";
-      const candidates = Array.isArray(item.imageCandidates) ? item.imageCandidates.slice(0, 1) : undefined;
       const slim: Record<string, unknown> = {
         title: item.title,
         description: description.length > DESC_MAX ? description.slice(0, DESC_MAX) : description,
@@ -64,7 +65,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
       };
       if (item.postdate) slim.postdate = item.postdate;
       if (item.image) slim.image = item.image;
-      if (candidates && candidates.length) slim.imageCandidates = candidates;
       if (item.cardTitle) slim.cardTitle = item.cardTitle;
       if (Array.isArray(item.summary)) slim.summary = item.summary;
       if (Array.isArray(item.keywords)) slim.keywords = item.keywords;
