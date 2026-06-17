@@ -95,7 +95,7 @@ create policy "Anyone can read site content"
   on public.site_content
   for select
   to anon, authenticated
-  using (id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings'));
+  using (id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings', 'blog-snapshot'));
 
 drop policy if exists "Admins can insert site content" on public.site_content;
 create policy "Admins can insert site content"
@@ -103,7 +103,7 @@ create policy "Admins can insert site content"
   for insert
   to authenticated
   with check (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings', 'blog-snapshot')
     and private.is_admin_user()
   );
 
@@ -113,11 +113,11 @@ create policy "Admins can update site content"
   for update
   to authenticated
   using (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings', 'blog-snapshot')
     and private.is_admin_user()
   )
   with check (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings', 'blog-snapshot')
     and private.is_admin_user()
   );
 
@@ -127,7 +127,7 @@ create policy "Admins can delete site content"
   for delete
   to authenticated
   using (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings', 'blog-snapshot')
     and private.is_admin_user()
   );
 
