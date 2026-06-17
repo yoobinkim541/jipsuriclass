@@ -27,7 +27,7 @@
 | 영역 | 기술 |
 |------|------|
 | 프레임워크 | Astro 6 (아일랜드) + React 19, TypeScript 6 |
-| 스타일 | CSS Custom Properties (토큰 기반 디자인 시스템, prefers-color-scheme 다크모드) |
+| 스타일 | CSS Custom Properties (토큰 기반 디자인 시스템, `data-theme` 다크모드 토글) |
 | 백엔드 API | Vercel Functions (`api/*.ts`, Node.js) |
 | 인증·데이터 | Supabase Auth + PostgreSQL + RLS |
 | 분석 | Vercel Web Analytics + Speed Insights (익명·쿠키리스) |
@@ -110,7 +110,7 @@ jipsuriclass/
 │   │   ├── AdminPage.tsx          # 셸: 상단바·사이드바·해시탭·미리보기 모달
 │   │   ├── InquiriesTab.tsx       # 상담 목록·상세·상태·메모·견적
 │   │   ├── DashboardPanels.tsx    # 분석·지역·작업·콘텐츠·블로그·설정·이력 탭
-│   │   ├── SiteContentEditor.tsx  # 홈·견적·계정 페이지 편집
+│   │   ├── SiteContentEditor.tsx  # 핵심 페이지 편집(홈·랜딩·계정·견적상담·자기진단·개인정보)
 │   │   ├── HomepageEditor.tsx     # 홈 섹션별 편집
 │   │   ├── LandingPagesEditor.tsx # 랜딩 페이지 편집
 │   │   ├── InquiryQuoteEditor.tsx # 견적 에디터
@@ -169,20 +169,25 @@ jipsuriclass/
 | 홈 (히어로·증상·서비스·블로그) | `/` |
 | 증상별 자가진단 | `/diagnosis` |
 | 8단계 견적 상담 신청 | `/estimate` |
-| 서비스 랜딩 (13종) | `/service/{slug}` |
-| 지역 랜딩 (15개) | `/area/{slug}` |
+| 서비스 랜딩 (15종) | `/service/{slug}` |
+| 지역 랜딩 (16개) | `/area/{slug}` |
 | 서비스별 가격표 + 모의견적 | `/service/{slug}/pricing` |
 | 고객 로그인·마이페이지 | `/login`, `/mypage` |
 | 개인정보처리방침 | `/privacy` |
 
 ### 관리자 향
 
-| 기능 | 경로 |
+| 기능 | 경로(해시 탭) |
 |------|------|
 | 관리자 로그인 | `/admin/login` |
-| 상담 요청 목록·상태 관리 | `/admin/inquiries` |
-| 유입·전환 분석 | `/admin/analytics` |
-| 페이지 콘텐츠 편집 | `/admin/editor` |
+| 상담 요청 목록·상태·메모·견적 발행 | `/admin#inquiries` |
+| 유입·전환 분석 | `/admin#analytics` |
+| 지역·서비스 랜딩 편집 (카드 → 해당 페이지로 바로 열림) | `/admin#regions`, `/admin#works` |
+| 핵심 페이지 편집 (홈·견적상담·마이페이지·자기진단·개인정보처리방침) | `/admin#content` |
+| 블로그 연동 (네이버 글 자동 수집·썸네일 프록시) | `/admin#blog` |
+| 사이트 설정 — 영업 정보·대표 자격증 편집(저장 시 전역 반영) | `/admin#settings` |
+
+> 콘텐츠·설정 편집 내용은 Supabase `site_content`에 저장되어 공개 사이트에 즉시 반영됩니다(코드 수정 불필요). 견적 에디터는 항목·자재·부대비용을 편집해 구글시트 발행(최초 1회 생성 후 같은 시트 갱신)·PDF·엑셀로 내보냅니다.
 
 ---
 
@@ -249,21 +254,24 @@ insert into public.admin_users (email) values ('admin@jipsuriclass.kr');
 
 | 테이블 | 용도 |
 |--------|------|
-| `inquiries` | 견적 문의 저장 (고객 정보·설문·첨부·상태) |
+| `inquiries` | 견적 문의 저장 (고객 정보·설문·첨부·상태·견적 스냅샷) |
 | `admin_users` | 관리자 이메일 허용 목록 |
-| `site_content` | 관리자 편집 콘텐츠 (홈·랜딩·견적·계정 문구) |
+| `site_content` | 관리자 편집 콘텐츠 (홈·랜딩·견적상담·계정·자기진단·개인정보처리방침·사이트설정) |
+
+> `site_content`는 RLS로 허용 id를 제한합니다. 새 편집 영역을 추가하면 `supabase/migrations/`의 정책 갱신 SQL을 Supabase SQL Editor에서 1회 실행해야 저장이 됩니다(예: 자기진단·개인정보·사이트설정 id 추가 마이그레이션).
 
 ---
 
 ## 자주 바꾸는 항목
 
-| 항목 | 파일 |
+> 영업 정보·자격증, 핵심 페이지·랜딩 문구는 **관리자에서 직접 편집·저장**할 수 있습니다(아래 `src/*`는 기본값/코드 폴백 기준).
+
+| 항목 | 편집 위치 |
 |------|------|
-| 전화번호·카카오·사업자·운영시간 | `src/data.ts` → `business` |
-| 서비스 카드 | `src/data.ts` → `services` |
-| 대표 현장사례 | `src/data.ts` → `cases` |
-| 고정 블로그 포스트 | `src/data.ts` → `pinnedPosts` |
-| 지역·서비스 랜딩 내용 | `src/landingPages.ts` |
+| 전화번호·카카오·사업자·운영시간·자격증 | 관리자 `#settings` (기본값: `src/data.ts` → `business` / `defaultCertifications`) |
+| 홈·견적상담·마이페이지·자기진단·개인정보 문구 | 관리자 `#content` (기본값: `src/data.ts`, `src/services/SiteContentService.ts`) |
+| 지역·서비스 랜딩 내용 | 관리자 `#regions`·`#works` (기본값: `src/landingPages.ts`) |
+| 서비스 카드·대표 현장사례·고정 블로그 | `src/data.ts` → `services`·`cases`·`pinnedPosts` |
 | 가격표 항목·단가 | `src/pricing/*.ts` |
 | 디자인 토큰 (색상·여백·폰트) | `src/styles.css` `:root` |
 | PWA 이름·테마색 | `public/manifest.webmanifest` |
@@ -291,8 +299,8 @@ insert into public.admin_users (email) values ('admin@jipsuriclass.kr');
 
 | 파일 | 범위 |
 |------|------|
-| `styles.css` | 전역 토큰·공개 사이트 전체 |
-| `admin-panel.css` | 관리자 대시보드 전용 레이아웃·컴포넌트 |
+| `styles.css` | 전역 토큰·공개 사이트 전체(편집기 공용 스타일 포함) |
+| `src/admin/admin.css` | 관리자 대시보드 전용(`.adm-root` 스코프, 다크모드 오버라이드 포함) |
 | `auth-panel.css` | 로그인·마이페이지 공통 auth 레이아웃 |
 
 ---
