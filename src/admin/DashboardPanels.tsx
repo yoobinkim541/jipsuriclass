@@ -186,7 +186,7 @@ function LandingCard({
 }: {
   page: LandingPageDefinition;
   onPreview: PreviewFn;
-  onEdit: () => void;
+  onEdit: (path: string) => void;
 }) {
   const shortName = page.areaLabel || page.title.split("|")[0].trim();
   return (
@@ -219,7 +219,7 @@ function LandingCard({
         </span>
       </div>
       <div className="adm-region-card__actions">
-        <button className="adm-card-primary" type="button" onClick={onEdit}>
+        <button className="adm-card-primary" type="button" onClick={() => onEdit(page.path)}>
           <PencilLine />편집
         </button>
         <button className="adm-card-secondary" type="button" onClick={() => onPreview(page.path, shortName)}>
@@ -230,7 +230,7 @@ function LandingCard({
   );
 }
 
-export function RegionsTab({ onPreview, onEdit }: { onPreview: PreviewFn; onEdit: () => void }) {
+export function RegionsTab({ onPreview, onEdit }: { onPreview: PreviewFn; onEdit: (path: string) => void }) {
   const [search, setSearch] = useState("");
   const pages = useMemo(
     () =>
@@ -277,7 +277,7 @@ export function RegionsTab({ onPreview, onEdit }: { onPreview: PreviewFn; onEdit
   );
 }
 
-export function WorksTab({ onPreview, onEdit }: { onPreview: PreviewFn; onEdit: () => void }) {
+export function WorksTab({ onPreview, onEdit }: { onPreview: PreviewFn; onEdit: (path: string) => void }) {
   const pages = landingPageDefinitions.filter((page) => page.categoryLabel === "서비스");
 
   return (
@@ -318,11 +318,13 @@ const corePages: Array<{
 export function ContentTab({
   isAuthenticated,
   editorPage,
+  editorLandingPath,
   onEditorPageChange,
   onPreview
 }: {
   isAuthenticated: boolean;
   editorPage: EditorPage | null;
+  editorLandingPath?: string | null;
   onEditorPageChange: (page: EditorPage | null) => void;
   onPreview: PreviewFn;
 }) {
@@ -341,7 +343,12 @@ export function ContentTab({
           <button className="adm-editor-back" type="button" onClick={() => onEditorPageChange(null)}>
             <ArrowLeft />페이지 목록으로
           </button>
-          <SiteContentEditor isAuthenticated={isAuthenticated} initialPage={editorPage} key={editorPage} />
+          <SiteContentEditor
+            isAuthenticated={isAuthenticated}
+            initialPage={editorPage}
+            initialLandingPath={editorLandingPath ?? undefined}
+            key={`${editorPage}:${editorLandingPath ?? ""}`}
+          />
         </div>
       ) : (
         <div className="adm-page-grid">

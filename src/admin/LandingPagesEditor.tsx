@@ -39,11 +39,13 @@ const defaultPagePath = landingPageDefinitions[0]?.path ?? "/service/leak";
 export function LandingPagesEditor({
   isAuthenticated,
   isActive = true,
-  searchQuery = ""
+  searchQuery = "",
+  initialPath
 }: {
   isAuthenticated: boolean;
   isActive?: boolean;
   searchQuery?: string;
+  initialPath?: string;
 }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -51,7 +53,10 @@ export function LandingPagesEditor({
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveNote, setSaveNote] = useState("편집 내용을 불러오는 중입니다.");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
-  const [selectedPath, setSelectedPath] = useState(defaultPagePath);
+  // 카드의 '편집'에서 넘어온 특정 페이지(initialPath)가 있으면 그 페이지로 시작한다.
+  const [selectedPath, setSelectedPath] = useState(
+    initialPath && landingPageDefinitions.some((page) => page.path === initialPath) ? initialPath : defaultPagePath
+  );
   const [showPreview, setShowPreview] = useState(true);
   const [showPreviewFullscreen, setShowPreviewFullscreen] = useState(false);
   const [selectedPanel, setSelectedPanel] = useState<LandingPanel>("summary");

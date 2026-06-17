@@ -19,10 +19,12 @@ type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
 export function SiteContentEditor({
   isAuthenticated,
-  initialPage
+  initialPage,
+  initialLandingPath
 }: {
   isAuthenticated: boolean;
   initialPage?: EditorPage;
+  initialLandingPath?: string;
 }) {
   const [page, setPage] = useState<EditorPage>(initialPage ?? "homepage");
   const pageTabs = [
@@ -110,7 +112,7 @@ export function SiteContentEditor({
           <HomepageEditor isAuthenticated={isAuthenticated} isActive={page === "homepage"} />
         </section>
         <section className="editor-page-panel" hidden={page !== "landing"}>
-          <LandingPagesEditor isAuthenticated={isAuthenticated} isActive={page === "landing"} />
+          <LandingPagesEditor isAuthenticated={isAuthenticated} isActive={page === "landing"} initialPath={initialLandingPath} />
         </section>
         <section className="editor-page-panel" hidden={page !== "account"}>
           <AccountContentEditor isAuthenticated={isAuthenticated} isActive={page === "account"} />
