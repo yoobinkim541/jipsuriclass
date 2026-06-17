@@ -1,5 +1,19 @@
 # Work Log
 
+## 2026-06-17 - 블로그 스냅샷 동기화 502 수정: upsert에 on_conflict 명시
+
+Changed files:
+- `api/sync-blog-snapshot.ts`
+
+Implemented behavior:
+- `/api/sync-blog-snapshot`의 PostgREST upsert가 HTTP 400으로 실패(→ 라우트 502 "Snapshot upsert failed")하던 문제 수정. 헤더에 `Prefer: resolution=merge-duplicates`만 있고 URL에 `on_conflict`이 없어 PostgREST가 충돌 대상을 못 잡았다. 관리자 앱(`SiteContentService.upsert(..., { onConflict: "id" })`)이 쓰는 패턴과 동일하게 fetch URL을 `/rest/v1/site_content?on_conflict=id`로 변경.
+
+Verification:
+- Supabase api 로그로 실패 요청이 `POST /rest/v1/site_content` → 400, 정상 관리자 요청은 `?on_conflict=id` → 200임을 확인(인증·service_role·5MB 본문 모두 정상, 문제는 conflict 미지정). 배포 후 오라클 crontab(03:00 KST)의 수동 1회 실행으로 `{"ok":true,"count":N}` 재확인 예정.
+
+Follow-up:
+- 배포(Vercel) 후 `site_content`에 `blog-snapshot` 행 생성 확인. 선택: `mode=all` 응답이 5MB라 추후 payload 슬림화(원본 description/이미지 메타 축소) 검토.
+
 ## 2026-06-14 - reconcile: stale 로컬 발산 정리 + 고유 가치 salvage
 
 Changed files:
