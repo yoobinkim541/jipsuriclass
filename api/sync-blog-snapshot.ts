@@ -49,7 +49,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return;
     }
 
-    const upsert = await fetch(`${supabaseUrl}/rest/v1/site_content`, {
+    const upsert = await fetch(`${supabaseUrl}/rest/v1/site_content?on_conflict=id`, {
       method: "POST",
       headers: {
         apikey: serviceRoleKey,
