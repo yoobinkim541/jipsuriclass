@@ -4,6 +4,7 @@ import { defaultLandingPageContent, getLandingPageDefaultContent, landingPageDef
 import { defaultHomepageSectionOrder, normalizeSectionOrder } from "../contentSections";
 import { supabase } from "../lib/supabaseClient";
 import { diagnosisTopics } from "../diagnosis/diagnosisData";
+import { slimBlogSnapshotItems } from "./blogSnapshot";
 import type {
   AccountPageContent,
   DiagnosisPageContent,
@@ -460,7 +461,10 @@ export class SiteContentService {
   }
 
   async saveBlogSnapshotContent(content: BlogSnapshotContent) {
-    await this.saveContent(CONTENT_IDS.blogSnapshot, content, isBlogSnapshotContent);
+    // 서버 cron 경로와 동일하게 슬림화한다(Supabase 요청 본문 ~1MB 한도). 이게 없으면 mode=all
+    // 원본(~4MB)을 그대로 저장하다가 PostgREST 400으로 실패한다.
+    const slimmed: BlogSnapshotContent = { ...content, items: slimBlogSnapshotItems(content.items) };
+    await this.saveContent(CONTENT_IDS.blogSnapshot, slimmed, isBlogSnapshotContent);
   }
 
   async saveSiteSettingsContent(content: SiteSettingsContent) {

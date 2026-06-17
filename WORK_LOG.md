@@ -1,5 +1,20 @@
 # Work Log
 
+## 2026-06-17 - 스냅샷 슬림 공용화(관리자 버튼 수정) + 현장사례 분야 필터 정밀화
+
+Changed files:
+- `src/services/blogSnapshot.ts`(신규), `api/sync-blog-snapshot.ts`, `src/services/SiteContentService.ts`, `src/App.tsx`
+
+Implemented behavior:
+- (1) 슬림 로직 공용화: `slimBlogSnapshotItems`를 `src/services/blogSnapshot.ts`로 추출해 **서버 cron 라우트와 관리자 수동 동기화 양쪽이 공유**. 기존엔 cron 라우트만 슬림하고 관리자 버튼(`DashboardPanels.syncSnapshot`→`saveBlogSnapshotContent`)은 원본(~4MB)을 그대로 저장해 동일한 ~1MB 한도로 **실패**하던 것을 수정(`saveBlogSnapshotContent`에서 슬림 적용). api 함수가 src 모듈을 import하는데 Vercel 번들(esbuild)에서 해결됨을 확인.
+- (2) 현장사례 분야(칩) 필터 정밀화: 칩 매칭 대상에서 `description` 제외(제목·카드제목·요약·키워드만). 회사 소개 보일러플레이트가 여러 분야를 나열해 다른 분야 글이 대거 섞이던 문제 해결. 추가로 오탐 큰 용어 정리 — door의 단독 "문"(전문/문의/방문·목공 공용키워드에 걸림)을 구체어로 교체, electric의 "등"(타일 等) 제거. 실측: door 897→173, electric 718→185건으로 감소(보일러플레이트 누수 제거, 실제 다분야 글만 잔존).
+
+Verification:
+- `npx tsc -b` 통과, `npm run build`(astro) 통과, esbuild로 api 함수 번들 성공(api→src import 해결 확인). 칩 매칭 개선은 실제 mode=all 1073글 데이터로 old/new 건수·예시 대조.
+
+Follow-up:
+- 분야 태깅은 회사 키워드가 다분야를 함께 달아(예: "목공_…,가벽,문") 완벽 분리는 한계. 추후 필요시 키워드 분야 prefix("필름_…","전기_…") 기반 매핑으로 더 정밀화 가능.
+
 ## 2026-06-17 - 블로그 스냅샷 502 확정 수정: 본문 ~1MB 한도 → imageCandidates 제거
 
 Changed files:

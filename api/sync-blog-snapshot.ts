@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { slimBlogSnapshotItems } from "../src/services/blogSnapshot.js";
 
 /**
  * 블로그 글을 받아 site_content(id="blog-snapshot")에 저장하는 동기화 엔드포인트.
@@ -49,28 +50,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return;
     }
 
-    // 한 행 jsonb로 저장하므로 payload를 슬림화한다. mode=all은 글이 많아(현재 1073개) 본문이
-    // Supabase 요청 본문 한도(~1MB)를 넘으면 게이트웨이가 본문을 잘라 PostgREST가
-    // PGRST102("Empty or invalid json", 400)를 낸다. 표시(BlogPortfolioService)에 쓰는 필드만
-    // 남기고, 가장 무거운 imageCandidates는 저장하지 않으며(폴백 표시는 image로 충분), description은
-    // 요약 길이로 자른다. 실측 약 0.79MB. (글이 더 늘면 항목 수 cap 필요.)
-    const DESC_MAX = 100;
-    const snapshotItems = (items as Array<Record<string, unknown>>).map((raw) => {
-      const item = raw ?? {};
-      const description = typeof item.description === "string" ? item.description : "";
-      const slim: Record<string, unknown> = {
-        title: item.title,
-        description: description.length > DESC_MAX ? description.slice(0, DESC_MAX) : description,
-        link: item.link
-      };
-      if (item.postdate) slim.postdate = item.postdate;
-      if (item.image) slim.image = item.image;
-      if (item.cardTitle) slim.cardTitle = item.cardTitle;
-      if (Array.isArray(item.summary)) slim.summary = item.summary;
-      if (Array.isArray(item.keywords)) slim.keywords = item.keywords;
-      if (typeof item.popularity === "number") slim.popularity = item.popularity;
-      return slim;
-    });
+    // 한 행 jsonb로 저장하므로 payload를 슬림화한다(Supabase 요청 본문 ~1MB 한도). 슬림 규칙은
+    // 관리자 수동 동기화와 공유: src/services/blogSnapshot.ts 의 slimBlogSnapshotItems.
+    const snapshotItems = slimBlogSnapshotItems(items);
 
     const upsert = await fetch(`${supabaseUrl}/rest/v1/site_content?on_conflict=id`, {
       method: "POST",
