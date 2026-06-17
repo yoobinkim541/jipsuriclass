@@ -7898,6 +7898,25 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   font-variant-numeric: tabular-nums;
 }
 
+/* 견적 항목: 가로 스크롤 테이블 대신 라벨 카드(자재비와 동일 패턴) —
+   모바일·태블릿·좁은 데스크탑 패널에서도 슬라이딩 없이 한 번에 모두 보인다. */
+.quote-editor__items {
+  display: grid;
+  gap: 10px;
+}
+.quote-editor__items-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* 항목 카드는 2단 그리드 안에서 단위|수량, 단가|금액이 짝을 이루도록 금액칸을 반칸으로 둔다
+   (자재비 카드의 금액칸은 전체폭이지만, 항목 카드에선 단가와 한 줄에 놓는다). */
+.quote-editor__item-card .quote-editor__charge-amount {
+  grid-column: auto;
+}
+
 .quote-field {
   background: var(--paper, #fff);
   border: 1px solid var(--hair, #e6dfd0);
