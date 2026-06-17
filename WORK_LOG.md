@@ -1,5 +1,21 @@
 # Work Log
 
+## 2026-06-17 - 블로그 스냅샷 502 확정 수정: 본문 ~1MB 한도 → imageCandidates 제거
+
+Changed files:
+- `api/sync-blog-snapshot.ts`
+
+Implemented behavior:
+- 앞선 슬림(PR #68, desc150+imageCandidates 1개)으로도 **여전히 400**이었음. 정확한 에러를 잡음: PostgREST **`PGRST102 "Empty or invalid json"`**. 원인은 **Supabase 요청 본문 한도(~1MB, 바이트 기준)** 초과 → 게이트웨이가 본문을 잘라 PostgREST가 깨진 JSON으로 인식해 400(413이 아님). PR #68 슬림 본문은 한글(UTF-8 3바이트) 때문에 실제 **1.09MB**라 아직 초과였음(문자 수로 재서 826KB로 오판했었음).
+- 검증: anon 키로 동일 형태 본문을 크기별로 프로브 — 787KB→401(권한단계 도달=한도/형식 통과), 1.14MB→400 PGRST102. 한도 ~1MB 확정.
+- 수정: 가장 무거운 `imageCandidates`를 스냅샷에 저장하지 않고(폴백 카드 이미지는 `image`로 충분), `DESC_MAX` 150→100. 실측 본문 **약 0.79MB**(787KB)로 한도 아래. 글 수(1073)·나머지 표시 필드·count 유지.
+
+Verification:
+- 배포 전 anon 프로브로 787KB 본문이 401(통과) 확인. 배포 후 수동 POST로 `{"ok":true,"count":1073}` + `site_content` blog-snapshot 행 생성 재확인 예정.
+
+Follow-up:
+- 글이 늘어 본문이 다시 ~1MB에 근접하면 **항목 수 cap**(예: 최근/인기 상위 N) 추가 필요. 현재 ~0.79MB라 여유 있음.
+
 ## 2026-06-17 - 블로그 스냅샷 502 진짜 원인: payload 크기 → 필드 슬림
 
 Changed files:
