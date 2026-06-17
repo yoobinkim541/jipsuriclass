@@ -49,6 +49,29 @@ export default async function handler(request: VercelRequest, response: VercelRe
       return;
     }
 
+    // 한 행 jsonb로 저장하므로 payload를 슬림화한다. 원본 mode=all은 글이 많아 수 MB가 되어
+    // Supabase 요청 본문 한도를 넘기면 upsert가 400으로 실패한다. 표시(BlogPortfolioService)에서
+    // 쓰는 필드만 남기고 description은 요약 길이로, imageCandidates는 1개로 줄인다.
+    const DESC_MAX = 150;
+    const snapshotItems = (items as Array<Record<string, unknown>>).map((raw) => {
+      const item = raw ?? {};
+      const description = typeof item.description === "string" ? item.description : "";
+      const candidates = Array.isArray(item.imageCandidates) ? item.imageCandidates.slice(0, 1) : undefined;
+      const slim: Record<string, unknown> = {
+        title: item.title,
+        description: description.length > DESC_MAX ? description.slice(0, DESC_MAX) : description,
+        link: item.link
+      };
+      if (item.postdate) slim.postdate = item.postdate;
+      if (item.image) slim.image = item.image;
+      if (candidates && candidates.length) slim.imageCandidates = candidates;
+      if (item.cardTitle) slim.cardTitle = item.cardTitle;
+      if (Array.isArray(item.summary)) slim.summary = item.summary;
+      if (Array.isArray(item.keywords)) slim.keywords = item.keywords;
+      if (typeof item.popularity === "number") slim.popularity = item.popularity;
+      return slim;
+    });
+
     const upsert = await fetch(`${supabaseUrl}/rest/v1/site_content?on_conflict=id`, {
       method: "POST",
       headers: {
@@ -59,7 +82,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
       },
       body: JSON.stringify({
         id: "blog-snapshot",
-        payload: { items, syncedAt: new Date().toISOString() }
+        payload: { items: snapshotItems, syncedAt: new Date().toISOString() }
       })
     });
 
