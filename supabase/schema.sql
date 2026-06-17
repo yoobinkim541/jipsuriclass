@@ -68,7 +68,7 @@ create table if not exists public.site_content (
   updated_at timestamptz not null default now()
 );
 
-comment on table public.site_content is '관리자 편집기에서 사용하는 홈페이지/랜딩/계정/견적/자기진단/개인정보처리방침 콘텐츠';
+comment on table public.site_content is '관리자 편집기에서 사용하는 홈페이지/랜딩/계정/견적/자기진단/개인정보처리방침/사이트설정 콘텐츠';
 alter table public.site_content enable row level security;
 grant select on public.site_content to anon, authenticated;
 grant insert, update, delete on public.site_content to authenticated;
@@ -95,7 +95,7 @@ create policy "Anyone can read site content"
   on public.site_content
   for select
   to anon, authenticated
-  using (id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis'));
+  using (id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings'));
 
 drop policy if exists "Admins can insert site content" on public.site_content;
 create policy "Admins can insert site content"
@@ -103,7 +103,7 @@ create policy "Admins can insert site content"
   for insert
   to authenticated
   with check (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
     and private.is_admin_user()
   );
 
@@ -113,11 +113,11 @@ create policy "Admins can update site content"
   for update
   to authenticated
   using (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
     and private.is_admin_user()
   )
   with check (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
     and private.is_admin_user()
   );
 
@@ -127,7 +127,7 @@ create policy "Admins can delete site content"
   for delete
   to authenticated
   using (
-    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis')
+    id in ('homepage', 'account', 'estimate', 'landing-pages', 'privacy', 'diagnosis', 'site-settings')
     and private.is_admin_user()
   );
 

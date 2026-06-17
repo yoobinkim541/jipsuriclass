@@ -1,4 +1,4 @@
-import { business, cases as defaultCases, navItems, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
+import { business, cases as defaultCases, defaultCertifications, navItems, pinnedPosts, process as defaultProcess, services as defaultServices, symptoms as defaultSymptoms } from "../data";
 import { images } from "../assets/images";
 import { defaultLandingPageContent, getLandingPageDefaultContent, landingPageDefinitions, mergeLandingPageContent, type LandingPageContent } from "../landingPages";
 import { defaultHomepageSectionOrder, normalizeSectionOrder } from "../contentSections";
@@ -11,6 +11,7 @@ import type {
   EstimatePageContent,
   EstimateSurveyStepContent,
   HomepageContent,
+  SiteSettingsContent,
   HomepageHeroProof,
   HomepageHeroTrustItem,
   PrivacyPageContent
@@ -27,7 +28,8 @@ const CONTENT_IDS = {
   estimate: "estimate",
   landingPages: "landing-pages",
   privacy: "privacy",
-  diagnosis: "diagnosis"
+  diagnosis: "diagnosis",
+  siteSettings: "site-settings"
 } as const;
 
 export type LandingPagesContent = Record<string, LandingPageContent>;
@@ -386,6 +388,20 @@ export const defaultDiagnosisPageContent: DiagnosisPageContent = {
   }))
 };
 
+export const defaultSiteSettingsContent: SiteSettingsContent = {
+  name: business.name,
+  owner: business.owner,
+  phone: business.phone,
+  address: business.address,
+  hours: business.hours,
+  area: business.area,
+  kakaoUrl: business.kakaoUrl,
+  naverBlogUrl: business.naverBlogUrl,
+  mapUrl: business.mapUrl,
+  registrationNumber: business.registrationNumber,
+  certifications: [...defaultCertifications]
+};
+
 export class SiteContentService {
   async loadHomepageContent(): Promise<HomepageContent> {
     return this.loadContent(CONTENT_IDS.homepage, defaultHomepageContent, mergeHomepageContent, isHomepageContent);
@@ -425,6 +441,14 @@ export class SiteContentService {
 
   async saveDiagnosisContent(content: DiagnosisPageContent) {
     await this.saveContent(CONTENT_IDS.diagnosis, content, isDiagnosisPageContent);
+  }
+
+  async loadSiteSettingsContent(): Promise<SiteSettingsContent> {
+    return this.loadContent(CONTENT_IDS.siteSettings, defaultSiteSettingsContent, mergeSiteSettingsContent, isSiteSettingsContent);
+  }
+
+  async saveSiteSettingsContent(content: SiteSettingsContent) {
+    await this.saveContent(CONTENT_IDS.siteSettings, content, isSiteSettingsContent);
   }
 
   async loadLandingPagesContent(): Promise<LandingPagesContent> {
@@ -868,6 +892,47 @@ function isDiagnosisPageContent(value: unknown): value is DiagnosisPageContent {
     isString(value.sections.answerDescription) &&
     Array.isArray(value.topics) &&
     value.topics.every(isDiagnosisTopicContent)
+  );
+}
+
+function mergeSiteSettingsContent(base: SiteSettingsContent, override: unknown): SiteSettingsContent {
+  if (!override || typeof override !== "object") {
+    return base;
+  }
+  const input = override as Partial<SiteSettingsContent>;
+  return {
+    name: isString(input.name) ? input.name : base.name,
+    owner: isString(input.owner) ? input.owner : base.owner,
+    phone: isString(input.phone) ? input.phone : base.phone,
+    address: isString(input.address) ? input.address : base.address,
+    hours: isString(input.hours) ? input.hours : base.hours,
+    area: isString(input.area) ? input.area : base.area,
+    kakaoUrl: isString(input.kakaoUrl) ? input.kakaoUrl : base.kakaoUrl,
+    naverBlogUrl: isString(input.naverBlogUrl) ? input.naverBlogUrl : base.naverBlogUrl,
+    mapUrl: isString(input.mapUrl) ? input.mapUrl : base.mapUrl,
+    registrationNumber: isString(input.registrationNumber) ? input.registrationNumber : base.registrationNumber,
+    certifications: isStringArray(input.certifications)
+      ? input.certifications.map((item) => item.trim()).filter(Boolean)
+      : base.certifications
+  };
+}
+
+function isSiteSettingsContent(value: unknown): value is SiteSettingsContent {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    isString(value.name) &&
+    isString(value.owner) &&
+    isString(value.phone) &&
+    isString(value.address) &&
+    isString(value.hours) &&
+    isString(value.area) &&
+    isString(value.kakaoUrl) &&
+    isString(value.naverBlogUrl) &&
+    isString(value.mapUrl) &&
+    isString(value.registrationNumber) &&
+    isStringArray(value.certifications)
   );
 }
 

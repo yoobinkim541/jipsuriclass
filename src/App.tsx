@@ -15,7 +15,7 @@ import {
   User,
   X
 } from "lucide-react";
-import { business, cases, navItems, pinnedPosts, process, services, symptoms, symptomCategories } from "./data";
+import { applySiteSettings, business, cases, navItems, pinnedPosts, process, services, symptoms, symptomCategories } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import { directionalParticle, stripDirectionalParticle } from "./lib/koreanParticle";
@@ -53,6 +53,8 @@ function Redirect({ to }: { to: string }) {
 
 function App() {
   const [landingPageOverrides, setLandingPageOverrides] = useState<LandingPagesContent>(defaultLandingPagesContent);
+  // 관리자 사이트 설정(영업 정보)을 business에 반영한 뒤 리렌더를 유발해 헤더·푸터·문의 등 전역에 적용.
+  const [, setSettingsVersion] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -61,6 +63,17 @@ function App() {
       if (!mounted) return;
       setLandingPageOverrides(content);
     });
+
+    void siteContentService
+      .loadSiteSettingsContent()
+      .then((settings) => {
+        if (!mounted) return;
+        applySiteSettings(settings);
+        setSettingsVersion((value) => value + 1);
+      })
+      .catch(() => {
+        /* 실패 시 기본 영업 정보 유지 */
+      });
 
     return () => {
       mounted = false;

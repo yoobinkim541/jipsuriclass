@@ -18,6 +18,22 @@ export type BusinessProfile = {
   mapUrl: string;
 };
 
+/** 관리자 '사이트 설정'에서 편집하는 영업 정보 + 대표 자격증 목록.
+ * 저장 시 site_content(id="site-settings")에 보관되고, 공개 SPA가 로드해 business에 덮어쓴다. */
+export type SiteSettingsContent = {
+  name: string;
+  owner: string;
+  phone: string;
+  address: string;
+  hours: string;
+  area: string;
+  kakaoUrl: string;
+  naverBlogUrl: string;
+  mapUrl: string;
+  registrationNumber: string;
+  certifications: string[];
+};
+
 export type NavItem = {
   label: string;
   href: string;
