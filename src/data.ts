@@ -76,6 +76,9 @@ export const business: BusinessProfile = {
   mapUrl: "https://naver.me/FRLt7TOJ"
 };
 
+/** 런타임 사이트 설정값(business 외). 공개 SPA가 로드 후 채우고, 컴포넌트가 읽는다. */
+export const liveSiteSettings: { certifications: string[] } = { certifications: [] };
+
 /** 대표 보유 국가공인 자격증(관리자 사이트 설정에서 편집 가능). */
 export const defaultCertifications: string[] = [
   "건축기능사",
@@ -86,6 +89,9 @@ export const defaultCertifications: string[] = [
   "방수기능사",
   "전산응용건축제도기능사"
 ];
+
+// 기본 자격증으로 런타임 값 초기화(사이트 설정 로드 전 표시용).
+liveSiteSettings.certifications = [...defaultCertifications];
 
 /**
  * 관리자에서 저장한 영업 정보를 런타임에 business 객체에 반영한다.

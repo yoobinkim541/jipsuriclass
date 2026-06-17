@@ -3117,3 +3117,29 @@ Verification:
 
 Follow-up:
 - None.
+
+## 2026-06-17 — 어드민 편집 범위 확장 + 견적/블로그/다크모드 개선
+
+Changed files (요약):
+- `src/admin/InquiryQuoteEditor.tsx`, `src/services/QuoteService.ts`, `apps-script/QuoteSheet.gs`, `api/create-quote-sheet.ts`, `api/check-quote-sheet.ts`
+- `src/admin/SiteContentEditor.tsx`, `src/admin/LandingPagesEditor.tsx`, `src/admin/DashboardPanels.tsx`, `src/admin/AdminPage.tsx`, `src/admin/admin.css`
+- `src/services/SiteContentService.ts`, `src/types.ts`, `src/data.ts`, `src/App.tsx`, `src/components/OfficeSection.tsx`
+- `src/privacy/PrivacyPolicyPage.tsx`, `src/diagnosis/DiagnosisPage.tsx`
+- `api/naver-blog.ts`, `api/naver-blog-source.ts`
+- `supabase/schema.sql`, `supabase/migrations/*`, `src/styles.css`, `README.md`
+
+Implemented behavior:
+- 견적 편집기: 자재비/부대비용·견적 항목을 라벨 카드(2단)로 재구성(가로 스크롤 제거), 공정 묶음 모던 드롭다운, 발행 문구 명확화('구글시트에 저장'), 시트는 최초 1회 생성 후 같은 시트 갱신(재진입해도 sheetUrl 보존), PDF/시트 분리.
+- 구글시트 API: 공유 `_quoteSheetUrl` import 인라인화로 서버리스 번들 500 제거 + 핸들러 전체 try로 JSON 오류화. Apps Script는 SECRET·TEMPLATE·DEST_FOLDER를 스크립트 속성에서 읽고, 미설정 시 명확한 오류.
+- 콘텐츠 편집기: 자기진단·개인정보처리방침 편집기 신설(site_content). 사이트 설정(영업정보+자격증) 편집 → 공개 SPA가 business에 적용해 전역 반영(자격증은 홈 '오시는 길'에 노출). 다크모드를 어드민과 동일 다크 테마로 통일 + color-scheme:dark로 폼 색 보정. 지역/작업 카드 '편집'이 해당 랜딩 페이지로 열림.
+- 편집 이력: content_audit에 저장 기록 + payload 스냅샷 → 변경 항목 표시 + 과거 시점 롤백.
+- 블로그: 모바일 post-list 파싱 견고화(필드/날짜/안티하이재킹/타임아웃), 관리자 썸네일 이미지 프록시, 지역 페이지 레퍼런스는 키워드 매칭 글만 + 여러 페이지 수집.
+
+Migrations (Supabase SQL Editor에서 각 1회 실행):
+- `20260616_site_content_privacy_diagnosis.sql`, `20260617_site_content_site_settings.sql`, `20260617_content_audit.sql`(payload 포함)
+
+Verification:
+- `tsc --noEmit` 통과, `astro build` 성공. PR #44~#64 단위로 분할 머지.
+
+Follow-up:
+- 정적 랜딩 페이지(/service·/area)의 헤더·푸터·오피스는 빌드 타임 정적이라 영업정보 변경은 재배포 시 반영(홈 SPA는 즉시). 필요 시 해당 섹션 client island화로 라이브 반영 가능.

@@ -15,7 +15,7 @@ import {
   User,
   X
 } from "lucide-react";
-import { applySiteSettings, business, cases, navItems, pinnedPosts, process, services, symptoms, symptomCategories } from "./data";
+import { applySiteSettings, business, cases, liveSiteSettings, navItems, pinnedPosts, process, services, symptoms, symptomCategories } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import { directionalParticle, stripDirectionalParticle } from "./lib/koreanParticle";
@@ -69,6 +69,7 @@ function App() {
       .then((settings) => {
         if (!mounted) return;
         applySiteSettings(settings);
+        liveSiteSettings.certifications = settings.certifications;
         setSettingsVersion((value) => value + 1);
       })
       .catch(() => {
@@ -271,7 +272,7 @@ function HomePage() {
                 />
               );
             case "location":
-              return <OfficeSection key={sectionId} />;
+              return <OfficeSection key={sectionId} certifications={liveSiteSettings.certifications} />;
             case "contact":
               return <ContactSection key={sectionId} content={homeContent.contact} />;
             case "process":
