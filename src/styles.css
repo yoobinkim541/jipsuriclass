@@ -3990,27 +3990,37 @@ main.home-page .cases .row-heading a {
 .symptom-categories {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 18px;
 }
 
 .symptom-cat-card {
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 18px 18px 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.symptom-cat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 34px -18px rgba(15, 23, 42, 0.3);
+  border-color: var(--gold);
 }
 
 .symptom-cat-label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 16px;
-  font-weight: 700;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--navy);
   text-decoration: none;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
 
 .symptom-cat-label:hover {
@@ -4018,7 +4028,29 @@ main.home-page .cases .row-heading a {
 }
 
 .symptom-cat-icon {
-  font-size: 18px;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  line-height: 1;
+  border-radius: 12px;
+  background: var(--cream-light, #fdf9f0);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.symptom-cat-label svg {
+  margin-left: auto;
+  color: var(--slate);
+  opacity: 0.5;
+  transition: transform 0.16s ease, color 0.16s ease, opacity 0.16s ease;
+}
+
+.symptom-cat-card:hover .symptom-cat-label svg {
+  color: var(--gold);
+  opacity: 1;
+  transform: translate(2px, -2px);
 }
 
 .symptom-chip-list {
@@ -4027,25 +4059,39 @@ main.home-page .cases .row-heading a {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
 
 .symptom-chip {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
   color: var(--slate);
   text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background: var(--cream-light, #fdf9f0);
+  padding: 9px 12px;
+  border-radius: 10px;
   border: 1px solid transparent;
   transition: background 0.13s, border-color 0.13s, color 0.13s;
 }
 
+.symptom-chip::after {
+  content: "→";
+  margin-left: auto;
+  font-size: 13px;
+  opacity: 0.35;
+  transition: transform 0.13s ease, opacity 0.13s ease;
+}
+
 .symptom-chip:hover {
-  background: #fffbec;
+  background: var(--cream-light, #fdf9f0);
   border-color: var(--gold);
   color: var(--navy);
+}
+
+.symptom-chip:hover::after {
+  opacity: 1;
+  transform: translateX(3px);
 }
 
 /* ── 모바일·태블릿 1단: 카테고리 칩만 (데스크탑에서는 숨김) ── */
@@ -4064,17 +4110,18 @@ main.home-page .cases .row-heading a {
 .symptom-grid a {
   align-items: center;
   background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
   display: flex;
   font-size: 15px;
   font-weight: 700;
   justify-content: space-between;
-  min-height: 64px;
-  padding: 16px 18px;
+  min-height: 60px;
+  padding: 14px 16px;
   color: var(--navy);
   text-decoration: none;
-  transition: background 0.13s, border-color 0.13s;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: background 0.13s, border-color 0.13s, transform 0.13s, box-shadow 0.13s;
 }
 
 .symptom-grid-item:hover,
@@ -13865,6 +13912,11 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .specs__item.selected::after {
     color: var(--gold-500, #f2c879);
   }
+
+  /* 간편 자가진단 카드: 라벨 텍스트(navy)는 다크에서 묻히므로 밝게, 아이콘 타일은 패널톤으로.
+     (라벨 구분선·아이콘 링은 var(--border)가 다크에서 하어라인으로 자동 전환됨) */
+  .symptom-cat-label { color: var(--ink, #f8fafc); }
+  .symptom-cat-icon { background: var(--panel-strong, #1f2937); }
 }
 
 /* ── 다크/라이트 테마 토글 버튼 ──

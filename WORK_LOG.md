@@ -1,5 +1,21 @@
 # Work Log
 
+## 2026-06-17 - 메인 간편 자가진단(#symptoms) UI 리프레시 (CSS only)
+
+Changed files:
+- `src/styles.css`
+
+Implemented behavior:
+- 메인 페이지 `SymptomsSection`(#symptoms)을 더 깔끔·모던·직관적으로. JSX 변경 없이 CSS만 손봄.
+  - 카테고리 카드: radius 16px, 부드러운 그림자 + 호버 리프트(translateY/그림자/골드 보더).
+  - 이모지를 38px 라운드 "아이콘 타일"(틴트 배경 + 하어라인 링)로 → 스캔성↑. 카드 헤더 아래 구분선 추가.
+  - 증상 칩: 풀폭 행 + 우측 "→" 셰브론(평소 옅게, 호버 시 골드로 슬라이드) → 클릭 가능함이 직관적. 호버 시 크림 틴트 배경.
+  - 모바일 카테고리 그리드도 radius/그림자로 톤 통일.
+- 다크모드: 라벨 텍스트가 navy라 묻히던 것 → --ink로, 아이콘 타일은 --panel-strong로 오버라이드. 구분선·링은 var(--border)가 다크에서 하어라인으로 자동 전환.
+
+Verification:
+- `npm run build`(astro) 통과. Playwright로 #symptoms 섹션 실제 렌더 캡처(라이트/다크/모바일) 육안 확인 — 카드·아이콘 타일·구분선·셰브론·다크 대비 모두 정상.
+
 ## 2026-06-17 - 스냅샷 슬림 공용화(관리자 버튼 수정) + 현장사례 분야 필터 정밀화
 
 Changed files:
