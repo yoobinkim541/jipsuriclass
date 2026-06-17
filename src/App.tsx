@@ -15,7 +15,7 @@ import {
   User,
   X
 } from "lucide-react";
-import { applySiteSettings, business, cases, liveSiteSettings, navItems, pinnedPosts, process, services, symptoms, symptomCategories } from "./data";
+import { applySiteSettings, business, cases, liveSiteSettings, navItems, pinnedPosts, process, services, symptomCategories } from "./data";
 import { BlogPortfolioService } from "./services/BlogPortfolioService";
 import { SiteContentService, defaultHomepageContent } from "./services/SiteContentService";
 import { directionalParticle, stripDirectionalParticle } from "./lib/koreanParticle";
@@ -273,7 +273,7 @@ function HomePage() {
             case "about":
               return <AboutSection key={sectionId} content={homeContent.about} cases={homeContent.cases} />;
             case "symptoms":
-              return <SymptomsSection key={sectionId} symptoms={homeContent.symptoms ?? symptoms} categories={symptomCategories} />;
+              return <SymptomsSection key={sectionId} categories={symptomCategories} />;
             case "services":
               return <ServicesSection key={sectionId} services={homeContent.services} />;
             case "specialties":
@@ -671,53 +671,80 @@ function AboutSection({
 }
 
 /** 증상 기반 진입 영역: 고객이 전문 공종명을 몰라도 문의할 수 있게 돕습니다. */
-function SymptomsSection({ symptoms, categories }: { symptoms: string[]; categories: typeof symptomCategories }) {
+function SymptomsSection({ categories }: { categories: typeof symptomCategories }) {
   return (
     <section className="symptoms section" id="symptoms" aria-labelledby="symptoms-title">
       <RowHeading
         id="symptoms-title"
-        title="고객이 말하는 증상부터 간편 자가진단을 시작합니다"
-        description="전문 용어를 몰라도 괜찮습니다. 지금 보이는 문제를 클릭하면 바로 원인과 다음 행동이 나옵니다."
+        title="집의 아픈 곳을 눌러 바로 진단하세요"
+        description="전문 용어를 몰라도 괜찮습니다. 불편한 공간을 누르면 증상과 원인·다음 행동이 바로 나옵니다."
         linkLabel="자가진단 페이지로 이동"
         href="/diagnosis"
       />
-
-      {/* 데스크탑: 2단 — 카테고리 + 세부 증상 칩 */}
-      <div className="symptom-categories">
-        {categories.map((cat) => (
-          <div className="symptom-cat-card" key={cat.id}>
-            <a className="symptom-cat-label" href={`/diagnosis?category=${cat.id}`}>
-              <span className="symptom-cat-icon">{cat.icon}</span>
-              {cat.label}
-              <ArrowUpRight size={14} />
-            </a>
-            <ul className="symptom-chip-list">
-              {cat.symptoms.map((s) => (
-                <li key={s.id}>
-                  <a className="symptom-chip" href={`/diagnosis?issue=${s.id}`}>
-                    {s.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      {/* 모바일·태블릿: 1단 — 카테고리 칩만 */}
-      <div className="symptom-grid--mobile">
-        {categories.map((cat) => (
-          <a
-            className="symptom-grid-item"
-            href={`/diagnosis?category=${cat.id}`}
-            key={cat.id}
-          >
-            <span>{cat.icon} {cat.label}</span>
-            <ArrowUpRight size={18} />
-          </a>
-        ))}
-      </div>
+      <DiagnosisHouse categories={categories} />
     </section>
+  );
+}
+
+/**
+ * 인터랙티브 집 단면도 자가진단.
+ * 지붕(누수)·2x2 방(욕실·주방·문·전기)·바닥(벽·바닥·천장) 6개 공간을 누르면
+ * 우측 패널에 해당 공간의 증상이 나오고, 각 증상은 /diagnosis로 연결된다.
+ */
+function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }) {
+  const [activeId, setActiveId] = useState(categories.find((category) => category.id === "bathroom")?.id ?? categories[0]?.id ?? "");
+  const panelRef = useRef<HTMLDivElement>(null);
+  const active = categories.find((category) => category.id === activeId) ?? categories[0];
+
+  const select = (id: string) => {
+    setActiveId(id);
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches) {
+      requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
+    }
+  };
+
+  return (
+    <div className="diaghouse">
+      <div className="diaghouse__stage">
+        <div className="diaghouse__map" role="group" aria-label="집 단면도에서 불편한 곳을 선택하세요">
+          {categories.map((cat) => (
+            <button
+              type="button"
+              key={cat.id}
+              data-cat={cat.id}
+              className={`diaghouse__zone diaghouse__zone--${cat.id}${cat.id === active?.id ? " is-active" : ""}`}
+              aria-pressed={cat.id === active?.id}
+              onClick={() => select(cat.id)}
+              onFocus={() => setActiveId(cat.id)}
+            >
+              <span className="diaghouse__emoji" aria-hidden="true">{cat.icon}</span>
+              <span className="diaghouse__zlabel">{cat.label}</span>
+            </button>
+          ))}
+        </div>
+        <p className="diaghouse__hint">공간을 누르면 자주 나타나는 증상이 표시됩니다</p>
+      </div>
+
+      <div className="diaghouse__panel" data-cat={active?.id} ref={panelRef} aria-live="polite">
+        <div className="diaghouse__panel-head">
+          <span className="diaghouse__emoji" aria-hidden="true">{active?.icon}</span>
+          <span className="diaghouse__panel-title">
+            <strong>{active?.label}</strong>
+            <span>이런 증상이 있으신가요?</span>
+          </span>
+        </div>
+        <ul className="diaghouse__symptoms">
+          {active?.symptoms.map((s) => (
+            <li key={s.id}>
+              <a href={`/diagnosis?issue=${s.id}`}>{s.text}</a>
+            </li>
+          ))}
+        </ul>
+        <a className="diaghouse__all" href={`/diagnosis?category=${active?.id}`}>
+          {active?.label} 전체 자가진단 보기 →
+        </a>
+      </div>
+    </div>
   );
 }
 

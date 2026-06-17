@@ -1,5 +1,26 @@
 # Work Log
 
+## 2026-06-17 - Diagnosis House UI Pull-In
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Pulled the remote `feat/diagnosis-house` direction into the home-page symptoms section.
+- Replaced the flat symptom cards with an interactive house cutaway that highlights one space at a time and links each symptom into `/diagnosis`.
+- Updated the section copy to the clearer version from the remote branch.
+
+Verification:
+- `npm install` completed after the git pull refreshed the lockfile and Astro dependencies.
+- `npm run build` passed.
+- Browser-checked the home page at desktop and mobile sizes.
+- Captured and inspected the updated symptoms section at desktop and mobile viewports.
+
+Follow-up:
+- None.
+
 ## 2026-06-17 - 스냅샷 슬림 공용화(관리자 버튼 수정) + 현장사례 분야 필터 정밀화
 
 Changed files:
