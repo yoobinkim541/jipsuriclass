@@ -29,8 +29,8 @@
   --hair-2: #d8d0bd;
   --success: #2f7a4d;
 
-  --f-display: "Inter", "Noto Sans KR", system-ui, -apple-system, sans-serif;
-  --f-sans: "Noto Sans KR", "Inter", system-ui, -apple-system, sans-serif;
+  --f-display: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --f-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
   --fs-xs: clamp(12px, 0.7vw + 9px, 13px);

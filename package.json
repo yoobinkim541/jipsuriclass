@@ -13,9 +13,7 @@
     "test:blog": "playwright test"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
-    "@fontsource/noto-sans-kr": "^5.2.9",
     "@supabase/supabase-js": "^2.106.1",
     "@vercel/analytics": "^2.0.1",
     "@vercel/node": "^5.5.17",
@@ -24,6 +22,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.16.0",
+    "pretendard": "^1.3.9",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "typescript": "^6.0.3",

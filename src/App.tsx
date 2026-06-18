@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useStat
 import {
   ArrowUpRight,
   Calculator,
+  Camera,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -494,19 +495,35 @@ function HeroSection({
 
   const proofs = content.proofs.length > 0 ? content.proofs : defaultHomepageContent.hero.proofs;
   const trustItems = content.trust.length > 0 ? content.trust : defaultHomepageContent.hero.trust;
-  // 모바일 히어로 배경: 데스크톱에서 숨던 시공 사진(자동 회전하는 메인 카드)을 풀블리드로 깐다.
+  // 모바일 히어로 배경: 올리모델링 3D 목업 5장을 풀블리드로 깔고 4초마다 회전.
+  // (파일 미투입 시 기존 시공 사진으로 폴백 → onError)
+  const heroMobileBackdrops = [
+    "/hero/bedroom.webp",
+    "/hero/bathroom.webp",
+    "/hero/hallway.webp",
+    "/hero/kitchen.webp",
+    "/hero/living.webp"
+  ];
   const heroBackdrop = cardSlots.find((slot) => slot.role === "main")?.img ?? caseImages[0];
+  const heroMobileBg = heroMobileBackdrops[mainCardIndex % heroMobileBackdrops.length];
   // 회전 단어에 방향 조사(으로/로)가 붙어 있으면 떼어내 골드 강조에서 제외하고,
   // 조사는 흰색 서술부(.hero__rotator-suffix)로 따로 렌더한다.
   const heroRotatorWord = stripDirectionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length]);
 
   return (
     <section className="hero" id="hero">
-      {heroBackdrop ? (
-        <div className="hero__mobile-bg" aria-hidden="true">
-          <img src={heroBackdrop.image} alt="" />
-        </div>
-      ) : null}
+      <div className="hero__mobile-bg" aria-hidden="true">
+        <img
+          src={heroMobileBg}
+          alt=""
+          onError={(e) => {
+            const t = e.currentTarget;
+            if (t.dataset.fb || !heroBackdrop) return;
+            t.dataset.fb = "1";
+            t.src = heroBackdrop.image;
+          }}
+        />
+      </div>
       <div className="hero__grid">
         {/* Left column */}
         <div>
@@ -1366,9 +1383,10 @@ function buildSummaryLines(description: string) {
 const processIllustrations = [
   "/assets/consult-hero.png",
   "/assets/cases/bathroom-leak.png",
-  "/assets/cases/kitchen-repair.png",
   "/assets/cases/wall-repair.png",
-  "/assets/process-completion.png"
+  "/assets/process-completion.png",
+  "/assets/cases/kitchen-repair.png",
+  "/assets/consult-hero.png"
 ];
 
 /** 작업 절차 영역: 클릭 가능한 스텝 트랙 + 상세 패널 */
@@ -1376,20 +1394,29 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
   const [activeStep, setActiveStep] = useState(0);
   const activeData = process[activeStep];
   const activeContent = steps[activeStep];
+  // 단계 전환이 빠릿하게 — 모든 단계 사진을 마운트 시 미리 캐시에 올린다.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    process.forEach((step) => {
+      if (!step.image) return;
+      const img = new Image();
+      img.src = step.image;
+    });
+  }, []);
   const processSignals = [
     {
       label: "사진 우선",
-      text: "방문 전에 사진으로 범위를 먼저 좁힙니다.",
-      icon: MessageCircle
+      text: "방문 전 사진으로 범위를 먼저 파악해요.",
+      icon: Camera
     },
     {
       label: "대표 직접 확인",
-      text: "대표가 현장을 직접 보고 필요한 작업만 고릅니다.",
+      text: "대표가 현장을 직접 확인해 정확하게 진단해요.",
       icon: User
     },
     {
       label: "투명 안내",
-      text: "비용·범위·일정을 한 번에 정리해 안내합니다.",
+      text: "비용·범위·일정을 한 번에 정리해 안내드려요.",
       icon: Phone
     }
   ];
@@ -1397,11 +1424,11 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
     <section className="process" id="process" aria-labelledby="process-title">
       <div className="process__shell">
         <div className="process__intro">
-          <SectionHeading
-            id="process-title"
-            title="작업 절차"
-            description="불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다."
-          />
+          <div className="process__heading">
+            <span className="process__overline">작업 절차</span>
+            <h2 id="process-title">믿을 수 있는 진단의 시작</h2>
+            <p>불필요한 공사를 막고, 꼭 필요한 부분만 정확하게 안내해드립니다.</p>
+          </div>
           <div className="process__signal-grid">
             {processSignals.map((signal) => {
               const SignalIcon = signal.icon;
@@ -1419,6 +1446,17 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
               );
             })}
           </div>
+          <img
+            className="process__blueprint"
+            src="/process/house.webp"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
         </div>
 
         <div className="process__content">
@@ -1441,6 +1479,14 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                         src={steps[index]?.image || processIllustrations[index]}
                         alt={steps[index]?.title ?? step.title}
                         className="process__step-photo"
+                        loading="eager"
+                        decoding="async"
+                        onError={(e) => {
+                          const t = e.currentTarget;
+                          if (t.dataset.fb) return;
+                          t.dataset.fb = "1";
+                          t.src = processIllustrations[index] ?? processIllustrations[0];
+                        }}
                       />
                     </div>
                     <div className="process__inline-text">
@@ -1462,11 +1508,19 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                       src={steps[activeStep]?.image || processIllustrations[activeStep]}
                       alt={activeContent?.title ?? activeData.title}
                       className="process__step-photo"
+                      loading="eager"
+                      decoding="async"
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        if (t.dataset.fb) return;
+                        t.dataset.fb = "1";
+                        t.src = processIllustrations[activeStep] ?? processIllustrations[0];
+                      }}
                     />
                   </div>
                 </div>
                 <div className="process__detail-copy">
-                  <div className="process__detail-kicker">0{activeStep + 1} / 05</div>
+                  <div className="process__detail-kicker">0{activeStep + 1} / 0{process.length}</div>
                   <h3>{activeContent?.title ?? activeData.title}</h3>
                   <p>{activeContent?.text ?? activeData.text}</p>
                   <div className="process__detail-points">
@@ -1475,8 +1529,11 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
 
                       return (
                         <div className="process__detail-point" key={signal.label}>
-                          <SignalIcon size={16} />
-                          <span>{signal.label}</span>
+                          <span className="process__detail-point-badge" aria-hidden="true">
+                            <SignalIcon size={16} />
+                          </span>
+                          <span className="process__detail-point-label">{signal.label}</span>
+                          <ChevronRight className="process__detail-point-arrow" size={16} aria-hidden="true" />
                         </div>
                       );
                     })}

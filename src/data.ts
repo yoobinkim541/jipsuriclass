@@ -1,9 +1,11 @@
 import {
   Bath,
-  Bolt,
   Building2,
+  Camera,
+  ClipboardList,
   Droplets,
   Hammer,
+  Headphones,
   Home,
   LampCeiling,
   Layers,
@@ -20,7 +22,6 @@ import type {
   ServiceCategory,
   WorkProcessStep
 } from "./types";
-import { images } from "./assets/images";
 
 /**
  * 운영 정보 편집 구역
@@ -335,9 +336,10 @@ export const pinnedPosts: PortfolioPost[] = [
 ];
 
 export const process: WorkProcessStep[] = [
-  { title: "사진 상담", text: "증상과 현장 사진을 먼저 확인합니다.", icon: Hammer, image: images.process.consultation },
-  { title: "증상 확인", text: "누수, 파손, 오염 등 원인을 좁힙니다.", icon: ShieldCheck, image: images.process.leakCheck },
-  { title: "현장 방문", text: "필요 시 방문해 범위와 자재를 확인합니다.", icon: Home, image: images.process.wallRepair },
-  { title: "견적 안내", text: "작업 범위와 비용을 투명하게 안내합니다.", icon: Ruler, image: images.process.completion },
-  { title: "시공·확인", text: "마감 상태와 재발 가능성을 함께 점검합니다.", icon: Bolt, image: images.process.plumbing }
+  { title: "사진 상담", text: "증상과 현장 사진을 먼저 확인합니다.", icon: Camera, image: "/process/step1.webp" },
+  { title: "증상 확인", text: "전문가가 사진과 내용을 바탕으로 증상을 정확히 진단합니다.", icon: ShieldCheck, image: "/process/step2.webp" },
+  { title: "현장 방문", text: "필요 시 전문가가 직접 현장을 방문하여 정확한 상태를 확인합니다.", icon: Home, image: "/process/step3.webp" },
+  { title: "견적 안내", text: "진단 내용을 바탕으로 투명하고 정확한 견적을 안내해 드립니다.", icon: ClipboardList, image: "/process/step4.webp" },
+  { title: "시공·확인", text: "전문 시공팀이 안전하고 꼼꼼하게 시공하며, 완료 후 고객과 함께 최종 확인합니다.", icon: Wrench, image: "/process/step5.webp" },
+  { title: "사후 관리", text: "시공 후에도 지속적인 관리와 사후 서비스를 제공합니다.", icon: Headphones, image: "/process/step6.webp" }
 ];
