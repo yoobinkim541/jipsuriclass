@@ -2517,21 +2517,19 @@ textarea {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 1px 2px rgba(8, 22, 40, 0.04), 0 14px 34px rgba(8, 22, 40, 0.05);
-  transition: transform 280ms cubic-bezier(.16,1,.3,1), box-shadow 280ms, border-color 280ms;
+  /* 플랫: 그림자 없이 테두리만 */
+  box-shadow: none;
+  transition: border-color 220ms ease, background 220ms ease;
   text-decoration: none;
   color: inherit;
 }
 
 .cases__card.is-active {
-  border-color: rgba(16, 40, 74, 0.28);
-  box-shadow: 0 10px 24px rgba(8, 22, 40, 0.1), 0 26px 70px rgba(8, 22, 40, 0.12);
-  transform: translateY(-2px) scale(1.01);
+  border-color: rgba(16, 40, 74, 0.4);
 }
 
 .cases__card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 18px rgba(8,22,40,.06), 0 22px 60px rgba(8,22,40,.08);
+  border-color: rgba(16, 40, 74, 0.4);
 }
 
 .cases__media {
@@ -2646,40 +2644,79 @@ textarea {
   margin: clamp(20px, 3vw, 32px) clamp(18px, 5vw, 64px) 0;
   text-align: center;
 }
+/* 눈에 띄게: 양옆 짧은 라인 + 골드 강조 라벨 */
 .cases__quicklinks-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--ink-3, #5b6781);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ink-2, #2a3a55);
+}
+.cases__quicklinks-label::before,
+.cases__quicklinks-label::after {
+  content: "";
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-500, #d7ae6b));
+}
+.cases__quicklinks-label::after {
+  background: linear-gradient(90deg, var(--gold-500, #d7ae6b), transparent);
 }
 .cases__quicklinks-row {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 .cases__quicklink {
   display: inline-flex;
   align-items: center;
-  padding: 9px 18px;
+  gap: 8px;
+  padding: 11px 18px;
   border-radius: 999px;
-  border: 1px solid var(--hair, #e6dfd0);
+  border: 1px solid rgba(16, 40, 74, 0.14);
   background: var(--panel, #ffffff);
   font-size: 14px;
-  font-weight: 600;
-  color: var(--ink-2, #2a3a55);
+  font-weight: 700;
+  color: var(--ink, #0b1a30);
   text-decoration: none;
-  transition: all 180ms;
+  transition: transform 180ms ease, border-color 180ms, background 180ms, color 180ms, box-shadow 180ms;
+}
+.cases__quicklink svg {
+  flex: 0 0 auto;
+  color: var(--gold-600, #c9a063);
+  transition: color 180ms, transform 220ms cubic-bezier(.16,1,.3,1);
 }
 .cases__quicklink:hover {
+  transform: translateY(-2px);
   border-color: var(--navy-700, #10284a);
   background: var(--navy-700, #10284a);
   color: #ffffff;
+  box-shadow: 0 8px 20px rgba(8, 22, 40, 0.16);
 }
+.cases__quicklink:hover svg {
+  color: var(--gold-500, #f2c879);
+}
+/* 전체 보기: 골드 채움 CTA로 강조 */
 .cases__quicklink--all {
-  border-color: var(--navy-700, #10284a);
-  color: var(--navy-700, #10284a);
-  font-weight: 700;
+  background: linear-gradient(180deg, #f2c879 0%, #d7ae6b 100%);
+  border-color: var(--gold-500, #d7ae6b);
+  color: #0b1220;
+  font-weight: 800;
+}
+.cases__quicklink--all svg {
+  color: #0b1220;
+}
+.cases__quicklink--all:hover {
+  background: linear-gradient(180deg, #f6d690 0%, #e2bd76 100%);
+  border-color: var(--gold-500, #f2c879);
+  color: #0b1220;
+}
+.cases__quicklink--all:hover svg {
+  color: #0b1220;
+  transform: translateX(3px);
 }
 
 .cases__carousel-button {

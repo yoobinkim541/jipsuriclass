@@ -1,14 +1,20 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import {
+  ArrowRight,
   ArrowUpRight,
+  Bath,
   Calculator,
   Camera,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  CookingPot,
+  DoorOpen,
+  Droplets,
   ExternalLink,
   Menu,
   MessageCircle,
+  PaintRoller,
   Phone,
   ReceiptText,
   RefreshCw,
@@ -1180,12 +1186,12 @@ function CasesSection({
       <div className="cases__quicklinks" aria-label="분야별 현장사례 바로가기">
         <span className="cases__quicklinks-label">분야별로 바로 찾기</span>
         <div className="cases__quicklinks-row">
-          <a className="cases__quicklink" href="/portfolio?cat=bath">욕실</a>
-          <a className="cases__quicklink" href="/portfolio?cat=leak">누수·방수</a>
-          <a className="cases__quicklink" href="/portfolio?cat=kitchen">주방</a>
-          <a className="cases__quicklink" href="/portfolio?cat=wall">도배·도장</a>
-          <a className="cases__quicklink" href="/portfolio?cat=door">문·창호</a>
-          <a className="cases__quicklink cases__quicklink--all" href="/portfolio">전체 보기 →</a>
+          <a className="cases__quicklink" href="/portfolio?cat=bath"><Bath size={18} aria-hidden="true" />욕실</a>
+          <a className="cases__quicklink" href="/portfolio?cat=leak"><Droplets size={18} aria-hidden="true" />누수·방수</a>
+          <a className="cases__quicklink" href="/portfolio?cat=kitchen"><CookingPot size={18} aria-hidden="true" />주방</a>
+          <a className="cases__quicklink" href="/portfolio?cat=wall"><PaintRoller size={18} aria-hidden="true" />도배·도장</a>
+          <a className="cases__quicklink" href="/portfolio?cat=door"><DoorOpen size={18} aria-hidden="true" />문·창호</a>
+          <a className="cases__quicklink cases__quicklink--all" href="/portfolio">전체 보기 <ArrowRight size={16} aria-hidden="true" /></a>
         </div>
       </div>
     </section>
