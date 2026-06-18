@@ -905,6 +905,9 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // 모바일: 칩 목록이 길어 기본 접고, 더 보기로 펼친다(데스크탑은 CSS로 항상 전체)
+  const [worksExpanded, setWorksExpanded] = useState(false);
+  const WORKS_COLLAPSE_LIMIT = 10;
 
   const filteredItems = useMemo(() => {
     return specialties.filter((item) => {
@@ -959,7 +962,7 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
           />
         </div>
       </div>
-      <div className="specs__grid">
+      <div className={`specs__grid${worksExpanded ? "" : " specs__grid--collapsed"}`}>
         {filteredItems.map((item) => (
           <button
             key={item}
@@ -971,6 +974,19 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
           </button>
         ))}
       </div>
+      {filteredItems.length > WORKS_COLLAPSE_LIMIT && (
+        <button
+          type="button"
+          className="specs__more"
+          onClick={() => setWorksExpanded((v) => !v)}
+          aria-expanded={worksExpanded}
+        >
+          {worksExpanded
+            ? "접기"
+            : `작업 더 보기 +${filteredItems.length - WORKS_COLLAPSE_LIMIT}`}
+          <ChevronRight size={16} className="specs__more-icon" aria-hidden="true" />
+        </button>
+      )}
       {selected.size > 0 && (
         <div className="specs__cta">
           <div className="specs__cta-inner">

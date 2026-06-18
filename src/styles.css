@@ -2413,6 +2413,40 @@ textarea {
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
 }
 
+/* '더 보기' 버튼: 데스크탑에선 숨김(모바일 전용) */
+.specs__more {
+  display: none;
+}
+
+/* 모바일: 칩 목록이 길어 기본 10개만 보이고 나머지는 접음 */
+@media (max-width: 720px) {
+  .specs__grid--collapsed .specs__item:nth-child(n + 11) {
+    display: none;
+  }
+  .specs__more {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    margin: 14px auto 0;
+    padding: 11px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--hair, #e6dfd0);
+    background: var(--panel, #ffffff);
+    color: var(--ink, #0b1a30);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .specs__more-icon {
+    transition: transform 200ms ease;
+    transform: rotate(90deg);
+  }
+  .specs__more[aria-expanded="true"] .specs__more-icon {
+    transform: rotate(-90deg);
+  }
+}
+
 .specs__item {
   padding: 12px 14px;
   background: #ffffff;
