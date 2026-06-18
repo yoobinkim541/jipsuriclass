@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Menu, User, X } from "lucide-react";
+import { Calculator, Menu, User, X } from "lucide-react";
 import { business, navItems } from "../../data";
 
 /**
@@ -132,6 +132,10 @@ export function SiteHeaderIsland({ brandHref = "/" }: { brandHref?: string }) {
                 {item.label}
               </a>
             ))}
+            <a href="/calculator" onClick={closeMenu} className="mobile-menu__calc">
+              <Calculator size={16} />
+              전체 서비스 모의계산
+            </a>
             <a href="/login" onClick={closeMenu}>
               마이페이지
             </a>

@@ -25,7 +25,7 @@ export function MobileQuickCta() {
         <Phone size={19} />
         전화
       </a>
-      <a href={business.kakaoUrl} target="_blank" rel="noreferrer">
+      <a className="mobile-cta__kakao" href={business.kakaoUrl} target="_blank" rel="noreferrer">
         <MessageCircle size={19} />
         카카오톡
       </a>

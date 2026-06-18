@@ -14562,3 +14562,335 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     gap: 10px;
   }
 }
+
+/* ============================================================
+   모바일 하단 CTA 카카오 버튼 노랑 + 히어로 CTA 반응형 + 모의계산 페이지
+   ============================================================ */
+
+/* 하단 고정 CTA: 카카오톡 버튼을 카카오 옐로로 (전화는 기존 네이비 유지) */
+.mobile-cta a.mobile-cta__kakao {
+  background: #fee500;
+  color: #181600;
+}
+
+/* 히어로 CTA: 모바일은 하단 고정바에 전화·카톡이 있어 중복 → 숨기고 '모의 견적 계산' 노출 */
+.hero__cta .hero-cta--mob { display: none; }
+@media (max-width: 720px) {
+  .hero__cta .hero-cta--desk { display: none; }
+  .hero__cta .hero-cta--mob { display: inline-flex; }
+}
+
+/* 사이드바(모바일 메뉴) 모의계산 링크 */
+.mobile-menu__calc { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ───── 전체 서비스 모의계산 페이지 ───── */
+.calc-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 48px) clamp(16px, 5vw, 32px) 220px;
+}
+.calc-page__head { margin-bottom: clamp(20px, 4vw, 32px); }
+.calc-page__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--gold-600, #c9a063);
+  text-transform: uppercase;
+}
+.calc-page__head h1 {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(22px, 4vw, 34px);
+  letter-spacing: -0.03em;
+  margin: 8px 0 10px;
+  color: var(--ink, #0b1a30);
+}
+.calc-page__head p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--ink-2, #2a3a55); }
+
+.calc-services { display: flex; flex-direction: column; gap: 12px; }
+.calc-service {
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 14px;
+  background: var(--panel, #fff);
+  overflow: hidden;
+}
+.calc-service__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink, #0b1a30);
+}
+.calc-service__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(16px, 2vw, 19px);
+}
+.calc-service__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--gold-500, #d7ae6b);
+  color: #1a1206;
+  font-size: 12px;
+  font-weight: 800;
+  font-style: normal;
+}
+.calc-chevron { color: var(--ink-3, #5b6781); transition: transform 0.2s ease; }
+.calc-chevron--open { transform: rotate(180deg); }
+
+.calc-service__body { padding: 0 18px 16px; }
+.calc-cat { margin-top: 14px; }
+.calc-cat__title { margin: 0 0 8px; font-size: 13px; font-weight: 800; color: var(--ink-3, #5b6781); }
+.calc-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.calc-item {
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 10px;
+  background: var(--cream, #faf7f2);
+  overflow: hidden;
+}
+.calc-item--on { border-color: var(--gold-500, #d7ae6b); background: rgba(215, 174, 107, 0.1); }
+.calc-item__main {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  color: var(--ink, #0b1a30);
+}
+.calc-item__check {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--hair, #cdd5e0);
+  background: var(--paper, #fff);
+  position: relative;
+}
+.calc-item--on .calc-item__check { border-color: var(--gold-500, #d7ae6b); background: var(--gold-500, #d7ae6b); }
+.calc-item--on .calc-item__check::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 6px;
+  height: 11px;
+  border: solid #1a1206;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.calc-item__name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; }
+.calc-item__unit { margin-left: 6px; font-size: 12px; font-weight: 500; color: var(--ink-4, #94a0b8); }
+.calc-item__material {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #3b5bdb;
+  background: #eef2ff;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.calc-item__price { flex-shrink: 0; font-size: 13px; font-weight: 700; color: var(--navy-700, #10284a); white-space: nowrap; }
+.calc-qty {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 13px 11px;
+}
+.calc-qty button {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--hair, #cdd5e0);
+  border-radius: 8px;
+  background: var(--paper, #fff);
+  color: var(--ink, #0b1a30);
+  cursor: pointer;
+}
+.calc-qty span { min-width: 20px; text-align: center; font-weight: 800; font-size: 14px; }
+.calc-spacer { height: 8px; }
+
+/* 합계 요약(고정) */
+.calc-summary {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 24;
+  background: var(--paper, #fff);
+  border-top: 1px solid var(--hair, #e6dfd0);
+  box-shadow: 0 -6px 20px rgba(11, 26, 48, 0.08);
+  padding: 12px clamp(14px, 5vw, 24px) calc(12px + env(safe-area-inset-bottom));
+}
+@media (max-width: 720px) {
+  /* 하단 전화·카톡 고정바 위로 올림 */
+  .calc-summary { bottom: calc(64px + env(safe-area-inset-bottom)); padding-bottom: 12px; }
+}
+.calc-summary__row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.calc-summary__label { font-size: 13px; color: var(--ink-3, #5b6781); font-weight: 700; }
+.calc-summary__total { font-family: var(--f-display); font-size: clamp(20px, 5vw, 26px); font-weight: 800; color: var(--ink, #0b1a30); }
+.calc-summary__note { margin: 4px 0 0; font-size: 12px; color: var(--ink-3, #5b6781); }
+.calc-summary__actions { display: flex; gap: 8px; margin-top: 10px; }
+.calc-summary__cta {
+  flex: 1;
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--navy-800, #0b1d34);
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+.calc-summary__cta:disabled { opacity: 0.45; cursor: default; }
+.calc-summary__alt {
+  width: 48px;
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid var(--hair, #e6dfd0);
+  background: var(--cream, #faf7f2);
+  color: var(--ink, #0b1a30);
+}
+
+/* 모의계산: 상단 이전 버튼(하단 합계 바와 겹치지 않도록 본문 상단 배치) */
+.calc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 14px;
+  padding: 7px 13px 7px 9px;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 999px;
+  background: var(--paper, #fff);
+  color: var(--ink-2, #2a3a55);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 모의계산: 견적 요약(계산서) 카드 */
+.calc-receipt {
+  margin-top: 20px;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 16px;
+  background: var(--panel, #fff);
+  padding: 18px;
+  box-shadow: var(--shadow-soft, 0 8px 24px rgba(11, 26, 48, 0.06));
+}
+.calc-receipt__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.calc-receipt__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--ink, #0b1a30);
+}
+.calc-receipt__title svg { color: var(--gold-600, #c9a063); }
+.calc-receipt__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--navy-800, #0b1d34);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+.calc-receipt__empty { margin: 0; font-size: 14px; color: var(--ink-3, #5b6781); }
+.calc-receipt__lines { list-style: none; margin: 0; padding: 0; }
+.calc-receipt__lines li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--hair, #e6dfd0);
+}
+.calc-receipt__name { font-size: 14px; color: var(--ink, #0b1a30); }
+.calc-receipt__qty { font-style: normal; font-weight: 700; color: var(--gold-700, #b5894a); }
+.calc-receipt__svc {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--ink-4, #94a0b8);
+}
+.calc-receipt__amount { flex-shrink: 0; font-size: 14px; font-weight: 700; color: var(--navy-700, #10284a); white-space: nowrap; }
+.calc-receipt__note { margin: 12px 0 0; font-size: 12px; color: var(--ink-3, #5b6781); }
+.calc-receipt__totals { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--hair, #e6dfd0); }
+.calc-receipt__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--ink-2, #2a3a55);
+  padding: 4px 0;
+}
+.calc-receipt__row--total {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 2px solid var(--navy-800, #0b1d34);
+  font-size: 15px;
+  color: var(--ink, #0b1a30);
+}
+.calc-receipt__row--total strong { font-family: var(--f-display); font-size: clamp(20px, 5vw, 26px); font-weight: 800; }
+.calc-receipt__actions { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+.calc-receipt__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--navy-800, #0b1d34);
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+.calc-receipt__call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--hair, #e6dfd0);
+  background: var(--cream, #faf7f2);
+  color: var(--ink, #0b1a30);
+  font-weight: 800;
+  font-size: 15px;
+}

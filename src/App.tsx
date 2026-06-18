@@ -34,6 +34,9 @@ const LoginPage = lazy(() => import("./login/LoginPage").then((m) => ({ default:
 const PrivacyPolicyPage = lazy(() => import("./privacy/PrivacyPolicyPage").then((m) => ({ default: m.PrivacyPolicyPage })));
 const EstimatePage = lazy(() => import("./estimate/EstimatePage").then((m) => ({ default: m.EstimatePage })));
 const DiagnosisPage = lazy(() => import("./diagnosis/DiagnosisPage").then((m) => ({ default: m.DiagnosisPage })));
+const AllServicesCalculatorPage = lazy(() =>
+  import("./pricing/AllServicesCalculatorPage").then((m) => ({ default: m.AllServicesCalculatorPage }))
+);
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { buildLandingPageJsonLd, getLandingPageDefinition, mergeLandingPageContent } from "./landingPages";
@@ -119,6 +122,9 @@ function App() {
   }
   if (pathname.startsWith("/portfolio")) {
     return <PortfolioPage />;
+  }
+  if (pathname.startsWith("/calculator")) {
+    return <Suspense fallback={null}><AllServicesCalculatorPage /></Suspense>;
   }
   const pricingPageConfig = getServicePricingConfigByPricingPath(pathname);
   if (pricingPageConfig) {
@@ -442,6 +448,10 @@ function SiteHeader({
               {item.label}
             </a>
           ))}
+          <a href="/calculator" onClick={onCloseMenu} className="mobile-menu__calc">
+            <Calculator size={16} />
+            전체 서비스 모의계산
+          </a>
           <a href="/login" onClick={onCloseMenu}>
             마이페이지
           </a>
@@ -550,13 +560,19 @@ function HeroSection({
             {(content.description || "물 새는 천장부터 들뜬 벽지까지. 큰 공사 권하지 않고 딱 필요한 만큼만, 7개 국가공인 건축자격을 가진 대표가 직접 손봅니다.").replace("누수 복구", "누수 복구")}
           </p>
           <div className="hero__cta">
-            <a className="primary-button" href={business.phoneHref}>
+            {/* 데스크탑/태블릿: 전화·카카오(모바일은 하단 고정바가 대신함) */}
+            <a className="primary-button hero-cta--desk" href={business.phoneHref}>
               <Phone size={18} />
               {content.primaryActionLabel || "전화 상담"}
             </a>
-            <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
+            <a className="secondary-button hero-cta--desk" href={business.kakaoUrl} target="_blank" rel="noreferrer">
               <MessageCircle size={18} />
               {content.secondaryActionLabel || "카카오톡"}
+            </a>
+            {/* 모바일 전용: 모의 견적 계산 */}
+            <a className="primary-button hero-cta--mob" href="/calculator">
+              <Calculator size={18} />
+              모의 견적 계산
             </a>
             <a className="secondary-button" href="/estimate">
               <ArrowUpRight size={18} />
@@ -2804,7 +2820,7 @@ function MobileQuickCta() {
         <Phone size={19} />
         전화
       </a>
-      <a href={business.kakaoUrl} target="_blank" rel="noreferrer">
+      <a className="mobile-cta__kakao" href={business.kakaoUrl} target="_blank" rel="noreferrer">
         <MessageCircle size={19} />
         카카오톡
       </a>
