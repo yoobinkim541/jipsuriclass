@@ -14244,27 +14244,30 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     );
   }
 
-  /* 그리드가 헤더 아래 첫 화면을 채우고, trust는 그 아래(스크롤) */
+  /* 그리드가 헤더 아래 화면을 채우되, 콘텐츠는 하단에서 충분히 띄워 답답함 해소.
+     trust는 그 아래(스크롤) */
   .hero__grid {
     position: relative;
     grid-template-columns: 1fr;
     align-items: stretch;
     min-height: calc(100svh - 74px);
     padding-top: clamp(24px, 5vw, 44px);
+    padding-bottom: clamp(72px, 14vh, 160px);
   }
   .hero__grid > div:first-child {
     display: flex;
     flex-direction: column;
     height: 100%;
     justify-content: flex-end;
-    max-width: 660px;
+    gap: 4px;
+    max-width: 600px;
   }
 
   .hero__title {
     color: #ffffff;
-    font-size: clamp(50px, 7vw, 72px);
-    line-height: 1.05;
-    margin-bottom: clamp(14px, 2.5vw, 22px);
+    font-size: clamp(40px, 5.2vw, 56px);
+    line-height: 1.1;
+    margin-bottom: clamp(16px, 2.6vw, 22px);
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 6px 28px rgba(0, 0, 0, 0.5);
   }
   .hero__rotator em {
@@ -14277,9 +14280,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   }
   .hero__lede {
     color: rgba(255, 255, 255, 0.92);
-    font-size: 17px;
-    line-height: 1.65;
-    max-width: 52ch;
+    font-size: 16px;
+    line-height: 1.7;
+    max-width: 46ch;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 16px rgba(0, 0, 0, 0.45);
   }
 
