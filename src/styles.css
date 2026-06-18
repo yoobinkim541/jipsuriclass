@@ -13876,6 +13876,21 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     color: var(--gold-500, #f2c879);
   }
 
+  /* 흰 배경(#fff) 하드코딩 카드 표면 → 다크 표면. 위에서 글씨는 이미 밝게 처리돼
+     있어 배경만 어둡게 하면 보인다. 서비스 첫 카드(네이비 featured)는 보존. */
+  .bento__card:not(:nth-child(1)),
+  .cases__card,
+  .cases__body,
+  .blog-card,
+  .blog__card,
+  .contact-estimate-card {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+  /* 상세 상담 카드 제목/본문: var(--ink)/(--ink-2)가 다크서 밝아 → 다크 표면 위 OK */
+  .contact-estimate-card h3 { color: var(--ink, #f8fafc); }
+  .contact-estimate-card p { color: var(--ink-2, #d8e1f0); }
+
   .auth-field input,
   .estimate-form input,
   .estimate-form textarea {
