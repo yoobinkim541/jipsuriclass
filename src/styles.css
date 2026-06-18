@@ -13887,6 +13887,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background: var(--panel, #111827);
     border-color: var(--hair, rgba(226, 232, 240, 0.18));
   }
+  /* 서비스 featured(첫) 카드: navy 배경이 데스크탑 미디어쿼리 전용이라 모바일·태블릿
+     다크에선 흰 배경(#fff)으로 떨어져 제목이 안 보였음 → 전 폭에서 navy 유지 */
+  .bento__card:nth-child(1) {
+    background: linear-gradient(150deg, #0b1a30 0%, #10284a 100%);
+    border-color: #10284a;
+  }
+  .bento__card:nth-child(1) h3 { color: #ffffff; }
+  .bento__card:nth-child(1) p { color: rgba(255, 255, 255, 0.78); }
   /* 상세 상담 카드 제목/본문: var(--ink)/(--ink-2)가 다크서 밝아 → 다크 표면 위 OK */
   .contact-estimate-card h3 { color: var(--ink, #f8fafc); }
   .contact-estimate-card p { color: var(--ink-2, #d8e1f0); }
