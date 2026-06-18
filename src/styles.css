@@ -1606,18 +1606,24 @@ textarea {
   color: var(--ink, #0b1a30);
 }
 
-/* 회전 강조 단어: 그라데이션 대신 솔리드 브랜드 골드(라이트=진한 골드) */
+/* 회전 강조 단어: 라이트(크림) 배경에선 골드→네이비 그라데이션(브랜드 핵심색) */
 .hero__rotator em {
   font-style: normal;
-  color: #b4894b;
   font-weight: 900;
   display: inline-block;
   animation: rotIn .5s cubic-bezier(.16,1,.3,1) both;
+  background: linear-gradient(115deg, #c08a3c 0%, #b4894b 26%, #305a92 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
-/* 다크모드: 어두운 배경 위 밝은 골드 솔리드 */
+/* 다크모드: 네이비가 어두운 배경에 묻히므로 솔리드 골드로(그라데이션 해제) */
 :root[data-theme="dark"] .hero__rotator em {
+  background: none;
   color: #f2c879;
+  -webkit-text-fill-color: #f2c879;
 }
 
 /* 회전 단어(골드) 뒤의 조사+서술어는 항상 타이틀과 같은 색으로(골드 아님) */
