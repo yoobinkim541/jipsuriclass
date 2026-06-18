@@ -4523,7 +4523,8 @@ main.home-page .cases .row-heading a {
 }
 
 .blog-card-body {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   flex: 1;
   padding: 18px;
@@ -4694,10 +4695,14 @@ main.home-page .blog__rail .blog-card time {
 .blog-card-link {
   align-items: center;
   color: var(--ink);
-  display: inline-flex;
+  display: flex;
   font-size: 14px;
   font-weight: 900;
   gap: 6px;
+  /* 현장사례 카드처럼 본문과 자세히 보기 사이 점선 구분 + 하단 고정 */
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed var(--hair, #e6dfd0);
 }
 
 main.home-page section[aria-labelledby="landing-blog-title"] {
