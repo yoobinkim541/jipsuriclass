@@ -13852,6 +13852,11 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     color: var(--ink-2, #d8e1f0);
   }
 
+  /* 상세 카드는 다크모드서도 흰 표면 유지(킥커·칩 오버라이드 존재) → 제목/본문이
+     var(--ink)/(--ink-2)라 밝게 뒤집혀 흰 카드 위 안 보임. 고정 어두운 색으로 강제 */
+  .process__detail-card h3 { color: #0b1a30; }
+  .process__detail-card p { color: #2a3a55; }
+
   /* 가격표(서비스/가격 페이지·프리렌더 스냅샷 공통): 헤더 #f1f5f9, 행 hover/선택 크림·노랑 하드코딩 */
   .price-table thead tr {
     background: var(--panel-strong, #1f2937);
