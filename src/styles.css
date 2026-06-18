@@ -14253,6 +14253,11 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     position: relative;
     grid-template-columns: 1fr;
     align-items: stretch;
+    /* flex 컬럼(.hero) 안에서 base의 margin:0 auto가 그리드를 내용 너비로 줄여
+       가운데 정렬 → 회전 단어 길이에 따라 좌우 이동. 풀폭으로 못박는다 */
+    margin: 0;
+    width: 100%;
+    align-self: stretch;
     min-height: calc(100svh - 74px);
     padding-top: clamp(24px, 5vw, 44px);
     padding-bottom: clamp(36px, 7vh, 84px);
@@ -14262,8 +14267,13 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     flex-direction: column;
     height: 100%;
     justify-content: flex-end;
+    align-items: flex-start;
     gap: 4px;
-    max-width: 600px;
+    /* 내용 너비에 맞춰 줄어들면 회전 단어 길이에 따라 좌우로 재정렬됨 →
+       고정 너비로 못박아 가로 위치를 회전과 무관하게 고정 */
+    width: min(100%, 600px);
+    justify-self: start;
+    margin-inline: 0;
   }
 
   .hero__title {
