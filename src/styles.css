@@ -14203,3 +14203,106 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     flex-basis: min(44vw, 580px);
   }
 }
+
+/* =========================================================================
+   태블릿(721~1023, iPad 세로 등): 데스크탑 카드 덱이 좁아 깨지므로
+   모바일식 풀블리드 사진 히어로(올리모델링 목업 5장 재사용)로 통일.
+   하단바가 없으므로 그리드가 첫 화면을 채우고 trust는 자연스럽게 아래로.
+   ========================================================================= */
+@media (min-width: 721px) and (max-width: 1023px) {
+  .hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .hero__mobile-bg {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+  .hero__mobile-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hero__mobile-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(7, 13, 26, 0.26) 0%,
+      rgba(7, 13, 26, 0.32) 42%,
+      rgba(7, 13, 26, 0.58) 72%,
+      rgba(7, 13, 26, 0.86) 100%
+    );
+  }
+
+  /* 그리드가 헤더 아래 첫 화면을 채우고, trust는 그 아래(스크롤) */
+  .hero__grid {
+    position: relative;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+    min-height: calc(100svh - 74px);
+    padding-top: clamp(24px, 5vw, 44px);
+  }
+  .hero__grid > div:first-child {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: flex-end;
+    max-width: 660px;
+  }
+
+  .hero__title {
+    color: #ffffff;
+    font-size: clamp(50px, 7vw, 72px);
+    line-height: 1.05;
+    margin-bottom: clamp(14px, 2.5vw, 22px);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 6px 28px rgba(0, 0, 0, 0.5);
+  }
+  .hero__rotator em {
+    background: none;
+    -webkit-text-fill-color: #f2c879;
+    color: #f2c879;
+  }
+  .hero__rotator-suffix {
+    color: #ffffff;
+  }
+  .hero__lede {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 17px;
+    line-height: 1.65;
+    max-width: 52ch;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 16px rgba(0, 0, 0, 0.45);
+  }
+
+  .hero__proof {
+    display: none;
+  }
+  .hero__deck,
+  .hero__chip--running {
+    display: none;
+  }
+
+  /* 버튼은 가로 행(태블릿은 폭 여유) — 풀폭 스택 아님 */
+  .hero__cta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: clamp(22px, 3vw, 30px);
+    margin-bottom: 0;
+    padding-top: 0;
+  }
+  .hero__cta a,
+  .hero__cta button {
+    flex: 0 0 auto;
+    justify-content: center;
+  }
+}
