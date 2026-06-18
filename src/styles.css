@@ -1612,7 +1612,7 @@ textarea {
   font-weight: 900;
   display: inline-block;
   animation: rotIn .5s cubic-bezier(.16,1,.3,1) both;
-  background: linear-gradient(115deg, #c08a3c 0%, #b4894b 26%, #305a92 80%);
+  background: linear-gradient(115deg, #c08a3c 0%, #b4894b 26%, #1d3e70 82%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
