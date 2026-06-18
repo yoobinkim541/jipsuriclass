@@ -1647,6 +1647,11 @@ textarea {
   max-width: 36em;
 }
 
+/* 모바일 전용 한 줄 부제: 기본(태블릿·데스크탑)에선 숨김 */
+.hero__lede--mobile {
+  display: none;
+}
+
 .hero__cta {
   display: flex;
   flex-wrap: wrap;
@@ -10666,6 +10671,15 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     line-height: 1.65;
     color: rgba(255, 255, 255, 0.92);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55), 0 2px 16px rgba(0, 0, 0, 0.45);
+  }
+
+  /* 모바일: 전체 부제 숨기고 한 줄 부제만 노출 */
+  .hero__lede--full {
+    display: none;
+  }
+  .hero__lede--mobile {
+    display: block;
+    font-size: 15px;
   }
 
   .hero__deck,

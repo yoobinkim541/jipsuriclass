@@ -546,9 +546,11 @@ function HeroSection({
               {directionalParticle(heroRotatorWord)} 끝냅니다.
             </span>
           </h1>
-          <p className="hero__lede">
+          <p className="hero__lede hero__lede--full">
             {(content.description || "물 새는 천장부터 들뜬 벽지까지. 큰 공사 권하지 않고 딱 필요한 만큼만, 7개 국가공인 건축자격을 가진 대표가 직접 손봅니다.").replace("누수 복구", "누수 복구")}
           </p>
+          {/* 모바일 전용 한 줄 부제(태블릿·데스크탑은 위 전체 부제 사용) */}
+          <p className="hero__lede hero__lede--mobile">사진으로 먼저 확인하고, 꼭 필요한 작업만.</p>
           <div className="hero__cta">
             <a className="primary-button" href={business.phoneHref}>
               <Phone size={18} />
