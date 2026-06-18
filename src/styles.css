@@ -10505,9 +10505,16 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     gap: 14px;
   }
 
+  /* 히어로를 헤더~하단 CTA바 사이 전체 높이로 채워, 콘텐츠를 위/아래로 펴고
+     trust 패널 하단이 하단 바에 딱 맞닿게 한다(상단 과밀 해소 + 배경 노출 ↑) */
   .hero {
     overflow: hidden;
     isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100svh - 124px);
+    padding-top: clamp(26px, 7vw, 42px);
+    padding-bottom: 0;
   }
 
   /* 풀블리드 시공 사진 배경 + 어두운 그라데이션 오버레이 */
@@ -10524,27 +10531,32 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     object-fit: cover;
   }
 
+  /* 배경이 더 돋보이게 상단 오버레이를 옅게(텍스트는 그림자로 가독 확보),
+     하단(트러스트 근처)은 진하게 유지 */
   .hero__mobile-bg::after {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(7, 13, 26, 0.56) 0%, rgba(7, 13, 26, 0.74) 52%, rgba(7, 13, 26, 0.92) 100%);
+    background: linear-gradient(180deg, rgba(7, 13, 26, 0.34) 0%, rgba(7, 13, 26, 0.5) 46%, rgba(7, 13, 26, 0.86) 100%);
   }
 
   .hero__grid {
     gap: 18px;
     position: relative;
+    flex: 1 1 auto;
+    align-items: stretch;
   }
 
   .hero__grid > div:first-child {
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
 
   .hero__title {
     font-size: clamp(44px, 13vw, 72px);
     line-height: 1.04;
-    margin-bottom: clamp(60px, 13vw, 92px);
+    margin-bottom: clamp(16px, 4vw, 24px);
     color: #ffffff;
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
   }
@@ -10582,7 +10594,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     flex-direction: column;
     align-items: stretch;
     margin-bottom: 0;
-    margin-top: 24px;
+    /* 콘텐츠 컬럼 하단으로 밀어 제목·부제와 간격을 벌린다(배경 노출 ↑) */
+    margin-top: auto;
     padding-top: 0;
   }
 
