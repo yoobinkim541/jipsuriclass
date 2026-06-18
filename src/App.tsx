@@ -1487,42 +1487,44 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
         <div className="process__content">
           <div className="process__track">
             {process.map((step, index) => (
-              <React.Fragment key={step.title}>
-                <button
-                  className={`process__step${activeStep === index ? " active" : ""}`}
-                  onClick={() => setActiveStep(index)}
-                  aria-current={activeStep === index ? "true" : undefined}
-                >
-                  <span className="step-num">0{index + 1}</span>
-                  <step.icon size={22} />
-                  <h3>{steps[index]?.title ?? step.title}</h3>
-                </button>
-                {activeStep === index && (
-                  <div className="process__inline-detail">
-                    <div className="process__illustration">
-                      <img
-                        src={steps[index]?.image || processIllustrations[index]}
-                        alt={steps[index]?.title ?? step.title}
-                        className="process__step-photo"
-                        loading="eager"
-                        decoding="async"
-                        onError={(e) => {
-                          const t = e.currentTarget;
-                          if (t.dataset.fb) return;
-                          t.dataset.fb = "1";
-                          t.src = processIllustrations[index] ?? processIllustrations[0];
-                        }}
-                      />
-                    </div>
-                    <div className="process__inline-text">
-                      <h3>{steps[index]?.title ?? step.title}</h3>
-                      <p>{steps[index]?.text ?? step.text}</p>
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
+              <button
+                className={`process__step${activeStep === index ? " active" : ""}`}
+                onClick={() => setActiveStep(index)}
+                aria-current={activeStep === index ? "true" : undefined}
+                key={step.title}
+              >
+                <span className="step-num">0{index + 1}</span>
+                <step.icon size={22} />
+                <h3>{steps[index]?.title ?? step.title}</h3>
+              </button>
             ))}
           </div>
+
+          {/* 활성 단계 상세: 트랙 밖(아래)에 단일 렌더. 모바일=가로 트랙 아래 노출,
+              데스크탑=CSS로 숨기고 우측 큰 카드(.process__detail) 사용 */}
+          {activeData && (
+            <div className="process__inline-detail">
+              <div className="process__illustration">
+                <img
+                  src={steps[activeStep]?.image || processIllustrations[activeStep]}
+                  alt={activeContent?.title ?? activeData.title}
+                  className="process__step-photo"
+                  loading="eager"
+                  decoding="async"
+                  onError={(e) => {
+                    const t = e.currentTarget;
+                    if (t.dataset.fb) return;
+                    t.dataset.fb = "1";
+                    t.src = processIllustrations[activeStep] ?? processIllustrations[0];
+                  }}
+                />
+              </div>
+              <div className="process__inline-text">
+                <h3>{activeContent?.title ?? activeData.title}</h3>
+                <p>{activeContent?.text ?? activeData.text}</p>
+              </div>
+            </div>
+          )}
 
           {activeData && (
             <div className="process__detail">
