@@ -58,8 +58,16 @@ body {
   min-width: 320px;
   background: var(--cream, #faf7f2);
   color: var(--ink, #0b1a30);
+  /* 한국어 어절이 글자 단위로 끊기지 않고 통째로 붙어 이어 읽히게 */
   word-break: keep-all;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  /* 마지막 줄 외톨이 단어 방지(본문은 상속됨) */
+  text-wrap: pretty;
+}
+
+/* 제목은 여러 줄일 때 균형 있게 끊어 어색한 줄바꿈 방지 */
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
 }
 
 a {
