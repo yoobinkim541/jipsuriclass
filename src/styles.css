@@ -1743,9 +1743,11 @@ textarea {
   z-index: 5;
 }
 
-@media (min-width: 1100px) and (max-width: 1599px) {
+/* 1024부터 시작: 2단 그리드(≥1024)와 덱 너비 시작점을 일치시켜
+   iPad Pro 12.9" 세로(1024)에서 덱이 0폭으로 붕괴하던 빈 공백 버그 해결 */
+@media (min-width: 1024px) and (max-width: 1599px) {
   main.home-page .hero__grid {
-    grid-template-columns: minmax(0, 1.08fr) minmax(360px, .72fr);
+    grid-template-columns: minmax(0, 1.08fr) minmax(340px, .72fr);
   }
 
   main.home-page .hero__deck {
