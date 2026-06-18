@@ -2179,6 +2179,34 @@ textarea {
   .bento { grid-template-columns: repeat(4, 1fr); grid-auto-rows: minmax(180px, auto); }
 }
 
+/* 모바일: 서비스 카드 2열 컴팩트로 섹션 길이 축소(첫 featured 카드는 전체 폭) */
+@media (max-width: 639px) {
+  .bento {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .bento__card {
+    min-height: 0;
+    padding: 15px 14px;
+    gap: 6px;
+    border-radius: 14px;
+  }
+  .bento__card:nth-child(1) {
+    grid-column: 1 / -1;
+  }
+  .bento__card h3 {
+    font-size: 15px;
+  }
+  .bento__card p {
+    font-size: 12.5px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}
+
 .bento__card {
   position: relative;
   padding: clamp(20px, 2.5vw, 30px);
