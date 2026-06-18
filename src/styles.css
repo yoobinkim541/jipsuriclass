@@ -10500,15 +10500,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     gap: 14px;
   }
 
-  /* 히어로를 헤더~하단 CTA바 사이 전체 높이로 채워, 콘텐츠를 위/아래로 펴고
-     trust 패널 하단이 하단 바에 딱 맞닿게 한다(상단 과밀 해소 + 배경 노출 ↑) */
+  /* 원페이지 스크롤: 첫 화면(헤더~하단바)은 사진 + 하단에 제목·부제·버튼만 보이고,
+     trust 패널은 그 아래(접힘선 밑)로 내려 스크롤해야 보이게 → 사진 강조 */
   .hero {
     overflow: hidden;
     isolation: isolate;
     display: flex;
     flex-direction: column;
-    min-height: calc(100svh - 124px);
-    padding-top: clamp(26px, 7vw, 42px);
+    padding-top: 0;
     padding-bottom: 0;
   }
 
@@ -10542,14 +10541,16 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     );
   }
 
+  /* 그리드가 첫 화면(헤더~하단바)을 채운다 → 그 아래의 trust는 접힘선 밑으로 */
   .hero__grid {
     gap: 18px;
     position: relative;
-    flex: 1 1 auto;
     align-items: stretch;
+    min-height: calc(100svh - 168px);
+    padding-top: clamp(18px, 5vw, 32px);
   }
 
-  /* 콘텐츠(제목·부제·버튼)를 한 덩어리로 하단에 모아, 위쪽은 배경 사진을 보여준다 */
+  /* 콘텐츠(제목·부제·버튼)를 한 덩어리로 첫 화면 하단에 모아, 위쪽은 배경 사진 강조 */
   .hero__grid > div:first-child {
     display: flex;
     flex-direction: column;
