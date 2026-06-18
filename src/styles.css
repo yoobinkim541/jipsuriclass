@@ -2933,9 +2933,8 @@ textarea {
   left: clamp(-24px, -1vw, -6px);
   bottom: 0;
   width: min(96%, 480px);
-  opacity: 0.14;
-  mix-blend-mode: multiply;
-  filter: grayscale(1) contrast(0.9) blur(0.6px);
+  opacity: 0.2;
+  filter: grayscale(1) contrast(1.05) blur(0.5px);
   pointer-events: none;
   z-index: 0;
 }
@@ -13989,11 +13988,10 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   }
   .process__detail-point-arrow { color: #9aa6bd; }
 
-  /* 3D 집: multiply는 라이트 전용. 다크에선 invert+screen으로 밝은 라인만 남긴다 */
+  /* 3D 집(투명 배경): 다크에선 invert로 어두운 창틀·외곽선을 밝은 라인으로 */
   .process__blueprint {
-    mix-blend-mode: screen;
-    filter: invert(1) brightness(1.3) contrast(1) blur(0.6px);
-    opacity: 0.11;
+    filter: invert(1) grayscale(1) brightness(1.25) blur(0.5px);
+    opacity: 0.18;
   }
 
   /* 가격표(서비스/가격 페이지·프리렌더 스냅샷 공통): 헤더 #f1f5f9, 행 hover/선택 크림·노랑 하드코딩 */
