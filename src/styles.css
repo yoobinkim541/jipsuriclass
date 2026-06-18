@@ -14173,3 +14173,33 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   border-color: #f4d800;
   color: #191600;
 }
+
+/* =========================================================================
+   블로그 포트폴리오 카드 폭을 대표 현장사례(.cases__card) 카드와 통일.
+   기존 blog 카드가 현장사례보다 작거나(데스크탑) 크던(태블릿) 것 → 동일 폭으로.
+   브레이크포인트별 현장사례 렌더 폭에 맞춤. (소스 최후미라 동일 특이도 규칙을 이김)
+   ========================================================================= */
+@media (min-width: 768px) and (max-width: 1099px) {
+  main.home-page section.blog .blog__rail > .blog__card,
+  main.home-page section.blog .blog__rail > .blog__card.blog-card-featured {
+    flex-basis: min(58vw, 520px);
+  }
+}
+@media (min-width: 1100px) and (max-width: 1599px) {
+  main.home-page section.blog .blog__rail > .blog__card,
+  main.home-page section.blog .blog__rail > .blog__card.blog-card-featured {
+    flex-basis: 320px;
+  }
+}
+@media (min-width: 1600px) and (max-width: 2199px) {
+  main.home-page section.blog .blog__rail > .blog__card,
+  main.home-page section.blog .blog__rail > .blog__card.blog-card-featured {
+    flex-basis: min(48vw, 540px);
+  }
+}
+@media (min-width: 2200px) {
+  main.home-page section.blog .blog__rail > .blog__card,
+  main.home-page section.blog .blog__rail > .blog__card.blog-card-featured {
+    flex-basis: min(44vw, 580px);
+  }
+}
