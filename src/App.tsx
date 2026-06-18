@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useStat
 import {
   ArrowUpRight,
   Calculator,
+  Camera,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -1389,17 +1390,17 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
   const processSignals = [
     {
       label: "사진 우선",
-      text: "방문 전에 사진으로 범위를 먼저 좁힙니다.",
-      icon: MessageCircle
+      text: "방문 전 사진으로 범위를 먼저 파악해요.",
+      icon: Camera
     },
     {
       label: "대표 직접 확인",
-      text: "대표가 현장을 직접 보고 필요한 작업만 고릅니다.",
+      text: "대표가 현장을 직접 확인해 정확하게 진단해요.",
       icon: User
     },
     {
       label: "투명 안내",
-      text: "비용·범위·일정을 한 번에 정리해 안내합니다.",
+      text: "비용·범위·일정을 한 번에 정리해 안내드려요.",
       icon: Phone
     }
   ];
@@ -1407,11 +1408,11 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
     <section className="process" id="process" aria-labelledby="process-title">
       <div className="process__shell">
         <div className="process__intro">
-          <SectionHeading
-            id="process-title"
-            title="작업 절차"
-            description="불필요한 공사를 늘리지 않도록 사진, 현장, 견적 순서로 확인합니다."
-          />
+          <div className="process__heading">
+            <span className="process__overline">작업 절차</span>
+            <h2 id="process-title">믿을 수 있는 진단의 시작</h2>
+            <p>불필요한 공사를 막고, 꼭 필요한 부분만 정확하게 안내해드립니다.</p>
+          </div>
           <div className="process__signal-grid">
             {processSignals.map((signal) => {
               const SignalIcon = signal.icon;
@@ -1512,8 +1513,11 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
 
                       return (
                         <div className="process__detail-point" key={signal.label}>
-                          <SignalIcon size={16} />
-                          <span>{signal.label}</span>
+                          <span className="process__detail-point-badge" aria-hidden="true">
+                            <SignalIcon size={16} />
+                          </span>
+                          <span className="process__detail-point-label">{signal.label}</span>
+                          <ChevronRight className="process__detail-point-arrow" size={16} aria-hidden="true" />
                         </div>
                       );
                     })}

@@ -1194,36 +1194,30 @@ textarea {
 
   /* ── Process ── */
   main.home-page .process__shell {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    align-items: start;
-    gap: clamp(24px, 2.6vw, 40px);
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    align-items: stretch;
+    gap: clamp(24px, 2.6vw, 44px);
   }
 
+  /* 인트로를 우측 콘텐츠 높이만큼 늘려, 좌측 하단 빈 공간에 3D 집을 앉힌다 */
   main.home-page .process__intro {
-    position: sticky;
-    top: 72px;
-    align-self: start;
+    position: relative;
+    align-self: stretch;
+    grid-template-rows: auto auto 1fr;
   }
 
   main.home-page .process__signal-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+    gap: 12px;
+    align-self: start;
   }
 
   main.home-page .process__signal-card {
-    min-height: 100%;
-    padding: 14px 16px;
+    padding: 18px 16px 20px;
   }
 
   main.home-page .process__signal-card h3 {
-    font-size: 14px;
-  }
-
-  main.home-page .process__signal-card p {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    overflow: hidden;
+    font-size: 15px;
   }
 
   main.home-page .process__content {
@@ -1270,7 +1264,8 @@ textarea {
   }
 
   main.home-page .process__detail-point {
-    padding: 10px 14px;
+    padding: 15px 2px;
+    font-size: 16px;
   }
 
   /* ── Cases ── */
@@ -2730,7 +2725,50 @@ textarea {
 
 .process__intro {
   display: grid;
+  gap: 18px;
+}
+
+/* 좌측 인트로 헤딩: 오버라인 + 큰 헤드라인 + 부제 (목업) */
+.process__heading {
+  display: grid;
   gap: 12px;
+  text-align: left;
+}
+
+.process__overline {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ink-3, #5b6781);
+}
+
+.process__overline::after {
+  content: "";
+  width: 44px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.45;
+}
+
+.process__heading h2 {
+  font-family: var(--f-display, sans-serif);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  line-height: 1.14;
+  margin: 0;
+  color: var(--ink, #0b1a30);
+  letter-spacing: -0.01em;
+}
+
+.process__heading p {
+  margin: 0;
+  color: var(--ink-2, #2a3a55);
+  font-size: clamp(15px, 1.4vw, 17px);
+  line-height: 1.6;
+  max-width: 34ch;
 }
 
 .process__signal-grid {
@@ -2740,23 +2778,24 @@ textarea {
 
 .process__signal-card {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   gap: 14px;
-  padding: 16px 18px;
-  border: 1px solid rgba(16, 40, 74, 0.14);
-  border-radius: 18px;
+  padding: 18px 18px 20px;
+  border: 1px solid rgba(16, 40, 74, 0.1);
+  border-radius: 20px;
   background: linear-gradient(180deg, #ffffff 0%, #fbf7ef 100%);
-  box-shadow: 0 10px 24px rgba(11, 26, 48, 0.06);
+  box-shadow: 0 12px 28px rgba(11, 26, 48, 0.07);
 }
 
 .process__signal-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: grid;
   place-items: center;
   flex: 0 0 auto;
-  background: rgba(16, 40, 74, 0.08);
+  background: rgba(16, 40, 74, 0.07);
   color: var(--navy-700, #10284a);
 }
 
@@ -2816,18 +2855,34 @@ textarea {
 }
 
 .process__step {
+  position: relative;
   padding: 18px;
   border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 14px;
+  border-radius: 16px;
   background: #fff;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
   transition: all 240ms;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   min-height: 164px;
-  justify-content: space-between;
+  justify-content: center;
+}
+
+/* 활성 단계 → 아래 상세 카드로 향하는 말풍선 꼬리 (목업) */
+.process__step.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 18px;
+  height: 18px;
+  background: var(--ink, #0b1a30);
+  border-radius: 4px;
+  transform: translateX(-50%) rotate(45deg);
+  z-index: 3;
 }
 
 .process__step:hover {
@@ -2871,22 +2926,57 @@ textarea {
   display: none;
 }
 
-/* 좌측 인트로 뒤 집 일러스트(은은한 배경 장식) */
+/* 좌측 인트로 하단 3D 집 (목업의 와이어프레임 자리). 흰 배경은 multiply로 떨어뜨린다 */
 .process__intro { position: relative; }
 .process__blueprint {
   position: absolute;
-  left: -10px;
-  bottom: -8px;
-  width: min(84%, 360px);
-  opacity: 0.1;
-  filter: grayscale(1) contrast(0.92);
+  left: clamp(-24px, -1vw, -6px);
+  bottom: 0;
+  width: min(96%, 480px);
+  opacity: 0.92;
+  mix-blend-mode: multiply;
   pointer-events: none;
   z-index: 0;
 }
-.process__intro > .section-heading,
+.process__intro > .process__heading,
 .process__intro > .process__signal-grid {
   position: relative;
   z-index: 1;
+}
+
+/* ── 태블릿/모바일 (2단 레이아웃은 ≥1100px) ── */
+/* 태블릿: 신호카드 3장을 한 줄로 */
+@media (min-width: 600px) {
+  .process__signal-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* 스택될 땐 장식용 3D 집 숨김(짧은 인트로 위로 삐져나옴 방지) */
+@media (max-width: 1099px) {
+  .process__blueprint {
+    display: none;
+  }
+  .process__heading {
+    text-align: center;
+  }
+  .process__overline {
+    justify-content: center;
+  }
+  .process__heading p {
+    max-width: none;
+    margin-inline: auto;
+  }
+}
+
+/* 트랙이 여러 줄로 깨지는 좁은 폭에선 말풍선 꼬리가 엉뚱한 카드를 가리켜 숨김 */
+@media (max-width: 767px) {
+  .process__step.active::after {
+    display: none;
+  }
+  .process__step {
+    min-height: 132px;
+  }
 }
 
 .blog-carousel-controls {
@@ -2970,32 +3060,61 @@ textarea {
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(215, 174, 107, 0.12);
-  color: var(--gold-700, #a77a2a);
+  background: rgba(16, 40, 74, 0.07);
+  color: var(--navy-700, #10284a);
   font-weight: 800;
   font-size: 12px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
+/* 상세 포인트: 세로 리스트(원형 배지 + 라벨 + 셰브론 + 구분선) — 목업 */
 .process__detail-points {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
 }
 
 .process__detail-point {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid rgba(16, 40, 74, 0.08);
-  color: var(--ink-2, #2a3a55);
-  font-size: 13px;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 2px;
+  border: 0;
+  border-bottom: 1px solid rgba(16, 40, 74, 0.08);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink, #0b1a30);
+  font-size: 15px;
   font-weight: 700;
+}
+
+.process__detail-point:last-child {
+  border-bottom: 0;
+}
+
+.process__detail-point-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  background: rgba(16, 40, 74, 0.06);
+  color: var(--navy-700, #10284a);
+}
+
+.process__detail-point-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.process__detail-point-arrow {
+  flex: 0 0 auto;
+  color: var(--ink-3, #9aa6bd);
 }
 
 @keyframes fadeUp {
@@ -13741,7 +13860,10 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   }
   .process__signal-card h3 { color: var(--ink, #f8fafc); }
   .process__signal-card p { color: var(--ink-2, #d8e1f0); }
-  .process__signal-icon { color: var(--gold-500, #f2c879); }
+  .process__signal-icon {
+    background: rgba(226, 232, 240, 0.1);
+    color: var(--gold-500, #f2c879);
+  }
 
   /* 대표 강점 리스트: 텍스트 #111827 하드코딩 → 밝게 */
   .about-strengths li { color: var(--ink-2, #d8e1f0); }
@@ -13774,6 +13896,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     color: #ffffff;
   }
   .process__step.active h3 { color: #ffffff; }
+  /* 말풍선 꼬리: 라이트는 var(--ink)→밝게 반전되므로 활성 카드색에 맞춤 */
+  .process__step.active::after { background: var(--panel-strong, #1f2937); }
 
   /* 오피스 지도 링크 카드 (흰 배경) */
   .office-map,
@@ -13845,17 +13969,31 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     color: var(--ink-2, #d8e1f0);
   }
 
-  /* 작업 절차 상세 카드 내 '사진 우선/대표 직접 확인/투명 안내' 알약 칩 (#fff 하드코딩) */
-  .process__detail-point {
-    background: var(--panel-soft, #162033);
-    border-color: var(--hair, rgba(226, 232, 240, 0.18));
-    color: var(--ink-2, #d8e1f0);
-  }
-
-  /* 상세 카드는 다크모드서도 흰 표면 유지(킥커·칩 오버라이드 존재) → 제목/본문이
-     var(--ink)/(--ink-2)라 밝게 뒤집혀 흰 카드 위 안 보임. 고정 어두운 색으로 강제 */
+  /* 상세 카드는 다크모드서도 흰 표면 유지(스포트라이트 카드) → 그 안의 요소는 라이트와
+     동일한 어두운 톤으로 고정해야 흰 카드 위에서 보인다. */
   .process__detail-card h3 { color: #0b1a30; }
   .process__detail-card p { color: #2a3a55; }
+  .process__detail-kicker {
+    background: rgba(16, 40, 74, 0.07);
+    color: var(--navy-700, #10284a);
+  }
+  .process__detail-point {
+    background: transparent;
+    border-bottom-color: rgba(16, 40, 74, 0.1);
+    color: #0b1a30;
+  }
+  .process__detail-point-badge {
+    background: rgba(16, 40, 74, 0.06);
+    color: var(--navy-700, #10284a);
+  }
+  .process__detail-point-arrow { color: #9aa6bd; }
+
+  /* 3D 집: multiply는 라이트 전용. 다크에선 invert+screen으로 밝은 라인만 남긴다 */
+  .process__blueprint {
+    mix-blend-mode: screen;
+    filter: invert(1) brightness(1.35) contrast(1.05);
+    opacity: 0.45;
+  }
 
   /* 가격표(서비스/가격 페이지·프리렌더 스냅샷 공통): 헤더 #f1f5f9, 행 hover/선택 크림·노랑 하드코딩 */
   .price-table thead tr {
