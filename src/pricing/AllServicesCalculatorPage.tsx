@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Calculator, ChevronDown, ChevronLeft, MessageCircle, Minus, Phone, Plus } from "lucide-react";
+import { ArrowUpRight, Calculator, ChevronDown, ChevronLeft, MessageCircle, Minus, Phone, Plus } from "lucide-react";
 import { business } from "../data";
 import { MobileQuickCta } from "../components/site/SiteFooter";
 import { servicePricingRegistry } from "./registry";
@@ -50,7 +50,9 @@ export function AllServicesCalculatorPage() {
 
   const selectedList = Object.entries(selected);
   const total = selectedList.reduce((sum, [, value]) => sum + (value.item.price || 0) * value.qty, 0);
-  const hasMaterialExtra = selectedList.some(([, value]) => value.item.materialNote === "별도");
+  const vat = Math.round(total * 0.1);
+  const grandTotal = total + vat;
+  const won = (value: number) => `${value.toLocaleString("ko-KR")}원`;
 
   function goToEstimate() {
     const works = selectedList.map(([, value]) => `${value.serviceName} - ${value.item.name}`);
@@ -76,20 +78,20 @@ export function AllServicesCalculatorPage() {
         </div>
       </header>
 
-      <button
-        className="landing-back-btn"
-        type="button"
-        aria-label="이전 페이지로 이동"
-        onClick={() => {
-          if (window.history.length > 1) window.history.back();
-          else window.location.href = "/";
-        }}
-      >
-        <ChevronLeft size={18} />
-        <span>이전</span>
-      </button>
-
       <main className="calc-page">
+        <button
+          className="calc-back"
+          type="button"
+          aria-label="이전 페이지로 이동"
+          onClick={() => {
+            if (window.history.length > 1) window.history.back();
+            else window.location.href = "/";
+          }}
+        >
+          <ChevronLeft size={17} />
+          이전
+        </button>
+
         <div className="calc-page__head">
           <span className="calc-page__kicker">
             <Calculator size={15} />
@@ -174,6 +176,64 @@ export function AllServicesCalculatorPage() {
           })}
         </div>
 
+        {/* 계산서: 고른 항목을 쭉 확인 */}
+        <div className="calc-receipt" id="calc-receipt">
+          <div className="calc-receipt__head">
+            <span className="calc-receipt__title">
+              <Calculator size={17} />
+              견적 요약
+            </span>
+            <span className="calc-receipt__count">{selectedList.length}</span>
+          </div>
+
+          {selectedList.length === 0 ? (
+            <p className="calc-receipt__empty">위에서 필요한 작업을 선택하면 이곳에 항목과 예상 금액이 정리됩니다.</p>
+          ) : (
+            <>
+              <ul className="calc-receipt__lines">
+                {selectedList.map(([key, value]) => (
+                  <li key={key}>
+                    <span className="calc-receipt__name">
+                      {value.item.name}
+                      {value.qty > 1 ? <em className="calc-receipt__qty"> ×{value.qty}</em> : null}
+                      <span className="calc-receipt__svc">{value.serviceName}</span>
+                    </span>
+                    <span className="calc-receipt__amount">{won((value.item.price || 0) * value.qty)}~</span>
+                  </li>
+                ))}
+              </ul>
+
+              <p className="calc-receipt__note">* 출장비·자재비(‘자재 별도’ 항목)는 현장·항목에 따라 별도입니다.</p>
+
+              <div className="calc-receipt__totals">
+                <div className="calc-receipt__row">
+                  <span>공급가액</span>
+                  <span>{won(total)}~</span>
+                </div>
+                <div className="calc-receipt__row">
+                  <span>부가세 (10%)</span>
+                  <span>{won(vat)}~</span>
+                </div>
+                <div className="calc-receipt__row calc-receipt__row--total">
+                  <span>최소 합계</span>
+                  <strong>{won(grandTotal)}~</strong>
+                </div>
+              </div>
+
+              <div className="calc-receipt__actions">
+                <button type="button" className="calc-receipt__cta" onClick={goToEstimate}>
+                  이 내역으로 견적 상담
+                  <ArrowUpRight size={17} />
+                </button>
+                <a className="calc-receipt__call" href={business.phoneHref}>
+                  <Phone size={17} />
+                  전화 상담
+                </a>
+              </div>
+            </>
+          )}
+        </div>
+
         <div className="mobile-cta-spacer" aria-hidden="true" />
         <div className="calc-spacer" aria-hidden="true" />
       </main>
@@ -181,10 +241,9 @@ export function AllServicesCalculatorPage() {
       {/* 합계 요약(고정) */}
       <div className="calc-summary" role="status" aria-live="polite">
         <div className="calc-summary__row">
-          <span className="calc-summary__label">선택 {selectedList.length}개 · 예상 합계</span>
-          <strong className="calc-summary__total">{total.toLocaleString("ko-KR")}원{hasMaterialExtra ? "~" : ""}</strong>
+          <span className="calc-summary__label">선택 {selectedList.length}개 · 최소 합계(VAT 포함)</span>
+          <strong className="calc-summary__total">{grandTotal.toLocaleString("ko-KR")}원~</strong>
         </div>
-        {hasMaterialExtra ? <p className="calc-summary__note">‘자재 별도’ 항목은 자재비가 추가됩니다.</p> : null}
         <div className="calc-summary__actions">
           <button type="button" className="calc-summary__cta" onClick={goToEstimate} disabled={!selectedList.length}>
             이 내역으로 견적 상담
