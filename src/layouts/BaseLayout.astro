@@ -6,19 +6,9 @@
  * 서비스워커 등록은 main.tsx에서 이 곳으로 이전(PWA 유지, 계획 D-6).
  */
 import "../styles.css";
-// Self-host fonts to match the SPA (main.tsx), instead of the Google Fonts CDN
-// the original handoff used — keeps Astro-rendered pages on the same fonts.
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
-import "@fontsource/inter/800.css";
-import "@fontsource/inter/900.css";
-import "@fontsource/noto-sans-kr/300.css";
-import "@fontsource/noto-sans-kr/400.css";
-import "@fontsource/noto-sans-kr/500.css";
-import "@fontsource/noto-sans-kr/700.css";
-import "@fontsource/noto-sans-kr/900.css";
+// Self-host fonts (no Google Fonts CDN). Pretendard 가변폰트(동적 서브셋)를
+// 본문·제목 공통으로 사용 — 라틴+한글 한 번에 커버. 숫자/모노는 JetBrains Mono.
+import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 ---

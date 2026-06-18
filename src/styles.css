@@ -10,15 +10,15 @@
   --ink-3: #5b6781;
   --ink-4: #94a0b8;
   --hair: #e6dfd0;
-  --f-display: "Inter", "Noto Sans KR", system-ui, sans-serif;
-  --f-sans: "Noto Sans KR", "Inter", system-ui, sans-serif;
+  --f-display: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --f-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, monospace;
   --max: 1320px;
 }
 
 :root {
   font-family:
-    "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   color: var(--ink, #0b1a30);
   background: var(--cream, #faf7f2);
   font-synthesis: none;
