@@ -13876,6 +13876,46 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     color: var(--gold-500, #f2c879);
   }
 
+  /* 흰 배경(#fff) 하드코딩 카드 표면 → 다크 표면. 위에서 글씨는 이미 밝게 처리돼
+     있어 배경만 어둡게 하면 보인다. 서비스 첫 카드(네이비 featured)는 보존. */
+  .bento__card:not(:nth-child(1)),
+  .cases__card,
+  .cases__body,
+  .blog-card,
+  .blog__card,
+  .contact-estimate-card {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+  /* 상세 상담 카드 제목/본문: var(--ink)/(--ink-2)가 다크서 밝아 → 다크 표면 위 OK */
+  .contact-estimate-card h3 { color: var(--ink, #f8fafc); }
+  .contact-estimate-card p { color: var(--ink-2, #d8e1f0); }
+
+  /* 서비스·지역 랜딩 하위페이지: 흰 배경(#fff) 공유 카드들 → 다크 표면.
+     (텍스트는 var(--ink)/(--ink-2)라 다크서 밝아 표면만 어둡게 하면 보임) */
+  .landing-hero-panel,
+  .landing-point-card,
+  .landing-faq-item,
+  .landing-related-link,
+  .landing-link-card {
+    background: var(--panel, #111827);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+  /* 핵심 안내 리스트 칩: 옅은 navy 틴트 → 다크 위 안 보임 → 밝은 틴트+밝은 글씨 */
+  .landing-highlight-list li {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(226, 232, 240, 0.14);
+    color: var(--ink, #f8fafc);
+  }
+  .landing-point-card p,
+  .landing-faq-item summary,
+  .landing-faq-item p,
+  .landing-related-link {
+    color: var(--ink-2, #d8e1f0);
+  }
+  .landing-faq-item summary { color: var(--ink, #f8fafc); }
+  .landing-point-card svg { color: var(--gold-500, #f2c879); }
+
   .auth-field input,
   .estimate-form input,
   .estimate-form textarea {
