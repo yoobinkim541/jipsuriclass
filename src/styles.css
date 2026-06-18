@@ -10640,9 +10640,11 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     justify-content: flex-end;
   }
 
-  .hero__title {
-    font-size: clamp(40px, 12vw, 68px);
-    line-height: 1.05;
+  /* .hero h1(0,1,1)이 .hero__title(0,1,0)을 이기므로 모바일 타이틀은 .hero 결합으로
+     특이도를 올려 제어. nowrap이라 한 줄(클라쓰가 다른 종합집수리)이 넘치지 않는 선까지만 */
+  .hero .hero__title {
+    font-size: clamp(30px, 8vw, 38px);
+    line-height: 1.08;
     margin-bottom: clamp(14px, 3.5vw, 20px);
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 6px 28px rgba(0, 0, 0, 0.5);
