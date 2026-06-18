@@ -14197,6 +14197,30 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   justify-content: center;
 }
 
+/* 공개 헤더 토글: 데스크탑(풀 메뉴, ≥1080)에서만 아이콘 버튼으로 노출.
+   그 아래(햄버거 사용)에선 모바일 메뉴 안 토글을 쓴다. */
+.theme-toggle--nav {
+  display: none;
+}
+@media (min-width: 1080px) {
+  .theme-toggle--nav {
+    display: inline-flex;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+  }
+  .theme-toggle--nav .theme-toggle__text {
+    display: none;
+  }
+}
+
+/* 모바일/태블릿 햄버거 메뉴 안 토글: 아이콘 + 텍스트, 항목 아래 분리 배치 */
+.theme-toggle--menu {
+  margin-top: 12px;
+  width: fit-content;
+}
+
 @media (max-width: 480px) {
   /* 모바일 마이페이지 헤더 공간 절약: 라벨 숨기고 아이콘만 */
   .theme-toggle--compact .theme-toggle__text {

@@ -29,6 +29,7 @@ const PrivacyPolicyPage = lazy(() => import("./privacy/PrivacyPolicyPage").then(
 const EstimatePage = lazy(() => import("./estimate/EstimatePage").then((m) => ({ default: m.EstimatePage })));
 const DiagnosisPage = lazy(() => import("./diagnosis/DiagnosisPage").then((m) => ({ default: m.DiagnosisPage })));
 import { BusinessInfoList, OfficeSection } from "./components/OfficeSection";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { buildLandingPageJsonLd, getLandingPageDefinition, mergeLandingPageContent } from "./landingPages";
 import { defaultLandingPagesContent, type LandingPagesContent } from "./services/SiteContentService";
 import { defaultHomepageSectionOrder, defaultLandingSectionOrder } from "./contentSections";
@@ -402,6 +403,7 @@ function SiteHeader({
             ))}
           </nav>
           <div className="nav__actions">
+            <ThemeToggle className="theme-toggle--nav" />
             <a className="nav__login" href="/login" aria-label="마이페이지">
               <User size={17} />
               <span>마이페이지</span>
@@ -437,6 +439,7 @@ function SiteHeader({
           <a href="/login" onClick={onCloseMenu}>
             마이페이지
           </a>
+          <ThemeToggle className="theme-toggle--menu" />
         </div>
         </>
       )}
