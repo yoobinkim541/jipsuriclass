@@ -2803,10 +2803,15 @@ textarea {
   }
 }
 
+@media (min-width: 600px) and (max-width: 767px) {
+  .process__track {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 @media (min-width: 768px) {
   .process__track {
-    grid-template-columns: repeat(5, 1fr);
-    gap: 14px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
   }
 }
 
@@ -2864,6 +2869,24 @@ textarea {
 
 .process__inline-detail {
   display: none;
+}
+
+/* 좌측 인트로 뒤 집 일러스트(은은한 배경 장식) */
+.process__intro { position: relative; }
+.process__blueprint {
+  position: absolute;
+  left: -10px;
+  bottom: -8px;
+  width: min(84%, 360px);
+  opacity: 0.1;
+  filter: grayscale(1) contrast(0.92);
+  pointer-events: none;
+  z-index: 0;
+}
+.process__intro > .section-heading,
+.process__intro > .process__signal-grid {
+  position: relative;
+  z-index: 1;
 }
 
 .blog-carousel-controls {

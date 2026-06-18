@@ -1366,9 +1366,10 @@ function buildSummaryLines(description: string) {
 const processIllustrations = [
   "/assets/consult-hero.png",
   "/assets/cases/bathroom-leak.png",
-  "/assets/cases/kitchen-repair.png",
   "/assets/cases/wall-repair.png",
-  "/assets/process-completion.png"
+  "/assets/process-completion.png",
+  "/assets/cases/kitchen-repair.png",
+  "/assets/consult-hero.png"
 ];
 
 /** 작업 절차 영역: 클릭 가능한 스텝 트랙 + 상세 패널 */
@@ -1376,6 +1377,15 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
   const [activeStep, setActiveStep] = useState(0);
   const activeData = process[activeStep];
   const activeContent = steps[activeStep];
+  // 단계 전환이 빠릿하게 — 모든 단계 사진을 마운트 시 미리 캐시에 올린다.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    process.forEach((step) => {
+      if (!step.image) return;
+      const img = new Image();
+      img.src = step.image;
+    });
+  }, []);
   const processSignals = [
     {
       label: "사진 우선",
@@ -1419,6 +1429,17 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
               );
             })}
           </div>
+          <img
+            className="process__blueprint"
+            src="/process/house.webp"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
         </div>
 
         <div className="process__content">
@@ -1441,6 +1462,14 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                         src={steps[index]?.image || processIllustrations[index]}
                         alt={steps[index]?.title ?? step.title}
                         className="process__step-photo"
+                        loading="eager"
+                        decoding="async"
+                        onError={(e) => {
+                          const t = e.currentTarget;
+                          if (t.dataset.fb) return;
+                          t.dataset.fb = "1";
+                          t.src = processIllustrations[index] ?? processIllustrations[0];
+                        }}
                       />
                     </div>
                     <div className="process__inline-text">
@@ -1462,11 +1491,19 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
                       src={steps[activeStep]?.image || processIllustrations[activeStep]}
                       alt={activeContent?.title ?? activeData.title}
                       className="process__step-photo"
+                      loading="eager"
+                      decoding="async"
+                      onError={(e) => {
+                        const t = e.currentTarget;
+                        if (t.dataset.fb) return;
+                        t.dataset.fb = "1";
+                        t.src = processIllustrations[activeStep] ?? processIllustrations[0];
+                      }}
                     />
                   </div>
                 </div>
                 <div className="process__detail-copy">
-                  <div className="process__detail-kicker">0{activeStep + 1} / 05</div>
+                  <div className="process__detail-kicker">0{activeStep + 1} / 0{process.length}</div>
                   <h3>{activeContent?.title ?? activeData.title}</h3>
                   <p>{activeContent?.text ?? activeData.text}</p>
                   <div className="process__detail-points">
