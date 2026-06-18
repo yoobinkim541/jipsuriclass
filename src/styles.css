@@ -3094,8 +3094,28 @@ textarea {
   .process__step.active::after {
     display: none;
   }
+  /* 컴팩트 가로 행: 번호 + 아이콘 + 제목 한 줄 → 세로 길이 대폭 축소(긴 섹션 해소) */
   .process__step {
-    min-height: 132px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    min-height: 0;
+    padding: 13px 16px;
+    gap: 12px;
+  }
+  .process__step .step-num {
+    margin: 0;
+    flex: 0 0 auto;
+  }
+  .process__step svg {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+  }
+  .process__step h3 {
+    font-size: 15px;
+    margin: 0;
   }
 }
 
