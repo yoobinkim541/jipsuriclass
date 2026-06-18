@@ -2494,13 +2494,13 @@ textarea {
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: clamp(18px, 5vw, 64px);
-  scrollbar-width: thin;
-  scrollbar-color: var(--hair, #e6dfd0) transparent;
+  /* 네비게이션 버튼이 있으니 네이티브 스크롤바는 숨김(스크롤 기능은 유지) */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   scroll-behavior: smooth;
 }
 
-.cases__rail::-webkit-scrollbar { height: 8px; }
-.cases__rail::-webkit-scrollbar-thumb { background: var(--hair, #e6dfd0); border-radius: 4px; }
+.cases__rail::-webkit-scrollbar { display: none; }
 
 .cases__card {
   flex: 0 0 min(86vw, 760px);
@@ -4643,18 +4643,14 @@ main.home-page .blog__rail {
   padding: 8px clamp(18px, 5vw, 64px) 18px;
   scroll-snap-type: x mandatory;
   scroll-padding-inline: clamp(18px, 5vw, 64px);
-  scrollbar-width: thin;
-  scrollbar-color: var(--hair, #e6dfd0) transparent;
+  /* 네비게이션 버튼이 있으니 네이티브 스크롤바는 숨김 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   scroll-behavior: smooth;
 }
 
 main.home-page .blog__rail::-webkit-scrollbar {
-  height: 8px;
-}
-
-main.home-page .blog__rail::-webkit-scrollbar-thumb {
-  background: var(--hair, #e6dfd0);
-  border-radius: 4px;
+  display: none;
 }
 
 main.home-page .blog__rail > .blog__card,
