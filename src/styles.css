@@ -2513,11 +2513,12 @@ textarea {
   scroll-snap-align: center;
   background: #ffffff;
   border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 20px;
+  border-radius: 22px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 240ms, box-shadow 240ms;
+  box-shadow: 0 1px 2px rgba(8, 22, 40, 0.04), 0 14px 34px rgba(8, 22, 40, 0.05);
+  transition: transform 280ms cubic-bezier(.16,1,.3,1), box-shadow 280ms, border-color 280ms;
   text-decoration: none;
   color: inherit;
 }
@@ -2548,7 +2549,16 @@ textarea {
 }
 
 .cases__card:hover .cases__media img {
-  transform: scale(1.04);
+  transform: scale(1.06);
+}
+
+/* 이미지 하단 그라데이션 스크림(깊이감) */
+.cases__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 58%, rgba(8, 22, 40, 0.16));
+  pointer-events: none;
 }
 
 .cases__body {
@@ -2567,36 +2577,55 @@ textarea {
 }
 
 .cases__body .row {
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  gap: 8px;
-  font-size: 13px;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
 }
 
 .cases__body .row dt {
-  color: #b4894b;
-  font-family: var(--f-mono, monospace);
+  flex: 0 0 auto;
+  color: var(--gold-700, #a77a2a);
+  background: rgba(180, 137, 75, 0.14);
+  font-family: var(--f-sans, sans-serif);
   font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding-top: 2px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  line-height: 1.35;
+  transform: translateY(-1px);
 }
 
 .cases__body .row dd {
   margin: 0;
   color: var(--ink-2, #2a3a55);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .cases__body .more {
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 14px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--navy-700, #10284a);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px dashed var(--hair, #e6dfd0);
+  border-top: 1px solid var(--hair, #e6dfd0);
+}
+
+.cases__body .more svg {
+  transition: transform 220ms cubic-bezier(.16,1,.3,1);
+}
+
+.cases__card:hover .cases__body .more svg {
+  transform: translateX(4px);
 }
 
 .cases__carousel-controls {
