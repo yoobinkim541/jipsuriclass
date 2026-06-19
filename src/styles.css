@@ -13920,6 +13920,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     --panel: #111827;
     --panel-soft: #162033;
     --panel-strong: #1f2937;
+    /* 견적/계산기 카드·하단 합계바(.calc-summary 등 15곳)가 var(--paper, #fff)로
+       흰색 폴백돼 다크에서 안 보이던 문제 → 다크 카드 표면으로 정의 */
+    --paper: #16213a;
     --border: rgba(226, 232, 240, 0.18);
     --text: #f8fafc;
     --muted: #cbd5e1;
@@ -14046,9 +14049,16 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .cases__body,
   .blog-card,
   .blog__card,
-  .contact-estimate-card {
+  .contact-estimate-card,
+  .office-card {
     background: var(--panel, #111827);
     border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  }
+  /* 오시는길 카드: 흰 배경 위 밝은 주소(h3)가 안 보이던 문제 → 다크 표면 + 자격 칩 대비 */
+  .office-certs__list li {
+    background: var(--panel-soft, #162033);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink-2, #d8e1f0);
   }
   /* 서비스 featured(첫) 카드: navy 배경이 데스크탑 미디어쿼리 전용이라 모바일·태블릿
      다크에선 흰 배경(#fff)으로 떨어져 제목이 안 보였음 → 전 폭에서 navy 유지 */
