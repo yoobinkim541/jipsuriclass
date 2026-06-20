@@ -9,7 +9,7 @@ export const prerender = true;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Seo from "../../components/seo/Seo.astro";
 import { SiteHeaderIsland } from "../../components/site/SiteHeaderIsland";
-import { SiteFooter, MobileQuickCta } from "../../components/site/SiteFooter";
+import { MobileQuickCta } from "../../components/site/SiteFooter";
 import {
   LandingSummarySection,
   LandingPointsSection,
@@ -56,6 +56,5 @@ const sections = merged.sections ?? defaultLandingSectionOrder;
       })
     }
   </main>
-  <SiteFooter />
   <MobileQuickCta />
 </BaseLayout>
