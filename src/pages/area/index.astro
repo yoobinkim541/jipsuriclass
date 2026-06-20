@@ -1,0 +1,70 @@
+---
+/**
+ * 지역 허브(/area) — 정적 Astro 목록 페이지.
+ * 기존 client:only SPA 라 비어있던 허브를 서버렌더해 모든 지역 페이지로 크롤 경로를 만든다.
+ */
+export const prerender = true;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Seo from "../../components/seo/Seo.astro";
+import { SiteHeaderIsland } from "../../components/site/SiteHeaderIsland";
+import { MobileQuickCta } from "../../components/site/SiteFooter";
+import { landingPageDefinitions } from "../../landingPages";
+
+const areas = landingPageDefinitions.filter(
+  (def) => def.categoryLabel === "지역" && def.path.startsWith("/area/")
+);
+
+const title = "지역별 집수리 안내 | 집수리클라쓰";
+const description =
+  "남양주, 구리, 하남, 서울, 경기 등 집수리클라쓰가 상담하는 지역을 확인하세요. 사진 상담으로 누수, 욕실, 도배, 부분수리를 빠르게 안내합니다.";
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: title,
+    url: "https://www.jipsuriclass.kr/area",
+    description
+  }
+];
+---
+<BaseLayout>
+  <Seo slot="head" title={title} description={description} path="/area" jsonLd={jsonLd} />
+  <SiteHeaderIsland client:idle brandHref="/" />
+  <main class="hub-page" id="top">
+    <header class="hub-page__head">
+      <h1>지역별 집수리</h1>
+      <p>집수리클라쓰가 상담·시공하는 지역을 모았습니다. 지역을 선택하면 해당 지역 안내와 자주 찾는 집수리 항목을 확인할 수 있습니다.</p>
+    </header>
+    <ul class="hub-grid">
+      {
+        areas.map((area) => (
+          <li class="hub-card">
+            <h2><a href={area.path}>{area.areaLabel} 집수리</a></h2>
+            <p>{area.description}</p>
+            <div class="hub-card__links">
+              <a href={area.path}>자세히 보기</a>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </main>
+  <MobileQuickCta />
+</BaseLayout>
+
+<style>
+  .hub-page { max-width: 1100px; margin: 0 auto; padding: clamp(40px, 6vw, 88px) clamp(18px, 5vw, 48px); }
+  .hub-page__head { margin-bottom: clamp(28px, 4vw, 48px); }
+  .hub-page__head h1 { font-family: var(--f-display, sans-serif); font-weight: 800; font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.02em; margin: 0 0 12px; color: var(--ink, #0b1a30); }
+  .hub-page__head p { font-size: clamp(15px, 1.4vw, 17px); color: var(--ink-2, #2a3a55); margin: 0; line-height: 1.6; max-width: 640px; }
+  .hub-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .hub-card { border: 1px solid var(--hair, #e6dfd0); border-radius: 14px; padding: 22px; background: var(--cream, #faf7f2); }
+  .hub-card h2 { font-size: 18px; font-weight: 700; margin: 0 0 8px; line-height: 1.3; }
+  .hub-card h2 a { color: var(--ink, #0b1a30); text-decoration: none; }
+  .hub-card h2 a:hover { color: var(--gold-600, #c49a38); }
+  .hub-card p { font-size: 14px; color: var(--ink-2, #2a3a55); margin: 0 0 14px; line-height: 1.55; }
+  .hub-card__links { display: flex; gap: 18px; }
+  .hub-card__links a { font-size: 13px; font-weight: 600; color: var(--navy-700, #10284a); text-decoration: none; }
+  .hub-card__links a:hover { text-decoration: underline; }
+</style>
