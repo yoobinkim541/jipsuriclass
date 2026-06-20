@@ -63,7 +63,9 @@ export default async function handler(_request: VercelRequest, response: VercelR
     response.setHeader("Cache-Control", "no-store");
     response.status(200).json({ items, source: "naver" });
   } catch (error) {
-    response.status(502).json({ items: [], source: "fallback", reason: String(error) });
+    // 내부 에러 원문(어느 업스트림/에러 타입인지)은 서버 로그로만 남기고 클라이언트엔 일반 메시지만.
+    console.error("[naver-blog] fetch failed", error instanceof Error ? error.message : error);
+    response.status(502).json({ items: [], source: "fallback", reason: "naver_blog_unavailable" });
   }
 }
 

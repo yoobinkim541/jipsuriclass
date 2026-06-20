@@ -47,11 +47,12 @@ export default async function handler(request: VercelRequest, response: VercelRe
 
     response.status(200).json({ lat, lng });
   } catch (error) {
+    // 내부 에러 원문은 서버 로그로만 — 클라이언트엔 폴백 좌표만 반환(정보노출 방지).
+    console.error("[naver-geocode] geocode failed", error instanceof Error ? error.message : error);
     response.status(200).json({
       lat: DEFAULT_LAT,
       lng: DEFAULT_LNG,
-      source: "fallback",
-      error: String(error)
+      source: "fallback"
     });
   }
 }

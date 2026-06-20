@@ -3259,3 +3259,18 @@ Verification:
 
 Follow-up:
 - 정적 랜딩 페이지(/service·/area)의 헤더·푸터·오피스는 빌드 타임 정적이라 영업정보 변경은 재배포 시 반영(홈 SPA는 즉시). 필요 시 해당 섹션 client island화로 라이브 반영 가능.
+
+## 2026-06-20 — 적대적 리뷰 #2: 공개 API 에러 원문 노출 제거 (정보노출)
+
+Changed files:
+- `api/naver-blog.ts`, `api/naver-geocode.ts`
+
+Implemented behavior:
+- `/loop` 적대적 리뷰 2회차(naver-blog 스크래핑/파싱·geocode 레이어). 무한루프(없음: loadAllBlogPosts maxPages=60+종료조건)·SSRF(없음: blogId가 서버 고정 env, 쿼리 입력 아님)·ReDoS(없음: lazy+경계문자 정규식) 검증 통과.
+- 공개 엔드포인트 2곳이 catch에서 `String(error)`를 클라이언트 JSON으로 반환 → 어느 업스트림 호출/내부 에러 타입이 외부로 노출(OWASP 정보노출). 내부 에러는 `console.error`로 서버 로그에만 남기고, 클라이언트엔 일반 메시지/폴백만 반환하도록 수정. 응답 shape는 보존(프론트 의존 필드 없음 확인).
+
+Verification:
+- `npx tsc --noEmit` 통과, `npm run build` 성공. 격리 워크트리(off origin/main b288b95).
+
+Note(의도적이라 미수정):
+- `api/create-quote-sheet.ts`·`api/check-quote-sheet.ts`의 `error.message` 반환은 어드민용 운영자 진단 메시지(환경변수/배포 설정 가이드, "비밀 아님" 명시)라 정보노출 취약점이 아님 → 유지.
