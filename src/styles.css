@@ -10700,6 +10700,10 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     flex-direction: column;
     height: 100%;
     justify-content: flex-end;
+    /* 회전 단어(nowrap 제목) 길이에 따라 칸이 늘었다 줄었다 하며 버튼 너비가 흔들리던 것
+       → 폭을 화면 너비로 못박고 min-width:0으로 제목이 칸을 못 늘리게 함(버튼 너비 고정) */
+    width: 100%;
+    min-width: 0;
   }
 
   /* .hero h1(0,1,1)이 .hero__title(0,1,0)을 이기므로 모바일 타이틀은 .hero 결합으로
