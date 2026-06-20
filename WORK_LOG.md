@@ -3259,3 +3259,19 @@ Verification:
 
 Follow-up:
 - 정적 랜딩 페이지(/service·/area)의 헤더·푸터·오피스는 빌드 타임 정적이라 영업정보 변경은 재배포 시 반영(홈 SPA는 즉시). 필요 시 해당 섹션 client island화로 라이브 반영 가능.
+
+## 2026-06-20 — 적대적 리뷰: 문의 API intake 입력 상한 (보안 하드닝)
+
+Changed files:
+- `api/inquiries.ts`
+
+Implemented behavior:
+- `/loop` 적대적 코드리뷰(API/입력 레이어) 1회차 결과. 다른 입력 필드(name/phone/message/serviceArea)는 길이 상한으로 서버에서 방어하는데 `intake`만 `typeof === "object"`만 확인하고 통째로 DB 저장·알림에 사용 → 임의 키/대용량 JSON 저장 남용 가능(파일 자체 방어 철학과 모순).
+- `sanitizeIntake()` 추가: 키 ≤40개·키길이 ≤100·문자열 ≤2000자·배열 ≤50개(문자열만) 상한, 설문이 실제 쓰는 형태(문자열·문자열 배열·숫자/불리언/null)만 보존하고 중첩 객체 등은 폐기. 정상 제출은 동작 변화 없음.
+
+Verification:
+- `npx tsc --noEmit` 통과, `npm run build` 성공(exit 0). 격리 워크트리(off origin/main b288b95)에서 작업.
+
+Follow-up(이번 회차 churn 회피로 보류, 관찰만):
+- `api/naver-geocode.ts`가 실패 시 `String(error)`를 클라이언트 JSON으로 반환(경미한 정보노출) → 서버 로그로만 옮기는 게 안전.
+- `api/inquiries.ts` 텔레그램 메시지의 `escapeHtml`이 `&#39;`(작은따옴표) 생성 → 텔레그램 HTML 파서 미지원으로 따옴표가 깨져 보일 수 있음(외형 이슈).
