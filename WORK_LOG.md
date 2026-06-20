@@ -3259,3 +3259,15 @@ Verification:
 
 Follow-up:
 - 정적 랜딩 페이지(/service·/area)의 헤더·푸터·오피스는 빌드 타임 정적이라 영업정보 변경은 재배포 시 반영(홈 SPA는 즉시). 필요 시 해당 섹션 client island화로 라이브 반영 가능.
+
+## 2026-06-20 — 적대적 리뷰 #7: AccountPage SSR-안전성(window 가드)
+
+Changed files:
+- `src/account/AccountPage.tsx`
+
+Implemented behavior:
+- `/loop` 적대적 리뷰 7회차(SSR-안전성 스윕). prerender Astro 페이지에서 서버렌더되는 컴포넌트(HomePage client:load, SiteHeaderIsland·LandingBackButton client:idle, MobileQuickCta·Landing 섹션·PrivacyPolicyPage·ServicePricingPage 정적)는 전부 SSR-안전 확인(window 접근이 effect/핸들러 내부 또는 typeof 가드, SiteHeaderIsland는 서버값→effect 갱신으로 하이드레이션 불일치 회피).
+- 유일 결함: `AccountPage.tsx`의 `useState(() => window.innerWidth > 720)`가 무가드 — 게으른 초기화는 렌더 중 실행되어 SSR 시 `window is not defined` 크래시. 형제 `NaverMapEmbed`는 동일 패턴을 `typeof window` 가드함. 현재 AccountPage는 App(client:only) 경유라 미발현이나, 진행 중 SSR 마이그레이션(home/hubs 완료)에서 /mypage 전환 시 즉시 크래시. `typeof window === "undefined" ? true : window.innerWidth > 720`로 가드(브라우저 동작 불변, 서버 기본=데스크탑 열림).
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main b288b95).
