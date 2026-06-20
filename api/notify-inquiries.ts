@@ -12,11 +12,26 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabasePublishableKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const resendApiKey = process.env.RESEND_API_KEY;
 const adminEmail = process.env.ADMIN_EMAIL;
+// 외부 스케줄러가 호출하는 무인 엔드포인트 — 시크릿이 설정돼 있으면 호출을 검증한다.
+// (미설정 시 동작 불변. 설정 후 스케줄러에 x-notify-secret 헤더 또는 ?secret= 를 추가하면
+//  무단 호출로 인한 어드민 이메일 발송 악용을 차단한다.)
+const notifySecret = process.env.NOTIFY_INQUIRIES_SECRET;
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
     response.status(405).json({ error: "Method Not Allowed" });
     return;
+  }
+
+  if (notifySecret) {
+    const provided =
+      (typeof request.headers["x-notify-secret"] === "string" && request.headers["x-notify-secret"]) ||
+      (typeof request.query.secret === "string" && request.query.secret) ||
+      "";
+    if (provided !== notifySecret) {
+      response.status(401).json({ error: "Unauthorized" });
+      return;
+    }
   }
 
   if (!supabaseUrl || !supabasePublishableKey) {
@@ -49,8 +64,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
   });
 
   if (!listResponse.ok) {
-    const errorText = await listResponse.text();
-    response.status(listResponse.status).json({ error: errorText || "Failed to read inquiries" });
+    // 업스트림(Supabase) 응답 본문은 서버 로그에만 — 클라이언트엔 일반 메시지(스키마/정책 정보 누출 방지).
+    const errorText = await listResponse.text().catch(() => "");
+    console.error("[notify-inquiries] list failed", listResponse.status, errorText);
+    response.status(502).json({ error: "Failed to read inquiries" });
     return;
   }
 
@@ -75,8 +92,10 @@ export default async function handler(request: VercelRequest, response: VercelRe
   });
 
   if (!emailResponse.ok) {
-    const errorText = await emailResponse.text();
-    response.status(emailResponse.status).json({ error: errorText || "Failed to send email" });
+    // 업스트림(Resend) 응답 본문은 서버 로그에만 — 클라이언트엔 일반 메시지.
+    const errorText = await emailResponse.text().catch(() => "");
+    console.error("[notify-inquiries] email failed", emailResponse.status, errorText);
+    response.status(502).json({ error: "Failed to send email" });
     return;
   }
 

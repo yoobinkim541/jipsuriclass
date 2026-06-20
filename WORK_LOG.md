@@ -3259,3 +3259,22 @@ Verification:
 
 Follow-up:
 - 정적 랜딩 페이지(/service·/area)의 헤더·푸터·오피스는 빌드 타임 정적이라 영업정보 변경은 재배포 시 반영(홈 SPA는 즉시). 필요 시 해당 섹션 client island화로 라이브 반영 가능.
+
+## 2026-06-20 — 적대적 리뷰 #3: notify-inquiries 무인 엔드포인트 하드닝
+
+Changed files:
+- `api/notify-inquiries.ts`
+
+Implemented behavior:
+- `/loop` 적대적 리뷰 3회차(시크릿/인증 엔드포인트). `notify-inquiries`는 vercel.json에 crons 키가 없어 Vercel cron이 아니라 외부 스케줄러로 호출되는 **인증 없는 공개 GET**이었음 → 누구나 호출 시 (a) 어드민에게 다이제스트 이메일 발송(비용·악용), (b) Supabase/Resend **업스트림 에러 본문 원문**을 클라이언트에 노출.
+- (1) opt-in 시크릿 게이트 추가: `NOTIFY_INQUIRIES_SECRET` 설정 시 `x-notify-secret` 헤더 또는 `?secret=` 검증(미설정 시 동작 불변 — 호출측 모르는 상태에서 강제 인증으로 다이제스트를 깨지 않기 위함). (2) 업스트림 에러 본문은 `console.error` 서버 로그로만, 클라이언트엔 일반 메시지(502)만 반환.
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main b288b95).
+
+활성화 필요(후속, 사용자):
+- 무단 호출 차단을 켜려면 Vercel env에 `NOTIFY_INQUIRIES_SECRET`(임의 긴 토큰) 등록 + 이 엔드포인트를 호출하는 스케줄러에 동일 `x-notify-secret` 헤더(또는 `?secret=`) 추가. (sync-blog-snapshot의 BLOG_SYNC_SECRET와 동일 패턴)
+
+Note(이번 회차 미수정, 문서화):
+- `api/sync-blog-snapshot.ts`(40-43): 아웃바운드 fetch URL을 클라이언트 제어 `x-forwarded-host`/`host`로 구성 → 시크릿 보유자가 스냅샷 오염 가능한 Host 헤더 SSRF(인증 게이트 뒤). VERCEL_URL 전환은 배포보호 환경에서 일일 동기화를 조용히 깨뜨릴 위험이 있어, 실제 호출 Host 확인 후 호스트 allowlist로 고치는 것을 권장.
+- `api/sync-blog-snapshot.ts`(27): 시크릿을 `?secret=`로도 받음 → 접근 로그에 시크릿 남을 수 있음. 헤더(`x-sync-secret`) 전용 권장.
