@@ -214,7 +214,7 @@ function setStructuredData(jsonLd?: Record<string, unknown>[]) {
   document.head.appendChild(script);
 }
 
-function HomePage() {
+export function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [blogPosts, setBlogPosts] = useState<PortfolioPost[]>([]);
   const [blogSource, setBlogSource] = useState<"loading" | "naver" | "fallback">("loading");
@@ -339,9 +339,12 @@ function SiteHeader({
 }) {
   const menuItems = navItems;
   const desktopMenuItems = menuItems;
-  const isHome = window.location.pathname === "/";
+  const isHome = typeof window === "undefined" ? true : window.location.pathname === "/";
   const resolveHref = (href: string) => (href.startsWith("#") && !isHome ? `/${href}` : href);
   const resolveActiveHref = () => {
+    if (typeof window === "undefined") {
+      return menuItems.filter((item) => item.href.startsWith("#"))[0]?.href ?? "";
+    }
     if (isHome) {
       const anchorItems = menuItems.filter((item) => item.href.startsWith("#"));
       let activeHref = anchorItems[0]?.href ?? "";
@@ -2007,21 +2010,9 @@ function PortfolioPage() {
 }
 
 function SiteFooter() {
-  return (
-    <footer className="footer">
-      <strong>{business.name}</strong>
-      <p>
-        {business.registrationNumber} · {business.owner} · {business.address}
-      </p>
-      <p>개인정보는 상담 목적 외 사용하지 않으며, 아래 정책 페이지에서 처리 방침을 확인할 수 있습니다.</p>
-      <a className="footer-admin-link" href="/portfolio">
-        현장사례 모아보기
-      </a>
-      <a className="footer-admin-link" href="/privacy">
-        개인정보처리방침
-      </a>
-    </footer>
-  );
+  // 푸터는 SEO(서버렌더 크롤 링크 + 상호·정책)를 위해 BaseLayout.astro 에서 단일 렌더한다.
+  // SPA 중복 푸터 방지로 여기서는 렌더하지 않는다.
+  return null;
 }
 
 function LandingPage({ content }: { content: NonNullable<ReturnType<typeof getLandingPageDefinition>> }) {

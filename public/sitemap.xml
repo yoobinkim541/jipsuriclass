@@ -8,6 +8,18 @@
     <priority>1.0</priority>
   </url>
 
+  <!-- 허브(서비스/지역 목록) -->
+  <url>
+    <loc>https://www.jipsuriclass.kr/service</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.jipsuriclass.kr/area</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
   <!-- 주요 기능 페이지 -->
   <url>
     <loc>https://www.jipsuriclass.kr/estimate</loc>
