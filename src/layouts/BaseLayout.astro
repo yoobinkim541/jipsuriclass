@@ -11,6 +11,13 @@ import "../styles.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
+import { landingPageDefinitions } from "../landingPages";
+import { servicePricingRegistry } from "../pricing/registry";
+
+// SEO: 정적(서버렌더) 내부 링크 디렉터리 — client:only SPA 라 홈/허브에 크롤 가능한
+// 링크가 없어 발생하던 "발견됨-미색인"을 해소한다. 모든 페이지 정적 HTML에 노출된다.
+const directoryServices = landingPageDefinitions.filter((page) => page.pageType === "Service");
+const directoryAreas = landingPageDefinitions.filter((page) => page.pageType === "Place");
 ---
 <!doctype html>
 <html lang="ko">
@@ -47,6 +54,49 @@ import "@fontsource/jetbrains-mono/500.css";
   </head>
   <body>
     <slot />
+    <nav class="site-directory" aria-label="집수리클라쓰 전체 페이지">
+      <div class="site-directory__inner">
+        <section>
+          <h2>집수리 서비스</h2>
+          <ul>
+            {directoryServices.map((page) => (
+              <li>
+                <a href={page.path}>{page.serviceType ?? page.path}</a>
+                {servicePricingRegistry[page.path] && <Fragment> · <a href={`${page.path}/pricing`}>가격표</a></Fragment>}
+              </li>
+            ))}
+          </ul>
+        </section>
+        <section>
+          <h2>지역별 집수리</h2>
+          <ul>
+            {directoryAreas.map((page) => (
+              <li><a href={page.path}>{page.areaLabel} 집수리</a></li>
+            ))}
+          </ul>
+        </section>
+        <section>
+          <h2>바로가기</h2>
+          <ul>
+            <li><a href="/">홈</a></li>
+            <li><a href="/service">서비스 전체</a></li>
+            <li><a href="/area">지역 전체</a></li>
+            <li><a href="/portfolio">현장 사례</a></li>
+            <li><a href="/estimate">간편 견적</a></li>
+            <li><a href="/diagnosis">증상 자가진단</a></li>
+            <li><a href="/privacy">개인정보처리방침</a></li>
+          </ul>
+        </section>
+      </div>
+    </nav>
+    <style>
+      .site-directory { border-top: 1px solid var(--hair, rgba(11, 26, 48, 0.1)); background: var(--cream, #faf7f2); }
+      .site-directory__inner { max-width: 1320px; margin: 0 auto; padding: clamp(28px, 4vw, 48px) clamp(18px, 5vw, 64px); display: grid; gap: 24px 32px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+      .site-directory h2 { font-size: 14px; font-weight: 700; margin: 0 0 12px; color: var(--ink, #0b1a30); }
+      .site-directory ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+      .site-directory a { color: var(--ink-2, #2a3a55); text-decoration: none; font-size: 13px; line-height: 1.5; }
+      .site-directory a:hover { color: var(--gold-600, #c49a38); text-decoration: underline; }
+    </style>
     <script>
       if ("serviceWorker" in navigator && import.meta.env.PROD) {
         window.addEventListener("load", () => {
