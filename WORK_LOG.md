@@ -3295,3 +3295,15 @@ Verification:
 
 Follow-up:
 - `fix/review-notify-cron-hardening` 브랜치(미머지)가 `NOTIFY_INQUIRIES_SECRET`를 추가하면, 이 워크플로의 `curl`에 `?secret=`/헤더를 함께 넣어야 401을 피함(현재 미설정 시 동작 불변).
+
+## 2026-06-20 — 적대적 리뷰: 문의 API intake 입력 상한 (보안 하드닝)
+
+Changed files:
+- `api/inquiries.ts`
+
+Implemented behavior:
+- `/loop` 적대적 코드리뷰(API/입력 레이어) 결과. name/phone/message/serviceArea는 길이 상한으로 서버 방어하는데 `intake`만 `typeof === "object"`만 확인하고 통째로 DB 저장·알림에 사용 → 임의 키/대용량 JSON 저장 남용 가능.
+- `sanitizeIntake()` 추가: 키 ≤40·키길이 ≤100·문자열 ≤2000·배열 ≤50(문자열만) 상한, 설문이 실제 쓰는 형태만 보존. 정상 제출 동작 변화 없음. (병렬 머지된 getAuthenticatedUser 신원 도출과 공존.)
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. origin/main 리베이스본.

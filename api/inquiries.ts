@@ -62,6 +62,36 @@ async function getAuthenticatedUser(authorization: string): Promise<Authenticate
   }
 }
 
+const MAX_INTAKE_KEYS = 40;
+const MAX_INTAKE_KEY_LEN = 100;
+const MAX_INTAKE_STRING_LEN = 2000;
+const MAX_INTAKE_ARRAY_LEN = 50;
+
+// intake도 다른 입력 필드처럼 서버에서 상한을 둔다 — 임의 키/대용량 JSON 저장 남용 방지.
+// 설문이 쓰는 형태(문자열·문자열 배열·숫자/불리언)만 보존하고 중첩 객체 등은 폐기.
+function sanitizeIntake(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return {};
+  }
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>).slice(0, MAX_INTAKE_KEYS)) {
+    if (key.length > MAX_INTAKE_KEY_LEN) {
+      continue;
+    }
+    if (typeof value === "string") {
+      out[key] = value.slice(0, MAX_INTAKE_STRING_LEN);
+    } else if (typeof value === "number" || typeof value === "boolean" || value === null) {
+      out[key] = value;
+    } else if (Array.isArray(value)) {
+      out[key] = value
+        .filter((item): item is string => typeof item === "string")
+        .slice(0, MAX_INTAKE_ARRAY_LEN)
+        .map((item) => item.slice(0, MAX_INTAKE_STRING_LEN));
+    }
+  }
+  return out;
+}
+
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -87,7 +117,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
     }))
     .filter((item) => item.url && isAllowedAttachmentUrl(item.url))
     .slice(0, MAX_ATTACHMENTS);
-  const intake = payload.intake && typeof payload.intake === "object" ? payload.intake : {};
+  const intake = sanitizeIntake(payload.intake);
 
   if (!name || !phone || !message) {
     response.status(400).json({ error: "Required fields missing" });
