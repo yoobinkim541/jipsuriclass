@@ -1,0 +1,41 @@
+---
+/**
+ * 홈(/) — 서버렌더 + 하이드레이션 (계획 2-2).
+ * 기존 [...all].astro 의 <App client:only> 는 홈 본문이 정적 HTML에 0이라 색인이 안 됐다.
+ * App 의 라우터는 SSR 시 pathname="/" 로 떨어져 HomePage 를 그리므로, 홈만 별도 index.astro
+ * 에서 <HomePage client:load /> 로 서버렌더해 본문(히어로·서비스·절차…)을 정적 HTML에 노출하고
+ * 클라이언트에서 하이드레이션한다. (/ 는 구체 라우트라 [...all] catch-all 을 이긴다.)
+ */
+export const prerender = true;
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Seo from "../components/seo/Seo.astro";
+import { HomePage } from "../App";
+
+const title = "집수리클라쓰 - 클라쓰가 다른 종합 집수리";
+const description =
+  "집수리클라쓰는 서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 안내합니다. 7개 국가공인 건축자격을 보유한 대표가 직접 시공에 참여합니다.";
+const siteUrl = "https://www.jipsuriclass.kr";
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "HomeAndConstructionBusiness",
+    name: "집수리클라쓰",
+    url: siteUrl,
+    image: `${siteUrl}/og-image.png`,
+    telephone: "010-3323-9677",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "경기도 남양주시 화도읍 경춘로 1790-2 106호",
+      addressCountry: "KR"
+    },
+    areaServed: ["서울", "경기"],
+    openingHours: "Mo-Sa 08:00-21:00",
+    description
+  }
+];
+---
+<BaseLayout>
+  <Seo slot="head" title={title} description={description} path="/" jsonLd={jsonLd} />
+  <HomePage client:load />
+</BaseLayout>

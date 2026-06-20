@@ -214,7 +214,7 @@ function setStructuredData(jsonLd?: Record<string, unknown>[]) {
   document.head.appendChild(script);
 }
 
-function HomePage() {
+export function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [blogPosts, setBlogPosts] = useState<PortfolioPost[]>([]);
   const [blogSource, setBlogSource] = useState<"loading" | "naver" | "fallback">("loading");
@@ -339,9 +339,12 @@ function SiteHeader({
 }) {
   const menuItems = navItems;
   const desktopMenuItems = menuItems;
-  const isHome = window.location.pathname === "/";
+  const isHome = typeof window === "undefined" ? true : window.location.pathname === "/";
   const resolveHref = (href: string) => (href.startsWith("#") && !isHome ? `/${href}` : href);
   const resolveActiveHref = () => {
+    if (typeof window === "undefined") {
+      return menuItems.filter((item) => item.href.startsWith("#"))[0]?.href ?? "";
+    }
     if (isHome) {
       const anchorItems = menuItems.filter((item) => item.href.startsWith("#"));
       let activeHref = anchorItems[0]?.href ?? "";
