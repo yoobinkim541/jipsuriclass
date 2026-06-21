@@ -7615,6 +7615,53 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   background: var(--cream-2, #f1ece1);
 }
 
+/* 문의가 0건일 때의 빈 상태 — 막다른 메시지 대신 견적 상담으로 유도하는 CTA 카드. */
+.account-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  min-height: 240px;
+  padding: clamp(32px, 6vw, 56px) 24px;
+  background: var(--cream-2, #f1ece1);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 16px;
+}
+.account-empty__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 4px;
+  border-radius: 16px;
+  background: var(--cream, #faf7f2);
+  border: 1px solid var(--hair, #e6dfd0);
+  color: var(--gold-600, #c49a38);
+}
+.account-empty__title {
+  font-family: var(--f-display, "Inter", sans-serif);
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink, #0b1a30);
+}
+.account-empty__desc {
+  margin: 0;
+  max-width: 420px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-3, #5b6781);
+}
+.account-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
 .admin-hero .admin-login-card {
   align-self: stretch;
 }

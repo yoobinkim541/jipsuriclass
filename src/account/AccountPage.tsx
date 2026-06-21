@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ClipboardList,
   Download,
   Globe,
   Edit2,
   KeyRound,
   LoaderCircle,
   LogOut,
+  Phone,
   RefreshCcw,
   ShieldCheck,
 } from "lucide-react";
@@ -323,6 +325,7 @@ export function AccountPage() {
         </div>
       </section>
 
+      {totalInquiries > 0 ? (
       <section className="account-summary-grid" aria-label="마이페이지 요약">
         <article className="account-summary-card">
           <span>{content.summary[0]?.label ?? "총 문의"}</span>
@@ -340,6 +343,7 @@ export function AccountPage() {
           <p>{content.summary[2]?.description ?? "관리자 알림이 전송된 항목을 보여줍니다."}</p>
         </article>
       </section>
+      ) : null}
 
       {error ? <p className="admin-error">{error}</p> : null}
 
@@ -484,7 +488,25 @@ export function AccountPage() {
               );
             })
           ) : (
-            <div className="admin-empty">{content.list.emptyText}</div>
+            <div className="account-empty">
+              <span className="account-empty__icon" aria-hidden="true">
+                <ClipboardList size={26} />
+              </span>
+              <strong className="account-empty__title">{content.list.emptyText}</strong>
+              <p className="account-empty__desc">
+                간단한 설문으로 견적 상담을 신청하면, 진행 상태와 받은 견적서를 이 화면에서 한눈에 확인할 수 있어요.
+              </p>
+              <div className="account-empty__actions">
+                <a className="admin-primary-button" href="/estimate">
+                  <ClipboardList size={16} />
+                  견적 상담 신청하기
+                </a>
+                <a className="admin-ghost-button" href={business.phoneHref}>
+                  <Phone size={16} />
+                  전화 상담
+                </a>
+              </div>
+            </div>
           )}
         </div>
       </section>
