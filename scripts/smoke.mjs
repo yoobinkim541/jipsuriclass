@@ -6,6 +6,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const DIST = process.env.SMOKE_DIST || "dist";
+const STATIC_DIST = existsSync(join(DIST, "index.html")) ? DIST : join(DIST, "client");
 const fails = [];
 const ok = [];
 
@@ -19,7 +20,7 @@ function check(label, fn) {
 }
 
 function read(rel) {
-  const p = join(DIST, rel);
+  const p = join(STATIC_DIST, rel);
   if (!existsSync(p)) throw new Error(`없음 (${p})`);
   return readFileSync(p, "utf8");
 }
@@ -36,10 +37,10 @@ check("index.html", () => {
 
 // 2. JS 번들이 실제로 빌드됐는가
 check("assets 번들", () => {
-  const dir = join(DIST, "assets");
-  if (!existsSync(dir)) throw new Error("dist/assets 없음");
+  const candidates = [join(STATIC_DIST, "assets"), join(STATIC_DIST, "_astro")];
+  const dir = candidates.find((candidate) => existsSync(candidate) && readdirSync(candidate).some((f) => f.endsWith(".js")));
+  if (!dir) throw new Error("assets/_astro .js 번들 없음");
   const js = readdirSync(dir).filter((f) => f.endsWith(".js"));
-  if (js.length === 0) throw new Error(".js 번들 없음");
   const biggest = Math.max(...js.map((f) => statSync(join(dir, f)).size));
   if (biggest < 10_000) throw new Error(`번들이 비정상적으로 작음 (${biggest}B)`);
   return `${js.length}개 / 최대 ${(biggest / 1024).toFixed(0)}KB`;
@@ -64,6 +65,7 @@ for (const f of ["sitemap.xml", "manifest.webmanifest", "robots.txt"]) {
 
 // 결과
 console.log(`smoke 대상: ${DIST}`);
+console.log(`static 대상: ${STATIC_DIST}`);
 for (const o of ok) console.log(`  ✓ ${o}`);
 for (const f of fails) console.log(`  ✗ ${f}`);
 
