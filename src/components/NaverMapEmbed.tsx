@@ -11,7 +11,10 @@ type NaverMapEmbedProps = {
 const naverPlaceEmbedUrl = "https://map.naver.com/p/entry/place/1406150223?placePath=%2Fhome";
 
 export function NaverMapEmbed({ address, title }: NaverMapEmbedProps) {
-  const [isMobile, setIsMobile] = useState(() => (typeof window !== "undefined" ? window.innerWidth <= 720 : false));
+  // SSR/하이드레이션 일치를 위해 서버와 동일한 결정값(false=데스크탑)으로 시작하고,
+  // 실제 뷰포트는 아래 useEffect가 마운트 후 갱신한다(초기화에서 window를 읽으면
+  // 모바일 첫 렌더가 서버 HTML과 달라 하이드레이션 불일치가 난다).
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 720px)");

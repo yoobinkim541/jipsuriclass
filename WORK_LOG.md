@@ -3308,3 +3308,15 @@ Verification:
 - `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 557c54c).
 
 워크플로우 9회차 과보고 판정(미수정): contentSections/landingPages "유효하지 않은 항목 silent 필터링"(#5~9)은 의도된 방어적 정규화, InquiryQuoteEditor 빈 placeholder 필터(#13)는 정상, SiteContentService LWW(#10)·stale closure(#12)는 단일 관리자라 영향 미미. notify-inquiries 에러노출(#3,#4)은 fix/review-notify-cron-hardening PR이 이미 해결. smoke.mjs ENOTDIR(#2)은 사실상 불가능 시나리오.
+
+## 2026-06-21 — 적대적 리뷰 #17: NaverMapEmbed 하이드레이션 불일치 수정
+
+Changed files:
+- `src/components/NaverMapEmbed.tsx`
+
+Implemented behavior:
+- NaverMapEmbed는 OfficeSection→HomePage(client:load=SSR) 트리에서 서버렌더된다. `useState(()=>typeof window!=="undefined"?window.innerWidth<=720:false)`가 서버=false(데스크탑 iframe)/모바일 클라 첫 렌더=true(모바일 링크카드)를 반환해 모바일 방문자 전원에서 하이드레이션 불일치(경고+서브트리 재렌더+콘텐츠 깜빡임) 발생. 홈 위치 섹션이라 모바일 트래픽 다수 영향.
+- 이미 존재하는 useEffect가 `media.matches`로 isMobile을 갱신하므로, 초기값을 결정적 `false`로 바꿔 서버=클라첫렌더 일치→불일치 제거(SiteHeaderIsland의 서버값→effect 갱신 패턴과 동일). 마운트 후 effect가 모바일 뷰포트를 반영.
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 604d7f9).
