@@ -10,17 +10,45 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Seo from "../components/seo/Seo.astro";
 import App from "../App";
 
+const legacySpaPrefixes = ["/admin", "/mypage", "/account", "/login", "/diagnosis", "/estimate", "/portfolio", "/calculator"];
+const legacySpaExactPaths = [
+  "/service/electric/price",
+  "/service/waterproofing-tile/price",
+  "/service/waterproofing/price",
+  "/service/tile/price"
+];
+const pathname = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const isLegacySpaPath =
+  legacySpaExactPaths.includes(pathname) ||
+  legacySpaPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
+
 // 초기 HTML용 기본 SEO. 실제 경로별 메타는 SPA의 usePageSeo가 런타임에 갱신한다(기존 동작 유지).
-const title = "집수리클라쓰 - 클라쓰가 다른 종합 집수리";
-const description =
-  "집수리클라쓰는 서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 안내합니다.";
+const title = isLegacySpaPath ? "집수리클라쓰 - 클라쓰가 다른 종합 집수리" : "페이지를 찾을 수 없습니다 - 집수리클라쓰";
+const description = isLegacySpaPath
+  ? "집수리클라쓰는 서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 안내합니다."
+  : "요청하신 페이지를 찾을 수 없습니다. 집수리클라쓰 홈에서 필요한 집수리 서비스를 다시 찾아보세요.";
+
+if (!isLegacySpaPath) {
+  Astro.response.status = 404;
+}
 ---
 <BaseLayout>
-  <Seo slot="head" title={title} description={description} path={Astro.url.pathname} />
-  <noscript>
-    <h1>집수리클라쓰 - 서울·경기 종합 집수리</h1>
-    <p>사진 상담으로 생활 집수리, 누수 복구, 욕실·주방·도배·전기·목공 공사를 안내합니다. 7개 국가공인 건축자격을 보유한 대표가 직접 시공에 참여합니다.</p>
-    <p>전화: 010-3323-9677 | 운영: 월~토 08:00–21:00</p>
-  </noscript>
-  <App client:only="react" />
+  <Seo slot="head" title={title} description={description} path={Astro.url.pathname} noindex={!isLegacySpaPath} />
+  {isLegacySpaPath ? (
+    <>
+      <noscript>
+        <h1>집수리클라쓰 - 서울·경기 종합 집수리</h1>
+        <p>사진 상담으로 생활 집수리, 누수 복구, 욕실·주방·도배·전기·목공 공사를 안내합니다. 7개 국가공인 건축자격을 보유한 대표가 직접 시공에 참여합니다.</p>
+        <p>전화: 010-3323-9677 | 운영: 월~토 08:00–21:00</p>
+      </noscript>
+      <App client:only="react" />
+    </>
+  ) : (
+    <main class="not-found-page" style="max-width: 720px; margin: 96px auto; padding: 0 20px; text-align: center;">
+      <p style="font-weight: 700; color: #b8822f; letter-spacing: 0.12em; text-transform: uppercase;">404</p>
+      <h1>페이지를 찾을 수 없습니다</h1>
+      <p>주소가 바뀌었거나 삭제된 페이지입니다. 홈으로 이동해 필요한 집수리 서비스를 다시 찾아보세요.</p>
+      <a href="/" style="display: inline-flex; margin-top: 20px; padding: 12px 18px; border-radius: 999px; background: #10284a; color: #fff; text-decoration: none; font-weight: 700;">홈으로 이동</a>
+    </main>
+  )}
 </BaseLayout>
