@@ -6393,14 +6393,28 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .inquiry-intake-list {
   color: var(--ink-2, #2a3a55);
   display: grid;
-  gap: 8px;
+  gap: 6px;
   list-style: none;
   margin: 12px 0 0;
   padding: 0;
+  font-size: 13px;
+}
+
+.inquiry-intake-list li {
+  align-items: baseline;
+  background: var(--cream-2, #f1ece1);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 8px 10px;
 }
 
 .inquiry-intake-list strong {
-  margin-right: 6px;
+  color: var(--ink-3, #5b6781);
+  flex-shrink: 0;
+  font-weight: 700;
 }
 
 .admin-insight-grid-secondary {
@@ -7661,6 +7675,52 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   justify-content: center;
   margin-top: 8px;
 }
+
+/* 데이터가 있을 때도 새 견적 상담으로 진입할 수 있는 CTA(빈 상태 외 경로). */
+.account-new-cta {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px 0 14px;
+}
+
+/* =====================================================================
+   마이페이지 다크모드(수동 토글 data-theme) 보정 — self-contained 블록.
+   토큰(--ink/--cream/--hair/--panel…)은 이미 flip되지만, 아래 카드들은
+   배경이 #fff/#f3f1eb 등으로 하드코딩돼 토글-다크에서 흰 카드로 남았다.
+   전부 .mypage-shell로 스코프 → 어드민 대시보드(공유 .admin-row 등) 불간섭.
+   ===================================================================== */
+:root[data-theme="dark"] .mypage-shell {
+  background: var(--page-bg, #0b1220);
+}
+:root[data-theme="dark"] .mypage-brand {
+  color: var(--ink, #f8fafc);
+}
+:root[data-theme="dark"] .mypage-shell .admin-row,
+:root[data-theme="dark"] .mypage-shell .account-summary-card,
+:root[data-theme="dark"] .mypage-shell .admin-login-card,
+:root[data-theme="dark"] .mypage-shell .account-quote-grid div,
+:root[data-theme="dark"] .mypage-shell .account-quote-list li {
+  background: var(--panel, #111827);
+  border-color: var(--hair, rgba(226, 232, 240, 0.18));
+}
+:root[data-theme="dark"] .mypage-shell .account-quote-card {
+  background: linear-gradient(180deg, var(--panel-soft, #162033) 0%, var(--panel, #111827) 100%);
+  border-color: var(--hair, rgba(226, 232, 240, 0.18));
+}
+:root[data-theme="dark"] .mypage-shell .admin-login-card input,
+:root[data-theme="dark"] .mypage-shell .account-edit-form input,
+:root[data-theme="dark"] .mypage-shell .account-edit-form textarea {
+  background: var(--panel-soft, #162033);
+  border-color: var(--hair, rgba(226, 232, 240, 0.18));
+  color: var(--ink, #f8fafc);
+}
+/* 상태 배지: 라이트 파스텔 대신 다크 틴트로(흰 스티커처럼 튀지 않게). */
+:root[data-theme="dark"] .mypage-shell .status-new { background: rgba(194, 65, 12, 0.22); color: #fdba74; }
+:root[data-theme="dark"] .mypage-shell .status-contacted { background: rgba(14, 116, 144, 0.22); color: #67e8f9; }
+:root[data-theme="dark"] .mypage-shell .status-done { background: rgba(4, 120, 87, 0.22); color: #6ee7b7; }
+:root[data-theme="dark"] .mypage-shell .status-spam { background: rgba(185, 28, 28, 0.22); color: #fca5a5; }
+:root[data-theme="dark"] .mypage-shell .status-quoted { background: rgba(109, 40, 217, 0.24); color: #c4b5fd; }
+:root[data-theme="dark"] .mypage-shell .status-active { background: rgba(15, 118, 110, 0.22); color: #5eead4; }
 
 .admin-hero .admin-login-card {
   align-self: stretch;
