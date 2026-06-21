@@ -141,7 +141,9 @@ async function resolveFirstLiveImage(candidates: string[]) {
 
 async function isLiveImage(url: string) {
   try {
+    // 타임아웃 가드 — 죽은/느린 이미지 후보가 블로그 로딩을 무기한 매달지 않도록(서버측 sibling과 동일).
     const response = await fetch(url, {
+      signal: AbortSignal.timeout(3000),
       headers: {
         Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
         Referer: "https://blog.naver.com/",

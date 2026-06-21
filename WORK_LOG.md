@@ -3295,3 +3295,16 @@ Verification:
 
 Follow-up:
 - `fix/review-notify-cron-hardening` 브랜치(미머지)가 `NOTIFY_INQUIRIES_SECRET`를 추가하면, 이 워크플로의 `curl`에 `?secret=`/헤더를 함께 넣어야 401을 피함(현재 미설정 시 동작 불변).
+
+## 2026-06-21 — 적대적 리뷰 #9(워크플로우): 블로그 이미지 타임아웃 + DiagnosisPage SSR 가드
+
+Changed files:
+- `src/services/NaverBlogSource.ts`, `src/diagnosis/DiagnosisPage.tsx`
+
+Implemented behavior:
+- 멀티에이전트 적대 검증 확정 2건. (1) 클라이언트 `isLiveImage()` fetch에 타임아웃이 없어 죽은/느린 이미지 후보가 블로그 로딩을 무기한 매달 수 있음 → `AbortSignal.timeout(3000)` 추가(서버측 api/naver-blog-source 동일 컨벤션). (2) `DiagnosisPage`의 `useMemo(()=>new URLSearchParams(window.location.search))`가 렌더타임 window 접근 → 현재 client:only라 미발현이나 SSR 전환 시 크래시(iter7 AccountPage와 동일 클래스). `typeof window` 가드.
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 557c54c).
+
+워크플로우 9회차 과보고 판정(미수정): contentSections/landingPages "유효하지 않은 항목 silent 필터링"(#5~9)은 의도된 방어적 정규화, InquiryQuoteEditor 빈 placeholder 필터(#13)는 정상, SiteContentService LWW(#10)·stale closure(#12)는 단일 관리자라 영향 미미. notify-inquiries 에러노출(#3,#4)은 fix/review-notify-cron-hardening PR이 이미 해결. smoke.mjs ENOTDIR(#2)은 사실상 불가능 시나리오.

@@ -11,7 +11,11 @@ import type { DiagnosisPageContent } from "../types";
 const siteContentService = new SiteContentService();
 
 export function DiagnosisPage() {
-  const query = useMemo(() => new URLSearchParams(window.location.search), []);
+  // SSR(빌드/프리렌더) 시 window가 없으므로 가드 — 렌더 중 실행되는 useMemo 초기화 안전화.
+  const query = useMemo(
+    () => new URLSearchParams(typeof window === "undefined" ? "" : window.location.search),
+    []
+  );
   const [content, setContent] = useState<DiagnosisPageContent>(defaultDiagnosisPageContent);
 
   useEffect(() => {
