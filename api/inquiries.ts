@@ -7,8 +7,6 @@ type InquiryPayload = {
   message?: string;
   attachments?: Array<{ name?: string; url?: string; type?: string }>;
   intake?: Record<string, unknown>;
-  userId?: string | null;
-  userEmail?: string | null;
 };
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -34,6 +32,33 @@ function isAllowedAttachmentUrl(raw: string): boolean {
     return url.protocol === "https:" && supabaseHost !== "" && url.host === supabaseHost;
   } catch {
     return false;
+  }
+}
+
+type AuthenticatedUser = {
+  id?: string;
+  email?: string;
+};
+
+async function getAuthenticatedUser(authorization: string): Promise<AuthenticatedUser | null> {
+  if (!supabaseUrl || !supabasePublishableKey || authorization === `Bearer ${supabasePublishableKey}`) {
+    return null;
+  }
+
+  try {
+    const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        apikey: supabasePublishableKey,
+        Authorization: authorization
+      }
+    });
+
+    if (!userResponse.ok) return null;
+
+    const user = (await userResponse.json()) as AuthenticatedUser;
+    return user.id ? user : null;
+  } catch {
+    return null;
   }
 }
 
@@ -63,8 +88,6 @@ export default async function handler(request: VercelRequest, response: VercelRe
     .filter((item) => item.url && isAllowedAttachmentUrl(item.url))
     .slice(0, MAX_ATTACHMENTS);
   const intake = payload.intake && typeof payload.intake === "object" ? payload.intake : {};
-  const userId = payload.userId ? String(payload.userId).trim() : null;
-  const userEmail = payload.userEmail ? String(payload.userEmail).trim() : null;
 
   if (!name || !phone || !message) {
     response.status(400).json({ error: "Required fields missing" });
@@ -80,6 +103,9 @@ export default async function handler(request: VercelRequest, response: VercelRe
   const authorization = typeof request.headers.authorization === "string" && request.headers.authorization
     ? request.headers.authorization
     : `Bearer ${supabasePublishableKey}`;
+  const user = await getAuthenticatedUser(authorization);
+  const userId = user?.id ?? null;
+  const userEmail = user?.email ?? null;
 
   const insertResponse = await fetch(`${supabaseUrl}/rest/v1/inquiries`, {
     method: "POST",

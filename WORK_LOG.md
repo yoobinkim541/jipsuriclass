@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-06-21 - 공개 QA: 문의 API 신원 조작 방지 + Playwright 로컬 서버 정합화
+
+Changed files:
+- `api/inquiries.ts`, `playwright.config.ts`
+
+Implemented behavior:
+- `/api/inquiries`가 클라이언트 payload의 `userId/userEmail`을 신뢰하지 않도록 제거. Authorization 토큰이 있을 때 Supabase Auth `/auth/v1/user`로 검증된 사용자만 `user_id/user_email`에 저장.
+- Playwright webServer를 `npm run dev`(Astro dev)에서 `npm run dev:vite`로 맞춤. 기존 테스트는 Vite dev middleware의 `/api/naver-blog` JSON 응답을 전제로 하며, Astro dev에서는 TS 소스가 반환되어 JSON 파싱이 실패했음.
+
+Verification:
+- `npx tsc -b --pretty false` 통과.
+- `npm run build` 통과.
+- `npx playwright test --reporter=line` → 17 passed.
+- `git diff --check` 통과.
+
+Follow-up:
+- SPA catch-all 때문에 존재하지 않는 공개 URL도 200을 반환함. SEO 관점에서 404 설계 필요 여부를 별도 판단.
+- `npm audit` 취약점은 major upgrade가 섞여 있어 별도 브랜치에서 검토 권장.
+
 ## 2026-06-17 - 간편 자가진단 v2: 사진으로 채운 다크 프리미엄 집 단면도 (.dh2)
 
 Changed files:
