@@ -3307,3 +3307,14 @@ Implemented behavior:
 
 Verification:
 - `npx tsc --noEmit`·`npm run build` 통과. origin/main 리베이스본.
+
+## 2026-06-21 — 적대적 리뷰 #9(워크플로우): inquiries auth 조회 타임아웃 가드
+
+Changed files:
+- `api/inquiries.ts`
+
+Implemented behavior:
+- 멀티에이전트 적대 검증에서 확정: 병렬 머지된 `getAuthenticatedUser()`의 `/auth/v1/user` fetch에 타임아웃이 없어, Supabase Auth가 지연되면 함수가 매달려 insert 미실행→문의 유실 위험. `AbortSignal.timeout(5000)` 추가(sibling api/naver-blog-source 컨벤션). 초과 시 catch→null→익명 저장으로 graceful degrade.
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과.
