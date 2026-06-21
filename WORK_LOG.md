@@ -3259,3 +3259,20 @@ Verification:
 
 Follow-up:
 - 정적 랜딩 페이지(/service·/area)의 헤더·푸터·오피스는 빌드 타임 정적이라 영업정보 변경은 재배포 시 반영(홈 SPA는 즉시). 필요 시 해당 섹션 client island화로 라이브 반영 가능.
+
+## 2026-06-21 — 문의 요약 cron 빈도 수정(중복 이메일 방지)
+
+Changed files:
+- `.github/workflows/inquiry-alerts.yml`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- `inquiry-alerts.yml` 스케줄을 `*/5 * * * *`(5분마다) → `0 0 * * *`(매일 09:00 KST)로 변경.
+- `api/notify-inquiries`는 설계상 '하루 1회 백업 요약'(25h lookback, 제목 "최근 24시간 문의", 본문 "일일 문의 요약")이며 발송 후 상태를 갱신하지 않는다. 5분마다 호출되면 미처리 'new' 문의가 하나라도 있을 때 같은 요약을 하루 ~288회 중복 발송하던 문제를 제거.
+- 실시간 알림은 제출 시 `api/inquiries.ts`(이메일+텔레그램)가 이미 처리하므로 빈도 축소로 누락되는 알림은 없음. 코드 주석("The cron runs once per day")·메일 문구와도 일치.
+
+Verification:
+- `npm run build`(astro) 성공, `npm run build:vite` 성공. 워크플로 YAML 파싱·cron 식 유효 확인.
+
+Follow-up:
+- `fix/review-notify-cron-hardening` 브랜치(미머지)가 `NOTIFY_INQUIRIES_SECRET`를 추가하면, 이 워크플로의 `curl`에 `?secret=`/헤더를 함께 넣어야 401을 피함(현재 미설정 시 동작 불변).

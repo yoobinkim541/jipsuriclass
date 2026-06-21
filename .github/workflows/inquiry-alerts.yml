@@ -2,7 +2,10 @@ name: Inquiry Alerts
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    # notify-inquiries is a once-daily BACKUP digest (25h lookback, "최근 24시간 문의" 메일).
+    # 실시간 알림은 제출 시 api/inquiries.ts(이메일+텔레그램)가 처리하므로 여기선 하루 1회만.
+    # (5분마다 돌리면 미처리 'new' 문의가 하나라도 있을 때 같은 요약을 하루 ~288회 중복 발송함)
+    - cron: "0 0 * * *" # 매일 09:00 KST (00:00 UTC)
   workflow_dispatch:
 
 jobs:
