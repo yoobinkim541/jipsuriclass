@@ -56,6 +56,9 @@ export function AccountPage() {
   const totalInquiries = inquiries.length;
   const newInquiries = inquiries.filter((item) => item.status === "new").length;
   const notifiedInquiries = inquiries.filter((item) => item.notified_at).length;
+  // 로그인한 사용자에겐 이름으로 인사(개인화). 비로그인 시 관리자 설정 타이틀 유지.
+  const accountName = sessionName ?? (sessionEmail ? sessionEmail.split("@")[0] : null);
+  const heroTitle = accountName ? `${accountName}님, 안녕하세요` : content.hero.title;
 
   useEffect(() => {
     let mounted = true;
@@ -246,7 +249,7 @@ export function AccountPage() {
             <ShieldCheck size={16} />
             {content.hero.kicker}
           </span>
-          <h1>{content.hero.title}</h1>
+          <h1>{heroTitle}</h1>
           <p>{content.hero.description}</p>
           <div className="account-hero-notes" aria-label="계정 안내">
             {content.hero.notes.map((note) => (
