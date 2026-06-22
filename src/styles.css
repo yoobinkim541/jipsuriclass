@@ -4204,16 +4204,62 @@ textarea {
 }
 
 /* 자가진단 답변: 해당 서비스 상세로 가는 보조 텍스트 링크(연락 버튼보다 약하게) */
-.diagnosis-answer-servicelink {
-  display: inline-block;
-  margin-top: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--navy-700, #10284a);
+/* 진단 → 서비스 상담 '다음 단계' 카드: 흐름이 뚜렷하게 보이도록 강조. */
+.diagnosis-answer-next {
+  align-items: center;
+  background: var(--cream-2, #f1ece1);
+  border: 1px solid var(--hair, #e6dfd0);
+  border-left: 3px solid var(--gold-500, #d4a852);
+  border-radius: 14px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 15px 18px;
   text-decoration: none;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
 }
-.diagnosis-answer-servicelink:hover {
-  text-decoration: underline;
+.diagnosis-answer-next:hover {
+  background: var(--cream, #faf7f2);
+  border-color: var(--navy-700, #10284a);
+  border-left-color: var(--gold-600, #c49a38);
+  box-shadow: 0 14px 32px -24px rgba(11, 26, 48, 0.45);
+  transform: translateY(-1px);
+}
+.diagnosis-answer-next__text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.diagnosis-answer-next__eyebrow {
+  color: var(--gold-700, #a8761a);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.diagnosis-answer-next__text strong {
+  color: var(--ink, #0b1a30);
+  font-size: 16px;
+  font-weight: 700;
+}
+.diagnosis-answer-next__arrow {
+  align-items: center;
+  background: var(--navy-800, #0b1d34);
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 38px;
+  justify-content: center;
+  transition: transform 0.16s ease;
+  width: 38px;
+}
+.diagnosis-answer-next:hover .diagnosis-answer-next__arrow {
+  transform: translateX(3px);
+}
+:root[data-theme="dark"] .diagnosis-page .diagnosis-answer-next__arrow {
+  background: var(--navy-700, #8fb8ff);
+  color: #07101f;
 }
 
 @media (max-width: 720px) {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowRight,
   ArrowUpRight,
   Bath,
   CheckCircle2,
@@ -371,6 +372,19 @@ export function DiagnosisPage() {
               </div>
             ) : null}
 
+            {/* 진단 → 해당 서비스 상담으로 이어지는 흐름을 뚜렷한 '다음 단계' 카드로. */}
+            {answer.ctaHref?.startsWith("/service/") && (
+              <a className="diagnosis-answer-next" href={answer.ctaHref}>
+                <span className="diagnosis-answer-next__text">
+                  <span className="diagnosis-answer-next__eyebrow">다음 단계</span>
+                  <strong>{answer.ctaLabel}</strong>
+                </span>
+                <span className="diagnosis-answer-next__arrow" aria-hidden="true">
+                  <ArrowRight size={20} />
+                </span>
+              </a>
+            )}
+
             {/* 증상을 확인한 직후(의도 정점)에 바로 연락할 수 있도록 전화·카톡을 1순위로.
                 긴급 증상(예: 전기 타는 냄새)도 읽기 페이지가 아니라 즉시 통화로 연결된다. */}
             <div className="hero-actions diagnosis-answer-actions">
@@ -387,11 +401,6 @@ export function DiagnosisPage() {
                 견적상담
               </a>
             </div>
-            {answer.ctaHref?.startsWith("/service/") && (
-              <a className="diagnosis-answer-servicelink" href={answer.ctaHref}>
-                {answer.ctaLabel} ›
-              </a>
-            )}
           </article>
             );
           })()}
