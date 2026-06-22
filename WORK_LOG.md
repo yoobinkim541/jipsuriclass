@@ -3308,3 +3308,15 @@ Verification:
 - `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 557c54c).
 
 워크플로우 9회차 과보고 판정(미수정): contentSections/landingPages "유효하지 않은 항목 silent 필터링"(#5~9)은 의도된 방어적 정규화, InquiryQuoteEditor 빈 placeholder 필터(#13)는 정상, SiteContentService LWW(#10)·stale closure(#12)는 단일 관리자라 영향 미미. notify-inquiries 에러노출(#3,#4)은 fix/review-notify-cron-hardening PR이 이미 해결. smoke.mjs ENOTDIR(#2)은 사실상 불가능 시나리오.
+
+## 2026-06-21 — 적대적 리뷰 #19: 테마 토글 하이드레이션 불일치 수정
+
+Changed files:
+- `src/lib/useTheme.ts`
+
+Implemented behavior:
+- ThemeToggle은 HomePage(client:load=SSR) 헤더에서 서버렌더된다. `useState(()=>getCurrentResolvedTheme())`가 서버=항상 "light"(document/localStorage 없음)인데 다크 사용자 클라 첫 렌더=인라인 스크립트가 선설정한 data-theme="dark"를 읽어 "dark"를 반환 → 토글 버튼의 아이콘/라벨/aria-checked가 서버≠클라로 하이드레이션 불일치(다크 사용자의 홈).
+- 초기값을 서버와 동일한 결정값 "light"로 시작하고, 이미 존재하는 useEffect(`setResolved(getCurrentResolvedTheme())`)가 마운트 직후 실제 테마를 반영하도록 변경(SiteHeaderIsland·NaverMapEmbed와 동일 SSR 패턴). 페이지 색상은 인라인 스크립트가 페인트 전에 이미 적용하므로 영향 없고, 토글 버튼만 마운트 직후 올바른 상태로 보정됨. useTheme 소비처는 ThemeToggle 단독이라 부작용 없음.
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 604d7f9).
