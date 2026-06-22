@@ -63,7 +63,11 @@ export function AccountPage() {
   const [passwordDraft, setPasswordDraft] = useState("");
   const [accountActionLoading, setAccountActionLoading] = useState<"password" | "google" | null>(null);
   const [accountMessage, setAccountMessage] = useState<string | null>(null);
-  const [accountPanelOpen, setAccountPanelOpen] = useState(() => window.innerWidth > 720);
+  // SSR(빌드/프리렌더) 시 window가 없으므로 가드 — 서버에선 데스크탑 기본(열림)으로 시작한다.
+  // (NaverMapEmbed/useTheme와 동일 컨벤션. 현재 client:only라 미발현이나 향후 SSR 전환 대비)
+  const [accountPanelOpen, setAccountPanelOpen] = useState(() =>
+    typeof window === "undefined" ? true : window.innerWidth > 720
+  );
 
   const totalInquiries = inquiries.length;
   const newInquiries = inquiries.filter((item) => item.status === "new").length;

@@ -3320,3 +3320,14 @@ Implemented behavior:
 
 Verification:
 - `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 604d7f9).
+
+## 2026-06-22 — 적대적 리뷰 #29: AccountPage SSR window 가드 (병렬 UX 개선 재작성에 재적용)
+
+Changed files:
+- `src/account/AccountPage.tsx`
+
+Implemented behavior:
+- 병렬 세션의 마이페이지 UX 종합개선(PR #79 등)이 AccountPage를 +71줄 재작성했으나 `useState(() => window.innerWidth > 720)` 렌더타임 window 읽기는 그대로 남음(line 66). 신규 코드 적대 검증 결과 그 외엔 clean(STATUS_KO enum 한국어화·quotedInquiries 옵셔널체이닝·메시지 자동소멸 effect cleanup 모두 안전). 기존 fix/review-ssr-safety-account PR이 새 main과 충돌(force-push 차단)이라 새 main(13ec272) 기준으로 동일 가드를 재적용해 -2 브랜치로 발행. NaverMapEmbed/useTheme와 동일 패턴, 브라우저 동작 불변·서버 기본 데스크탑.
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 13ec272).
