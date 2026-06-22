@@ -1,14 +1,52 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, CheckCircle2, ChevronLeft, Menu, MessageCircle, Phone, User, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  Bath,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  DoorClosed,
+  Droplets,
+  LayoutGrid,
+  Lightbulb,
+  Menu,
+  MessageCircle,
+  Phone,
+  ShieldAlert,
+  User,
+  Wrench,
+  X,
+  Zap,
+  type LucideIcon
+} from "lucide-react";
 import { business, navItems } from "../data";
 import { symptomCategories, type SymptomCategory } from "../data";
-import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, type DiagnosisTopic } from "./diagnosisData";
+import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, SELF_CHECKABLE_IDS, type DiagnosisTopic } from "./diagnosisData";
 import { MobileQuickCta } from "../components/site/SiteFooter";
 import { trackEvent } from "../lib/analytics";
 import { SiteContentService, defaultDiagnosisPageContent } from "../services/SiteContentService";
 import type { DiagnosisPageContent } from "../types";
 
 const siteContentService = new SiteContentService();
+
+// 카테고리별 라인 아이콘(증상 카드·카테고리 펄 공용). 이모지 대신 브랜드 톤의 선 아이콘.
+const CATEGORY_ICON: Record<string, LucideIcon> = {
+  door: DoorClosed,
+  leak: Droplets,
+  wall: LayoutGrid,
+  electric: Zap,
+  bathroom: Bath,
+  kitchen: Wrench
+};
+const categoryIconFor = (id: string): LucideIcon => CATEGORY_ICON[id] ?? Wrench;
+
+// 히어로 3단계 안내(페이지 흐름과 1:1 대응).
+const DIAGNOSIS_STEPS = [
+  { title: "문제 부위 선택", desc: "문·창문, 누수, 전기 등 선택" },
+  { title: "증상 선택", desc: "해당 증상을 선택해 주세요" },
+  { title: "원인·대응법 확인", desc: "원인과 해결 방법을 안내드려요" }
+];
 
 export function DiagnosisPage() {
   // SSR(빌드/프리렌더) 시 window가 없으므로 가드 — 렌더 중 실행되는 useMemo 초기화 안전화.
@@ -185,23 +223,32 @@ export function DiagnosisPage() {
                   <Phone size={20} />
                   전화 상담
                 </a>
-                <a className="secondary-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
+                <a className="secondary-button kakao-button" href={business.kakaoUrl} target="_blank" rel="noreferrer">
                   <MessageCircle size={20} />
-                  카카오톡
+                  카카오톡 사진 상담
                 </a>
                 <a className="secondary-button" href="/estimate">
-                  <ArrowUpRight size={20} />
+                  <ArrowUpRight size={18} />
                   견적상담
                 </a>
               </div>
+              <p className="diagnosis-hero-hours">
+                <Clock size={15} aria-hidden="true" />
+                {business.hours} · 빠른 상담이 필요하신가요?
+              </p>
             </div>
-            <aside className="diagnosis-hero-panel">
-              <span className="landing-panel-label">빠른 흐름</span>
-              <ul className="landing-highlight-list">
-                {content.hero.quickFlow.map((step, index) => (
-                  <li key={`${step}-${index}`}>{step}</li>
+            <aside className="diagnosis-hero-steps" aria-label="진단 3단계 흐름">
+              <ol>
+                {DIAGNOSIS_STEPS.map((step, index) => (
+                  <li key={step.title}>
+                    <span className="diagnosis-step-num">{index + 1}</span>
+                    <div className="diagnosis-step-body">
+                      <strong>{step.title}</strong>
+                      <p>{step.desc}</p>
+                    </div>
+                  </li>
                 ))}
-              </ul>
+              </ol>
             </aside>
           </div>
         </section>
@@ -213,17 +260,22 @@ export function DiagnosisPage() {
             <p>{content.sections.categoryDescription}</p>
           </div>
           <div className="diagnosis-cat-grid">
-            {symptomCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className={`diagnosis-cat-card${selectedCategory.id === cat.id ? " active" : ""}`}
-                onClick={() => pickCategory(cat)}
-              >
-                <span className="diagnosis-cat-icon">{cat.icon}</span>
-                <span className="diagnosis-cat-label">{cat.label}</span>
-              </button>
-            ))}
+            {symptomCategories.map((cat) => {
+              const Icon = categoryIconFor(cat.id);
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`diagnosis-cat-card${selectedCategory.id === cat.id ? " active" : ""}`}
+                  onClick={() => pickCategory(cat)}
+                >
+                  <span className="diagnosis-cat-icon">
+                    <Icon size={18} aria-hidden="true" />
+                  </span>
+                  <span className="diagnosis-cat-label">{cat.label}</span>
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -238,16 +290,29 @@ export function DiagnosisPage() {
               const base = diagnosisTopics.find((t) => t.id === s.id);
               if (!base) return null;
               const topic = viewTopic(base);
+              const Icon = categoryIconFor(selectedCategory.id);
+              const selfCheck = SELF_CHECKABLE_IDS.has(topic.id);
               return (
                 <button
                   key={topic.id}
                   type="button"
-                  className={`diagnosis-topic-card${selectedTopic.id === topic.id ? " active" : ""}`}
+                  className={`diagnosis-symptom-card${selectedTopic.id === topic.id ? " active" : ""}`}
                   onClick={() => pickTopic(topic.id)}
                 >
-                  <span>{topic.trigger}</span>
-                  <strong>{topic.title}</strong>
-                  <p>{topic.summary}</p>
+                  <span className="diagnosis-symptom-icon" aria-hidden="true">
+                    <Icon size={22} />
+                  </span>
+                  <span className="diagnosis-symptom-body">
+                    <strong>{topic.title}</strong>
+                    <p>{topic.summary}</p>
+                  </span>
+                  <span className="diagnosis-symptom-foot">
+                    <span className={`diagnosis-symptom-status ${selfCheck ? "is-self" : "is-expert"}`}>
+                      {selfCheck ? <CheckCircle2 size={13} /> : <ShieldAlert size={13} />}
+                      {selfCheck ? "자가 확인 가능" : "전문가 점검 권장"}
+                    </span>
+                    <ChevronRight className="diagnosis-symptom-arrow" size={18} aria-hidden="true" />
+                  </span>
                 </button>
               );
             })}
@@ -266,37 +331,43 @@ export function DiagnosisPage() {
             return (
           <article className="diagnosis-answer-card">
             <div className="diagnosis-answer-header">
-              <span className="admin-kicker">
-                <CheckCircle2 size={16} />
-                {answer.trigger}
-              </span>
+              <span className="diagnosis-answer-tag">선택한 증상</span>
               <h3>{answer.title}</h3>
               <p>{answer.summary}</p>
             </div>
 
             <div className="diagnosis-answer-grid">
               <div className="diagnosis-answer-panel">
-                <strong>가능한 원인</strong>
-                <ul>
+                <strong className="diagnosis-panel-title is-cause">대표 원인</strong>
+                <ul className="diagnosis-list-check">
                   {answer.likelyCauses.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
               <div className="diagnosis-answer-panel">
-                <strong>먼저 확인할 것</strong>
-                <ul>
+                <strong className="diagnosis-panel-title is-check">먼저 확인할 것</strong>
+                <ol className="diagnosis-list-num">
                   {answer.firstChecks.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
-                </ul>
+                </ol>
+              </div>
+              <div className="diagnosis-answer-panel">
+                <strong className="diagnosis-panel-title is-expert">전문가 점검이 필요한 경우</strong>
+                <p className="diagnosis-panel-text">{answer.whenToCall}</p>
               </div>
             </div>
 
-            <div className="diagnosis-answer-note">
-              <strong>이럴 때 상담하세요</strong>
-              <p>{answer.whenToCall}</p>
-            </div>
+            {answer.firstChecks[0] ? (
+              <div className="diagnosis-tip">
+                <Lightbulb size={18} aria-hidden="true" />
+                <p>
+                  <strong>추천 팁</strong>
+                  가장 먼저 {answer.firstChecks[0]}.
+                </p>
+              </div>
+            ) : null}
 
             {/* 증상을 확인한 직후(의도 정점)에 바로 연락할 수 있도록 전화·카톡을 1순위로.
                 긴급 증상(예: 전기 타는 냄새)도 읽기 페이지가 아니라 즉시 통화로 연결된다. */}

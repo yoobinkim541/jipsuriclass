@@ -10,6 +10,17 @@ export type DiagnosisTopic = {
   ctaHref: string;
 };
 
+/** 집에서 먼저 확인·해결을 시도해 볼 만한 증상(나머지는 전문가 점검 권장).
+ * 답변 카드의 상태 배지(자가 확인 가능 / 전문가 점검 권장)에 사용. */
+export const SELF_CHECKABLE_IDS = new Set<string>([
+  "stiff-door",
+  "toilet-run",
+  "low-pressure",
+  "shower-pressure",
+  "bath-drain",
+  "toilet-clog"
+]);
+
 export const diagnosisTopics: DiagnosisTopic[] = [
   // 문·창문
   {
