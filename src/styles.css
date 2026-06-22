@@ -3860,6 +3860,11 @@ textarea {
   padding-bottom: clamp(44px, 5vw, 72px);
   padding-top: 0;
 }
+
+/* 히어로(풀블리드 배너) 바로 아래 첫 섹션은 위 여백을 더 줘 배너와 간격 확보. */
+.diagnosis-hero + .diagnosis-section {
+  padding-top: clamp(32px, 4vw, 56px);
+}
 .diagnosis-section > .section-heading {
   margin: 0 auto 22px;
   max-width: 640px;
