@@ -3686,12 +3686,22 @@ textarea {
   position: sticky;
 }
 
-/* 본문 폭 제한(와이드 스크린에서 과확장 방지) — 레퍼런스처럼 가운데 정렬. */
+/* 본문 폭: 기본 1320px(사이트 표준), 화면이 넓을수록 단계적으로 더 넓게(가운데 정렬).
+   ~1640px에서 캡 — 그 이상은 답변 3열·줄 길이가 늘어져 가독성이 떨어짐. */
 .diagnosis-page > section {
   margin-left: auto;
   margin-right: auto;
-  max-width: 1200px;
+  max-width: 1320px;
   width: 100%;
+}
+@media (min-width: 1500px) {
+  .diagnosis-page > section { max-width: 1440px; }
+}
+@media (min-width: 1920px) {
+  .diagnosis-page > section { max-width: 1560px; }
+}
+@media (min-width: 2560px) {
+  .diagnosis-page > section { max-width: 1640px; }
 }
 
 /* ── 히어로 ── */
