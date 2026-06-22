@@ -5068,7 +5068,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .inquiry-attachment {
   background: var(--cream-2);
   border: 1px solid var(--hair);
-  border-radius: 8px;
+  border-radius: 12px;
   display: grid;
   gap: 8px;
   overflow: hidden;
@@ -6851,6 +6851,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 .account-summary-card p,
 .account-list-head p {
   color: var(--ink-3, #5b6781);
+  font-size: 13px;
   line-height: 1.6;
   margin: 0;
 }
@@ -7409,6 +7410,11 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 @media (max-width: 960px) {
+  /* 태블릿: 견적 합계 3열이 좁아지는 구간 → 2열로(≤720px에서 1열). */
+  .account-quote-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .quote-editor__header {
     flex-direction: column;
   }
@@ -11381,6 +11387,28 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
   .account-edit-form textarea {
     min-height: 120px;
+  }
+
+  /* 모바일 터치 타깃: CTA·행 액션 버튼을 폭 채우고 충분한 높이로. */
+  .account-empty__actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .account-empty__actions a {
+    justify-content: center;
+    min-height: 44px;
+    width: 100%;
+  }
+  .account-new-cta {
+    justify-content: stretch;
+  }
+  .account-new-cta a {
+    justify-content: center;
+    min-height: 44px;
+    width: 100%;
+  }
+  .admin-row-actions button {
+    min-height: 40px;
   }
 
   .inquiry-attachment-grid {

@@ -291,3 +291,25 @@
   }
   .mypage-shell .admin-muted { color: var(--ink-3, #aebbd0); }
 }
+
+/* 헤더 버튼 키보드 포커스 가시화(인라인 스타일이라 기본 포커스링이 약함). */
+.mypage-header button:focus-visible {
+  outline: 2px solid var(--gold-500, #c49a38);
+  outline-offset: 2px;
+}
+
+/* 아주 좁은 화면: 헤더 우측 클러스터(이메일·테마·새로고침·로그아웃)가 브랜드를
+   밀어내지 않도록 줄바꿈. .mypage-header는 마이페이지 전용이라 안전. */
+@media (max-width: 480px) {
+  .mypage-header {
+    flex-wrap: wrap;
+    gap: 8px;
+    height: auto;
+    padding: 8px clamp(12px, 3vw, 18px);
+  }
+  .mypage-header > div:last-child {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}

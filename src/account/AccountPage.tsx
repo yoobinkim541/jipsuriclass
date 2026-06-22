@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
   ClipboardList,
   Download,
   Globe,
@@ -116,6 +118,13 @@ export function AccountPage() {
       data.subscription.unsubscribe();
     };
   }, []);
+
+  // 성공/오류 안내는 잠시 후 자동으로 사라지게(오래된 메시지 잔류 방지).
+  useEffect(() => {
+    if (!accountMessage) return;
+    const timer = window.setTimeout(() => setAccountMessage(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [accountMessage]);
 
   async function loadInquiries() {
     setLoading(true);
@@ -281,8 +290,10 @@ export function AccountPage() {
                 <button
                   className="admin-status-button account-login-toggle"
                   type="button"
+                  aria-expanded={accountPanelOpen}
                   onClick={() => setAccountPanelOpen((current) => !current)}
                 >
+                  {accountPanelOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   {accountPanelOpen ? content.auth.collapseLabel : content.auth.expandLabel}
                 </button>
               </div>
