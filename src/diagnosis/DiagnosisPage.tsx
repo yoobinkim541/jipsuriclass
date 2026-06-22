@@ -24,6 +24,7 @@ import { business, navItems } from "../data";
 import { symptomCategories, type SymptomCategory } from "../data";
 import { diagnosisTopics, getDiagnosisTopicById, getDiagnosisTopicByTrigger, SELF_CHECKABLE_IDS, type DiagnosisTopic } from "./diagnosisData";
 import { MobileQuickCta } from "../components/site/SiteFooter";
+import { ThemeToggle } from "../components/ThemeToggle";
 import { trackEvent } from "../lib/analytics";
 import { SiteContentService, defaultDiagnosisPageContent } from "../services/SiteContentService";
 import type { DiagnosisPageContent } from "../types";
@@ -172,6 +173,7 @@ export function DiagnosisPage() {
             ))}
           </nav>
           <div className="nav__actions">
+            <ThemeToggle className="theme-toggle--compact" />
             <a className="nav__login" href="/login" aria-label="마이페이지">
               <User size={17} />
               <span>마이페이지</span>
@@ -309,7 +311,7 @@ export function DiagnosisPage() {
                   <span className="diagnosis-symptom-foot">
                     <span className={`diagnosis-symptom-status ${selfCheck ? "is-self" : "is-expert"}`}>
                       {selfCheck ? <CheckCircle2 size={13} /> : <ShieldAlert size={13} />}
-                      {selfCheck ? "자가 확인 가능" : "전문가 점검 권장"}
+                      {selfCheck ? "집에서 확인 가능" : "전문가 점검 권장"}
                     </span>
                     <ChevronRight className="diagnosis-symptom-arrow" size={18} aria-hidden="true" />
                   </span>
@@ -364,7 +366,7 @@ export function DiagnosisPage() {
                 <Lightbulb size={18} aria-hidden="true" />
                 <p>
                   <strong>추천 팁</strong>
-                  가장 먼저 {answer.firstChecks[0]}.
+                  가장 먼저 {answer.firstChecks[0]} — 이것부터 살펴보면 원인을 빠르게 좁힐 수 있어요.
                 </p>
               </div>
             ) : null}
