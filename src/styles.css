@@ -3678,8 +3678,8 @@ textarea {
 
 .diagnosis-page {
   background:
-    radial-gradient(900px 380px at 82% -8%, color-mix(in srgb, var(--gold-500, #d4a852) 14%, transparent), transparent),
-    var(--page-bg, #f1f4f8);
+    radial-gradient(900px 380px at 82% -8%, color-mix(in srgb, var(--gold-500, #d4a852) 10%, transparent), transparent),
+    var(--page-bg, #f4f1ea);
 }
 
 .diagnosis-header {
@@ -3710,14 +3710,21 @@ textarea {
 .diagnosis-page .diagnosis-hero {
   background-color: var(--cream, #faf7f2);
   background-image:
-    linear-gradient(95deg, rgba(249, 247, 243, 0.97) 0%, rgba(249, 247, 243, 0.86) 30%, rgba(249, 247, 243, 0.5) 56%, rgba(249, 247, 243, 0.14) 82%, rgba(249, 247, 243, 0.03) 100%),
+    linear-gradient(95deg, rgba(249, 247, 243, 0.97) 0%, rgba(249, 247, 243, 0.85) 28%, rgba(249, 247, 243, 0.44) 54%, rgba(249, 247, 243, 0.12) 80%, rgba(249, 247, 243, 0.02) 100%),
     url("/assets/diagnosis-hero-bg.webp");
   background-position: center right;
   background-repeat: no-repeat;
   background-size: cover;
-  border: 1px solid var(--hair, #e6dfd0);
-  border-radius: 24px;
+  /* 풀블리드: 섹션 max-width 무시하고 사진을 가로 전체로. 콘텐츠는 padding-inline으로 중앙 1320px에. */
+  border: 0;
+  border-bottom: 1px solid var(--hair, #e6dfd0);
+  border-radius: 0;
+  margin-inline: 0;
+  max-width: none;
   overflow: hidden;
+  padding-block: clamp(36px, 5vw, 76px);
+  padding-inline: max(clamp(18px, 5vw, 40px), calc((100% - 1320px) / 2));
+  width: 100%;
 }
 :root[data-theme="dark"] .diagnosis-page .diagnosis-hero {
   background-color: var(--panel, #111827);
