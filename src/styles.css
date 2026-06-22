@@ -3676,14 +3676,31 @@ textarea {
   box-shadow: 0 8px 24px rgba(8, 22, 40, 0.2);
 }
 
+/* 페이지 배경: 브랜드 따뜻한 크림(--page-bg 토큰은 차가운 그레이라 명시값 사용). */
 .diagnosis-page {
   background:
     radial-gradient(900px 380px at 82% -8%, color-mix(in srgb, var(--gold-500, #d4a852) 10%, transparent), transparent),
-    var(--page-bg, #f4f1ea);
+    #f4f1ea;
+}
+:root[data-theme="dark"] .diagnosis-page {
+  background:
+    radial-gradient(900px 380px at 82% -8%, color-mix(in srgb, var(--gold-500, #d4a852) 9%, transparent), transparent),
+    #0b1220;
 }
 
 .diagnosis-header {
   position: sticky;
+}
+
+/* 진단 헤더 테마 토글: 한글 라벨 숨기고 아이콘만 있는 동그란 버튼. */
+.diagnosis-header .nav__actions .theme-toggle {
+  height: 40px;
+  justify-content: center;
+  padding: 0;
+  width: 40px;
+}
+.diagnosis-header .nav__actions .theme-toggle__text {
+  display: none;
 }
 
 /* 본문 폭: 기본 1320px(사이트 표준), 화면이 넓을수록 단계적으로 더 넓게(가운데 정렬).
@@ -3838,7 +3855,11 @@ textarea {
 }
 
 /* ── 섹션 헤딩 가운데 ── */
-.diagnosis-section { padding-top: 0; }
+/* 섹션 세로 여백 정돈: 기존 ~104px가 과해 섹션 간격이 휑함 → 일관된 ~72px로. */
+.diagnosis-section {
+  padding-bottom: clamp(44px, 5vw, 72px);
+  padding-top: 0;
+}
 .diagnosis-section > .section-heading {
   margin: 0 auto 22px;
   max-width: 640px;
