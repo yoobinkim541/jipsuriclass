@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  ClipboardList,
   Download,
   Globe,
   Edit2,
   KeyRound,
   LoaderCircle,
   LogOut,
+  Phone,
   RefreshCcw,
   ShieldCheck,
 } from "lucide-react";
@@ -35,6 +37,16 @@ function socialName(session: { user?: { user_metadata?: Record<string, unknown> 
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
+// 상태 배지를 고객에게 보여줄 한국어 라벨로(DB enum이 그대로 'NEW'/'QUOTED'로 노출되던 문제).
+const STATUS_KO: Record<string, string> = {
+  new: "접수",
+  contacted: "상담중",
+  quoted: "견적발송",
+  done: "완료",
+  active: "진행중",
+  spam: "보류"
+};
+
 export function AccountPage() {
   const [content, setContent] = useState(defaultAccountPageContent);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
@@ -53,7 +65,11 @@ export function AccountPage() {
 
   const totalInquiries = inquiries.length;
   const newInquiries = inquiries.filter((item) => item.status === "new").length;
-  const notifiedInquiries = inquiries.filter((item) => item.notified_at).length;
+  // '알림 발송'(notified_at)은 어드민 내부 지표라 고객에겐 의미 없음 → 고객 관점의 '받은 견적'으로.
+  const quotedInquiries = inquiries.filter((item) => item.intake?.quoteSnapshot?.confirmedAt).length;
+  // 로그인한 사용자에겐 이름으로 인사(개인화). 비로그인 시 관리자 설정 타이틀 유지.
+  const accountName = sessionName ?? (sessionEmail ? sessionEmail.split("@")[0] : null);
+  const heroTitle = accountName ? `${accountName}님, 안녕하세요` : content.hero.title;
 
   useEffect(() => {
     let mounted = true;
@@ -244,7 +260,7 @@ export function AccountPage() {
             <ShieldCheck size={16} />
             {content.hero.kicker}
           </span>
-          <h1>{content.hero.title}</h1>
+          <h1>{heroTitle}</h1>
           <p>{content.hero.description}</p>
           <div className="account-hero-notes" aria-label="계정 안내">
             {content.hero.notes.map((note) => (
@@ -323,6 +339,7 @@ export function AccountPage() {
         </div>
       </section>
 
+      {totalInquiries > 0 ? (
       <section className="account-summary-grid" aria-label="마이페이지 요약">
         <article className="account-summary-card">
           <span>{content.summary[0]?.label ?? "총 문의"}</span>
@@ -335,11 +352,12 @@ export function AccountPage() {
           <p>{content.summary[1]?.description ?? "아직 처리 전인 문의만 따로 볼 수 있습니다."}</p>
         </article>
         <article className="account-summary-card">
-          <span>{content.summary[2]?.label ?? "알림 발송"}</span>
-          <strong>{notifiedInquiries}</strong>
-          <p>{content.summary[2]?.description ?? "관리자 알림이 전송된 항목을 보여줍니다."}</p>
+          <span>받은 견적</span>
+          <strong>{quotedInquiries}</strong>
+          <p>컨펌된 견적서를 받은 문의 수입니다.</p>
         </article>
       </section>
+      ) : null}
 
       {error ? <p className="admin-error">{error}</p> : null}
 
@@ -351,6 +369,14 @@ export function AccountPage() {
           </div>
           <p>{content.list.description}</p>
         </div>
+        {totalInquiries > 0 ? (
+          <div className="account-new-cta">
+            <a className="admin-primary-button" href="/estimate">
+              <ClipboardList size={16} />
+              새 견적 상담 신청
+            </a>
+          </div>
+        ) : null}
         <div className="admin-list">
           {loading ? (
             <div className="admin-empty">
@@ -375,10 +401,10 @@ export function AccountPage() {
                         <strong>{item.name}</strong>
                         <span className="account-row-subtitle">{item.phone}</span>
                       </div>
-                      <span className={`status-badge status-${item.status}`}>{item.status}</span>
+                      <span className={`status-badge status-${item.status}`}>{STATUS_KO[item.status] ?? item.status}</span>
                     </div>
                     <p>
-                      {item.phone} · {item.service_area || content.list.noAreaText} · {formatDate(item.created_at)}
+                      {item.service_area || content.list.noAreaText} · {formatDate(item.created_at)}
                     </p>
                     {isEditing ? (
                       <div className="account-edit-form">
@@ -484,7 +510,25 @@ export function AccountPage() {
               );
             })
           ) : (
-            <div className="admin-empty">{content.list.emptyText}</div>
+            <div className="account-empty">
+              <span className="account-empty__icon" aria-hidden="true">
+                <ClipboardList size={26} />
+              </span>
+              <strong className="account-empty__title">{content.list.emptyText}</strong>
+              <p className="account-empty__desc">
+                간단한 설문으로 견적 상담을 신청하면, 진행 상태와 받은 견적서를 이 화면에서 한눈에 확인할 수 있어요.
+              </p>
+              <div className="account-empty__actions">
+                <a className="admin-primary-button" href="/estimate">
+                  <ClipboardList size={16} />
+                  견적 상담 신청하기
+                </a>
+                <a className="admin-ghost-button" href={business.phoneHref}>
+                  <Phone size={16} />
+                  전화 상담
+                </a>
+              </div>
+            </div>
           )}
         </div>
       </section>
