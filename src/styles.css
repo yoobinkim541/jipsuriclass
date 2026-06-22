@@ -3705,6 +3705,27 @@ textarea {
 }
 
 /* ── 히어로 ── */
+/* 배경 사진(밝은 거실) + 텍스트 가독성용 스크림. 사진 미배치 시 크림 그라데이션으로 폴백.
+   실제 사진 경로: public/assets/diagnosis-hero-bg.jpg */
+.diagnosis-page .diagnosis-hero {
+  background-color: var(--cream, #faf7f2);
+  background-image:
+    linear-gradient(95deg, rgba(249, 247, 243, 0.97) 0%, rgba(249, 247, 243, 0.86) 30%, rgba(249, 247, 243, 0.5) 56%, rgba(249, 247, 243, 0.14) 82%, rgba(249, 247, 243, 0.03) 100%),
+    url("/assets/diagnosis-hero-bg.jpg");
+  background-position: center right;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border: 1px solid var(--hair, #e6dfd0);
+  border-radius: 24px;
+  overflow: hidden;
+}
+:root[data-theme="dark"] .diagnosis-page .diagnosis-hero {
+  background-color: var(--panel, #111827);
+  background-image:
+    linear-gradient(95deg, rgba(11, 18, 32, 0.96) 0%, rgba(11, 18, 32, 0.86) 36%, rgba(11, 18, 32, 0.58) 64%, rgba(11, 18, 32, 0.28) 88%, rgba(11, 18, 32, 0.12) 100%),
+    url("/assets/diagnosis-hero-bg.jpg");
+}
+
 .diagnosis-hero-grid {
   align-items: stretch;
   display: grid;
