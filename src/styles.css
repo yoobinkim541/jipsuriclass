@@ -3751,10 +3751,10 @@ textarea {
 }
 
 .diagnosis-hero-grid {
-  align-items: stretch;
+  align-items: center;
   display: grid;
   gap: 24px;
-  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(290px, 0.7fr);
 }
 
 .diagnosis-hero-copy {
@@ -3766,11 +3766,13 @@ textarea {
 .diagnosis-hero-copy h1 {
   color: var(--ink, #0b1a30);
   font-family: var(--f-display, sans-serif);
-  font-size: clamp(32px, 4.4vw, 56px);
+  /* 한 줄에 들어가도록 최대 48px로(데스크탑 컬럼 ~810px 기준). 좁아지면 자연 줄바꿈. */
+  font-size: clamp(28px, 3.6vw, 48px);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.12;
+  line-height: 1.14;
   margin: 0;
+  text-wrap: balance;
 }
 
 .diagnosis-hero-copy > p {
