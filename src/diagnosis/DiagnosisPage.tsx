@@ -7,6 +7,7 @@ import { MobileQuickCta } from "../components/site/SiteFooter";
 import { trackEvent } from "../lib/analytics";
 import { SiteContentService, defaultDiagnosisPageContent } from "../services/SiteContentService";
 import type { DiagnosisPageContent } from "../types";
+import { getDiagnosisCategoryVisual } from "./diagnosisPresentation";
 
 const siteContentService = new SiteContentService();
 
@@ -209,17 +210,25 @@ export function DiagnosisPage() {
             <p>{content.sections.categoryDescription}</p>
           </div>
           <div className="diagnosis-cat-grid">
-            {symptomCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                className={`diagnosis-cat-card${selectedCategory.id === cat.id ? " active" : ""}`}
-                onClick={() => pickCategory(cat)}
-              >
-                <span className="diagnosis-cat-icon">{cat.icon}</span>
-                <span className="diagnosis-cat-label">{cat.label}</span>
-              </button>
-            ))}
+            {symptomCategories.map((cat) => {
+              const visual = getDiagnosisCategoryVisual(cat.id);
+              const Icon = visual.icon;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  className={`diagnosis-cat-card${selectedCategory.id === cat.id ? " active" : ""}`}
+                  onClick={() => pickCategory(cat)}
+                  aria-pressed={selectedCategory.id === cat.id}
+                >
+                  <span className="diagnosis-cat-icon" aria-hidden="true"><Icon size={18} /></span>
+                  <span className="diagnosis-cat-copy">
+                    <span className="diagnosis-cat-label">{cat.label}</span>
+                    <span className="diagnosis-cat-detail">{visual.detail}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </section>
 

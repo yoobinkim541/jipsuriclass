@@ -21,6 +21,24 @@ Verification:
 Follow-up:
 - None.
 
+## 2026-06-23 - Mobile Process Scroll Hint
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a mobile-only hint above the work process steps: "옆으로 밀어 다음 절차 보기".
+- Added a right-edge fade and nudge arrow so users can tell the process cards continue horizontally.
+- Converted the mobile process step track to horizontal snap scrolling while keeping desktop layout unchanged.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None.
+
 ## 2026-06-17 - 스냅샷 슬림 공용화(관리자 버튼 수정) + 현장사례 분야 필터 정밀화
 
 Changed files:
@@ -3236,3 +3254,28 @@ Verification:
 
 Follow-up:
 - 정적 랜딩 페이지(/service·/area)의 헤더·푸터·오피스는 빌드 타임 정적이라 영업정보 변경은 재배포 시 반영(홈 SPA는 즉시). 필요 시 해당 섹션 client island화로 라이브 반영 가능.
+
+## 2026-06-18 - Diagnosis UI Polish
+
+Changed files:
+- `src/App.tsx`
+- `src/diagnosis/DiagnosisPage.tsx`
+- `src/diagnosis/diagnosisPresentation.ts`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Replaced the toy-like diagnosis entry treatment with a blueprint-style inspection board using Lucide icons, compact issue details, and clearer selected states.
+- Updated the diagnosis page category controls and answer cards to read more like a home inspection workflow.
+- Added scroll-margin for diagnosis sections so direct category links do not hide headings under the sticky nav.
+- Refined the visual language again with a richer diagnostic console treatment, branded navy/gold section surfaces, stronger symptom cards, and more distinctive answer report styling.
+- Reworked the homepage diagnosis section into a full-width branded station using the existing consultation photo asset with a navy overlay, while keeping the console controls bright and legible.
+- Adjusted the homepage diagnosis module toward the supplied dark house-cutaway reference: existing case images now sit inside each room, modern Lucide icons remain, and the right panel uses a dark glass diagnostic treatment.
+- Matched the supplied house-cutaway reference more closely with a roofed room map, right-side symptom panel, modern line icons, a dedicated light-mode treatment, and a tablet stacked layout.
+
+Verification:
+- `npm run build` passed.
+- Checked dark desktop, light desktop, tablet, and mobile diagnosis screenshots with Playwright; the diagnosis section width matches the viewport with no section overflow.
+
+Follow-up:
+- None.

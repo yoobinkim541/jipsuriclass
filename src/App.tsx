@@ -41,6 +41,7 @@ import { getServicePricingConfig, getServicePricingConfigByPricingPath } from ".
 import type { ServicePricingConfig } from "./pricing/types";
 import { buildEstimateHref } from "./services/QuoteService";
 import { defaultDescription, defaultImage, getSeoConfigForPath, siteName, siteUrl, type SeoConfig } from "./seo";
+import { getDiagnosisCategoryVisual } from "./diagnosis/diagnosisPresentation";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();
@@ -674,14 +675,16 @@ function AboutSection({
 function SymptomsSection({ categories }: { categories: typeof symptomCategories }) {
   return (
     <section className="symptoms section" id="symptoms" aria-labelledby="symptoms-title">
-      <RowHeading
-        id="symptoms-title"
-        title="집의 아픈 곳을 눌러 바로 진단하세요"
-        description="전문 용어를 몰라도 괜찮습니다. 불편한 공간을 누르면 증상과 원인·다음 행동이 바로 나옵니다."
-        linkLabel="자가진단 페이지로 이동"
-        href="/diagnosis"
-      />
-      <DiagnosisHouse categories={categories} />
+      <div className="symptoms__inner">
+        <RowHeading
+          id="symptoms-title"
+          title="집의 아픈 곳을 눌러 바로 진단하세요"
+          description="전문 용어를 몰라도 괜찮습니다. 불편한 공간을 누르면 증상과 원인·다음 행동이 바로 나옵니다."
+          linkLabel="자가진단 페이지로 이동"
+          href="/diagnosis"
+        />
+        <DiagnosisHouse categories={categories} />
+      </div>
     </section>
   );
 }
@@ -695,10 +698,12 @@ function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }
   const [activeId, setActiveId] = useState(categories.find((category) => category.id === "bathroom")?.id ?? categories[0]?.id ?? "");
   const panelRef = useRef<HTMLDivElement>(null);
   const active = categories.find((category) => category.id === activeId) ?? categories[0];
+  const activeVisual = getDiagnosisCategoryVisual(active?.id ?? "");
+  const ActiveIcon = activeVisual.icon;
 
   const select = (id: string) => {
     setActiveId(id);
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 760px)").matches) {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1100px)").matches) {
       requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
     }
   };
@@ -706,42 +711,78 @@ function DiagnosisHouse({ categories }: { categories: typeof symptomCategories }
   return (
     <div className="diaghouse">
       <div className="diaghouse__stage">
-        <div className="diaghouse__map" role="group" aria-label="집 단면도에서 불편한 곳을 선택하세요">
-          {categories.map((cat) => (
-            <button
-              type="button"
-              key={cat.id}
-              data-cat={cat.id}
-              className={`diaghouse__zone diaghouse__zone--${cat.id}${cat.id === active?.id ? " is-active" : ""}`}
-              aria-pressed={cat.id === active?.id}
-              onClick={() => select(cat.id)}
-              onFocus={() => setActiveId(cat.id)}
-            >
-              <span className="diaghouse__emoji" aria-hidden="true">{cat.icon}</span>
-              <span className="diaghouse__zlabel">{cat.label}</span>
-            </button>
-          ))}
+        <div className="diaghouse__stage-head">
+          <span>Home scan</span>
+          <strong>증상이 시작된 지점을 먼저 짚어보세요</strong>
         </div>
-        <p className="diaghouse__hint">공간을 누르면 자주 나타나는 증상이 표시됩니다</p>
+        <div className="diaghouse__scanline" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="diaghouse__map" role="group" aria-label="집 단면도에서 불편한 곳을 선택하세요">
+          {categories.map((cat, index) => {
+            const visual = getDiagnosisCategoryVisual(cat.id);
+            const Icon = visual.icon;
+            return (
+              <button
+                type="button"
+                key={cat.id}
+                data-cat={cat.id}
+                style={{ "--zone-image": `url(${visual.image})` } as React.CSSProperties}
+                className={`diaghouse__zone diaghouse__zone--${cat.id}${cat.id === active?.id ? " is-active" : ""}`}
+                aria-pressed={cat.id === active?.id}
+                onClick={() => select(cat.id)}
+                onFocus={() => setActiveId(cat.id)}
+              >
+                <span className="diaghouse__zone-code">{String(index + 1).padStart(2, "0")}</span>
+                <span className="diaghouse__icon" aria-hidden="true"><Icon size={22} /></span>
+                <span className="diaghouse__zlabel">{cat.label}</span>
+                <span className="diaghouse__zdetail">{visual.detail}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="diaghouse__legend" aria-hidden="true">
+          <span>01 공간 선택</span>
+          <span>02 증상 확인</span>
+          <span>03 상담 연결</span>
+        </div>
       </div>
 
       <div className="diaghouse__panel" data-cat={active?.id} ref={panelRef} aria-live="polite">
+        <span className="diaghouse__panel-kicker">Live diagnosis</span>
         <div className="diaghouse__panel-head">
-          <span className="diaghouse__emoji" aria-hidden="true">{active?.icon}</span>
+          <span className="diaghouse__icon diaghouse__icon--panel" aria-hidden="true"><ActiveIcon size={24} /></span>
           <span className="diaghouse__panel-title">
+            <span>{activeVisual.code} CHECK</span>
             <strong>{active?.label}</strong>
-            <span>이런 증상이 있으신가요?</span>
           </span>
         </div>
-        <ul className="diaghouse__symptoms">
-          {active?.symptoms.map((s) => (
+        <p className="diaghouse__panel-copy">이런 증상이 있으신가요?</p>
+        <div className="diaghouse__meters" aria-label="진단 흐름 요약">
+          <span>
+            <small>선택 영역</small>
+            <strong>{active?.label}</strong>
+          </span>
+          <span>
+            <small>확인 증상</small>
+            <strong>{active?.symptoms.length ?? 0}개</strong>
+          </span>
+        </div>
+        <ol className="diaghouse__symptoms">
+          {active?.symptoms.map((s, index) => (
             <li key={s.id}>
-              <a href={`/diagnosis?issue=${s.id}`}>{s.text}</a>
+              <a href={`/diagnosis?issue=${s.id}`}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{s.text}</strong>
+              </a>
             </li>
           ))}
-        </ul>
+        </ol>
         <a className="diaghouse__all" href={`/diagnosis?category=${active?.id}`}>
-          {active?.label} 전체 자가진단 보기 →
+          {active?.label} 전체 자가진단 보기
+          <ArrowUpRight size={16} />
         </a>
       </div>
     </div>
@@ -1351,35 +1392,41 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
         </div>
 
         <div className="process__content">
-          <div className="process__track">
-            {process.map((step, index) => (
-              <React.Fragment key={step.title}>
-                <button
-                  className={`process__step${activeStep === index ? " active" : ""}`}
-                  onClick={() => setActiveStep(index)}
-                  aria-current={activeStep === index ? "true" : undefined}
-                >
-                  <span className="step-num">0{index + 1}</span>
-                  <step.icon size={22} />
-                  <h3>{steps[index]?.title ?? step.title}</h3>
-                </button>
-                {activeStep === index && (
-                  <div className="process__inline-detail">
-                    <div className="process__illustration">
-                      <img
-                        src={steps[index]?.image || processIllustrations[index]}
-                        alt={steps[index]?.title ?? step.title}
-                        className="process__step-photo"
-                      />
+          <div className="process__track-area">
+            <div className="process__mobile-hint">
+              <span>옆으로 밀어 다음 절차 보기</span>
+              <ChevronRight size={16} aria-hidden="true" />
+            </div>
+            <div className="process__track">
+              {process.map((step, index) => (
+                <React.Fragment key={step.title}>
+                  <button
+                    className={`process__step${activeStep === index ? " active" : ""}`}
+                    onClick={() => setActiveStep(index)}
+                    aria-current={activeStep === index ? "true" : undefined}
+                  >
+                    <span className="step-num">0{index + 1}</span>
+                    <step.icon size={22} />
+                    <h3>{steps[index]?.title ?? step.title}</h3>
+                  </button>
+                  {activeStep === index && (
+                    <div className="process__inline-detail">
+                      <div className="process__illustration">
+                        <img
+                          src={steps[index]?.image || processIllustrations[index]}
+                          alt={steps[index]?.title ?? step.title}
+                          className="process__step-photo"
+                        />
+                      </div>
+                      <div className="process__inline-text">
+                        <h3>{steps[index]?.title ?? step.title}</h3>
+                        <p>{steps[index]?.text ?? step.text}</p>
+                      </div>
                     </div>
-                    <div className="process__inline-text">
-                      <h3>{steps[index]?.title ?? step.title}</h3>
-                      <p>{steps[index]?.text ?? step.text}</p>
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
           </div>
 
           {activeData && (
