@@ -3331,3 +3331,14 @@ Implemented behavior:
 
 Verification:
 - `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 13ec272).
+
+## 2026-06-23 — 적대적 리뷰 #55: NaverMapEmbed 하이드레이션 회귀 수정 (지도 폴백 숨김 후속)
+
+Changed files:
+- `src/components/NaverMapEmbed.tsx`
+
+Implemented behavior:
+- 병렬 머지 01bd994("모바일/태블릿서 지도 폴백 카드 숨김")가 `if (isMobile) return null`을 추가했는데 isMobile useState 초기화가 여전히 window.innerWidth를 읽어, NaverMapEmbed(OfficeSection→HomePage client:load=SSR)가 서버=false(지도 iframe 렌더)/모바일 클라 첫 렌더=true(return null)로 갈려 서브트리 통째 하이드레이션 불일치(모바일 홈에서 지도 깜빡 후 사라짐). 초기값을 결정적 false로 바꿔 서버=클라첫렌더 일치, 기존 useEffect(media.matches)가 마운트 후 모바일 반영하도록 함(SiteHeaderIsland/useTheme 동일 패턴). (구 navermap-hydration PR은 파일 재작성으로 diverged → 이 -2가 대체.)
+
+Verification:
+- `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 01bd994).
