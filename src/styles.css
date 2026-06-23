@@ -3740,7 +3740,7 @@ textarea {
   max-width: none;
   overflow: hidden;
   padding-block: clamp(36px, 5vw, 76px);
-  padding-inline: max(clamp(18px, 5vw, 40px), calc((100% - 1320px) / 2));
+  padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1320px) / 2));
   width: 100%;
 }
 :root[data-theme="dark"] .diagnosis-page .diagnosis-hero {
@@ -3766,7 +3766,7 @@ textarea {
 .diagnosis-hero-copy h1 {
   color: var(--ink, #0b1a30);
   font-family: var(--f-display, sans-serif);
-  /* 한 줄에 들어가도록 최대 48px로(데스크탑 컬럼 ~810px 기준). 좁아지면 자연 줄바꿈. */
+  /* 데스크탑 최대 48px. 좌측 컬럼에서 1~2줄로 자연 줄바꿈(text-wrap: balance). 제목 길이는 어드민에서 가변. */
   font-size: clamp(28px, 3.6vw, 48px);
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -3819,13 +3819,13 @@ textarea {
   padding: 13px 4px;
   position: relative;
 }
-.diagnosis-hero-steps li:not(:last-child) .diagnosis-step-num::after {
+.diagnosis-hero-steps li:not(:last-child)::after {
   content: "";
   border-left: 2px dashed var(--hair, #e6dfd0);
-  height: calc(100% - 30px);
-  left: 50%;
+  height: calc(100% - 34px);
+  left: calc(4px + 17px);
   position: absolute;
-  top: 38px;
+  top: 47px;
   transform: translateX(-50%);
   width: 0;
 }
@@ -4131,7 +4131,8 @@ textarea {
   line-height: 1.55;
   margin: 0;
 }
-.diagnosis-tip strong { color: var(--gold-700, #a8761a); margin-right: 8px; }
+.diagnosis-tip strong { color: var(--gold-700, #8a5f12); margin-right: 8px; }
+:root[data-theme="dark"] .diagnosis-page .diagnosis-tip strong { color: var(--gold-500, #f2c879); }
 .diagnosis-answer-actions { margin-top: 2px; }
 
 /* ── 반응형 ── */
@@ -4231,7 +4232,7 @@ textarea {
   min-width: 0;
 }
 .diagnosis-answer-next__eyebrow {
-  color: var(--gold-700, #a8761a);
+  color: var(--gold-700, #8a5f12);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -4260,6 +4261,9 @@ textarea {
 :root[data-theme="dark"] .diagnosis-page .diagnosis-answer-next__arrow {
   background: var(--navy-700, #8fb8ff);
   color: #07101f;
+}
+:root[data-theme="dark"] .diagnosis-page .diagnosis-answer-next__eyebrow {
+  color: var(--gold-500, #f2c879);
 }
 
 @media (max-width: 720px) {

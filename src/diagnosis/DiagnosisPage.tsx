@@ -155,6 +155,17 @@ export function DiagnosisPage() {
     }
   }
 
+  // 히어로 스텝 제목은 어드민 '빠른 흐름'(content.hero.quickFlow)이 있으면 반영하고,
+  // 없으면 기본 DIAGNOSIS_STEPS 제목을 쓴다(설명문은 기본값 유지). 어드민 편집 필드와 연결 복구.
+  const heroSteps = useMemo(
+    () =>
+      DIAGNOSIS_STEPS.map((fallback, i) => ({
+        title: content.hero.quickFlow?.[i]?.trim() || fallback.title,
+        desc: fallback.desc
+      })),
+    [content]
+  );
+
   return (
     <>
       <header className="nav diagnosis-header" data-elevated={menuOpen || scrolled ? "true" : "false"}>
@@ -249,7 +260,7 @@ export function DiagnosisPage() {
             </div>
             <aside className="diagnosis-hero-steps" aria-label="진단 3단계 흐름">
               <ol>
-                {DIAGNOSIS_STEPS.map((step, index) => (
+                {heroSteps.map((step, index) => (
                   <li key={step.title}>
                     <span className="diagnosis-step-num">{index + 1}</span>
                     <div className="diagnosis-step-body">
@@ -269,7 +280,7 @@ export function DiagnosisPage() {
             <h2 id="diagnosis-cat-title">{content.sections.categoryTitle}</h2>
             <p>{content.sections.categoryDescription}</p>
           </div>
-          <div className="diagnosis-cat-grid">
+          <div className="diagnosis-cat-grid" role="group" aria-label="문제 부위 선택">
             {symptomCategories.map((cat) => {
               const Icon = categoryIconFor(cat.id);
               return (
@@ -277,6 +288,7 @@ export function DiagnosisPage() {
                   key={cat.id}
                   type="button"
                   className={`diagnosis-cat-card${selectedCategory.id === cat.id ? " active" : ""}`}
+                  aria-pressed={selectedCategory.id === cat.id}
                   onClick={() => pickCategory(cat)}
                 >
                   <span className="diagnosis-cat-icon">
@@ -295,7 +307,7 @@ export function DiagnosisPage() {
             <h2 id="diagnosis-list-title">{content.sections.symptomTitle}</h2>
             <p>{content.sections.symptomDescription}</p>
           </div>
-          <div className="diagnosis-topic-grid">
+          <div className="diagnosis-topic-grid" role="group" aria-label="증상 선택">
             {selectedCategory.symptoms.map((s) => {
               const base = diagnosisTopics.find((t) => t.id === s.id);
               if (!base) return null;
@@ -307,6 +319,7 @@ export function DiagnosisPage() {
                   key={topic.id}
                   type="button"
                   className={`diagnosis-symptom-card${selectedTopic.id === topic.id ? " active" : ""}`}
+                  aria-pressed={selectedTopic.id === topic.id}
                   onClick={() => pickTopic(topic.id)}
                 >
                   <span className="diagnosis-symptom-icon" aria-hidden="true">
@@ -374,7 +387,7 @@ export function DiagnosisPage() {
                 <Lightbulb size={18} aria-hidden="true" />
                 <p>
                   <strong>추천 팁</strong>
-                  가장 먼저 {answer.firstChecks[0]} — 이것부터 살펴보면 원인을 빠르게 좁힐 수 있어요.
+                  가장 먼저 {answer.firstChecks[0].replace(/먼저\s*/, "")} — 이것부터 살펴보면 원인을 빠르게 좁힐 수 있어요.
                 </p>
               </div>
             ) : null}
