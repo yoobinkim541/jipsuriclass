@@ -84,18 +84,25 @@ export function DiagnosisPage() {
   const [scrolled, setScrolled] = useState(false);
   const activeHref = "/diagnosis";
 
-  const initialCategory = useMemo<SymptomCategory | null>(() => {
-    const catId = query.get("category");
-    return catId ? (symptomCategories.find((c) => c.id === catId) ?? symptomCategories[0]) : symptomCategories[0];
-  }, [query]);
-
   const initialTopic = useMemo<DiagnosisTopic>(() => {
     const issue = query.get("issue") ?? query.get("topic");
     if (issue) return getDiagnosisTopicByTrigger(issue) ?? getDiagnosisTopicById(issue);
     return diagnosisTopics[0];
   }, [query]);
 
-  const [selectedCategory, setSelectedCategory] = useState<SymptomCategory>(initialCategory ?? symptomCategories[0]);
+  // 카테고리: ?category 우선. 없으면 딥링크 토픽(issue/topic)이 속한 카테고리로 맞춰,
+  // 답변과 위쪽 카테고리 펄·증상 카드 선택이 어긋나지 않게 한다.
+  const initialCategory = useMemo<SymptomCategory>(() => {
+    const catId = query.get("category");
+    if (catId) return symptomCategories.find((c) => c.id === catId) ?? symptomCategories[0];
+    if (query.get("issue") || query.get("topic")) {
+      const matched = symptomCategories.find((c) => c.symptoms.some((s) => s.id === initialTopic.id));
+      if (matched) return matched;
+    }
+    return symptomCategories[0];
+  }, [query, initialTopic]);
+
+  const [selectedCategory, setSelectedCategory] = useState<SymptomCategory>(initialCategory);
   const [selectedTopic, setSelectedTopic] = useState<DiagnosisTopic>(initialTopic);
   const answerRef = useRef<HTMLElement>(null);
   const symptomListRef = useRef<HTMLElement>(null);
