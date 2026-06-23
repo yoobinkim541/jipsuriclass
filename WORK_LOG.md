@@ -3349,3 +3349,20 @@ Verification:
 
 Follow-up:
 - None.
+
+## 2026-06-23 - Mobile Process Hint Direction
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Changed the mobile process hint to explicitly say "오른쪽에서 왼쪽으로 밀어 다음 절차 보기".
+- Reversed the hint icon and nudge animation so the gesture direction matches the UI cue.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- None.

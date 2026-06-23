@@ -1506,8 +1506,8 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
         <div className="process__content">
           <div className="process__track-area">
             <div className="process__mobile-hint">
-              <span>옆으로 밀어 다음 절차 보기</span>
-              <ChevronRight size={16} aria-hidden="true" />
+              <ChevronLeft size={16} aria-hidden="true" />
+              <span>오른쪽에서 왼쪽으로 밀어 다음 절차 보기</span>
             </div>
             <div className="process__track">
               {process.map((step, index) => (
