@@ -1504,19 +1504,25 @@ function ProcessSection({ steps }: { steps: { title: string; text: string; image
         </div>
 
         <div className="process__content">
-          <div className="process__track">
-            {process.map((step, index) => (
-              <button
-                className={`process__step${activeStep === index ? " active" : ""}`}
-                onClick={() => setActiveStep(index)}
-                aria-current={activeStep === index ? "true" : undefined}
-                key={step.title}
-              >
-                <span className="step-num">0{index + 1}</span>
-                <step.icon size={22} />
-                <h3>{steps[index]?.title ?? step.title}</h3>
-              </button>
-            ))}
+          <div className="process__track-area">
+            <div className="process__mobile-hint">
+              <span>옆으로 밀어 다음 절차 보기</span>
+              <ChevronRight size={16} aria-hidden="true" />
+            </div>
+            <div className="process__track">
+              {process.map((step, index) => (
+                <button
+                  className={`process__step${activeStep === index ? " active" : ""}`}
+                  onClick={() => setActiveStep(index)}
+                  aria-current={activeStep === index ? "true" : undefined}
+                  key={step.title}
+                >
+                  <span className="step-num">0{index + 1}</span>
+                  <step.icon size={22} />
+                  <h3>{steps[index]?.title ?? step.title}</h3>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* 활성 단계 상세: 트랙 밖(아래)에 단일 렌더. 모바일=가로 트랙 아래 노출,

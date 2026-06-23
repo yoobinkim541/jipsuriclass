@@ -2967,6 +2967,14 @@ textarea {
   gap: 16px;
 }
 
+.process__track-area {
+  position: relative;
+}
+
+.process__mobile-hint {
+  display: none;
+}
+
 .process__shell .process__track,
 .process__shell .process__detail {
   max-width: none;
@@ -3293,6 +3301,17 @@ textarea {
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
+}
+
+@keyframes processHintNudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .process__mobile-hint svg {
+    animation: none;
+  }
 }
 
 .process__detail-card h3 {
@@ -11209,6 +11228,41 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     margin: 0 16px 16px;
   }
 
+  .process__track-area {
+    overflow: hidden;
+  }
+
+  .process__track-area::after {
+    content: "";
+    position: absolute;
+    top: 42px;
+    right: 0;
+    bottom: 0;
+    width: 54px;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(250, 247, 242, 0), var(--cream, #faf7f2) 78%);
+  }
+
+  .process__mobile-hint {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+    margin: 0 0 10px;
+    padding: 8px 11px;
+    border: 1px solid rgba(16, 40, 74, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.76);
+    color: var(--ink-2, #2a3a55);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .process__mobile-hint svg {
+    flex: 0 0 auto;
+    animation: processHintNudge 1.35s ease-in-out infinite;
+  }
+
   /* 단계 트랙: 가로 스와이프(현장사례처럼) → 단계 영역을 한 줄로, 상세는 아래에 */
   .process__track {
     display: flex;
@@ -14612,6 +14666,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .process__signal-icon {
     background: rgba(226, 232, 240, 0.1);
     color: var(--gold-500, #f2c879);
+  }
+  .process__mobile-hint {
+    background: var(--panel-soft, #162033);
+    border-color: var(--hair, rgba(226, 232, 240, 0.18));
+    color: var(--ink-2, #d8e1f0);
+  }
+  .process__track-area::after {
+    background: linear-gradient(90deg, rgba(17, 24, 39, 0), var(--bg, #0b1220) 78%);
   }
 
   /* 대표 강점 리스트: 텍스트 #111827 하드코딩 → 밝게 */

@@ -3331,3 +3331,21 @@ Implemented behavior:
 
 Verification:
 - `npx tsc --noEmit`·`npm run build` 통과. 격리 워크트리(off origin/main 13ec272).
+
+## 2026-06-23 - Mobile Process Scroll Hint
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Added a mobile-only hint above the work process steps: "옆으로 밀어 다음 절차 보기".
+- Added a right-edge fade and nudge arrow so users can tell the process cards continue horizontally.
+- Kept the latest `main` diagnosis UI intact while applying only the mobile process affordance.
+
+Verification:
+- `npm run build` passed after resolving the latest `main` merge conflicts.
+
+Follow-up:
+- None.
