@@ -1,7 +1,6 @@
 import type jsPDF from "jspdf";
-import { electricPriceCategories } from "../electricPriceData";
 import { servicePricingRegistry } from "../pricing/registry";
-import { waterproofingTilePriceCategories, waterproofingPriceCategories, tilePriceCategories } from "../waterproofingTilePriceData";
+import { waterproofingTilePriceCategories, waterproofingPriceCategories } from "../waterproofingTilePriceData";
 import type {
   InquiryIntake,
   InquiryQuoteCharge,
@@ -52,24 +51,16 @@ type QuoteDownloadContext = {
   totals: QuoteTotals;
 };
 
+// registry(공개 /pricing 표)를 가격 정본으로 단일화한다. electric·tile은 registry에 동일
+// 서비스가 있어 여기서 제거 — 과거 legacy 카탈로그와 숫자가 드리프트해 '공개 표 ≠ 어드민
+// 견적' 버그를 만들었다(예: 다운라이트 공개 60,000 vs 견적 30,000). 제거 후 두 서비스의
+// 견적은 registry(공개 표)에서만 나온다. registry에 없는 방수·방수타일만 견적용으로 유지한다.
 const EXTRA_SOURCE_DEFINITIONS: QuoteSourceDefinition[] = [
-  {
-    servicePath: "/service/electric",
-    pricingPath: "/service/electric/price",
-    serviceLabel: "전기공사 서비스",
-    categories: normalizeCustomCategories(electricPriceCategories)
-  },
   {
     servicePath: "/service/waterproofing",
     pricingPath: "/service/waterproofing/price",
     serviceLabel: "방수 보수 서비스",
     categories: normalizeCustomCategories(waterproofingPriceCategories)
-  },
-  {
-    servicePath: "/service/tile",
-    pricingPath: "/service/tile/price",
-    serviceLabel: "타일 시공·보수 서비스",
-    categories: normalizeCustomCategories(tilePriceCategories)
   },
   {
     servicePath: "/service/waterproofing-tile",
