@@ -132,112 +132,16 @@ export function SiteContentEditor({
 }
 
 function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: boolean; isActive: boolean }) {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saveState, setSaveState] = useState<SaveState>("idle");
-  const [saveNote, setSaveNote] = useState("편집 내용을 불러오는 중입니다.");
-  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const editor = useAutosaveDraft<AccountPageContent>({
+    isAuthenticated,
+    isActive,
+    initial: defaultAccountPageContent,
+    load: () => siteContentService.loadAccountContent(),
+    save: (content) => siteContentService.saveAccountContent(content)
+  });
+  const { draft, setDraft, markEdited } = editor;
   const [showPreview, setShowPreview] = useState(true);
   const [showPreviewFullscreen, setShowPreviewFullscreen] = useState(false);
-  const [draft, setDraft] = useState<AccountPageContent>(defaultAccountPageContent);
-
-  const draftRef = useRef(draft);
-  const lastSavedRef = useRef(JSON.stringify(defaultAccountPageContent));
-  const autosaveTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    draftRef.current = draft;
-  }, [draft]);
-
-  useEditorSaveShortcut(() => void persistDraft("manual"), isAuthenticated && !loading && isActive);
-
-  useEffect(() => {
-    let mounted = true;
-    void siteContentService
-      .loadAccountContent()
-      .then((content) => {
-        if (!mounted) return;
-        setDraft(content);
-        draftRef.current = content;
-        lastSavedRef.current = JSON.stringify(content);
-        setSaveState("saved");
-        setSaveNote("현재 내용이 저장되어 있습니다.");
-        setLastSavedAt(new Date().toISOString());
-      })
-      .catch((loadError) => {
-        if (!mounted) return;
-        setError(loadError instanceof Error ? loadError.message : "편집 내용을 불러오지 못했습니다.");
-        setSaveState("error");
-        setSaveNote("불러오기에 실패했습니다.");
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (loading || !isAuthenticated) return;
-    const snapshot = JSON.stringify(draft);
-    if (snapshot === lastSavedRef.current) {
-      if (saveState !== "saving") {
-        setSaveState("saved");
-        setSaveNote("현재 내용이 저장되어 있습니다.");
-      }
-      return;
-    }
-
-    setSaveState("dirty");
-    setSaveNote("변경 내용을 자동 저장합니다.");
-    if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
-    autosaveTimerRef.current = window.setTimeout(() => {
-      void persistDraft("auto");
-    }, AUTOSAVE_DELAY);
-
-    return () => {
-      if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft, isAuthenticated, loading]);
-
-  async function persistDraft(mode: "auto" | "manual") {
-    const payload = draftRef.current;
-    const snapshot = JSON.stringify(payload);
-    setSaving(true);
-    setError(null);
-    setSaveState("saving");
-    setSaveNote(mode === "auto" ? "자동 저장 중입니다." : "저장 중입니다.");
-
-    try {
-      await siteContentService.saveAccountContent(payload);
-      lastSavedRef.current = snapshot;
-      setSaveState("saved");
-      setSaveNote(mode === "auto" ? "자동 저장되었습니다." : "저장되었습니다.");
-      setLastSavedAt(new Date().toISOString());
-      window.setTimeout(() => {
-        if (lastSavedRef.current === snapshot) {
-          setSaveNote("현재 내용이 저장되어 있습니다.");
-        }
-      }, 2200);
-    } catch (saveError) {
-      setSaveState("error");
-      setError(saveError instanceof Error ? saveError.message : "저장에 실패했습니다.");
-      setSaveNote("저장하지 못했습니다.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function markEdited() {
-    if (saveState !== "saving") {
-      setSaveState("dirty");
-      setSaveNote("변경 내용을 자동 저장합니다.");
-    }
-  }
 
   function updateHero(field: keyof AccountPageContent["hero"], value: string | string[]) {
     setDraft((current) => ({ ...current, hero: { ...current.hero, [field]: value } }));
@@ -268,55 +172,38 @@ function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: 
     markEdited();
   }
 
-  function resetDraft() {
-    setDraft(defaultAccountPageContent);
-    setSaveState("dirty");
-    setSaveNote("기본값으로 되돌렸습니다. 자동 저장됩니다.");
-    setError(null);
-  }
-
   return (
     <section className="editor-shell" aria-labelledby="account-editor-title">
-      <div className="editor-header">
-        <div>
-          <span className="admin-kicker">
-            <PencilLine size={16} />
-            마이페이지 편집기
-          </span>
-          <h2 id="account-editor-title">마이페이지의 문구와 안내를 바로 수정합니다</h2>
-          <p>마이페이지 문구를 바로 수정합니다.</p>
-          <div className="editor-save-state" aria-live="polite">
-            <span data-state={saveState}>
-              {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
-            </span>
-            <p>{saveNote}</p>
-            {lastSavedAt ? <em>최근 저장 {formatEditorTime(lastSavedAt)}</em> : null}
-          </div>
-        </div>
-        <div className="editor-actions">
-          <button className="admin-ghost-button" type="button" onClick={() => setShowPreview((current) => !current)}>
-            {showPreview ? "미리보기 숨기기" : "미리보기 보기"}
-          </button>
-          {showPreview ? (
-            <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
-              {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
+      <EditorHeader
+        badge="마이페이지 편집기"
+        title="마이페이지의 문구와 안내를 바로 수정합니다"
+        description="마이페이지 문구를 바로 수정합니다."
+        saveState={editor.saveState}
+        saveNote={editor.saveNote}
+        lastSavedAt={editor.lastSavedAt}
+        isAuthenticated={isAuthenticated}
+        loading={editor.loading}
+        saving={editor.saving}
+        onReset={() => editor.reset(defaultAccountPageContent)}
+        onSave={() => void editor.persistDraft("manual")}
+        extraActions={
+          <>
+            <button className="admin-ghost-button" type="button" onClick={() => setShowPreview((current) => !current)}>
+              {showPreview ? "미리보기 숨기기" : "미리보기 보기"}
             </button>
-          ) : null}
-          <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
-            <RotateCcw size={16} />
-            기본값
-          </button>
-          <button className="admin-primary-button" type="button" onClick={() => void persistDraft("manual")} disabled={!isAuthenticated || loading || saving}>
-            {saving ? <LoaderCircle size={16} className="spin" /> : <Save size={16} />}
-            {saving ? "저장 중" : "즉시 저장"}
-          </button>
-        </div>
-      </div>
+            {showPreview ? (
+              <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
+                {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
+              </button>
+            ) : null}
+          </>
+        }
+      />
 
       {!isAuthenticated ? <p className="admin-banner">편집하려면 Google로 로그인한 관리자 계정이어야 합니다.</p> : null}
-      {error ? <p className="admin-error">{error}</p> : null}
+      {editor.error ? <p className="admin-error">{editor.error}</p> : null}
 
-      {loading ? (
+      {editor.loading ? (
         <div className="admin-empty">
           <LoaderCircle size={18} className="spin" />
           편집 내용을 불러오는 중
@@ -440,113 +327,17 @@ function AccountContentEditor({ isAuthenticated, isActive }: { isAuthenticated: 
 }
 
 function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated: boolean; isActive: boolean }) {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saveState, setSaveState] = useState<SaveState>("idle");
-  const [saveNote, setSaveNote] = useState("편집 내용을 불러오는 중입니다.");
-  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const editor = useAutosaveDraft<EstimatePageContent>({
+    isAuthenticated,
+    isActive,
+    initial: defaultEstimatePageContent,
+    load: () => siteContentService.loadEstimateContent(),
+    save: (content) => siteContentService.saveEstimateContent(content)
+  });
+  const { draft, setDraft, markEdited } = editor;
   const [showPreview, setShowPreview] = useState(true);
   const [showPreviewFullscreen, setShowPreviewFullscreen] = useState(false);
-  const [draft, setDraft] = useState<EstimatePageContent>(defaultEstimatePageContent);
   const [selectedStep, setSelectedStep] = useState(0);
-
-  const draftRef = useRef(draft);
-  const lastSavedRef = useRef(JSON.stringify(defaultEstimatePageContent));
-  const autosaveTimerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    draftRef.current = draft;
-  }, [draft]);
-
-  useEditorSaveShortcut(() => void persistDraft("manual"), isAuthenticated && !loading && isActive);
-
-  useEffect(() => {
-    let mounted = true;
-    void siteContentService
-      .loadEstimateContent()
-      .then((content) => {
-        if (!mounted) return;
-        setDraft(content);
-        draftRef.current = content;
-        lastSavedRef.current = JSON.stringify(content);
-        setSaveState("saved");
-        setSaveNote("현재 내용이 저장되어 있습니다.");
-        setLastSavedAt(new Date().toISOString());
-      })
-      .catch((loadError) => {
-        if (!mounted) return;
-        setError(loadError instanceof Error ? loadError.message : "편집 내용을 불러오지 못했습니다.");
-        setSaveState("error");
-        setSaveNote("불러오기에 실패했습니다.");
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (loading || !isAuthenticated) return;
-    const snapshot = JSON.stringify(draft);
-    if (snapshot === lastSavedRef.current) {
-      if (saveState !== "saving") {
-        setSaveState("saved");
-        setSaveNote("현재 내용이 저장되어 있습니다.");
-      }
-      return;
-    }
-
-    setSaveState("dirty");
-    setSaveNote("변경 내용을 자동 저장합니다.");
-    if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
-    autosaveTimerRef.current = window.setTimeout(() => {
-      void persistDraft("auto");
-    }, AUTOSAVE_DELAY);
-
-    return () => {
-      if (autosaveTimerRef.current) window.clearTimeout(autosaveTimerRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draft, isAuthenticated, loading]);
-
-  async function persistDraft(mode: "auto" | "manual") {
-    const payload = draftRef.current;
-    const snapshot = JSON.stringify(payload);
-    setSaving(true);
-    setError(null);
-    setSaveState("saving");
-    setSaveNote(mode === "auto" ? "자동 저장 중입니다." : "저장 중입니다.");
-
-    try {
-      await siteContentService.saveEstimateContent(payload);
-      lastSavedRef.current = snapshot;
-      setSaveState("saved");
-      setSaveNote(mode === "auto" ? "자동 저장되었습니다." : "저장되었습니다.");
-      setLastSavedAt(new Date().toISOString());
-      window.setTimeout(() => {
-        if (lastSavedRef.current === snapshot) {
-          setSaveNote("현재 내용이 저장되어 있습니다.");
-        }
-      }, 2200);
-    } catch (saveError) {
-      setSaveState("error");
-      setError(saveError instanceof Error ? saveError.message : "저장에 실패했습니다.");
-      setSaveNote("저장하지 못했습니다.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  function markEdited() {
-    if (saveState !== "saving") {
-      setSaveState("dirty");
-      setSaveNote("변경 내용을 자동 저장합니다.");
-    }
-  }
 
   function updateHeader(field: keyof EstimatePageContent["header"], value: string) {
     setDraft((current) => ({ ...current, header: { ...current.header, [field]: value } }));
@@ -619,53 +410,36 @@ function EstimateContentEditor({ isAuthenticated, isActive }: { isAuthenticated:
     markEdited();
   }
 
-  function resetDraft() {
-    setDraft(defaultEstimatePageContent);
-    setSaveState("dirty");
-    setSaveNote("기본값으로 되돌렸습니다. 자동 저장됩니다.");
-    setError(null);
-    setSelectedStep(0);
-  }
-
   return (
     <section className="editor-shell" aria-labelledby="estimate-editor-title">
-      <div className="editor-header">
-        <div>
-          <span className="admin-kicker">
-            <PencilLine size={16} />
-            견적상담 편집기
-          </span>
-          <h2 id="estimate-editor-title">상담 신청서의 문구와 선택지를 바로 수정합니다</h2>
-          <p>견적상담 문구를 바로 수정합니다.</p>
-          <div className="editor-save-state" aria-live="polite">
-            <span data-state={saveState}>
-              {saveState === "saving" ? "저장 중" : saveState === "dirty" ? "변경됨" : saveState === "error" ? "오류" : "저장됨"}
-            </span>
-            <p>{saveNote}</p>
-            {lastSavedAt ? <em>최근 저장 {formatEditorTime(lastSavedAt)}</em> : null}
-          </div>
-        </div>
-        <div className="editor-actions">
-          {showPreview ? (
+      <EditorHeader
+        badge="견적상담 편집기"
+        title="상담 신청서의 문구와 선택지를 바로 수정합니다"
+        description="견적상담 문구를 바로 수정합니다."
+        saveState={editor.saveState}
+        saveNote={editor.saveNote}
+        lastSavedAt={editor.lastSavedAt}
+        isAuthenticated={isAuthenticated}
+        loading={editor.loading}
+        saving={editor.saving}
+        onReset={() => {
+          editor.reset(defaultEstimatePageContent);
+          setSelectedStep(0);
+        }}
+        onSave={() => void editor.persistDraft("manual")}
+        extraActions={
+          showPreview ? (
             <button className="admin-ghost-button" type="button" onClick={() => setShowPreviewFullscreen((current) => !current)}>
               {showPreviewFullscreen ? "전체 미리보기 닫기" : "전체 미리보기"}
             </button>
-          ) : null}
-          <button className="admin-ghost-button" type="button" onClick={resetDraft} disabled={!isAuthenticated || loading || saving}>
-            <RotateCcw size={16} />
-            기본값
-          </button>
-          <button className="admin-primary-button" type="button" onClick={() => void persistDraft("manual")} disabled={!isAuthenticated || loading || saving}>
-            {saving ? <LoaderCircle size={16} className="spin" /> : <Save size={16} />}
-            {saving ? "저장 중" : "즉시 저장"}
-          </button>
-        </div>
-      </div>
+          ) : null
+        }
+      />
 
       {!isAuthenticated ? <p className="admin-banner">편집하려면 Google로 로그인한 관리자 계정이어야 합니다.</p> : null}
-      {error ? <p className="admin-error">{error}</p> : null}
+      {editor.error ? <p className="admin-error">{editor.error}</p> : null}
 
-      {loading ? (
+      {editor.loading ? (
         <div className="admin-empty">
           <LoaderCircle size={18} className="spin" />
           편집 내용을 불러오는 중
