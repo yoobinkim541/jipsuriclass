@@ -223,6 +223,9 @@ export function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<t
     };
   }
 
+  const businessAddress = buildPostalAddress(business.address);
+  const businessHoursSpec = buildOpeningHoursSpec(business.hours);
+
   return {
     path: "/",
     title: `${siteName} - 클라쓰가 다른 종합 집수리`,
@@ -243,16 +246,46 @@ export function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<t
         url: siteUrl,
         telephone: business.phone,
         image: defaultImage,
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: business.address,
-          addressCountry: "KR"
-        },
+        address: businessAddress,
         areaServed: business.area,
-        openingHours: business.hours,
+        ...(businessHoursSpec ? { openingHoursSpecification: businessHoursSpec } : {}),
         sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl],
         description: business.introduction
       }
     ]
+  };
+}
+
+/** 사업자 주소 문자열을 schema.org PostalAddress 컴포넌트로 분해한다.
+ *  "경기도 남양주시 화도읍 경춘로 1790-2 106호" → 시도(addressRegion)/시군구(addressLocality)/나머지(도로명+상세).
+ *  구글이 한 덩어리 streetAddress보다 분리된 컴포넌트를 더 잘 파싱한다(로컬 검색). */
+function buildPostalAddress(full: string): Record<string, string> {
+  const parts = full.trim().split(/\s+/);
+  return {
+    "@type": "PostalAddress",
+    streetAddress: parts.length > 2 ? parts.slice(2).join(" ") : full,
+    addressLocality: parts[1] ?? "",
+    addressRegion: parts[0] ?? "",
+    addressCountry: "KR"
+  };
+}
+
+/** 영업시간 문자열에서 opens/closes·휴무 요일을 뽑아 OpeningHoursSpecification로 변환한다.
+ *  "08:00 - 21:00 / 매주 일요일 휴무" → Mo-Sa 08:00-21:00. 시간 파싱 실패 시 null(구조화 생략, 깨진 데이터 방지). */
+function buildOpeningHoursSpec(hours: string): Record<string, unknown> | null {
+  const time = hours.match(/(\d{1,2}:\d{2})\s*[-~]\s*(\d{1,2}:\d{2})/);
+  if (!time) return null;
+  const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const closedSunday = /일요일?\s*휴무|주말\s*휴무/.test(hours);
+  const closedSaturday = /토요일?\s*휴무|주말\s*휴무/.test(hours);
+  const dayOfWeek = allDays.filter(
+    (day) => !(day === "Sunday" && closedSunday) && !(day === "Saturday" && closedSaturday)
+  );
+  const pad = (value: string) => (value.length === 4 ? `0${value}` : value);
+  return {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek,
+    opens: pad(time[1]),
+    closes: pad(time[2])
   };
 }
