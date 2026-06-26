@@ -249,7 +249,7 @@ export function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<t
         address: businessAddress,
         areaServed: business.area,
         ...(businessHoursSpec ? { openingHoursSpecification: businessHoursSpec } : {}),
-        sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl],
+        sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl, business.googleProfileUrl],
         description: business.introduction
       }
     ]

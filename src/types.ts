@@ -16,6 +16,7 @@ export type BusinessProfile = {
   owner: string;
   address: string;
   mapUrl: string;
+  googleProfileUrl: string;
 };
 
 /** 관리자 '사이트 설정'에서 편집하는 영업 정보 + 대표 자격증 목록.

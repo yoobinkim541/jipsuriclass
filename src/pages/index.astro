@@ -11,6 +11,7 @@ export const prerender = true;
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Seo from "../components/seo/Seo.astro";
 import { HomePage } from "../App";
+import { business } from "../data";
 
 const title = "집수리클라쓰 - 클라쓰가 다른 종합 집수리";
 const description =
@@ -33,6 +34,7 @@ const jsonLd = [
     },
     areaServed: ["서울", "경기"],
     openingHours: "Mo-Sa 08:00-21:00",
+    sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl, business.googleProfileUrl],
     description
   }
 ];

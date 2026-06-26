@@ -74,7 +74,9 @@ export const business: BusinessProfile = {
   registrationNumber: "사업자등록번호 633-25-01331",
   owner: "대표자 이보미",
   address: "경기도 남양주시 화도읍 경춘로 1790-2 106호",
-  mapUrl: "https://naver.me/FRLt7TOJ"
+  mapUrl: "https://naver.me/FRLt7TOJ",
+  // 검증된 프로필 — sameAs로 사이트↔프로필 엔티티 연결(로컬 검색 신뢰도). 네이버 플레이스=mapUrl, 구글=googleProfileUrl.
+  googleProfileUrl: "https://share.google/wC6tnqeUgrRiY2kkx"
 };
 
 /** 런타임 사이트 설정값(business 외). 공개 SPA가 로드 후 채우고, 컴포넌트가 읽는다. */
