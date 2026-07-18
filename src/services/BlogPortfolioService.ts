@@ -11,13 +11,13 @@ type CacheEntry = {
   totalCount?: number;
 };
 
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
 /**
  * 네이버 블로그 연동의 단일 진입점입니다.
  * API 응답 정제, 실패 fallback, 표시용 날짜 포맷을 이 클래스 안에 묶어
  * UI 컴포넌트가 외부 데이터 형식에 직접 의존하지 않도록 합니다.
- * 24시간 localStorage 캐시로 매일 1회 자동 갱신됩니다.
+ * 30분 localStorage 캐시로 최신 글을 최대 30분 뒤에 반영합니다.
  */
 export class BlogPortfolioService {
   constructor(
