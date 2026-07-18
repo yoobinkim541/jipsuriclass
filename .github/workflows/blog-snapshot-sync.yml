@@ -1,0 +1,29 @@
+name: Blog Snapshot Sync
+
+# 네이버 블로그 최신글을 DB 스냅샷(site_content "blog-snapshot")에 매일 동기화한다.
+# 홈·포트폴리오는 이 스냅샷을 라이브 API보다 우선 표시하므로(App.tsx "DB 스냅샷 우선"),
+# 이 작업이 멈추면 라이브 API가 멀쩡해도 최신글이 안 뜬다.
+#
+# ⚠️ 왜 서버 crontab이 아니라 GitHub Actions인가:
+#   hermes-server의 crontab은 stock-report 자동화가 주기적으로 통째로 재작성하며
+#   외부(jipsuri) 줄을 지워버린다(2026-06-28 추가 → 07-13경 소실, 실측 확인).
+#   그래서 서버 crontab은 신뢰 불가. GitHub Actions는 그 서버와 무관하게 돈다.
+
+on:
+  schedule:
+    - cron: "0 15 * * *" # 매일 00:00 KST (15:00 UTC) — 전날 글까지 반영
+  workflow_dispatch: # 수동 즉시 실행(Actions 탭 → Run workflow)
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync Naver blog snapshot
+        # /api/sync-blog-snapshot 은 BLOG_SYNC_SECRET 으로 보호된다.
+        # ⚠️ Vercel env 의 BLOG_SYNC_SECRET 과 동일 값을 GitHub repo Secrets
+        #    (Settings → Secrets and variables → Actions)에 등록해야 동작한다.
+        #    실패(401 등)하면 -f 로 워크플로가 빨갛게 실패 표시된다.
+        run: |
+          curl -fsS -X POST \
+            -H "x-sync-secret: ${{ secrets.BLOG_SYNC_SECRET }}" \
+            https://www.jipsuriclass.kr/api/sync-blog-snapshot
