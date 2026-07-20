@@ -1,5 +1,295 @@
 # Work Log
 
+## 2026-07-20 - 견적상담 다크모드 가독성 및 기본 라이트 테마
+
+Changed files:
+- `src/lib/theme.ts`, `src/layouts/BaseLayout.astro`, `index.html`, `src/styles.css`, `tests/estimate-theme.spec.ts`, `README.md`, `WORK_LOG.md`
+
+Implemented behavior:
+- 저장된 테마 선택이 없으면 OS 다크 설정을 따르지 않고 라이트 모드로 시작하도록 기본값을 변경했다.
+- 견적상담 설문 폼의 다크모드 패널, 질문, 선택지, 입력창, 요약/동의 카드, 보조 버튼 색상을 다크 표면과 밝은 텍스트로 보정했다.
+- 기본 라이트 테마와 다크모드 견적 폼 대비를 확인하는 Playwright 회귀 테스트를 추가했다.
+- README에 운영 흐름, 검증 명령, 테마 정책, 블로그 폴백, 배포 후 확인 절차를 구체화했다.
+
+Verification:
+- `npx playwright test tests/estimate-theme.spec.ts` 통과.
+- `npm run test:blog -- --reporter=line` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 모바일 히어로 CTA 버튼 폭 정렬
+
+Changed files:
+- `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 모바일 히어로 CTA grid를 1열로 바꿔 `견적상담 시작`과 `모의 견적 계산` 버튼 폭을 동일하게 맞췄다.
+- 데스크톱/태블릿의 4개 CTA 버튼 노출은 유지했다.
+
+Verification:
+- Playwright CTA audit: 360px에서 두 모바일 CTA 모두 324px, 390px에서 모두 351px.
+- 768px/1440px에서는 4개 CTA 표시 유지.
+- 모든 검증 viewport에서 horizontal overflow 0.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 히어로 전화·카카오 CTA 버튼화
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 히어로 CTA에 전화 상담과 카카오톡 상담을 보조 버튼으로 추가했다.
+- 기존 전화 상담 텍스트 링크를 버튼 형태로 바꾸고, 카카오톡은 기존 카카오 버튼 색상 규칙을 재사용한다.
+- 데스크톱/태블릿에서는 4개 CTA가 보이고, 모바일 히어로에서는 직접 연락 버튼을 숨겨 하단 고정 CTA가 담당하도록 유지했다.
+- 더 이상 쓰이지 않는 `hero__text-link` 스타일을 제거했다.
+
+Verification:
+- Playwright CTA audit: 1440px/768px에서 견적상담, 모의견적, 전화 상담, 카카오톡 상담 4개 버튼 표시.
+- 390px에서는 견적상담/모의견적만 표시해 모바일 히어로 밀도 유지, direct contact는 hidden.
+- 모든 검증 viewport에서 horizontal overflow 0.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- 모바일 히어로에도 전화/카카오 버튼을 노출하려면 CTA 2x2 배치로 별도 밀도 조정 필요.
+
+## 2026-07-18 - 가능 작업 증상 찾기 제거
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 가능 작업 섹션에서 `증상으로 찾기 / 작업명으로 찾기` 탭과 증상 카드 4개를 제거했다.
+- 섹션은 바로 기존 작업 카테고리 필터, 검색, 작업 칩 목록으로 시작한다.
+- 증상 찾기 전용 `specs__mode`, `specs__issue-*` CSS와 다크/모바일 잔여 참조를 정리했다.
+
+Verification:
+- 브라우저 DOM audit: 390px/1440px에서 증상/작업명 탭 문구 없음, issue card 0개, 작업 필터/검색/grid 렌더, horizontal overflow 0.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 히어로 보조 상담 카드 제거
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 히어로 사진 카드 덱 위에 떠 있던 `빠른 상담 준비 / 사진 3장으로 범위 정리` 보조 카드를 제거했다.
+- 보조 카드 전용 `hero__assist-card` CSS와 다크/모바일 잔여 참조도 함께 정리했다.
+- 기존 히어로 사진 카드 덱은 유지했다.
+
+Verification:
+- 브라우저 DOM audit: 390px/1440px에서 `.hero__assist-card` 없음, 관련 문구 없음, deck card 5개 유지, horizontal overflow 0.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 모바일 히어로 가독성 및 밀도 조정
+
+Changed files:
+- `src/styles.css`, `WORK_LOG.md`, `verify-screenshots/prototype/home-mobile-readable.png`, `verify-screenshots/prototype/home-mobile-360-readable.png`
+
+Implemented behavior:
+- 모바일 히어로 본문 문장이 배경 사진 위에서 보이도록 흰색, 그림자, 3줄 클램프를 적용했다.
+- 모바일 히어로에서 상담 흐름 3칸 카드를 숨겨 화면 밀도를 낮췄다.
+- 모바일 히어로 높이와 제목 크기를 줄여 첫 화면이 덜 꽉 차 보이도록 조정했다.
+
+Verification:
+- Playwright audit: 360/390px에서 본문 color=rgba(255,255,255,0.92), flow display=none, horizontal overflow 0.
+- 390px 기준 히어로 높이 798px → 712px로 감소.
+- 768px에서는 기존 흐름 카드 표시 유지.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 히어로 상단 상담 배지 제거
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 히어로 배경 위에 떠 있던 `견적 먼저 정리 / 사진 기반 사전 상담` 배지를 제거했다.
+- 배지 전용 `hero__intent` CSS도 함께 삭제해 공개 UI에 남는 장식 요소가 없도록 정리했다.
+
+Verification:
+- 브라우저 DOM audit: `.hero__intent` 없음, 관련 문구 없음, horizontal overflow 0.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 오시는 길 자격증 블록 숨김
+
+Changed files:
+- `src/components/OfficeSection.tsx`, `src/styles.css`, `WORK_LOG.md`
+
+Implemented behavior:
+- 공개 홈의 오시는 길 카드에서 `대표 보유 국가공인 자격증` 목록 블록을 렌더하지 않도록 제거했다.
+- 관리자/설정 데이터의 자격증 목록은 유지하고, 공개 화면 노출만 없앴다.
+- 더 이상 쓰이지 않는 `office-certs` 스타일과 아이콘 import도 정리했다.
+
+Verification:
+- 브라우저 DOM audit: `#location .office-certs` 없음, `대표 보유 국가공인 자격증` 문구 없음, horizontal overflow 0.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 좁은 썸네일 caption 숨김
+
+Changed files:
+- `src/styles.css`, `WORK_LOG.md`, `verify-screenshots/prototype/narrow-thumbnail-360.png`
+
+Implemented behavior:
+- 매우 좁은 홈 about 썸네일 카드에서 긴 한글 caption이 카드 밖으로 역류하며 잘리는 문제를 수정했다.
+- 카드 inline width가 140px 이하일 때 caption을 숨기고, 380px 이하 화면에서는 hover 안내 텍스트도 숨겨 이미지 썸네일만 남긴다.
+- 768px처럼 충분한 폭에서는 기존 caption 표시를 유지한다.
+
+Verification:
+- Playwright viewport audit: 320/360/390px에서 tile caption display=none, 768px에서 display=block, horizontal overflow 0.
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- None.
+
+## 2026-07-18 - 히어로 카카오톡 CTA 제거
+
+Changed files:
+- `src/App.tsx`, `WORK_LOG.md`, `verify-screenshots/prototype/home-desktop.png`, `verify-screenshots/prototype/home-mobile.png`
+
+Implemented behavior:
+- 하단 고정 CTA에 전화·카카오톡이 있으므로 홈 히어로에서는 카카오톡 사진 상담 버튼을 제거했다.
+- 히어로 CTA는 `견적상담 시작`과 `모의 견적 계산` 중심으로 유지하고, 데스크톱의 전화 상담은 낮은 우선순위 텍스트 링크로만 남겼다.
+
+Verification:
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- Playwright hero audit: 390px/1440px에서 히어로 카카오톡 문구 없음, primary href=/estimate, body/CTA horizontal overflow 0.
+- `npm run build` 통과.
+
+Follow-up:
+- 운영 PR 전에는 앞선 블로그 파서 변경과 UI 프로토타입 변경을 별도 단위로 분리해 리뷰하는 것이 좋다.
+
+## 2026-07-18 - 견적상담 우선 CTA funnel 조정
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `verify-screenshots/prototype/home-desktop.png`, `verify-screenshots/prototype/home-mobile.png`
+
+Implemented behavior:
+- 히어로 primary CTA를 카카오톡/전화가 아닌 `견적상담 시작`으로 변경해 문의를 구조화된 견적상담 funnel로 유도.
+- 데스크톱/태블릿은 `견적상담 시작 → 모의 견적 계산 → 카카오톡 사진 상담 → 전화 상담` 순서로 정리하고, 모바일 히어로는 `견적상담 시작`, `모의 견적 계산`만 노출해 직접 연락은 하단 고정 CTA로 분리.
+- 상담 준비 패널 문구도 견적상담 기준으로 보정.
+
+Verification:
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- Playwright CTA audit: 360/390px 모바일은 견적상담+모의견적만 노출, 768/1440px은 4개 CTA 노출, primary href=/estimate, overflow 0.
+- `npm run build` 통과.
+
+Follow-up:
+- 운영 반영 시 전화/카카오 유입량 감소와 견적상담 완료율을 함께 볼 수 있게 CTA 클릭 이벤트 구분 권장.
+
+## 2026-07-18 - UI 프로토타입 production hardening
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `verify-screenshots/prototype/*.png`
+
+Implemented behavior:
+- Superdesign 프로토타입 CSS를 v1/v2 덧칠 구조에서 홈 전용 scoped production block으로 정리해 다른 페이지/공용 버튼에 미치는 영향을 줄였다.
+- 히어로 제목 line-height, 모바일 CTA grid, 상담 흐름 카드, 증상 카드 폭/높이 규칙을 보정해 버튼·카드·제목 잘림 위험을 제거했다.
+- 히어로와 가능 작업 섹션은 프리미엄 톤은 유지하되, 모바일에서는 하단 trust 중복을 접고 정보량을 줄여 첫 화면 부담을 낮췄다.
+
+Verification:
+- `npx tsc -b --pretty false` 통과.
+- `git diff --check` 통과.
+- Playwright viewport audit: 360, 390, 768, 1024, 1440px에서 body horizontal overflow 0, 핵심 CTA/카드/title overflow 0, 증상 카드 4개 렌더 확인.
+- `npm run build` 통과.
+- `npm run test:blog -- --reporter=line` 17개 통과.
+- 로컬 확인 URL: `http://127.0.0.1:4188/`.
+
+Follow-up:
+- 실제 운영 반영 시 블로그 파서 변경과 UI 변경은 별도 커밋/PR로 분리하면 리뷰 리스크가 낮다.
+
+## 2026-07-18 - Superdesign UI 프로토타입 v2 polish
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `verify-screenshots/prototype/home-desktop.png`, `verify-screenshots/prototype/home-mobile.png`
+
+Implemented behavior:
+- 히어로를 더 고급스럽게 보이도록 배경 레이어, 카카오 사진 상담 primary CTA, 상담 준비 floating 패널, 카드 덱 테두리/그림자/질감을 보강.
+- 가능 작업의 증상 카드에 아이콘과 명확한 액션 링크를 추가해 단순 목록보다 완성된 탐색 카드처럼 보이도록 개선.
+- 모바일 히어로 정보량을 조금 줄이고 trust 영역을 접어 첫 화면 부담을 낮춤.
+
+Verification:
+- `npx tsc -b --pretty false` 통과.
+- `npm run build` 통과.
+- Playwright 스모크: desktop/mobile에서 히어로 링크 4개, 증상 카드 4개, 상담 준비 패널 1개 렌더 확인. 핵심 CTA/카드 overflow 0건.
+- 로컬 확인 URL: `http://127.0.0.1:4188/`.
+
+Follow-up:
+- 현재 프로토타입은 홈 상단/가능 작업 중심 polish. 채택 전에는 실제 모바일 실기기에서 첫 화면 체감 길이를 한 번 더 확인 권장.
+
+## 2026-07-18 - Superdesign 스타일 UI 프로토타입 브랜치
+
+Changed files:
+- `src/App.tsx`, `src/styles.css`, `verify-screenshots/prototype/home-desktop.png`, `verify-screenshots/prototype/home-mobile.png`
+
+Implemented behavior:
+- 별도 브랜치 `codex/ui-superdesign-prototype`에서 홈 UI 비교 시안 작성. 히어로 CTA를 카카오톡 사진 상담 중심으로 정리하고, 상담 흐름 3단계를 상단에 추가했다.
+- 가능 작업 섹션을 기본 `증상으로 찾기` 모드와 기존 `작업명으로 찾기` 모드로 분리해 전문 용어를 몰라도 진입할 수 있게 했다.
+- 블로그 글이 비었을 때 실패 메시지 대신 대표 사례 fallback 카드와 안내 배너를 보여주는 시안을 추가했다.
+
+Verification:
+- `npx tsc -b --pretty false` 통과.
+- `npm run build` 통과.
+- Playwright 스모크: desktop/mobile에서 히어로 링크 4개, 증상 카드 4개 렌더 확인. 핵심 CTA/카드 텍스트 overflow 0건.
+
+Follow-up:
+- 모바일 히어로 높이는 기존 덱/배경 구조 영향으로 여전히 긴 편이라, 채택 시 모바일 전용 히어로 정보량을 한 번 더 줄이는 비교안 검토 권장.
+
+## 2026-07-13 - 블로그 파서 로컬/Vite 경로 보강
+
+Changed files:
+- `src/services/NaverBlogSource.ts`
+
+Implemented behavior:
+- Vercel API 쪽에만 있던 네이버 모바일 post-list 파서 보강을 로컬/Vite 서비스 경로에도 반영. `logNo/addDate` 문자열 응답, `title/subject/summary` 대체 필드, JSON 안티-하이재킹 접두사, 요청 타임아웃, 키워드 매칭 시 다중 페이지 수집을 처리한다.
+- 이미지 보강은 항목별 타임아웃과 후보 수 제한을 적용해 느린 이미지 요청이 블로그 카드 렌더링 전체를 막지 않게 했다.
+
+Verification:
+- `npx tsc -b --pretty false` 통과.
+- `npm run test:blog -- --reporter=line` 17개 통과.
+- `npm run build` 통과. 빌드 중 Supabase `landing-pages` fetch는 로컬 네트워크 제한으로 기본값 폴백 로그가 출력됨.
+- 운영 `/api/naver-blog?mode=latest`는 현재 `source: "naver"`, 8건 반환 확인.
+- `git diff --check` 통과.
+
+Follow-up:
+- `api/naver-blog-source.ts`와 `src/services/NaverBlogSource.ts`가 여전히 별도 파일이라 추후 하나의 공용 모듈로 합치면 재발 위험을 줄일 수 있음.
+
 ## 2026-06-21 - 공개 QA: 문의 API 신원 조작 방지 + Playwright 로컬 서버 정합화
 
 Changed files:

@@ -1,4 +1,4 @@
-import { Phone, ShieldCheck } from "lucide-react";
+import { Phone } from "lucide-react";
 import { business, defaultCertifications } from "../data";
 import { NaverMapEmbed } from "./NaverMapEmbed";
 
@@ -11,8 +11,7 @@ export function BusinessInfoList() {
   );
 }
 
-export function OfficeSection({ certifications = defaultCertifications }: { certifications?: string[] }) {
-  const certs = certifications.filter((cert) => cert && cert.trim());
+export function OfficeSection({ certifications: _certifications = defaultCertifications }: { certifications?: string[] }) {
   return (
     <section className="office section" id="location" aria-labelledby="location-title">
       <div className="section-heading">
@@ -35,19 +34,6 @@ export function OfficeSection({ certifications = defaultCertifications }: { cert
             </a>
           </div>
           <BusinessInfoList />
-          {certs.length ? (
-            <div className="office-certs">
-              <span className="office-certs__label">
-                <ShieldCheck size={15} />
-                대표 보유 국가공인 자격증
-              </span>
-              <ul className="office-certs__list">
-                {certs.map((cert) => (
-                  <li key={cert}>{cert}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </div>
         <NaverMapEmbed address={business.address} title={business.name} />
       </div>

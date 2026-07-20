@@ -11,7 +11,7 @@ import {
  * 다크/라이트 토글 훅.
  * - resolved: 현재 적용된 테마
  * - toggle(): 라이트↔다크 전환(명시 선택으로 저장됨)
- * - "system" 상태(저장값 없음)에서는 OS 설정 변경을 실시간 반영한다.
+ * - 저장값이 없으면 사이트 기본값인 라이트 모드로 시작한다.
  */
 export function useTheme() {
   // SSR(빌드)에서 getCurrentResolvedTheme()는 항상 "light"(document 없음)를 반환하므로,

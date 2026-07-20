@@ -23,13 +23,22 @@ type MobilePostListResponse = {
 };
 
 type MobilePostItem = {
-  logNo?: number;
+  logNo?: number | string;
   titleWithInspectMessage?: string;
+  // 네이버 응답 스키마가 버전에 따라 title/subject로도 오므로 모두 받아들인다.
+  title?: string;
+  subject?: string;
   briefContents?: string;
+  summary?: string;
+  contentsSummary?: string;
   thumbnailUrl?: string;
-  addDate?: number;
+  addDate?: number | string;
+  writeDate?: number | string;
   categoryNo?: number;
   categoryName?: string;
+  // 인기도 신호: 공감수·댓글수는 익명 요청에도 노출됨(readCount/조회수는 블로그 주인만 보여 null).
+  sympathyCnt?: number;
+  commentCnt?: number;
   thumbnailList?: Array<{
     encodedThumbnailUrl?: string;
     thumbnailUrl?: string;
@@ -48,15 +57,22 @@ export async function loadNaverBlogCandidates({
   limit = 6
 }: NaverBlogSourceOptions): Promise<NaverBlogItem[]> {
   const candidates = new Map<string, RankedBlogCandidate>();
+  // 키워드(지역명·서비스)가 있으면 '매칭되는 글만' 돌려준다(allowUnmatched=false).
+  // 또 최신 24개만으로는 그 지역 시공글이 누락되므로, 키워드가 있으면 더 많은 페이지를 모아 풀을 넓힌다.
+  const hasTerms = terms.some((term) => typeof term === "string" && term.trim().length > 0);
+  const mobilePages = hasTerms ? 6 : 1;
 
-  const mobileItems = await fetchMobileItems(blogId, categoryNos);
+  const mobileItems = await fetchMobileItems(blogId, categoryNos, mobilePages);
   for (const item of mobileItems) {
     addCandidate(candidates, item.item, item.source);
   }
 
   if (candidates.size) {
-    const ranked = rankCandidates([...candidates.values()], terms, true);
-    return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
+    const ranked = rankCandidates([...candidates.values()], terms, !hasTerms);
+    if (ranked.length) {
+      return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
+    }
+    // 키워드 매칭 결과가 0건이면 RSS/카테고리로 한 번 더 시도한다(아래로 진행).
   }
 
   const rssCandidates = new Map<string, RankedBlogCandidate>();
@@ -72,7 +88,7 @@ export async function loadNaverBlogCandidates({
     }
   }
 
-  const ranked = rankCandidates([...rssCandidates.values()], terms, true);
+  const ranked = rankCandidates([...rssCandidates.values()], terms, !hasTerms);
   return await enrichImages(ranked.slice(0, limit).map((entry) => entry.item));
 }
 
@@ -108,19 +124,40 @@ function mergeCandidateItem(existing: NaverBlogItem, incoming: NaverBlogItem) {
   };
 }
 
-async function enrichImages(items: NaverBlogItem[]) {
-  return await Promise.all(
-    items.map(async (item) => {
-      const resolved = await loadBlogPost(resolveDesktopPostUrl(item.link));
-      const imageCandidates = [...new Set([...(item.imageCandidates ?? []), ...(resolved.imageCandidates ?? [])])];
-      const liveImage = await resolveFirstLiveImage([resolved.image, item.image, ...imageCandidates].filter((value): value is string => Boolean(value)));
-      return {
-        ...item,
-        image: liveImage || resolved.image || item.image,
-        imageCandidates
-      };
-    })
+const IMAGE_ENRICH_TIMEOUT_MS = 6000;
+
+// 느린 글 한 건이 전체 응답을 막지 않도록, 항목별 이미지 보강을 타임아웃으로 감싼다.
+// 타임아웃/실패 시 원본 항목(이미 목록에서 받은 image 포함)을 그대로 반환한다.
+function withTimeoutFallback<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        resolve(fallback);
+      });
+  });
+}
+
+async function enrichOneImage(item: NaverBlogItem): Promise<NaverBlogItem> {
+  const resolved = await loadBlogPost(resolveDesktopPostUrl(item.link));
+  const imageCandidates = [...new Set([...(item.imageCandidates ?? []), ...(resolved.imageCandidates ?? [])])];
+  const liveImage = await resolveFirstLiveImage(
+    [resolved.image, item.image, ...imageCandidates].filter((value): value is string => Boolean(value))
   );
+  return {
+    ...item,
+    image: liveImage || resolved.image || item.image,
+    imageCandidates
+  };
+}
+
+async function enrichImages(items: NaverBlogItem[]) {
+  return await Promise.all(items.map((item) => withTimeoutFallback(enrichOneImage(item), IMAGE_ENRICH_TIMEOUT_MS, item)));
 }
 
 function resolveDesktopPostUrl(link: string) {
@@ -131,17 +168,17 @@ function resolveDesktopPostUrl(link: string) {
 }
 
 async function resolveFirstLiveImage(candidates: string[]) {
-  for (const candidate of candidates) {
+  // 죽은 후보가 많아도 함수 시간 초과로 응답 전체가 502되지 않게 검사 수를 제한한다.
+  for (const candidate of candidates.slice(0, 4)) {
     if (await isLiveImage(candidate)) {
       return candidate;
     }
   }
-  return undefined;
+  return candidates[0];
 }
 
 async function isLiveImage(url: string) {
   try {
-    // 타임아웃 가드 — 죽은/느린 이미지 후보가 블로그 로딩을 무기한 매달지 않도록(서버측 sibling과 동일).
     const response = await fetch(url, {
       signal: AbortSignal.timeout(3000),
       headers: {
@@ -224,18 +261,25 @@ function getSourcePriority(sources: Set<"mobile" | "mobile-category" | "rss" | "
   return 0;
 }
 
-async function fetchMobileItems(blogId: string, categoryNos: number[]) {
+async function fetchMobileItems(blogId: string, categoryNos: number[], pages = 1) {
   const results: Array<{ item: NaverBlogItem; source: "mobile" | "mobile-category" }> = [];
 
-  const { items: latestItems } = await fetchMobilePostList(blogId, 0, MOBILE_FETCH_LIMIT);
-  for (const item of latestItems) {
-    results.push({ item, source: "mobile" });
+  // 최신 글: 필요한 페이지 수만큼 병렬로 모은다(키워드 매칭 시 풀을 넓혀 지역글 누락 방지).
+  const latestPages = await Promise.all(
+    Array.from({ length: Math.max(1, pages) }, (_, index) => fetchMobilePostList(blogId, 0, MOBILE_FETCH_LIMIT, index + 1))
+  );
+  for (const { items } of latestPages) {
+    for (const item of items) {
+      results.push({ item, source: "mobile" });
+    }
   }
 
   const uniqueCategoryNos = [...new Set(categoryNos.filter((value) => Number.isInteger(value) && value > 0))];
-  for (const categoryNo of uniqueCategoryNos) {
-    const { items: categoryItems } = await fetchMobilePostList(blogId, categoryNo, MOBILE_FETCH_LIMIT);
-    for (const item of categoryItems) {
+  const categoryResults = await Promise.all(
+    uniqueCategoryNos.map((categoryNo) => fetchMobilePostList(blogId, categoryNo, MOBILE_FETCH_LIMIT))
+  );
+  for (const { items } of categoryResults) {
+    for (const item of items) {
       results.push({ item, source: "mobile-category" });
     }
   }
@@ -287,6 +331,7 @@ async function fetchMobilePostList(
     const response = await fetch(
       `https://m.blog.naver.com/api/blogs/${encodeURIComponent(blogId)}/post-list?categoryNo=${categoryNo}&itemCount=${itemCount}&page=${page}&userId=`,
       {
+        signal: AbortSignal.timeout(7000),
         headers: {
           Accept: "application/json, text/plain, */*",
           Referer: `https://m.blog.naver.com/${encodeURIComponent(blogId)}?tab=1`,
@@ -299,9 +344,11 @@ async function fetchMobilePostList(
       throw new Error(`Naver mobile post list returned ${response.status}`);
     }
 
-    const data = (await response.json()) as MobilePostListResponse;
-    const rawItems = Array.isArray(data.result?.items) ? data.result?.items ?? [] : [];
-    const totalCount = data.result?.totalCount ?? data.result?.totalCnt ?? data.result?.count ?? 0;
+    // 네이버 API가 JSON 앞에 안티-하이재킹 접두사()]}',\n 등)를 붙여 보낼 때가 있어
+    // response.json()이 곧장 실패한다. 텍스트로 받아 첫 '{'부터 파싱한다.
+    const data = parseJsonLenient<MobilePostListResponse>(await response.text());
+    const rawItems = Array.isArray(data?.result?.items) ? data?.result?.items ?? [] : [];
+    const totalCount = data?.result?.totalCount ?? data?.result?.totalCnt ?? data?.result?.count ?? 0;
 
     const items = rawItems.flatMap((item) => {
       const normalized = normalizeMobilePostItem(blogId, item);
@@ -315,11 +362,14 @@ async function fetchMobilePostList(
 }
 
 function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlogItem | null {
-  const logNo = Number(item.logNo);
-  if (!Number.isInteger(logNo) || logNo <= 0) return null;
+  // logNo는 숫자/문자열 어느 쪽으로도 오므로 '숫자로만 이뤄진 9자리+' 문자열로 정규화한다.
+  const logNo = String(item.logNo ?? "").trim();
+  if (!/^\d{6,}$/.test(logNo)) return null;
 
-  const title = sanitizeText(item.titleWithInspectMessage || "");
-  const description = sanitizeText(item.briefContents || "");
+  // 제목/요약 필드는 네이버 스키마 버전마다 이름이 달라, 알려진 후보를 순서대로 받는다.
+  const title = sanitizeText(item.titleWithInspectMessage || item.title || item.subject || "");
+  const description = sanitizeText(item.briefContents || item.summary || item.contentsSummary || "");
+  if (!title) return null; // 제목을 못 뽑으면 카드로 의미가 없으므로 제외(빈 카드 방지)
   const image =
     buildBlogImageUrl(item.thumbnailUrl) ??
     buildBlogImageUrl(item.thumbnailList?.[0]?.encodedThumbnailUrl) ??
@@ -331,14 +381,18 @@ function normalizeMobilePostItem(blogId: string, item: MobilePostItem): NaverBlo
     title,
     description,
     link: `https://m.blog.naver.com/PostView.naver?blogId=${encodeURIComponent(blogId)}&logNo=${logNo}`,
-    postdate: formatMobileDate(item.addDate),
+    postdate: formatMobileDate(item.addDate ?? item.writeDate),
     image,
     // 대표 썸네일 + 글에 담긴 나머지 썸네일을 모두 후보로 → 첫 사진이 안 뜨면 다른 사진으로 폴백.
     imageCandidates: buildImageCandidates([
       item.thumbnailUrl,
       ...(item.thumbnailList ?? []).flatMap((thumb) => [thumb.encodedThumbnailUrl, thumb.thumbnailUrl])
     ]),
-    keywords: categoryName ? [categoryName] : undefined
+    keywords: categoryName ? [categoryName] : undefined,
+    // 공감수 + 댓글수*2(댓글이 더 깊은 참여) = 인기도 점수.
+    popularity:
+      (typeof item.sympathyCnt === "number" ? item.sympathyCnt : 0) +
+      (typeof item.commentCnt === "number" ? item.commentCnt : 0) * 2
   };
 }
 
@@ -360,9 +414,18 @@ function buildImageCandidates(values: Array<string | undefined>) {
   return [...new Set(values.map((value) => buildBlogImageUrl(value)).filter((value): value is string => Boolean(value)))];
 }
 
-function formatMobileDate(value?: number) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
-  const parsed = new Date(value);
+function formatMobileDate(value?: number | string) {
+  if (value == null) return undefined;
+  let parsed: Date;
+  if (typeof value === "number" || /^\d+$/.test(String(value).trim())) {
+    // epoch 숫자(문자열 포함). 10자리(초)면 ms로 보정.
+    let ms = Number(value);
+    if (!Number.isFinite(ms)) return undefined;
+    if (ms > 0 && ms < 1e12) ms *= 1000;
+    parsed = new Date(ms);
+  } else {
+    parsed = new Date(String(value));
+  }
   if (Number.isNaN(parsed.getTime())) return undefined;
   const year = String(parsed.getFullYear());
   const month = String(parsed.getMonth() + 1).padStart(2, "0");
@@ -373,6 +436,7 @@ function formatMobileDate(value?: number) {
 async function fetchRssItems(blogId: string) {
   try {
     const response = await fetch(`https://rss.blog.naver.com/${blogId}.xml`, {
+      signal: AbortSignal.timeout(6000),
       headers: {
         Accept: "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
       }
@@ -416,6 +480,7 @@ async function fetchCategoryItems(blogId: string, categoryNos: number[]) {
 
 async function fetchCategoryHtml(blogId: string, categoryNo: number) {
   const response = await fetch(`https://blog.naver.com/PostList.naver?blogId=${blogId}&from=postList&categoryNo=${categoryNo}`, {
+    signal: AbortSignal.timeout(6000),
     headers: {
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
     }
@@ -435,6 +500,7 @@ function extractCategoryLogNos(html: string) {
 async function loadBlogPost(link: string) {
   try {
     const response = await fetch(link, {
+      signal: AbortSignal.timeout(5000),
       headers: {
         "User-Agent": "Mozilla/5.0"
       }
@@ -564,12 +630,6 @@ function extractMetaContent(html: string, property: string) {
   return "";
 }
 
-function extractTagValueFromHtml(html: string, tag: string) {
-  const pattern = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i");
-  const match = html.match(pattern);
-  return match?.[1]?.trim() ?? "";
-}
-
 function formatRssDate(value: string) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return undefined;
@@ -679,4 +739,23 @@ function upgradeNaverBlogImageUrl(value: string) {
 
 function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// 안티-하이재킹 접두사/꼬리표가 붙은 응답도 첫 '{'부터 마지막 '}'까지 잘라 파싱한다.
+function parseJsonLenient<T>(raw: string): T | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(raw.slice(start, end + 1)) as T;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
 }

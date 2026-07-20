@@ -531,6 +531,11 @@ function HeroSection({
   // 회전 단어에 방향 조사(으로/로)가 붙어 있으면 떼어내 골드 강조에서 제외하고,
   // 조사는 흰색 서술부(.hero__rotator-suffix)로 따로 렌더한다.
   const heroRotatorWord = stripDirectionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length]);
+  const heroFlow = [
+    { label: "사진 접수", value: "증상·공간 사진 확인" },
+    { label: "범위 정리", value: "필요 작업만 안내" },
+    { label: "방문 판단", value: "일정·비용 기준 공유" }
+  ];
 
   return (
     <section className="hero" id="hero">
@@ -563,24 +568,30 @@ function HeroSection({
             {(content.description || "물 새는 천장부터 들뜬 벽지까지. 큰 공사 권하지 않고 딱 필요한 만큼만, 7개 국가공인 건축자격을 가진 대표가 직접 손봅니다.").replace("누수 복구", "누수 복구")}
           </p>
           <div className="hero__cta">
-            {/* 데스크탑/태블릿: 전화·카카오(모바일은 하단 고정바가 대신함) */}
-            <a className="primary-button hero-cta--desk" href={business.phoneHref}>
+            <a className="primary-button hero__primary-estimate" href="/estimate">
+              <ArrowUpRight size={18} />
+              견적상담 시작
+            </a>
+            <a className="secondary-button" href="/calculator">
+              <Calculator size={18} />
+              모의 견적 계산
+            </a>
+            <a className="secondary-button hero-cta--desk" href={business.phoneHref}>
               <Phone size={18} />
               {content.primaryActionLabel || "전화 상담"}
             </a>
             <a className="secondary-button hero-cta--desk" href={business.kakaoUrl} target="_blank" rel="noreferrer">
               <MessageCircle size={18} />
-              {content.secondaryActionLabel || "카카오톡"}
+              {content.secondaryActionLabel || "카카오톡 상담"}
             </a>
-            {/* 모바일 전용: 모의 견적 계산 */}
-            <a className="primary-button hero-cta--mob" href="/calculator">
-              <Calculator size={18} />
-              모의 견적 계산
-            </a>
-            <a className="secondary-button" href="/estimate">
-              <ArrowUpRight size={18} />
-              {content.tertiaryActionLabel || "견적상담"}
-            </a>
+          </div>
+          <div className="hero__flow" aria-label="상담 흐름">
+            {heroFlow.map((item) => (
+              <div className="hero__flow-item" key={item.label}>
+                <span>{item.label}</span>
+                <strong>{item.value}</strong>
+              </div>
+            ))}
           </div>
           <dl className="hero__proof">
             {proofs.map((item) => (
@@ -905,7 +916,6 @@ function SpecialtiesSection({ specialties = business.specialties }: { specialtie
     { key: "remodel", label: "욕실·주방·리모델링" },
     { key: "extra", label: "기타" }
   ];
-
   // Map each specialty to a category
   const itemCatMap: Record<string, string> = {
     "수도 배관": "utility", "전기 배선": "utility", "온수기 설치/수리": "utility",
@@ -1246,11 +1256,13 @@ function BlogSection({
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollFrameRef = useRef<number | null>(null);
 
-  const description =
-    source === "naver"
+  const isRepresentativeFallback = source !== "loading" && posts.length === 0;
+  const description = isRepresentativeFallback
+    ? "관련 대표 사례를 먼저 보여드립니다."
+    : source === "naver"
       ? "최근 현장 시공 사례를 블로그에서 가져옵니다."
       : "대표 시공 포트폴리오입니다.";
-  const displayPosts = posts.slice(0, 8);
+  const displayPosts = (posts.length ? posts : pinnedPosts).slice(0, 8);
 
   useAutoCarousel(railRef, { enabled: displayPosts.length > 1 });
 
@@ -1266,22 +1278,6 @@ function BlogSection({
           className="naver-link"
         />
         <div className="admin-empty">최신 블로그 글을 불러오는 중</div>
-      </section>
-    );
-  }
-
-  if (!displayPosts.length) {
-    return (
-      <section className="blog section" id="blog" aria-labelledby="blog-title">
-        <RowHeading
-          id="blog-title"
-          title="네이버 블로그 포트폴리오"
-          description={description}
-          linkLabel="N 블로그"
-          href={business.naverBlogUrl}
-          className="naver-link"
-        />
-        <div className="admin-empty">최신 블로그 글을 불러오지 못했습니다. N 블로그에서 직접 확인해 주세요.</div>
       </section>
     );
   }
@@ -1325,12 +1321,15 @@ function BlogSection({
     <section className="blog section" id="blog" aria-labelledby="blog-title">
       <RowHeading
         id="blog-title"
-        title="네이버 블로그 포트폴리오"
+        title={isRepresentativeFallback ? "대표 사례 포트폴리오" : "네이버 블로그 포트폴리오"}
         description={description}
         linkLabel="N 블로그"
         href={business.naverBlogUrl}
         className="naver-link"
       />
+      {isRepresentativeFallback ? (
+        <div className="blog__notice">최신 글 연결 전에도 상담 판단에 도움이 되는 대표 사례를 먼저 보여드립니다.</div>
+      ) : null}
       <div className="blog__carousel">
         <div className="blog__rail" ref={railRef} onScroll={handleScroll}>
           {displayPosts.map((post, index) => (
