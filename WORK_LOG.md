@@ -1,5 +1,27 @@
 # Work Log
 
+## 2026-07-21 - 블로그 최신글 스냅샷 보정
+
+Changed files:
+- `src/App.tsx`
+- `src/services/BlogPortfolioService.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 홈 블로그 섹션이 DB 스냅샷을 먼저 표시한 뒤 라이브 최신글로 즉시 보정하도록 변경했다.
+- 현장사례 전체 목록은 스냅샷이 오래됐거나 최신 글 logNo가 빠진 경우에만 전체 블로그 API를 강제 갱신하도록 보강했다.
+- 전체 목록 캐시를 우회할 수 있는 `forceRefresh` 옵션을 추가해 stale localStorage가 새 글 반영을 막지 않게 했다.
+
+Verification:
+- Supabase `blog-snapshot` 첫 글은 2026-07-19였고, 프로덕션 `/api/naver-blog?mode=latest` 첫 글은 2026-07-20임을 확인했다.
+- Playwright로 홈 블로그 첫 카드가 2026.07.20 최신 글로 보정되는 것을 확인했다.
+- Playwright로 포트폴리오가 stale 스냅샷에서 `mode=all`을 호출하고 전체 1,107건으로 갱신되는 것을 확인했다.
+- `git diff --check` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- GitHub Actions의 블로그 스냅샷 동기화 secret/action 상태를 점검하면 DB 스냅샷 지연 자체도 줄일 수 있다.
+
 ## 2026-06-02 - Vercel Cron Schedule Fix
 
 Changed files:

@@ -55,6 +55,13 @@ import { buildEstimateHref } from "./services/estimateHref";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();
+const BLOG_SNAPSHOT_STALE_MS = 6 * 60 * 60 * 1000;
+
+function isBlogSnapshotStale(syncedAt?: string) {
+  if (!syncedAt) return true;
+  const syncedTime = Date.parse(syncedAt);
+  return !Number.isFinite(syncedTime) || Date.now() - syncedTime > BLOG_SNAPSHOT_STALE_MS;
+}
 function Redirect({ to }: { to: string }) {
   useEffect(() => {
     window.location.replace(to);
@@ -245,7 +252,6 @@ export function HomePage() {
       setContentReady(true);
     });
 
-    // DB 스냅샷(외부 장애와 무관)을 우선 사용하고, 없을 때만 라이브 네이버 호출로 폴백.
     const loadLive = () =>
       blogPortfolioService.loadLatestPortfolioPosts().then(({ posts, source }) => {
         if (!mounted) return;
@@ -253,6 +259,14 @@ export function HomePage() {
         setBlogSource(source);
       });
 
+    const refreshFromLive = () =>
+      blogPortfolioService.loadLatestPortfolioPosts().then(({ posts, source }) => {
+        if (!mounted || source !== "naver" || !posts.length) return;
+        setBlogPosts(posts);
+        setBlogSource(source);
+      });
+
+    // 스냅샷을 먼저 보여주고, 라이브 최신글로 즉시 보정해 스냅샷 지연 시에도 새 글을 노출한다.
     void siteContentService
       .loadBlogSnapshotContent()
       .then((snapshot) => {
@@ -260,7 +274,7 @@ export function HomePage() {
         if (snapshot.items.length) {
           setBlogPosts(blogPortfolioService.postsFromItems(snapshot.items).slice(0, 8));
           setBlogSource("naver");
-          return undefined;
+          return refreshFromLive();
         }
         return loadLive();
       })
@@ -1784,15 +1798,30 @@ function PortfolioPage() {
 
   useEffect(() => {
     let mounted = true;
-    const loadLive = () =>
-      blogPortfolioService.loadAllPortfolioPosts().then(({ posts: loaded, totalCount: total, source }) => {
+    const loadLive = (forceRefresh = false) =>
+      blogPortfolioService.loadAllPortfolioPosts({ forceRefresh }).then(({ posts: loaded, totalCount: total, source }) => {
         if (!mounted) return;
         setPosts(loaded);
         setTotalCount(total);
         setPostSource(source);
       });
 
-    // 홈과 동일하게 DB 스냅샷 우선, 없으면 라이브로 폴백.
+    const refreshSnapshotIfBehind = (loaded: PortfolioPost[], syncedAt: string) => {
+      if (isBlogSnapshotStale(syncedAt)) {
+        return loadLive(true);
+      }
+
+      return blogPortfolioService.loadLatestPortfolioPosts().then(({ posts: latest, source }) => {
+        if (!mounted || source !== "naver" || !latest.length) return;
+        const latestKey = postKey(latest[0].link);
+        const snapshotHasLatest = loaded.some((post) => postKey(post.link) === latestKey);
+        if (!snapshotHasLatest) {
+          return loadLive(true);
+        }
+      });
+    };
+
+    // 전체 목록은 무거우므로 스냅샷을 먼저 쓰고, 오래됐거나 최신 글이 빠진 경우에만 보정한다.
     void siteContentService
       .loadBlogSnapshotContent()
       .then((snapshot) => {
@@ -1802,7 +1831,7 @@ function PortfolioPage() {
           setPosts(loaded);
           setTotalCount(loaded.length);
           setPostSource("naver");
-          return undefined;
+          return refreshSnapshotIfBehind(loaded, snapshot.syncedAt);
         }
         return loadLive();
       })

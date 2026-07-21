@@ -42,12 +42,14 @@ export class BlogPortfolioService {
 
   /**
    * 블로그에 지금까지 작성된 모든 글을 가벼운 카드(썸네일+요약문)로 불러온다.
-   * 전용 mode=all 응답이라 maxPosts 제한을 적용하지 않는다. 24시간 캐시.
+   * 전용 mode=all 응답이라 maxPosts 제한을 적용하지 않는다. 30분 캐시.
    * totalCount는 블로그 전체 글 수(표시용) — 실제 카드 수보다 많을 수 있다(새 글 작성 시 자동 증가).
    */
-  async loadAllPortfolioPosts(): Promise<{ posts: PortfolioPost[]; totalCount: number; source: "naver" | "fallback" }> {
+  async loadAllPortfolioPosts(
+    options: { forceRefresh?: boolean } = {}
+  ): Promise<{ posts: PortfolioPost[]; totalCount: number; source: "naver" | "fallback" }> {
     const cacheKey = "blog-cache:all:v2";
-    const cachedEntry = this.readCacheEntry(cacheKey);
+    const cachedEntry = options.forceRefresh ? null : this.readCacheEntry(cacheKey);
     if (cachedEntry) {
       return {
         posts: cachedEntry.posts,
