@@ -1,5 +1,26 @@
 # Work Log
 
+## 2026-07-21 - Vercel SPA 경로 rewrite 수정
+
+Changed files:
+- `vercel.json`
+- `tests/vercel-rewrites.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- `/estimate`, `/diagnosis`, 관리자/계정 등 React SPA 경로가 정적 홈 `/`로 rewrite되어 홈 화면이 뜨던 설정을 제거했다.
+- Astro catch-all이 해당 경로를 받아 React `App` 라우터를 실행하도록 되돌렸다.
+- SPA 경로가 다시 홈으로 rewrite되지 않도록 Vercel 설정 회귀 테스트를 추가했다.
+
+Verification:
+- 프로덕션에서 `/estimate`와 `/diagnosis?category=door`가 홈 본문을 렌더링하던 것을 재현했다.
+- `npx playwright test tests/vercel-rewrites.spec.ts --reporter=line` RED 후 수정 완료.
+- `npx playwright test tests/estimate-theme.spec.ts tests/vercel-rewrites.spec.ts --reporter=line` 통과.
+- `npm run build` 통과.
+
+Follow-up:
+- 배포 후 실제 도메인에서 `/estimate` 시작 버튼과 `/diagnosis?category=door` 진단 화면을 재확인한다.
+
 ## 2026-07-21 - 블로그 최신글 스냅샷 보정
 
 Changed files:
