@@ -46,7 +46,10 @@ async function getAuthenticatedUser(authorization: string): Promise<Authenticate
   }
 
   try {
+    // 타임아웃 가드 — Auth 조회가 느려도 문의 저장(아래 insert)이 막히지 않도록.
+    // 초과/실패 시 catch에서 null 반환 → 익명으로 저장(문의 유실 방지).
     const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      signal: AbortSignal.timeout(5000),
       headers: {
         apikey: supabasePublishableKey,
         Authorization: authorization
