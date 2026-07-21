@@ -5,6 +5,12 @@ import { MobileQuickCta } from "../components/site/SiteFooter";
 import type { ServicePricingConfig } from "./types";
 
 export function ServicePricingPage({ config }: { config: ServicePricingConfig }) {
+  // 부속자재 칼럼은 '별도' 표기가 하나라도 있을 때만 노출.
+  // 누수 등 전 항목이 자재 구분 없는 서비스에선 칼럼이 통째로 '—'가 되어
+  // 폭(약 1/3)만 잡아먹고 항목명 줄바꿈을 유발하므로 숨긴다(리뷰 P-1).
+  const hasMaterialColumn = config.categories.some((cat) =>
+    cat.items.some((item) => item.materialNote === "별도")
+  );
   return (
     <>
       <header className="nav" data-elevated="true">
@@ -87,9 +93,11 @@ export function ServicePricingPage({ config }: { config: ServicePricingConfig })
                       <th style={{ padding: "10px 16px", textAlign: "right", fontSize: 13, fontWeight: 600, color: "var(--ink-2,#2a3a55)", borderBottom: "1px solid var(--hair,#e6dfd0)", whiteSpace: "nowrap" }}>
                         기준 단가
                       </th>
-                      <th style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, fontWeight: 600, color: "var(--ink-2,#2a3a55)", borderBottom: "1px solid var(--hair,#e6dfd0)", whiteSpace: "nowrap" }}>
-                        부속자재
-                      </th>
+                      {hasMaterialColumn && (
+                        <th style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, fontWeight: 600, color: "var(--ink-2,#2a3a55)", borderBottom: "1px solid var(--hair,#e6dfd0)", whiteSpace: "nowrap" }}>
+                          부속자재
+                        </th>
+                      )}
                     </tr>
                   </thead>
                   <tbody>
@@ -105,15 +113,17 @@ export function ServicePricingPage({ config }: { config: ServicePricingConfig })
                         <td style={{ padding: "12px 16px", textAlign: "right", fontSize: "clamp(13px,1.2vw,15px)", fontWeight: 600, color: "var(--navy-700,#10284a)", whiteSpace: "nowrap" }}>
                           {item.priceLabel}
                         </td>
-                        <td style={{ padding: "12px 16px", textAlign: "center", fontSize: 13 }}>
-                          {item.materialNote === "별도" ? (
-                            <span style={{ background: "#f0f4ff", color: "#3b5bdb", fontWeight: 600, fontSize: 12, padding: "2px 8px", borderRadius: 4 }}>
-                              별도
-                            </span>
-                          ) : (
-                            <span style={{ color: "var(--ink-4,#94a0b8)", fontSize: 12 }}>—</span>
-                          )}
-                        </td>
+                        {hasMaterialColumn && (
+                          <td style={{ padding: "12px 16px", textAlign: "center", fontSize: 13 }}>
+                            {item.materialNote === "별도" ? (
+                              <span style={{ background: "#f0f4ff", color: "#3b5bdb", fontWeight: 600, fontSize: 12, padding: "2px 8px", borderRadius: 4 }}>
+                                별도
+                              </span>
+                            ) : (
+                              <span style={{ color: "var(--ink-4,#94a0b8)", fontSize: 12 }}>—</span>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
