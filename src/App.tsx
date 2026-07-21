@@ -50,8 +50,8 @@ import {
 import { ServicePricingPage } from "./pricing/ServicePricingPage";
 import { getServicePricingConfig, getServicePricingConfigByPricingPath } from "./pricing/registry";
 import type { ServicePricingConfig } from "./pricing/types";
-import { buildEstimateHref } from "./services/QuoteService";
 import { defaultDescription, defaultImage, getSeoConfigForPath, siteName, siteUrl, type SeoConfig } from "./seo";
+import { buildEstimateHref } from "./services/estimateHref";
 
 const blogPortfolioService = new BlogPortfolioService("/api/naver-blog", pinnedPosts);
 const siteContentService = new SiteContentService();

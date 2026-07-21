@@ -1,7 +1,20 @@
 {
   "buildCommand": "astro build",
   "framework": "astro",
+  "outputDirectory": "dist",
+  "crons": [
+    {
+      "path": "/api/notify-inquiries",
+      "schedule": "0 0 * * *"
+    }
+  ],
   "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
     {
       "source": "/icons/(.*)",
       "headers": [
@@ -57,6 +70,12 @@
       ]
     },
     {
+      "source": "/privacy",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
       "source": "/diagnosis",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
@@ -79,6 +98,30 @@
       "headers": [
         { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
       ]
+    },
+    {
+      "source": "/service",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/service/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/area",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/area/:path*",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
     }
   ],
   "redirects": [
@@ -91,6 +134,68 @@
       "source": "/service/tile/price",
       "destination": "/service/tile/pricing",
       "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/"
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/account",
+      "destination": "/"
+    },
+    {
+      "source": "/account/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/mypage",
+      "destination": "/"
+    },
+    {
+      "source": "/mypage/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/login",
+      "destination": "/"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/"
+    },
+    {
+      "source": "/diagnosis",
+      "destination": "/"
+    },
+    {
+      "source": "/diagnosis/:path*",
+      "destination": "/"
+    },
+    {
+      "source": "/estimate",
+      "destination": "/"
+    },
+    {
+      "source": "/service",
+      "destination": "/"
+    },
+    {
+      "source": "/service/:path*",
+      "destination": "/service/:path*/index.html"
+    },
+    {
+      "source": "/area",
+      "destination": "/"
+    },
+    {
+      "source": "/area/:path*",
+      "destination": "/area/:path*/index.html"
     }
   ]
 }

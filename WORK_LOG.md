@@ -1,5 +1,62 @@
 # Work Log
 
+## 2026-06-02 - Vercel Cron Schedule Fix
+
+Changed files:
+- `vercel.json`
+- `src/styles.css`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Changed inquiry notification cron from every 5 minutes to daily so Vercel Hobby deployments are not blocked by the cron schedule limit.
+- Kept the editor preview overflow/layout guard so embedded preview content cannot expand past its container.
+
+Verification:
+- `npm run build` passed.
+
+Follow-up:
+- Deploy to production and confirm Vercel accepts the daily cron schedule.
+
+## 2026-05-31 - Pricing Page Pre-rendered HTML
+
+Changed files:
+- `scripts/patch-static-html.mjs`
+- `vercel.json`
+
+Implemented behavior:
+- 12 pricing pages (`/service/*/pricing`) were in the sitemap but served via SPA rewrite, so crawlers saw only the generic site title/description.
+- Added `generatePricingPages()` to `patch-static-html.mjs`: generates `dist/service/*/pricing/index.html` with page-specific `<title>`, `<meta name="description">`, OG tags, Twitter tags, and canonical URL for each service.
+- Removed the `/service/:name/pricing` -> `/` rewrite from `vercel.json`; Vercel now serves the static HTML via the general `/service/:path*` rule.
+
+Verification:
+- `npm run build` passed.
+- All 12 pricing pages confirmed: correct `og:title`, `og:description`, `og:url`, `twitter:title`, `twitter:description`, `canonical`, `<title>` in generated HTML.
+
+Follow-up:
+- None.
+
+## 2026-05-31 - xlsx Lazy Loading + QA Scripts
+
+Changed files:
+- `src/services/QuoteService.ts`
+- `scripts/admin-responsive-qa.mjs` (new)
+- `scripts/admin-account-responsive-qa.mjs` (new)
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed top-level `import * as XLSX from "xlsx"` from QuoteService.ts.
+- Added `const XLSX = await import("xlsx")` inside each of the three XLSX functions: `importQuoteFromXlsx`, `downloadQuoteTemplateAsXlsx`, `downloadQuoteAsXlsx`.
+- xlsx is now a separate lazy chunk (424 kB) loaded only when admin uses xlsx import/export.
+- Main bundle reduced from 849 kB -> 427 kB (50% reduction, gzip: 261 -> 120 kB).
+- Committed two QA scripts for admin and account responsive testing.
+
+Verification:
+- `npm run build` passed.
+- Main chunk: 427 kB (was 849 kB). xlsx: 424 kB lazy chunk.
+
+Follow-up:
+- None.
+
 ## 2026-07-20 - 견적상담 다크모드 가독성 및 기본 라이트 테마
 
 Changed files:

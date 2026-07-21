@@ -128,38 +128,7 @@ export function getQuotePriceCatalog(): QuotePriceCatalogGroup[] {
 const fontCache = { promise: null as Promise<string> | null };
 const koreanFontUrl = "https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskr/NotoSansKR%5Bwght%5D.ttf";
 
-export function buildEstimateHref(options: {
-  works?: string[];
-  workIds?: string[];
-  sourceServicePath?: string | null;
-  sourcePricingPath?: string | null;
-  project?: string;
-  issue?: string;
-}) {
-  const params = new URLSearchParams();
-
-  if (options.works?.length) {
-    params.set("works", options.works.join(","));
-  }
-  if (options.workIds?.length) {
-    params.set("workIds", options.workIds.join(","));
-  }
-  if (options.sourceServicePath) {
-    params.set("sourceService", options.sourceServicePath);
-  }
-  if (options.sourcePricingPath) {
-    params.set("sourcePricing", options.sourcePricingPath);
-  }
-  if (options.project) {
-    params.set("project", options.project);
-  }
-  if (options.issue) {
-    params.set("issue", options.issue);
-  }
-
-  const query = params.toString();
-  return query ? `/estimate?${query}` : "/estimate";
-}
+export { buildEstimateHref } from "./estimateHref";
 
 /** 거주 상태가 '거주중/살면서 공사'면 보양작업이 필요하다고 본다(공실·신축입주는 제외). */
 function isOccupiedDuringWork(propertyStatus?: string | null): boolean {
@@ -467,6 +436,7 @@ export async function checkQuoteSheetConnection(): Promise<{ ok: boolean; messag
 }
 
 export async function importQuoteFromXlsx(input: { inquiry: InquiryRow; file: File }): Promise<InquiryQuoteSnapshot> {
+  const XLSX = await import("xlsx");
   const buffer = await input.file.arrayBuffer();
   return parseQuoteWorkbookBuffer(buffer, input.inquiry);
 }
