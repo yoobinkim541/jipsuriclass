@@ -15543,6 +15543,30 @@ main.home-page .hero__rotator-suffix {
   white-space: nowrap;
 }
 
+main.home-page .hero__rotator-line {
+  display: block;
+  position: relative;
+  min-height: 1em;
+  width: 11.2em;
+  max-width: 100%;
+}
+
+main.home-page .hero__rotator-item {
+  display: block;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(18%);
+  transition: opacity 320ms ease, transform 520ms cubic-bezier(.16,1,.3,1);
+  white-space: nowrap;
+}
+
+main.home-page .hero__rotator-item.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 main.home-page .hero__lede {
   font-family: var(--f-critical);
   font-size: clamp(16px, 1.35vw, 18px);

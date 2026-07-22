@@ -492,7 +492,16 @@ function HeroSection({
   cases: HomepageContent["cases"];
 }) {
   const heroRotatorWords = content.rotatorWords.length > 0 ? content.rotatorWords : defaultHomepageContent.hero.rotatorWords;
+  const [rotatorIndex, setRotatorIndex] = useState(0);
   const [mainCardIndex, setMainCardIndex] = useState(0);
+
+  useEffect(() => {
+    if (heroRotatorWords.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setRotatorIndex((i) => (i + 1) % heroRotatorWords.length);
+    }, 2400);
+    return () => window.clearInterval(timer);
+  }, [heroRotatorWords.length]);
 
   const caseImages = useMemo(
     () => editableCases.filter((c) => c.image).slice(0, 5),
@@ -534,7 +543,15 @@ function HeroSection({
   const heroMobileBg = heroMobileBackdrops[mainCardIndex % heroMobileBackdrops.length];
   // 회전 단어에 방향 조사(으로/로)가 붙어 있으면 떼어내 골드 강조에서 제외하고,
   // 조사는 흰색 서술부(.hero__rotator-suffix)로 따로 렌더한다.
-  const heroRotatorWord = stripDirectionalParticle(heroRotatorWords[0] ?? "");
+  const heroRotatorItems = heroRotatorWords.map((word) => {
+    const displayWord = stripDirectionalParticle(word);
+    return {
+      word: displayWord,
+      particle: directionalParticle(displayWord)
+    };
+  });
+  const activeRotatorIndex = heroRotatorItems.length ? rotatorIndex % heroRotatorItems.length : 0;
+  const activeRotatorItem = heroRotatorItems[activeRotatorIndex] ?? { word: "", particle: "" };
   const heroFlow = [
     { label: "사진 접수", value: "증상·공간 사진 확인" },
     { label: "범위 정리", value: "필요 작업만 안내" },
@@ -561,11 +578,24 @@ function HeroSection({
           <h1 className="hero__title">
             {content.title || "집의 모든 불편을"}{" "}
             <br />
-            <span className="hero__rotator">
-              <em>{heroRotatorWord}</em>
-            </span>
-            <span className="hero__rotator-suffix">
-              {directionalParticle(heroRotatorWord)} 끝냅니다.
+            <span
+              className="hero__rotator-line"
+              aria-label={`${activeRotatorItem.word}${activeRotatorItem.particle} 끝냅니다.`}
+            >
+              {heroRotatorItems.map((item, index) => (
+                <span
+                  className={`hero__rotator-item${index === activeRotatorIndex ? " is-active" : ""}`}
+                  aria-hidden="true"
+                  key={`${item.word}-${index}`}
+                >
+                  <span className="hero__rotator">
+                    <em>{item.word}</em>
+                  </span>
+                  <span className="hero__rotator-suffix">
+                    {item.particle} 끝냅니다.
+                  </span>
+                </span>
+              ))}
             </span>
           </h1>
           <p className="hero__lede">

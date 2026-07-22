@@ -3778,3 +3778,23 @@ Verification:
 
 Follow-up:
 - Vercel Speed Insights field data is rolling/P75, so the dashboard will improve after enough post-deploy visits rather than instantly.
+## 2026-07-22 - Hero Rotator CLS-safe Restore
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `tests/home-cls.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Restored the hero rotating headline because it is part of the intended first-view messaging.
+- Rendered every rotating phrase inside one fixed `.hero__rotator-line` and switched active phrases with opacity/transform only, so text rotation no longer changes layout dimensions.
+- Updated the CLS regression test to require auto-rotation plus fixed non-layout rotator slots.
+
+Verification:
+- `npx playwright test tests/home-cls.spec.ts --reporter=line` passed.
+- `npm run build` passed.
+- Local built-output rotation labels changed through all hero phrases while CLS stayed low: 1366x900 = 0.00039, 1920x1080 = 0.00030.
+
+Follow-up:
+- Deploy this correction so production keeps the marketing rotator and the CLS fix together.
