@@ -492,17 +492,7 @@ function HeroSection({
   cases: HomepageContent["cases"];
 }) {
   const heroRotatorWords = content.rotatorWords.length > 0 ? content.rotatorWords : defaultHomepageContent.hero.rotatorWords;
-  const [rotatorIndex, setRotatorIndex] = useState(0);
-  const [rotatorKey, setRotatorKey] = useState(0);
   const [mainCardIndex, setMainCardIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setRotatorIndex((i) => (i + 1) % heroRotatorWords.length);
-      setRotatorKey((k) => k + 1);
-    }, 2400);
-    return () => window.clearInterval(timer);
-  }, [heroRotatorWords.length]);
 
   const caseImages = useMemo(
     () => editableCases.filter((c) => c.image).slice(0, 5),
@@ -544,7 +534,7 @@ function HeroSection({
   const heroMobileBg = heroMobileBackdrops[mainCardIndex % heroMobileBackdrops.length];
   // 회전 단어에 방향 조사(으로/로)가 붙어 있으면 떼어내 골드 강조에서 제외하고,
   // 조사는 흰색 서술부(.hero__rotator-suffix)로 따로 렌더한다.
-  const heroRotatorWord = stripDirectionalParticle(heroRotatorWords[rotatorIndex % heroRotatorWords.length]);
+  const heroRotatorWord = stripDirectionalParticle(heroRotatorWords[0] ?? "");
   const heroFlow = [
     { label: "사진 접수", value: "증상·공간 사진 확인" },
     { label: "범위 정리", value: "필요 작업만 안내" },
@@ -572,7 +562,7 @@ function HeroSection({
             {content.title || "집의 모든 불편을"}{" "}
             <br />
             <span className="hero__rotator">
-              <em key={rotatorKey}>{heroRotatorWord}</em>
+              <em>{heroRotatorWord}</em>
             </span>
             <span className="hero__rotator-suffix">
               {directionalParticle(heroRotatorWord)} 끝냅니다.

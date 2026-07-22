@@ -3756,3 +3756,25 @@ Verification:
 
 Follow-up:
 - None.
+## 2026-07-22 - Desktop CLS Home Hero Stabilization
+
+Changed files:
+- `src/App.tsx`
+- `src/services/SiteContentService.ts`
+- `src/styles.css`
+- `tests/home-cls.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Removed the desktop hero rotating headline interval because it repeatedly changed title metrics and pushed the hero grid/trust band, producing poor CLS.
+- Converted hero card deck slot changes from top/left/width/height transitions to transform-only transitions.
+- Matched default homepage hero copy/trust metrics to the live first viewport and applied a critical system font to above-the-fold hero/nav text to avoid webfont swap layout movement.
+- Added focused Playwright regression checks for compositor-safe card animation, stable default hero content, and no auto-rotating hero copy.
+
+Verification:
+- `npx playwright test tests/home-cls.spec.ts --reporter=line` passed.
+- `npm run build` passed.
+- Local built-output CLS over 12s: 1366x900 = 0.00039, 1920x1080 = 0.00028.
+
+Follow-up:
+- Vercel Speed Insights field data is rolling/P75, so the dashboard will improve after enough post-deploy visits rather than instantly.

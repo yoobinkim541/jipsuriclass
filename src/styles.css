@@ -13,6 +13,7 @@
   --f-display: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --f-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, monospace;
+  --f-critical: -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --max: 1320px;
 }
 
@@ -1703,18 +1704,17 @@ textarea {
 
 .hero__card {
   position: absolute;
+  inset: 0;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 8px 18px rgba(8,22,40,.06), 0 22px 60px rgba(8,22,40,.08);
   transition:
-    top 600ms cubic-bezier(.16,1,.3,1),
-    left 600ms cubic-bezier(.16,1,.3,1),
-    width 600ms cubic-bezier(.16,1,.3,1),
-    height 600ms cubic-bezier(.16,1,.3,1),
     transform 600ms cubic-bezier(.16,1,.3,1),
     opacity 400ms ease,
     box-shadow 300ms;
   background: #ffffff;
+  transform-origin: 0 0;
+  will-change: transform, opacity;
 }
 
 .hero__card img {
@@ -1739,14 +1739,14 @@ textarea {
   backdrop-filter: blur(6px);
 }
 
-/* Card positions use top/left/width/height so they can all be CSS-transitioned on swap */
-.hero__card--main   { top: 5%;  left: 18%; width: 76%; height: 77%; z-index: 3; transform: rotate(-3deg); opacity: 1; }
-.hero__card--b      { top: 22%; left: 0;   width: 42%; height: 40%; z-index: 2; transform: rotate(4deg) scale(.7); opacity: 1; }
-.hero__card--c      { top: 55%; left: 30%; width: 58%; height: 40%; z-index: 1; transform: rotate(-6deg) scale(.75); opacity: 1; }
-.hero__card--hidden { top: 50%; left: 50%; width: 30%; height: 25%; z-index: 0; transform: scale(.4); opacity: 0; pointer-events: none; }
-.hero__deck:hover .hero__card--main { transform: rotate(-2deg) translateY(-6px); }
-.hero__deck:hover .hero__card--b    { transform: rotate(2deg) scale(.72) translate(-8px, -4px); }
-.hero__deck:hover .hero__card--c    { transform: rotate(-4deg) scale(.78) translate(6px, 4px); }
+/* Card slots are transform-only so automatic swaps do not contribute to CLS. */
+.hero__card--main   { z-index: 3; transform: translate(18%, 5%) scale(.76, .77) rotate(-3deg); opacity: 1; }
+.hero__card--b      { z-index: 2; transform: translate(0, 22%) scale(.294, .28) rotate(4deg); opacity: 1; }
+.hero__card--c      { z-index: 1; transform: translate(30%, 55%) scale(.435, .3) rotate(-6deg); opacity: 1; }
+.hero__card--hidden { z-index: 0; transform: translate(50%, 50%) scale(.12, .1); opacity: 0; pointer-events: none; }
+.hero__deck:hover .hero__card--main { transform: translate(18%, 5%) scale(.76, .77) rotate(-2deg) translateY(-6px); }
+.hero__deck:hover .hero__card--b    { transform: translate(0, 22%) scale(.302, .288) rotate(2deg) translate(-8px, -4px); }
+.hero__deck:hover .hero__card--c    { transform: translate(30%, 55%) scale(.452, .312) rotate(-4deg) translate(6px, 4px); }
 
 .hero__card--clickable { cursor: pointer; }
 .hero__card--clickable:hover {
@@ -1758,6 +1758,7 @@ textarea {
    iPad Pro 12.9" 세로(1024)에서 덱이 0폭으로 붕괴하던 빈 공백 버그 해결 */
 @media (min-width: 1024px) and (max-width: 1599px) {
   main.home-page .hero__grid {
+    min-height: 606px;
     grid-template-columns: minmax(0, 1.08fr) minmax(340px, .72fr);
   }
 
@@ -15524,7 +15525,13 @@ main.home-page .hero__grid {
   position: relative;
 }
 
+.nav,
+main.home-page .hero__cta {
+  font-family: var(--f-critical);
+}
+
 main.home-page .hero__title {
+  font-family: var(--f-critical);
   letter-spacing: 0;
   margin-bottom: clamp(22px, 3.4vw, 42px);
   max-width: 11.2em;
@@ -15537,6 +15544,7 @@ main.home-page .hero__rotator-suffix {
 }
 
 main.home-page .hero__lede {
+  font-family: var(--f-critical);
   font-size: clamp(16px, 1.35vw, 18px);
   max-width: 42em;
 }
@@ -15568,6 +15576,7 @@ main.home-page .hero__primary-estimate:hover {
 }
 
 main.home-page .hero__flow {
+  font-family: var(--f-critical);
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -15592,6 +15601,18 @@ main.home-page .hero__flow-item span {
   margin-bottom: 5px;
 }
 
+main.home-page .hero__grid > div:first-child {
+  align-self: center;
+  min-height: 500px;
+}
+
+main.home-page .hero__proof dt,
+main.home-page .trust__label span,
+main.home-page .trust__num,
+main.home-page .trust__label strong {
+  font-family: var(--f-critical);
+}
+
 main.home-page .hero__flow-item strong {
   color: var(--ink, #0b1a30);
   display: block;
@@ -15600,6 +15621,7 @@ main.home-page .hero__flow-item strong {
 }
 
 main.home-page .hero__deck {
+  align-self: center;
   filter: drop-shadow(0 28px 50px rgba(16, 40, 74, 0.12));
 }
 

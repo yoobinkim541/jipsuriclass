@@ -46,9 +46,9 @@ export const defaultHomepageContent: HomepageContent = {
   sections: defaultHomepageSectionOrder,
   navLabels: navItems.map((item) => item.label),
   hero: {
-    title: "클라쓰가 다른 종합집수리",
+    title: "집의 모든 불편을",
     description:
-      "사진 상담으로 증상을 먼저 확인하고, 필요한 작업만 설명합니다. 생활 집수리, 누수 복구, 원상복구까지 현장 중심으로 처리합니다.",
+      "사전 상담으로 증상을 먼저 확인하고, 현장 방문 후 꼭 필요한 작업만 진행합니다. 부분 집수리·원상복구부터 전체 리모델링까지, 현장 중심으로 처리합니다.",
     image: images.heroFallback,
     imagePosition: "center center",
     imageScale: 1,
@@ -64,7 +64,7 @@ export const defaultHomepageContent: HomepageContent = {
     ],
     trust: [
       { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
-      { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
+      { num: "1000+", label: "시공 완료", sub: "대표 직접 시공 누적 현장" },
       { num: "13시간", label: "운영 시간", sub: "월~토 08:00 – 21:00" }
     ],
     slides: []
