@@ -3798,3 +3798,23 @@ Verification:
 
 Follow-up:
 - Deploy this correction so production keeps the marketing rotator and the CLS fix together.
+## 2026-07-22 - Restore Hero Typography and Rotator Feel
+
+Changed files:
+- `src/App.tsx`
+- `src/styles.css`
+- `tests/home-cls.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Restored the hero/nav typography to the previous Pretendard-based stack by removing the above-the-fold critical system font override.
+- Kept the CLS-safe fixed rotator slot, but switched the active phrase back to keyed single-phrase rendering so the existing `rotIn` motion feel returns.
+- Updated the regression test to keep auto-rotation and fixed-slot constraints while ensuring the temporary critical font token stays removed.
+
+Verification:
+- `npx playwright test tests/home-cls.spec.ts --reporter=line` passed.
+- `npm run build` passed.
+- Local built-output confirmed Pretendard font and rotating labels across all phrases. CLS remained comfortably below 0.1: 1366x900 = 0.0068, 1920x1080 = 0.0042.
+
+Follow-up:
+- Deploy so production regains the previous visual feel without returning to the poor CLS behavior.

@@ -582,20 +582,18 @@ function HeroSection({
               className="hero__rotator-line"
               aria-label={`${activeRotatorItem.word}${activeRotatorItem.particle} 끝냅니다.`}
             >
-              {heroRotatorItems.map((item, index) => (
-                <span
-                  className={`hero__rotator-item${index === activeRotatorIndex ? " is-active" : ""}`}
-                  aria-hidden="true"
-                  key={`${item.word}-${index}`}
-                >
-                  <span className="hero__rotator">
-                    <em>{item.word}</em>
-                  </span>
-                  <span className="hero__rotator-suffix">
-                    {item.particle} 끝냅니다.
-                  </span>
+              <span
+                className="hero__rotator-item is-active"
+                aria-hidden="true"
+                key={`${activeRotatorItem.word}-${activeRotatorIndex}`}
+              >
+                <span className="hero__rotator">
+                  <em>{activeRotatorItem.word}</em>
                 </span>
-              ))}
+                <span className="hero__rotator-suffix">
+                  {activeRotatorItem.particle} 끝냅니다.
+                </span>
+              </span>
             </span>
           </h1>
           <p className="hero__lede">

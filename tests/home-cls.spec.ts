@@ -38,6 +38,7 @@ test("desktop hero copy auto-rotates inside a fixed non-layout slot", () => {
   expect(app).toContain("setRotatorIndex");
   expect(app).toContain("hero__rotator-line");
   expect(app).toContain("hero__rotator-item");
+  expect(app).toContain("activeRotatorItem.word");
   expect(lineRule).toMatch(/position:\s*relative/);
   expect(lineRule).toMatch(/min-height:\s*1em/);
   expect(itemRule).toMatch(/position:\s*absolute/);
