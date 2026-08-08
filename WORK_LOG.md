@@ -3818,3 +3818,24 @@ Verification:
 
 Follow-up:
 - Deploy so production regains the previous visual feel without returning to the poor CLS behavior.
+## 2026-08-08 - Desktop Office Map SDK Restore
+
+Changed files:
+- `src/components/NaverMapEmbed.tsx`
+- `src/styles.css`
+- `tests/office-map.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- Replaced the desktop office map iframe with the Naver Maps JS SDK path because `map.naver.com` blocks iframe embedding with `X-Frame-Options: DENY`.
+- Kept the existing mobile behavior unchanged: <=720px still omits the duplicated map panel and keeps the Naver map link in the office card.
+- Added a desktop fallback panel that links to Naver Map if the SDK key or SDK load is unavailable.
+- Added a focused regression test to prevent returning to the blocked iframe embed.
+
+Verification:
+- `npx playwright test tests/office-map.spec.ts --reporter=line` passed.
+- `npm run build` passed.
+- Local built-output check confirmed the blocked iframe is gone and the SDK script loads; final live map verification is required after deploy because local static output cannot execute Vercel API functions.
+
+Follow-up:
+- After production deploy, verify `www.jipsuriclass.kr` renders the desktop map canvas and no longer logs the iframe X-Frame-Options error.

@@ -5535,6 +5535,21 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   width: 100%;
 }
 
+.office-map-stage {
+  min-height: 420px;
+  position: relative;
+}
+
+.office-map-stage .office-map-live {
+  height: 100%;
+}
+
+.office-map-status {
+  inset: 0;
+  position: absolute;
+  z-index: 1;
+}
+
 .office-map-embed-footer {
   background: #ffffff;
   border-top: 1px solid var(--hair, #e6dfd0);
