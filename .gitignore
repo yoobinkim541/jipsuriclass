@@ -7,6 +7,7 @@ vite.out.log
 vite.err.log
 dev-server.log
 test-results/
+.worktrees/
 
 .vercel
 .astro/
