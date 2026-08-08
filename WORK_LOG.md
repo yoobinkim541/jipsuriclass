@@ -1,5 +1,25 @@
 # Work Log
 
+## 2026-08-08 - 지역 랜딩 SEO 설명문 키워드 보강
+
+Changed files:
+- `src/landingPages.ts`
+- `tests/area-descriptions.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 모든 지역 랜딩 페이지 설명문을 지역명 기반 공통 SEO 문구로 통일했다.
+- 문구에 `집수리`, `누수피해복구공사`, `일상배상책임보험수리`, `도배`, `석고보드 교체` 키워드가 포함되도록 보강했다.
+- 관리자 저장값에 예전 지역 설명문이 남아 있어도 지역 페이지 설명문은 새 기본 SEO 문구를 우선 사용하도록 처리했다.
+
+Verification:
+- `npx playwright test tests/area-descriptions.spec.ts --reporter=line` 통과.
+- `npm run build` 통과.
+- `.vercel/output/static/area/{seoul,namyangju,paju}/index.html`의 meta description에 새 문구가 반영된 것을 확인했다.
+
+Follow-up:
+- 포털 검색 결과 설명문 반영은 각 포털 재크롤링 시점에 따라 지연될 수 있다.
+
 ## 2026-07-21 - Vercel SPA 경로 rewrite 수정
 
 Changed files:

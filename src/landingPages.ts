@@ -50,6 +50,10 @@ export type LandingPageDefinition = {
   areaLabel?: string;
 };
 
+export function buildAreaSeoDescription(areaLabel: string) {
+  return `${areaLabel}에서 필요한 집수리 관련 모든 상담을 안내합니다. 누수피해복구공사, 일상배상책임보험수리, 도배, 석고보드 교체 등 부분수리와 원상복구를 사진 기반으로 상담합니다.`;
+}
+
 const servicePagesBase: LandingPageDefinition[] = [
   {
     path: "/service/leak",
@@ -1541,6 +1545,7 @@ const servicePages = servicePagesWithBlog.map((page) => ({
 
 const areaPagesLinked = areaPages.map((page) => ({
   ...page,
+  description: buildAreaSeoDescription(page.areaLabel ?? getLandingPageShortLabel(page)),
   relatedLinks: buildRelatedLinks(page, AREA_RELATED[page.path] ?? [], areaPages)
 }));
 
@@ -1578,7 +1583,12 @@ export function mergeLandingPageContent(page: LandingPageDefinition, override?: 
     ...page,
     sections: normalizeSectionOrder(override.sections, page.sections ?? defaultLandingSectionOrder),
     title: typeof override.title === "string" ? override.title : page.title,
-    description: typeof override.description === "string" ? override.description : page.description,
+    description:
+      page.categoryLabel === "지역"
+        ? buildAreaSeoDescription(page.areaLabel ?? getLandingPageShortLabel(page))
+        : typeof override.description === "string"
+          ? override.description
+          : page.description,
     searchTerms: Array.isArray(override.searchTerms)
       ? override.searchTerms.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
       : page.searchTerms,
