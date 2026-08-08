@@ -10,10 +10,10 @@ test("all area landing descriptions use the requested regional SEO wording", () 
 
   for (const page of areaPages) {
     const areaLabel = page.areaLabel ?? page.title.replace(" | 집수리클라쓰", "");
-    const expectedDescription = buildAreaSeoDescription(areaLabel);
+    const expectedDescription = `${areaLabel} 종합 집수리 | 전체 리모델링부터 누수피해복구공사, 일상배상책임보험수리, 도배·석고보드 교체까지 클라쓰가 다른 집수리`;
 
+    expect(buildAreaSeoDescription(areaLabel)).toBe(expectedDescription);
     expect(page.description).toBe(expectedDescription);
-    expect(page.description).toContain(`${areaLabel}에서 필요한 집수리 관련 모든 상담`);
     for (const term of requiredTerms) {
       expect(page.description).toContain(term);
     }

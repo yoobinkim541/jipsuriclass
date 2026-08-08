@@ -1,5 +1,24 @@
 # Work Log
 
+## 2026-08-08 - 지역 랜딩 설명문 브랜드 문구 적용
+
+Changed files:
+- `src/landingPages.ts`
+- `tests/area-descriptions.spec.ts`
+- `WORK_LOG.md`
+
+Implemented behavior:
+- 모든 지역 랜딩 페이지의 설명문을 `{지역명} 종합 집수리 | 전체 리모델링부터 누수피해복구공사, 일상배상책임보험수리, 도배·석고보드 교체까지 클라쓰가 다른 집수리` 형식으로 통일했다.
+- `누수피해복구공사`, `일상배상책임보험수리`, `도배`, `석고보드 교체`의 정확 키워드와 지역별 관리자 저장값 우선순위 정책을 유지했다.
+
+Verification:
+- `npx playwright test tests/area-descriptions.spec.ts --reporter=line` 통과.
+- `npm run build` 통과.
+- 생성된 16개 지역 정적 페이지의 meta description 반영을 확인했다.
+
+Follow-up:
+- 포털 검색 결과 설명문은 각 포털의 재크롤링 시점에 따라 지연될 수 있다.
+
 ## 2026-08-08 - 지역 랜딩 SEO 설명문 키워드 보강
 
 Changed files:

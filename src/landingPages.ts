@@ -51,7 +51,7 @@ export type LandingPageDefinition = {
 };
 
 export function buildAreaSeoDescription(areaLabel: string) {
-  return `${areaLabel}에서 필요한 집수리 관련 모든 상담을 안내합니다. 누수피해복구공사, 일상배상책임보험수리, 도배, 석고보드 교체 등 부분수리와 원상복구를 사진 기반으로 상담합니다.`;
+  return `${areaLabel} 종합 집수리 | 전체 리모델링부터 누수피해복구공사, 일상배상책임보험수리, 도배·석고보드 교체까지 클라쓰가 다른 집수리`;
 }
 
 const servicePagesBase: LandingPageDefinition[] = [
