@@ -16,3 +16,4 @@ test-results/
 AGENTS.md
 CLAUDE.md
 tasks-remaining.md
+playwright.config.ts
