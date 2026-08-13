@@ -3458,6 +3458,16 @@ textarea {
   background-size: cover;
 }
 
+/* 도장·페인트: 색감이 살아 있는 실내를 보여 주면서도 좌측 상담 문구는 선명하게 유지한다. */
+.landing-hero--paint {
+  background-image:
+    linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
+    url("/assets/paint-hero-interior.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 :root[data-theme="dark"] .landing-hero--plumbing {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.78) 58%, rgba(11, 18, 32, 0.9) 100%),
@@ -3486,6 +3496,12 @@ textarea {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
     url("/assets/film-hero-interior.png");
+}
+
+:root[data-theme="dark"] .landing-hero--paint {
+  background-image:
+    linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
+    url("/assets/paint-hero-interior.png");
 }
 
 .landing-kicker {
@@ -12786,6 +12802,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-size: auto 260px;
   }
 
+  .landing-hero--paint {
+    background-image:
+      linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
+      url("/assets/paint-hero-interior.png");
+    background-position: center top;
+    background-size: auto 260px;
+  }
+
   :root[data-theme="dark"] .landing-hero--plumbing {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.86) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
@@ -12814,6 +12838,12 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
       url("/assets/film-hero-interior.png");
+  }
+
+  :root[data-theme="dark"] .landing-hero--paint {
+    background-image:
+      linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
+      url("/assets/paint-hero-interior.png");
   }
 
   .landing-hero-grid {
