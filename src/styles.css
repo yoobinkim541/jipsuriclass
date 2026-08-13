@@ -5996,7 +5996,8 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .estimate-survey-layout {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  align-items: start;
+  grid-template-columns: minmax(320px, 0.72fr) minmax(0, 1.28fr);
   grid-template-rows: 1fr;
   gap: 18px;
   min-height: 0;
@@ -6009,8 +6010,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 
 .estimate-survey-visual {
   position: relative;
-  min-height: 0;
-  height: 100%;
+  height: clamp(560px, calc(100dvh - 112px), 760px);
   border-radius: 28px;
   overflow: hidden;
   isolation: isolate;
@@ -6115,8 +6115,9 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 .estimate-survey-form {
-  height: 100%;
-  align-content: safe center;
+  align-content: start;
+  align-self: start;
+  max-height: calc(100dvh - 112px);
   overflow: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -6534,7 +6535,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 .estimate-survey-form .estimate-choice-grid {
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .estimate-survey-form .estimate-choice-grid-multi {

@@ -51,3 +51,16 @@ test("estimate survey controls stay readable in dark theme", async ({ page }) =>
   }
 });
 
+test("desktop estimate survey keeps the question flow at the top in two columns", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await page.goto("/estimate", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: /진행|시작|상담/ }).first().click();
+
+  const survey = page.locator(".estimate-survey-form");
+  const choiceGrid = page.locator(".estimate-survey-form .estimate-choice-grid").first();
+
+  await expect(survey).toHaveCSS("align-content", "start");
+  expect(
+    await choiceGrid.evaluate((element) => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)
+  ).toBe(2);
+});
