@@ -81,6 +81,7 @@ export function EstimatePage() {
   const [resumed, setResumed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const surveyFormRef = useRef<HTMLFormElement | null>(null);
+  const autoAdvanceTimerRef = useRef<number | null>(null);
 
   const hasPresetContext = Boolean(
     presetProject || presetIssue || presetWorks.length || presetSourceServicePath || presetSourcePricingPath
@@ -133,6 +134,7 @@ export function EstimatePage() {
   }
 
   function restartSurvey() {
+    clearAutoAdvance();
     clearSavedDraft();
     setDraft({ ...defaultDraft });
     setStep(1);
@@ -181,6 +183,8 @@ export function EstimatePage() {
   useEffect(() => {
     surveyFormRef.current?.scrollTo({ top: 0 });
   }, [stage, step]);
+
+  useEffect(() => () => clearAutoAdvance(), []);
 
   useEffect(() => {
     const { body, documentElement } = document;
@@ -350,11 +354,46 @@ export function EstimatePage() {
   }
 
   function moveNext() {
+    clearAutoAdvance();
     setStep((current) => (current < 8 ? ((current + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) : current));
   }
 
   function movePrev() {
+    clearAutoAdvance();
     setStep((current) => (current > 1 ? ((current - 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) : current));
+  }
+
+  function clearAutoAdvance() {
+    if (autoAdvanceTimerRef.current !== null) {
+      window.clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+  }
+
+  function scheduleAutoAdvance() {
+    clearAutoAdvance();
+    autoAdvanceTimerRef.current = window.setTimeout(() => {
+      autoAdvanceTimerRef.current = null;
+      setStep((current) => (current < 8 ? ((current + 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) : current));
+    }, 2000);
+  }
+
+  function selectSingleChoice(value: string) {
+    if (currentStep.field === "spaceType") {
+      setDraft((current) => ({ ...current, spaceType: value }));
+    } else if (currentStep.field === "areaBand") {
+      setDraft((current) => ({ ...current, areaBand: value }));
+    } else if (currentStep.field === "propertyStatus") {
+      setDraft((current) => ({ ...current, propertyStatus: value }));
+    } else if (currentStep.field === "reason") {
+      setDraft((current) => ({ ...current, reason: value }));
+    } else if (currentStep.field === "budget") {
+      setDraft((current) => ({ ...current, budget: value }));
+    } else if (currentStep.field === "startTiming") {
+      setDraft((current) => ({ ...current, startTiming: value }));
+    }
+
+    scheduleAutoAdvance();
   }
 
   function returnToCalculator() {
@@ -543,21 +582,7 @@ export function EstimatePage() {
                             : draft.startTiming
                 }
                 options={currentStep.options}
-                onSelect={(value) => {
-                  if (currentStep.field === "spaceType") {
-                    setDraft((current) => ({ ...current, spaceType: value }));
-                  } else if (currentStep.field === "areaBand") {
-                    setDraft((current) => ({ ...current, areaBand: value }));
-                  } else if (currentStep.field === "propertyStatus") {
-                    setDraft((current) => ({ ...current, propertyStatus: value }));
-                  } else if (currentStep.field === "reason") {
-                    setDraft((current) => ({ ...current, reason: value }));
-                  } else if (currentStep.field === "budget") {
-                    setDraft((current) => ({ ...current, budget: value }));
-                  } else if (currentStep.field === "startTiming") {
-                    setDraft((current) => ({ ...current, startTiming: value }));
-                  }
-                }}
+                onSelect={selectSingleChoice}
               />
             ) : null}
 

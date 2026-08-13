@@ -6562,6 +6562,10 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     margin-top: auto;
     padding-top: 22px;
   }
+
+  .estimate-survey-form .estimate-choice-grid:not(.estimate-choice-grid-multi) {
+    margin-top: 24px;
+  }
 }
 
 @media (max-width: 1024px) {

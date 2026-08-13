@@ -59,6 +59,7 @@ test("desktop estimate survey balances the full panel with bottom actions", asyn
   const survey = page.locator(".estimate-survey-form");
   const choiceGrid = page.locator(".estimate-survey-form .estimate-choice-grid").first();
   const actions = page.locator(".estimate-step-actions");
+  const question = page.locator(".estimate-question-block");
 
   await expect(survey).toHaveCSS("align-content", "start");
   expect(
@@ -66,9 +67,23 @@ test("desktop estimate survey balances the full panel with bottom actions", asyn
   ).toBe(2);
 
   const [surveyBox, actionsBox] = await Promise.all([survey.boundingBox(), actions.boundingBox()]);
+  const [questionBox, choiceGridBox] = await Promise.all([question.boundingBox(), choiceGrid.boundingBox()]);
   expect(surveyBox?.height).toBeGreaterThanOrEqual(700);
   expect(surveyBox?.y).toBeGreaterThanOrEqual(110);
+  expect((choiceGridBox?.y ?? 0) - ((questionBox?.y ?? 0) + (questionBox?.height ?? 0))).toBeGreaterThanOrEqual(40);
   expect((actionsBox?.y ?? 0) + (actionsBox?.height ?? 0)).toBeGreaterThanOrEqual(
     (surveyBox?.y ?? 0) + (surveyBox?.height ?? 0) - 56
   );
+});
+
+test("single-choice answers advance to the next survey step after two seconds", async ({ page }) => {
+  await page.goto("/estimate", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: /진행|시작|상담/ }).first().click();
+
+  await page.getByRole("button", { name: "아파트" }).click();
+  await page.waitForTimeout(1700);
+  await expect(page.getByText("1 / 8")).toBeVisible();
+
+  await page.waitForTimeout(450);
+  await expect(page.getByText("2 / 8")).toBeVisible();
 });
