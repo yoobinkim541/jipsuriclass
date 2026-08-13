@@ -5,7 +5,9 @@
  * BaseLayout에서 한 번만 렌더하므로 여기서는 페이지별 값만 출력한다.
  */
 const siteUrl = "https://www.jipsuriclass.kr";
-const defaultImage = `${siteUrl}/og-image.png`;
+// 포털 검색 결과는 정사각형 썸네일로 자르는 경우가 있어, 원본 배너를 보존한
+// 정사각형 버전을 대표 이미지로 제공한다.
+const defaultImage = `${siteUrl}/og-search.png`;
 const ogAlt = "집수리클라쓰 OG 배너";
 
 interface Props {
@@ -30,9 +32,10 @@ const ogImage = image ?? defaultImage;
 <meta property="og:image" content={ogImage} />
 <meta property="og:image:secure_url" content={ogImage} />
 <meta property="og:image:type" content="image/png" />
-<meta property="og:image:width" content="1729" />
-<meta property="og:image:height" content="910" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="1200" />
 <meta property="og:image:alt" content={ogAlt} />
+<meta itemprop="image" content={ogImage} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={title} />
 <meta name="twitter:description" content={description} />

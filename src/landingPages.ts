@@ -1636,12 +1636,14 @@ export function getLandingPageDefaultContent(pathname: string) {
 }
 
 export function buildLandingPageJsonLd(page: LandingPageDefinition, siteUrl: string) {
+  const representativeImage = `${siteUrl}/og-search.png`;
   const base = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: page.title,
     url: `${siteUrl}${page.path}`,
-    description: page.description
+    description: page.description,
+    image: representativeImage
   };
 
   // 자주 묻는 질문 → FAQPage 구조화 데이터(검색결과 FAQ 리치 스니펫 대응)
@@ -1671,6 +1673,7 @@ export function buildLandingPageJsonLd(page: LandingPageDefinition, siteUrl: str
         "@type": "Service",
         name: page.title,
         serviceType: page.serviceType ?? page.title,
+        image: representativeImage,
         provider: {
           "@type": "HomeAndConstructionBusiness",
           name: business.name,
@@ -1701,7 +1704,8 @@ export function buildLandingPageJsonLd(page: LandingPageDefinition, siteUrl: str
         addressCountry: "KR"
       },
       areaServed: page.areaLabel ?? business.area,
-      url: `${siteUrl}${page.path}`
+      url: `${siteUrl}${page.path}`,
+      image: representativeImage
     },
     ...faqLd
   ];
