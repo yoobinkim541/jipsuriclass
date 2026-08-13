@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { buildAreaSeoDescription, landingPageDefinitions, mergeLandingPageContent } from "../src/landingPages";
 
-const requiredTerms = ["집수리", "누수피해복구공사", "일상배상책임보험수리", "도배", "석고보드 교체"];
+const requiredTerms = ["집수리", "누수피해복구공사", "일상배상책임보험수리", "생활속 작은 수리", "전체 리모델링", "인테리어 공사"];
 
 test("all area landing descriptions use the requested regional SEO wording", () => {
   const areaPages = landingPageDefinitions.filter((page) => page.categoryLabel === "지역");
@@ -10,7 +10,7 @@ test("all area landing descriptions use the requested regional SEO wording", () 
 
   for (const page of areaPages) {
     const areaLabel = page.areaLabel ?? page.title.replace(" | 집수리클라쓰", "");
-    const expectedDescription = `${areaLabel} 종합 집수리 | 전체 리모델링부터 누수피해복구공사, 일상배상책임보험수리, 도배·석고보드 교체까지 클라쓰가 다른 집수리`;
+    const expectedDescription = `${areaLabel} 집수리 | 누수피해복구공사, 일상배상책임보험수리 전문, 생활속 작은 수리는 물론 전체 리모델링,인테리어 공사까지 클라쓰가 다른 집수리`;
 
     expect(buildAreaSeoDescription(areaLabel)).toBe(expectedDescription);
     expect(page.description).toBe(expectedDescription);

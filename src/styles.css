@@ -6546,6 +6546,20 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   grid-template-columns: 1fr;
 }
 
+@media (min-width: 721px) {
+  .estimate-survey-form {
+    display: flex;
+    flex-direction: column;
+    min-height: clamp(560px, calc(100dvh - 112px), 760px);
+    padding-top: clamp(48px, 7vh, 72px);
+  }
+
+  .estimate-survey-form .estimate-step-actions {
+    margin-top: auto;
+    padding-top: 22px;
+  }
+}
+
 @media (max-width: 1024px) {
   .estimate-survey-layout {
     grid-template-columns: 0.9fr 1.1fr;

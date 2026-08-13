@@ -51,16 +51,23 @@ test("estimate survey controls stay readable in dark theme", async ({ page }) =>
   }
 });
 
-test("desktop estimate survey keeps the question flow at the top in two columns", async ({ page }) => {
+test("desktop estimate survey balances the full panel with bottom actions", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/estimate", { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /진행|시작|상담/ }).first().click();
 
   const survey = page.locator(".estimate-survey-form");
   const choiceGrid = page.locator(".estimate-survey-form .estimate-choice-grid").first();
+  const actions = page.locator(".estimate-step-actions");
 
   await expect(survey).toHaveCSS("align-content", "start");
   expect(
     await choiceGrid.evaluate((element) => getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length)
   ).toBe(2);
+
+  const [surveyBox, actionsBox] = await Promise.all([survey.boundingBox(), actions.boundingBox()]);
+  expect(surveyBox?.height).toBeGreaterThanOrEqual(700);
+  expect((actionsBox?.y ?? 0) + (actionsBox?.height ?? 0)).toBeGreaterThanOrEqual(
+    (surveyBox?.y ?? 0) + (surveyBox?.height ?? 0) - 56
+  );
 });

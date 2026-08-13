@@ -51,7 +51,7 @@ export type LandingPageDefinition = {
 };
 
 export function buildAreaSeoDescription(areaLabel: string) {
-  return `${areaLabel} 종합 집수리 | 전체 리모델링부터 누수피해복구공사, 일상배상책임보험수리, 도배·석고보드 교체까지 클라쓰가 다른 집수리`;
+  return `${areaLabel} 집수리 | 누수피해복구공사, 일상배상책임보험수리 전문, 생활속 작은 수리는 물론 전체 리모델링,인테리어 공사까지 클라쓰가 다른 집수리`;
 }
 
 const servicePagesBase: LandingPageDefinition[] = [
