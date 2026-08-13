@@ -185,8 +185,9 @@ export function LandingPointsSection({ content }: { content: LandingPageDefiniti
 }
 
 export function LandingFaqSection({ content }: { content: LandingPageDefinition }) {
+  const isServicePage = content.categoryLabel === "서비스";
   return (
-    <section className="landing-section section" aria-labelledby="landing-faq-title">
+    <section className={`landing-section section${isServicePage ? " landing-section--service" : ""}`} aria-labelledby="landing-faq-title">
       <SectionHeading
         id="landing-faq-title"
         title="자주 묻는 질문"
@@ -205,8 +206,9 @@ export function LandingFaqSection({ content }: { content: LandingPageDefinition 
 }
 
 export function LandingRelatedSection({ content }: { content: LandingPageDefinition }) {
+  const isServicePage = content.categoryLabel === "서비스";
   return (
-    <section className="landing-section section" aria-labelledby="landing-related-title">
+    <section className={`landing-section section${isServicePage ? " landing-section--service landing-section--service-related" : ""}`} aria-labelledby="landing-related-title">
       <SectionHeading
         id="landing-related-title"
         title="함께 보면 좋은 페이지"

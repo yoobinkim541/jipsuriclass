@@ -3692,6 +3692,43 @@ textarea {
   padding: clamp(36px, 5vw, 64px) clamp(18px, 5vw, 64px);
 }
 
+/* 서비스 본문도 히어로와 같은 풀블리드 흐름을 사용한다.
+   배경과 구획선은 화면 끝까지 이어지고, 내용은 중앙 읽기 폭 안에 유지된다. */
+.landing-section--service {
+  margin-inline: 0;
+  max-width: none;
+  padding-block: clamp(56px, 7vw, 96px);
+  padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1320px) / 2));
+  width: 100%;
+}
+
+.landing-section--service-blog {
+  background: #ffffff;
+}
+
+.landing-section--service-related {
+  background: #f6f2ea;
+  border-bottom: 0;
+}
+
+@media (min-width: 1500px) {
+  .landing-section--service {
+    padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1440px) / 2));
+  }
+}
+
+@media (min-width: 1920px) {
+  .landing-section--service {
+    padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1560px) / 2));
+  }
+}
+
+@media (min-width: 2560px) {
+  .landing-section--service {
+    padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1640px) / 2));
+  }
+}
+
 .landing-blog-showcase {
   display: grid;
   gap: 16px;

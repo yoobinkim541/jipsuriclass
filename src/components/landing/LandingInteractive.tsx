@@ -603,10 +603,11 @@ export function LandingBlogSection({ content }: { content: LandingPageDefinition
   }, [content, landingPosts, landingSearchTerms]);
 
   const pricingConfig = getServicePricingConfig(content.path);
+  const isServicePage = content.categoryLabel === "서비스";
 
   return (
     <section
-      className="landing-section section"
+      className={`landing-section section${isServicePage ? " landing-section--service landing-section--service-blog" : ""}`}
       aria-labelledby="landing-blog-title"
       data-nosnippet={content.pageType === "Place" ? "" : undefined}
     >
