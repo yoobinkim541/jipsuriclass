@@ -3616,7 +3616,7 @@ textarea {
   margin: 0;
 }
 
-.landing-section--plumbing-points {
+.landing-section--service-points {
   background: #f6f2ea;
   border-bottom: 0;
   max-width: none;
@@ -3673,13 +3673,13 @@ textarea {
   padding-top: 16px;
 }
 
-.landing-point-grid--plumbing {
+.landing-point-grid--service {
   gap: 10px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
 }
 
-.landing-point-card--plumbing {
+.landing-point-card--service {
   background: #ffffff;
   border-color: rgba(16, 40, 74, 0.14);
   display: flex;
@@ -3699,7 +3699,7 @@ textarea {
   width: 42px;
 }
 
-.landing-point-card--plumbing h3 {
+.landing-point-card--service h3 {
   color: var(--ink, #0b1a30);
   font-size: clamp(18px, 1.55vw, 22px);
   letter-spacing: 0;
@@ -3708,7 +3708,7 @@ textarea {
   word-break: keep-all;
 }
 
-.landing-point-card--plumbing p {
+.landing-point-card--service p {
   color: var(--ink-3, #5b6781);
   font-size: 15px;
   line-height: 1.7;
@@ -3717,7 +3717,7 @@ textarea {
 }
 
 @media (max-width: 900px) {
-  .landing-section--plumbing-points {
+  .landing-section--service-points {
     padding: 48px 20px;
   }
 
@@ -3734,11 +3734,11 @@ textarea {
     margin-top: 20px;
   }
 
-  .landing-point-grid--plumbing {
+  .landing-point-grid--service {
     grid-template-columns: 1fr;
   }
 
-  .landing-point-card--plumbing {
+  .landing-point-card--service {
     min-height: 0;
   }
 }

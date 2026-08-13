@@ -116,6 +116,7 @@ export function LandingSummarySection({ content }: { content: LandingPageDefinit
 
 export function LandingPointsSection({ content }: { content: LandingPageDefinition }) {
   const isPlumbingPage = content.path === "/service/plumbing";
+  const isServicePage = content.categoryLabel === "서비스";
   const plumbingPointTitles = [
     "문제가 생긴 곳부터 확인합니다",
     "꼭 필요한 작업만 정리합니다",
@@ -126,10 +127,11 @@ export function LandingPointsSection({ content }: { content: LandingPageDefiniti
     "배관, 배수, 온수, 해빙, 부속 교체 중 필요한 작업만 골라 안내합니다.",
     "급한 증상은 먼저 막고, 복구 작업은 현장 상태와 일정에 맞춰 진행합니다."
   ];
+  const servicePointTitles = ["현장 상태를 먼저 확인합니다", "필요한 작업을 정리합니다", "작업 범위를 안내합니다"];
 
-  if (isPlumbingPage) {
+  if (isServicePage) {
     return (
-      <section className="landing-section landing-section--plumbing-points" aria-labelledby="landing-points-title">
+      <section className="landing-section landing-section--service-points" aria-labelledby="landing-points-title">
         <div className="landing-points-layout">
           <div className="landing-points-heading">
             <span>현장 상담 기준</span>
@@ -137,12 +139,12 @@ export function LandingPointsSection({ content }: { content: LandingPageDefiniti
             <p>{content.description}</p>
             <small>사진을 먼저 보내주시면 방문 전 작업 범위와 우선순위를 더 빠르게 정리할 수 있습니다.</small>
           </div>
-          <div className="landing-point-grid landing-point-grid--plumbing">
+          <div className="landing-point-grid landing-point-grid--service">
             {content.points.map((point, index) => (
-              <article className="landing-point-card landing-point-card--plumbing" key={point}>
+              <article className="landing-point-card landing-point-card--service" key={point}>
                 <span className="landing-point-card__number">0{index + 1}</span>
-                <h3>{plumbingPointTitles[index] ?? "현장 상태를 함께 확인합니다"}</h3>
-                <p>{plumbingPointBodies[index] ?? point}</p>
+                <h3>{(isPlumbingPage ? plumbingPointTitles : servicePointTitles)[index] ?? "현장 상태를 함께 확인합니다"}</h3>
+                <p>{(isPlumbingPage ? plumbingPointBodies[index] : undefined) ?? point}</p>
               </article>
             ))}
           </div>
