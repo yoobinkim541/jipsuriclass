@@ -29,11 +29,23 @@ function buildPriceSelectionHref(path: string, options: { items?: string[]; focu
 
 export function LandingSummarySection({ content }: { content: LandingPageDefinition }) {
   const pricingConfig = getServicePricingConfig(content.path);
+  const isAreaPage = content.categoryLabel === "지역";
   return (
     <section
       className={`landing-hero section${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}${content.path === "/service/waterproofing-tile" ? " landing-hero--waterproofing-tile" : ""}`}
       aria-labelledby="landing-title"
     >
+      {isAreaPage && (
+        <img
+          className="landing-search-representative"
+          src="/og-search.png"
+          alt="집수리클라쓰 종합 집수리 대표 이미지"
+          width="1200"
+          height="1200"
+          loading="eager"
+          fetchPriority="high"
+        />
+      )}
       <span className="landing-kicker">{content.categoryLabel}</span>
       <div className="landing-hero-grid">
         <div className="landing-hero-copy">

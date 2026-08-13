@@ -605,7 +605,11 @@ export function LandingBlogSection({ content }: { content: LandingPageDefinition
   const pricingConfig = getServicePricingConfig(content.path);
 
   return (
-    <section className="landing-section section" aria-labelledby="landing-blog-title">
+    <section
+      className="landing-section section"
+      aria-labelledby="landing-blog-title"
+      data-nosnippet={content.pageType === "Place" ? "" : undefined}
+    >
       <SectionHeading
         id="landing-blog-title"
         title={`${content.serviceType ?? content.areaLabel ?? content.searchTerms[0]} 사례 & 블로그`}

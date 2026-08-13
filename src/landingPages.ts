@@ -1665,6 +1665,16 @@ export function buildLandingPageJsonLd(page: LandingPageDefinition, siteUrl: str
       ]
     : [];
 
+  const imageLd = {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    contentUrl: representativeImage,
+    url: representativeImage,
+    width: 1200,
+    height: 1200,
+    caption: "집수리클라쓰 클라쓰가 다른 종합 집수리"
+  };
+
   if (page.pageType === "Service") {
     return [
       base,
@@ -1688,6 +1698,7 @@ export function buildLandingPageJsonLd(page: LandingPageDefinition, siteUrl: str
         },
         areaServed: business.area
       },
+      imageLd,
       ...faqLd
     ];
   }
@@ -1707,6 +1718,7 @@ export function buildLandingPageJsonLd(page: LandingPageDefinition, siteUrl: str
       url: `${siteUrl}${page.path}`,
       image: representativeImage
     },
+    imageLd,
     ...faqLd
   ];
 }

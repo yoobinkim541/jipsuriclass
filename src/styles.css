@@ -3368,6 +3368,19 @@ textarea {
   margin: 0 auto;
 }
 
+/* Googlebot이 대표 이미지를 표준 img 요소로 수집하도록 하되, 랜딩 히어로의
+   시각적 구성에는 영향을 주지 않는다. */
+.landing-search-representative {
+  height: 1px;
+  left: 0;
+  object-fit: cover;
+  opacity: 0.01;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 1px;
+}
+
 /* 종합 설비: 현장성을 더하되, 제목과 CTA가 놓이는 왼쪽은 단색에 가깝게 남긴다. */
 .landing-hero--plumbing {
   background-image:
