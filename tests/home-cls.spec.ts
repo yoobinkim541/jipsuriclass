@@ -25,6 +25,7 @@ test("homepage default hero content mirrors the live first viewport", () => {
   const source = readFileSync("src/services/SiteContentService.ts", "utf8");
 
   expect(source).toContain('title: "집의 모든 불편을"');
+  expect(source).toContain('"집수리클라쓰"');
   expect(source).toContain("사전 상담으로 증상을 먼저 확인하고, 현장 방문 후 꼭 필요한 작업만 진행합니다.");
   expect(source).toContain('{ num: "1000+", label: "시공 완료", sub: "대표 직접 시공 누적 현장" }');
 });

@@ -1026,12 +1026,12 @@ function HeroPreview({
   onSelect: () => void;
 }) {
   const caseImages = useMemo(() => cases.filter((c) => c.image).slice(0, 3), [cases]);
-  const rotatorWords = content.rotatorWords.length > 0 ? content.rotatorWords : ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문"];
-  const proofs = content.proofs.length > 0 ? content.proofs : [
-    { label: "진행 과정", value: "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행" },
-    { label: "작업 범위", value: "부분수리부터 전체 리모델링까지" },
-    { label: "현장 기록", value: "네이버 블로그 포트폴리오" }
-  ];
+  const baseRotatorWords = content.rotatorWords.length > 0
+    ? content.rotatorWords
+    : ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문", "집수리클라쓰"];
+  const rotatorWords = baseRotatorWords.includes("집수리클라쓰")
+    ? baseRotatorWords
+    : [...baseRotatorWords, "집수리클라쓰"];
   const trustItems = content.trust.length > 0 ? content.trust : [
     { num: "7", label: "국가공인 자격", sub: "대표 직접 보유 · 직접 시공" },
     { num: "31", label: "가능 작업", sub: "생활 보수부터 전체 리모델링까지" },
@@ -1066,14 +1066,6 @@ function HeroPreview({
               {content.tertiaryActionLabel || "견적상담"}
             </span>
           </div>
-          <dl className="hero__proof" style={{ marginTop: 20 }}>
-            {proofs.map((item) => (
-              <div key={item.label}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
         {caseImages.length > 0 && (
           <div className="hero__deck">
@@ -1797,4 +1789,3 @@ function useEditorSaveShortcut(onSave: () => void, enabled: boolean) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [enabled, onSave]);
 }
-

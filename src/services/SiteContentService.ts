@@ -56,7 +56,7 @@ export const defaultHomepageContent: HomepageContent = {
     primaryActionLabel: "전화 상담",
     secondaryActionLabel: "카카오톡 상담",
     tertiaryActionLabel: "견적 상담",
-    rotatorWords: ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문"],
+    rotatorWords: ["한 통의 전화", "사진 몇 장", "5분의 상담", "한 번의 방문", "집수리클라쓰"],
     proofs: [
       { label: "진행 과정", value: "전화·문자 상담 → 현장 방문 → 상세 견적 → 공사 진행" },
       { label: "작업 범위", value: "부분수리부터 전체 리모델링까지" },

@@ -491,7 +491,10 @@ function HeroSection({
   content: HomepageContent["hero"];
   cases: HomepageContent["cases"];
 }) {
-  const heroRotatorWords = content.rotatorWords.length > 0 ? content.rotatorWords : defaultHomepageContent.hero.rotatorWords;
+  const baseHeroRotatorWords = content.rotatorWords.length > 0 ? content.rotatorWords : defaultHomepageContent.hero.rotatorWords;
+  const heroRotatorWords = baseHeroRotatorWords.includes("집수리클라쓰")
+    ? baseHeroRotatorWords
+    : [...baseHeroRotatorWords, "집수리클라쓰"];
   const [rotatorIndex, setRotatorIndex] = useState(0);
   const [mainCardIndex, setMainCardIndex] = useState(0);
 
@@ -528,7 +531,6 @@ function HeroSection({
     });
   }, [caseImages, mainCardIndex]);
 
-  const proofs = content.proofs.length > 0 ? content.proofs : defaultHomepageContent.hero.proofs;
   const trustItems = content.trust.length > 0 ? content.trust : defaultHomepageContent.hero.trust;
   // 모바일 히어로 배경: 올리모델링 3D 목업 5장을 풀블리드로 깔고 4초마다 회전.
   // (파일 미투입 시 기존 시공 사진으로 폴백 → onError)
@@ -552,12 +554,6 @@ function HeroSection({
   });
   const activeRotatorIndex = heroRotatorItems.length ? rotatorIndex % heroRotatorItems.length : 0;
   const activeRotatorItem = heroRotatorItems[activeRotatorIndex] ?? { word: "", particle: "" };
-  const heroFlow = [
-    { label: "사진 접수", value: "증상·공간 사진 확인" },
-    { label: "범위 정리", value: "필요 작업만 안내" },
-    { label: "방문 판단", value: "일정·비용 기준 공유" }
-  ];
-
   return (
     <section className="hero" id="hero">
       <div className="hero__mobile-bg" aria-hidden="true">
@@ -617,22 +613,6 @@ function HeroSection({
               {content.secondaryActionLabel || "카카오톡 상담"}
             </a>
           </div>
-          <div className="hero__flow" aria-label="상담 흐름">
-            {heroFlow.map((item) => (
-              <div className="hero__flow-item" key={item.label}>
-                <span>{item.label}</span>
-                <strong>{item.value}</strong>
-              </div>
-            ))}
-          </div>
-          <dl className="hero__proof">
-            {proofs.map((item) => (
-              <div key={item.label}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
         </div>
 
         {/* Right column: card deck — click smaller cards to promote to main */}
