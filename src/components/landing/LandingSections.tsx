@@ -31,7 +31,7 @@ export function LandingSummarySection({ content }: { content: LandingPageDefinit
   const pricingConfig = getServicePricingConfig(content.path);
   return (
     <section
-      className={`landing-hero section${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}`}
+      className={`landing-hero section${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}${content.path === "/service/waterproofing-tile" ? " landing-hero--waterproofing-tile" : ""}`}
       aria-labelledby="landing-title"
     >
       <span className="landing-kicker">{content.categoryLabel}</span>
