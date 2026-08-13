@@ -30,7 +30,10 @@ function buildPriceSelectionHref(path: string, options: { items?: string[]; focu
 export function LandingSummarySection({ content }: { content: LandingPageDefinition }) {
   const pricingConfig = getServicePricingConfig(content.path);
   return (
-    <section className={`landing-hero section${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}`} aria-labelledby="landing-title">
+    <section
+      className={`landing-hero section${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}`}
+      aria-labelledby="landing-title"
+    >
       <span className="landing-kicker">{content.categoryLabel}</span>
       <div className="landing-hero-grid">
         <div className="landing-hero-copy">
