@@ -67,6 +67,7 @@ test("desktop estimate survey balances the full panel with bottom actions", asyn
 
   const [surveyBox, actionsBox] = await Promise.all([survey.boundingBox(), actions.boundingBox()]);
   expect(surveyBox?.height).toBeGreaterThanOrEqual(700);
+  expect(surveyBox?.y).toBeGreaterThanOrEqual(110);
   expect((actionsBox?.y ?? 0) + (actionsBox?.height ?? 0)).toBeGreaterThanOrEqual(
     (surveyBox?.y ?? 0) + (surveyBox?.height ?? 0) - 56
   );

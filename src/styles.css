@@ -6547,6 +6547,10 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 }
 
 @media (min-width: 721px) {
+  .estimate-survey-layout {
+    align-self: center;
+  }
+
   .estimate-survey-form {
     display: flex;
     flex-direction: column;
