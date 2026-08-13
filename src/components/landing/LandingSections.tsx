@@ -115,6 +115,42 @@ export function LandingSummarySection({ content }: { content: LandingPageDefinit
 }
 
 export function LandingPointsSection({ content }: { content: LandingPageDefinition }) {
+  const isPlumbingPage = content.path === "/service/plumbing";
+  const plumbingPointTitles = [
+    "문제가 생긴 곳부터 확인합니다",
+    "꼭 필요한 작업만 정리합니다",
+    "급한 조치와 복구를 나눠 안내합니다"
+  ];
+  const plumbingPointBodies = [
+    "물이 새거나 막힌 곳과 실제 원인이 다를 수 있어 사진과 현장을 함께 확인합니다.",
+    "배관, 배수, 온수, 해빙, 부속 교체 중 필요한 작업만 골라 안내합니다.",
+    "급한 증상은 먼저 막고, 복구 작업은 현장 상태와 일정에 맞춰 진행합니다."
+  ];
+
+  if (isPlumbingPage) {
+    return (
+      <section className="landing-section landing-section--plumbing-points" aria-labelledby="landing-points-title">
+        <div className="landing-points-layout">
+          <div className="landing-points-heading">
+            <span>현장 상담 기준</span>
+            <h2 id="landing-points-title">{content.pointsTitle}</h2>
+            <p>{content.description}</p>
+            <small>사진을 먼저 보내주시면 방문 전 작업 범위와 우선순위를 더 빠르게 정리할 수 있습니다.</small>
+          </div>
+          <div className="landing-point-grid landing-point-grid--plumbing">
+            {content.points.map((point, index) => (
+              <article className="landing-point-card landing-point-card--plumbing" key={point}>
+                <span className="landing-point-card__number">0{index + 1}</span>
+                <h3>{plumbingPointTitles[index] ?? "현장 상태를 함께 확인합니다"}</h3>
+                <p>{plumbingPointBodies[index] ?? point}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="landing-section section" aria-labelledby="landing-points-title">
       <SectionHeading id="landing-points-title" title={content.pointsTitle} description={content.description} />
