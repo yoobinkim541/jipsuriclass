@@ -30,9 +30,10 @@ function buildPriceSelectionHref(path: string, options: { items?: string[]; focu
 export function LandingSummarySection({ content }: { content: LandingPageDefinition }) {
   const pricingConfig = getServicePricingConfig(content.path);
   const isAreaPage = content.categoryLabel === "지역";
+  const isServicePage = content.categoryLabel === "서비스";
   return (
     <section
-      className={`landing-hero section${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}${content.path === "/service/waterproofing-tile" ? " landing-hero--waterproofing-tile" : ""}`}
+      className={`landing-hero section${isServicePage ? " landing-hero--service" : ""}${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}${content.path === "/service/waterproofing-tile" ? " landing-hero--waterproofing-tile" : ""}${content.path === "/service/carpentry" ? " landing-hero--carpentry" : ""}${content.path === "/service/film" ? " landing-hero--film" : ""}`}
       aria-labelledby="landing-title"
     >
       {isAreaPage && (

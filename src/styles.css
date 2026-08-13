@@ -3368,6 +3368,33 @@ textarea {
   margin: 0 auto;
 }
 
+/* 서비스 히어로는 자가진단과 같은 풀블리드 구성: 배경은 화면 끝까지, 내용은 읽기 좋은 폭에 고정한다. */
+.landing-hero--service {
+  margin-inline: 0;
+  max-width: none;
+  padding-block: clamp(40px, 5vw, 72px);
+  padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1320px) / 2));
+  width: 100%;
+}
+
+@media (min-width: 1500px) {
+  .landing-hero--service {
+    padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1440px) / 2));
+  }
+}
+
+@media (min-width: 1920px) {
+  .landing-hero--service {
+    padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1560px) / 2));
+  }
+}
+
+@media (min-width: 2560px) {
+  .landing-hero--service {
+    padding-inline: max(clamp(18px, 5vw, 64px), calc((100% - 1640px) / 2));
+  }
+}
+
 /* Googlebot이 대표 이미지를 표준 img 요소로 수집하도록 하되, 랜딩 히어로의
    시각적 구성에는 영향을 주지 않는다. */
 .landing-search-representative {
@@ -3411,6 +3438,26 @@ textarea {
   background-size: cover;
 }
 
+/* 목공: 따뜻한 원목 공간을 보여 주면서도 좌측의 상담 문구는 편하게 읽히도록 비운다. */
+.landing-hero--carpentry {
+  background-image:
+    linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
+    url("/assets/carpentry-hero-wood.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* 인테리어 필름: 필름 시공이 잘 드러나는 주방·수납장 면을 살리고, 좌측 상담 문구는 읽기 쉽게 비운다. */
+.landing-hero--film {
+  background-image:
+    linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
+    url("/assets/film-hero-interior.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 :root[data-theme="dark"] .landing-hero--plumbing {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.78) 58%, rgba(11, 18, 32, 0.9) 100%),
@@ -3427,6 +3474,18 @@ textarea {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
     url("/assets/waterproofing-tile-hero.jpg");
+}
+
+:root[data-theme="dark"] .landing-hero--carpentry {
+  background-image:
+    linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
+    url("/assets/carpentry-hero-wood.png");
+}
+
+:root[data-theme="dark"] .landing-hero--film {
+  background-image:
+    linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
+    url("/assets/film-hero-interior.png");
 }
 
 .landing-kicker {
@@ -12674,6 +12733,22 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-size: auto 260px;
   }
 
+  .landing-hero--carpentry {
+    background-image:
+      linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
+      url("/assets/carpentry-hero-wood.png");
+    background-position: center top;
+    background-size: auto 260px;
+  }
+
+  .landing-hero--film {
+    background-image:
+      linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
+      url("/assets/film-hero-interior.png");
+    background-position: center top;
+    background-size: auto 260px;
+  }
+
   :root[data-theme="dark"] .landing-hero--plumbing {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.86) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
@@ -12690,6 +12765,18 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
       url("/assets/waterproofing-tile-hero.jpg");
+  }
+
+  :root[data-theme="dark"] .landing-hero--carpentry {
+    background-image:
+      linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
+      url("/assets/carpentry-hero-wood.png");
+  }
+
+  :root[data-theme="dark"] .landing-hero--film {
+    background-image:
+      linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
+      url("/assets/film-hero-interior.png");
   }
 
   .landing-hero-grid {
