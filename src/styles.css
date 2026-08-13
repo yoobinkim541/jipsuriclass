@@ -6549,11 +6549,18 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
 @media (min-width: 721px) {
   .estimate-survey-layout {
     align-self: center;
+    align-items: stretch;
+  }
+
+  .estimate-survey-visual {
+    height: auto;
+    min-height: clamp(560px, calc(100dvh - 112px), 760px);
   }
 
   .estimate-survey-form {
     display: flex;
     flex-direction: column;
+    align-self: stretch;
     min-height: clamp(560px, calc(100dvh - 112px), 760px);
     padding-top: clamp(48px, 7vh, 72px);
   }

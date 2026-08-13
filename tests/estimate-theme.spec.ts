@@ -87,3 +87,32 @@ test("single-choice answers advance to the next survey step after two seconds", 
   await page.waitForTimeout(450);
   await expect(page.getByText("2 / 8")).toBeVisible();
 });
+
+test("desktop contact step keeps the survey image and form at the same height", async ({ page }) => {
+  await page.setViewportSize({ width: 2048, height: 1195 });
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "jipsuri.estimateDraft.v1",
+      JSON.stringify({
+        step: 8,
+        draft: {
+          spaceType: "빌라",
+          areaBand: "50평대 이상",
+          propertyStatus: "현재 공실",
+          reason: "기타",
+          selectedRooms: ["중문"],
+          budget: "1억원 이하",
+          startTiming: "3개월 이후"
+        }
+      })
+    );
+  });
+
+  await page.goto("/estimate", { waitUntil: "domcontentloaded" });
+  const [visualBox, formBox] = await Promise.all([
+    page.locator(".estimate-survey-visual").boundingBox(),
+    page.locator(".estimate-survey-form").boundingBox()
+  ]);
+
+  expect(Math.abs((visualBox?.height ?? 0) - (formBox?.height ?? 0))).toBeLessThanOrEqual(1);
+});
