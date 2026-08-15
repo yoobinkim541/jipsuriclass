@@ -3412,7 +3412,7 @@ textarea {
 .landing-hero--plumbing {
   background-image:
     linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 34%, rgba(250, 247, 242, 0.76) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.42) 100%),
-    url("/assets/plumbing-hero-pipes.png");
+    url("/assets/plumbing-hero-pipes.webp");
   background-position: right center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -3442,7 +3442,7 @@ textarea {
 .landing-hero--carpentry {
   background-image:
     linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
-    url("/assets/carpentry-hero-wood.png");
+    url("/assets/carpentry-hero-wood.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -3452,7 +3452,7 @@ textarea {
 .landing-hero--film {
   background-image:
     linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
-    url("/assets/film-hero-interior.png");
+    url("/assets/film-hero-interior.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -3462,7 +3462,7 @@ textarea {
 .landing-hero--paint {
   background-image:
     linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
-    url("/assets/paint-hero-interior.png");
+    url("/assets/paint-hero-interior.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -3472,7 +3472,7 @@ textarea {
 .landing-hero--wallpaper-floor {
   background-image:
     linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
-    url("/assets/wallpaper-floor-hero-interior.png");
+    url("/assets/wallpaper-floor-hero-interior.webp");
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -3481,7 +3481,7 @@ textarea {
 :root[data-theme="dark"] .landing-hero--plumbing {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.78) 58%, rgba(11, 18, 32, 0.9) 100%),
-    url("/assets/plumbing-hero-pipes.png");
+    url("/assets/plumbing-hero-pipes.webp");
 }
 
 :root[data-theme="dark"] .landing-hero--bathroom {
@@ -3499,25 +3499,25 @@ textarea {
 :root[data-theme="dark"] .landing-hero--carpentry {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
-    url("/assets/carpentry-hero-wood.png");
+    url("/assets/carpentry-hero-wood.webp");
 }
 
 :root[data-theme="dark"] .landing-hero--film {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
-    url("/assets/film-hero-interior.png");
+    url("/assets/film-hero-interior.webp");
 }
 
 :root[data-theme="dark"] .landing-hero--paint {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
-    url("/assets/paint-hero-interior.png");
+    url("/assets/paint-hero-interior.webp");
 }
 
 :root[data-theme="dark"] .landing-hero--wallpaper-floor {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
-    url("/assets/wallpaper-floor-hero-interior.png");
+    url("/assets/wallpaper-floor-hero-interior.webp");
 }
 
 .landing-kicker {
@@ -12781,7 +12781,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .landing-hero--plumbing {
     background-image:
       linear-gradient(180deg, rgba(250, 247, 242, 0.82) 0%, rgba(250, 247, 242, 0.97) 48%, #faf7f2 78%),
-      url("/assets/plumbing-hero-pipes.png");
+      url("/assets/plumbing-hero-pipes.webp");
     background-position: left top;
     background-size: auto 245px;
   }
@@ -12805,7 +12805,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .landing-hero--carpentry {
     background-image:
       linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
-      url("/assets/carpentry-hero-wood.png");
+      url("/assets/carpentry-hero-wood.webp");
     background-position: center top;
     background-size: auto 260px;
   }
@@ -12813,7 +12813,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .landing-hero--film {
     background-image:
       linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
-      url("/assets/film-hero-interior.png");
+      url("/assets/film-hero-interior.webp");
     background-position: center top;
     background-size: auto 260px;
   }
@@ -12821,7 +12821,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .landing-hero--paint {
     background-image:
       linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
-      url("/assets/paint-hero-interior.png");
+      url("/assets/paint-hero-interior.webp");
     background-position: center top;
     background-size: auto 260px;
   }
@@ -12829,7 +12829,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   .landing-hero--wallpaper-floor {
     background-image:
       linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
-      url("/assets/wallpaper-floor-hero-interior.png");
+      url("/assets/wallpaper-floor-hero-interior.webp");
     background-position: center top;
     background-size: auto 260px;
   }
@@ -12837,7 +12837,7 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   :root[data-theme="dark"] .landing-hero--plumbing {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.86) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
-      url("/assets/plumbing-hero-pipes.png");
+      url("/assets/plumbing-hero-pipes.webp");
   }
 
   :root[data-theme="dark"] .landing-hero--bathroom {
@@ -12855,25 +12855,25 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
   :root[data-theme="dark"] .landing-hero--carpentry {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
-      url("/assets/carpentry-hero-wood.png");
+      url("/assets/carpentry-hero-wood.webp");
   }
 
   :root[data-theme="dark"] .landing-hero--film {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
-      url("/assets/film-hero-interior.png");
+      url("/assets/film-hero-interior.webp");
   }
 
   :root[data-theme="dark"] .landing-hero--paint {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
-      url("/assets/paint-hero-interior.png");
+      url("/assets/paint-hero-interior.webp");
   }
 
   :root[data-theme="dark"] .landing-hero--wallpaper-floor {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
-      url("/assets/wallpaper-floor-hero-interior.png");
+      url("/assets/wallpaper-floor-hero-interior.webp");
   }
 
   .landing-hero-grid {

@@ -1,7 +1,7 @@
 import { business } from "./data";
 import { defaultLandingSectionOrder, normalizeSectionOrder, type LandingSectionId } from "./contentSections";
 import { getServiceBlogProfile } from "./services/BlogMatchingProfiles";
-import { portalSearchDescription } from "./portalSeo";
+import { buildServicePortalDescription } from "./portalSeo";
 
 export type LandingFaq = {
   question: string;
@@ -1639,7 +1639,7 @@ export function getLandingPageDefaultContent(pathname: string) {
 export function buildLandingPageJsonLd(
   page: LandingPageDefinition,
   siteUrl: string,
-  description = page.categoryLabel === "서비스" ? portalSearchDescription : page.description
+  description = page.categoryLabel === "서비스" ? buildServicePortalDescription(page.serviceType ?? page.title) : page.description
 ) {
   const representativeImage = `${siteUrl}/og-search.png`;
   const base = {
@@ -1691,13 +1691,22 @@ export function buildLandingPageJsonLd(
         image: representativeImage,
         provider: {
           "@type": "HomeAndConstructionBusiness",
+          "@id": `${siteUrl}/#business`,
           name: business.name,
           telephone: business.phone,
           url: siteUrl,
+          logo: `${siteUrl}/icons/icon.png`,
+          priceRange: "₩₩",
           address: {
             "@type": "PostalAddress",
             streetAddress: business.address,
             addressCountry: "KR"
+          },
+          contactPoint: {
+            "@type": "ContactPoint",
+            contactType: "customer service",
+            telephone: business.phone,
+            availableLanguage: "ko"
           },
           areaServed: business.area
         },

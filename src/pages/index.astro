@@ -21,10 +21,12 @@ const jsonLd = [
   {
     "@context": "https://schema.org",
     "@type": "HomeAndConstructionBusiness",
+    "@id": `${siteUrl}/#business`,
     name: "집수리클라쓰",
     url: siteUrl,
+    logo: `${siteUrl}/icons/icon.png`,
     image: `${siteUrl}/og-search.png`,
-    telephone: "010-3323-9677",
+    telephone: business.phone,
     address: {
       "@type": "PostalAddress",
       streetAddress: "화도읍 경춘로 1790-2 106호",
@@ -33,7 +35,19 @@ const jsonLd = [
       addressCountry: "KR"
     },
     areaServed: ["서울", "경기"],
-    openingHours: "Mo-Sa 08:00-21:00",
+    priceRange: "₩₩",
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      opens: "08:00",
+      closes: "21:00"
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer service",
+      telephone: business.phone,
+      availableLanguage: "ko"
+    },
     sameAs: [business.naverBlogUrl, business.mapUrl, business.kakaoUrl, business.googleProfileUrl],
     description
   }

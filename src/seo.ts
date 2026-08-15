@@ -1,7 +1,7 @@
 import { business } from "./data";
 import { buildLandingPageJsonLd, getLandingPageDefinition } from "./landingPages";
 import { getServicePricingConfigByPricingPath } from "./pricing/registry";
-import { portalSearchDescription } from "./portalSeo";
+import { buildServicePortalDescription, portalSearchDescription } from "./portalSeo";
 
 export const siteUrl = "https://www.jipsuriclass.kr";
 export const siteName = business.name;
@@ -217,7 +217,10 @@ export function getSeoConfigForPath(pathname: string, landingPage?: ReturnType<t
     return {
       path: landingPage.path,
       title: landingPage.title,
-      description: landingPage.description,
+      description:
+        landingPage.categoryLabel === "서비스"
+          ? buildServicePortalDescription(landingPage.serviceType ?? landingPage.title)
+          : landingPage.description,
       image: defaultImage,
       jsonLd: buildLandingPageJsonLd(landingPage, siteUrl)
     };

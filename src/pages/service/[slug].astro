@@ -20,7 +20,7 @@ import { LandingBlogSection, LandingBackButton } from "../../components/landing/
 import { landingPageDefinitions, mergeLandingPageContent, buildLandingPageJsonLd } from "../../landingPages";
 import { defaultLandingSectionOrder } from "../../contentSections";
 import { SiteContentService } from "../../services/SiteContentService";
-import { portalSearchDescription } from "../../portalSeo";
+import { buildServicePortalDescription } from "../../portalSeo";
 
 export async function getStaticPaths() {
   // A build-time Supabase failure must not fail the whole Astro build; fall back
@@ -38,11 +38,12 @@ export async function getStaticPaths() {
 
 const { merged } = Astro.props;
 const siteUrl = "https://www.jipsuriclass.kr";
-const jsonLd = buildLandingPageJsonLd(merged, siteUrl, portalSearchDescription);
+const seoDescription = buildServicePortalDescription(merged.serviceType ?? merged.title);
+const jsonLd = buildLandingPageJsonLd(merged, siteUrl, seoDescription);
 const sections = merged.sections ?? defaultLandingSectionOrder;
 ---
 <BaseLayout>
-  <Seo slot="head" title={merged.title} description={portalSearchDescription} path={merged.path} jsonLd={jsonLd} />
+  <Seo slot="head" title={merged.title} description={seoDescription} path={merged.path} jsonLd={jsonLd} />
   <SiteHeaderIsland client:idle brandHref="/" />
   <LandingBackButton client:idle fallbackHref="/" />
   <main class="landing-page" id="top">
