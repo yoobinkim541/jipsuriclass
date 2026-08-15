@@ -1,11 +1,11 @@
 import { business } from "./data";
 import { buildLandingPageJsonLd, getLandingPageDefinition } from "./landingPages";
 import { getServicePricingConfigByPricingPath } from "./pricing/registry";
+import { portalSearchDescription } from "./portalSeo";
 
 export const siteUrl = "https://www.jipsuriclass.kr";
 export const siteName = business.name;
-export const defaultDescription =
-  "서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 빠르게 안내합니다.";
+export const defaultDescription = portalSearchDescription;
 export const defaultImage = `${siteUrl}/og-search.png`;
 
 export type SeoConfig = {

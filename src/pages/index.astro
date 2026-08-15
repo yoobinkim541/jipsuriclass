@@ -12,10 +12,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import Seo from "../components/seo/Seo.astro";
 import { HomePage } from "../App";
 import { business } from "../data";
+import { portalSearchDescription } from "../portalSeo";
 
 const title = "집수리클라쓰 - 클라쓰가 다른 종합 집수리";
-const description =
-  "집수리클라쓰는 서울·경기 집수리, 누수 복구, 부분수리, 욕실·주방·도배·전기·목공 상담을 사진 기반으로 안내합니다. 7개 국가공인 건축자격을 보유한 대표가 직접 시공에 참여합니다.";
+const description = portalSearchDescription;
 const siteUrl = "https://www.jipsuriclass.kr";
 const jsonLd = [
   {

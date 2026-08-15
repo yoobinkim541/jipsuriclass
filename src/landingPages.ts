@@ -1,6 +1,7 @@
 import { business } from "./data";
 import { defaultLandingSectionOrder, normalizeSectionOrder, type LandingSectionId } from "./contentSections";
 import { getServiceBlogProfile } from "./services/BlogMatchingProfiles";
+import { portalSearchDescription } from "./portalSeo";
 
 export type LandingFaq = {
   question: string;
@@ -1635,14 +1636,18 @@ export function getLandingPageDefaultContent(pathname: string) {
   return defaultLandingPageContent[pathname];
 }
 
-export function buildLandingPageJsonLd(page: LandingPageDefinition, siteUrl: string) {
+export function buildLandingPageJsonLd(
+  page: LandingPageDefinition,
+  siteUrl: string,
+  description = page.categoryLabel === "서비스" ? portalSearchDescription : page.description
+) {
   const representativeImage = `${siteUrl}/og-search.png`;
   const base = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: page.title,
     url: `${siteUrl}${page.path}`,
-    description: page.description,
+    description,
     image: representativeImage
   };
 
