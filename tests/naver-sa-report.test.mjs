@@ -224,3 +224,42 @@ test("dry-run reads campaign stats but skips Telegram delivery", async () => {
   assert.match(output[0], /네이버 광고 일일 리포트/);
   assert.equal(requests.some((request) => request.url.includes("telegram.org")), false);
 });
+
+test("continues Telegram delivery when Supabase storage is unavailable", async () => {
+  const requests = [];
+  const output = [];
+  const result = await runReport({
+    argv: ["--date=2026-08-27"],
+    env: {
+      NAVER_SA_ACCESS_LICENSE: "license",
+      NAVER_SA_SECRET_KEY: "secret",
+      NAVER_SA_CUSTOMER_ID: "123",
+      TELEGRAM_BOT_TOKEN: "bot-token",
+      TELEGRAM_REPORT_CHAT_ID: "chat-1",
+      SUPABASE_URL: "https://example.supabase.co",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-secret",
+    },
+    output: (message) => output.push(message),
+    fetchImpl: async (url, options) => {
+      requests.push({ url, options });
+      if (url.includes("/ncc/campaigns")) {
+        return new Response(JSON.stringify([{ nccCampaignId: "cmp-1", name: "누수 캠페인" }]), { status: 200 });
+      }
+      if (url.includes("/stats")) {
+        return new Response(JSON.stringify({ data: [{ id: "cmp-1", impCnt: 100, clkCnt: 2, salesAmt: 1000, ccnt: 0 }] }), { status: 200 });
+      }
+      if (url.includes("/naver_sa_daily_reports")) {
+        return new Response(JSON.stringify({ message: "service restricted" }), { status: 503 });
+      }
+      if (url.includes("telegram.org")) {
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      }
+      throw new Error(`unexpected request: ${url}`);
+    },
+  });
+
+  assert.equal(result.reportDate, "2026-08-27");
+  assert.equal(requests.some((request) => request.url.includes("telegram.org")), true);
+  assert.ok(output.some((message) => message.includes("Supabase")));
+  assert.ok(output.some((message) => message.includes("전송 완료")));
+});

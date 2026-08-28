@@ -371,14 +371,14 @@ npm run report:naver-sa -- --dry-run --date=2026-08-27
 npm run report:naver-sa
 ```
 
-실행 순서는 캠페인 목록 조회 → 전일 통계 조회 → (설정 시) 키워드 도구 조회 → Supabase 이력 upsert → Telegram 전송입니다. SA API가 429 또는 5xx를 반환하면 짧은 지수형 지연으로 최대 2회 재시도합니다. Supabase를 설정했는데 저장이 실패하면 Telegram도 보내지 않고 cron을 실패시켜 누락을 확인할 수 있게 합니다.
+실행 순서는 캠페인 목록 조회 → 전일 통계 조회 → (설정 시) 키워드 도구 조회 → Supabase 최근 이력 조회 → 리포트 생성 → Supabase upsert → Telegram 전송입니다. SA API가 429 또는 5xx를 반환하면 짧은 지수형 지연으로 최대 2회 재시도합니다. Supabase가 제한되었거나 일시적으로 실패해도 광고 조회 결과와 Telegram 전송은 계속합니다. 이 경우 로그에 저장 실패가 남고, 해당 실행에서는 최근 이력이 없어 이력 비교 추천이 빠질 수 있으므로 Supabase 복구 후 다음 실행부터 자동으로 다시 저장됩니다.
 
 #### 4. cron 등록
 
 서버 시간대가 UTC여도 날짜 계산은 KST로 하므로, UTC cron으로 매일 18:10에 실행하면 KST 03:10입니다.
 
 ```cron
-10 18 * * * cd /opt/jipsuri-class && set -a && . /etc/jipsuri-sa-report.env && set +a && npm run report:naver-sa >> /var/log/jipsuri-sa-report.log 2>&1
+10 18 * * * cd /opt/jipsuri-class && set -a && . /etc/jipsuri-sa-report.env && set +a && flock -n /tmp/jipsuri-sa-report.lock npm run report:naver-sa >> /var/log/jipsuri-sa-report.log 2>&1
 ```
 
 `/var/log/jipsuri-sa-report.log`에 자격증명은 출력하지 않습니다. 확인 명령은 다음과 같습니다.
@@ -386,6 +386,18 @@ npm run report:naver-sa
 ```bash
 tail -n 80 /var/log/jipsuri-sa-report.log
 grep -n "naver-sa-report" /var/log/jipsuri-sa-report.log
+```
+
+Hermes VM의 현재 운영 cron은 `stock-report/deploy/crontab.stock-report`가 단일 원본입니다. 따라서 실제 서버에서는 이 저장소의 명령을 그 파일에 추가한 뒤 아래처럼 전체 crontab을 재적용합니다. `flock`은 수동 실행과 정기 실행이 겹칠 때 중복 조회·중복 전송을 막습니다.
+
+```cron
+10 18 * * * cd /home/ubuntu/projects/jipsuri-class && set -a && . ./.env && if [ -f ./.env.local ]; then . ./.env.local; fi && set +a && flock -n /tmp/jipsuri-sa-report.lock npm run report:naver-sa >> /tmp/jipsuri-sa-report.log 2>&1
+```
+
+```bash
+crontab /home/ubuntu/projects/stock-report/deploy/crontab.stock-report
+crontab -l | grep -n "jipsuri-sa-report"
+tail -n 80 /tmp/jipsuri-sa-report.log
 ```
 
 #### 5. 기존 Telegram 봇과 함께 사용할 때

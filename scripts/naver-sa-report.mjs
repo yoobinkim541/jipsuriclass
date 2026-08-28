@@ -85,12 +85,17 @@ export async function runReport({
   let storage = null;
   let history = [];
   if (!dryRun) {
-    storage = createStorageFromEnv(env, fetchImpl);
-    if (storage) {
-      history = await storage.listRecentReports({
-        customerId: env.NAVER_SA_CUSTOMER_ID,
-        beforeDate: reportDate,
-      });
+    try {
+      storage = createStorageFromEnv(env, fetchImpl);
+      if (storage) {
+        history = await storage.listRecentReports({
+          customerId: env.NAVER_SA_CUSTOMER_ID,
+          beforeDate: reportDate,
+        });
+      }
+    } catch (error) {
+      storage = null;
+      output(`[naver-sa-report] Supabase 이력 조회를 건너뜁니다. Telegram 전송은 계속합니다: ${error.message}`);
     }
   }
 
@@ -120,14 +125,18 @@ export async function runReport({
   }
 
   if (storage) {
-    await storage.upsertReport({
-      reportDate,
-      customerId: env.NAVER_SA_CUSTOMER_ID,
-      totals: summary.totals,
-      campaigns: summary.campaigns,
-      recommendations,
-      keywordIdeas,
-    });
+    try {
+      await storage.upsertReport({
+        reportDate,
+        customerId: env.NAVER_SA_CUSTOMER_ID,
+        totals: summary.totals,
+        campaigns: summary.campaigns,
+        recommendations,
+        keywordIdeas,
+      });
+    } catch (error) {
+      output(`[naver-sa-report] Supabase 리포트 저장을 건너뜁니다. Telegram 전송은 계속합니다: ${error.message}`);
+    }
   }
   await sendTelegramMessage({
     token: env.TELEGRAM_BOT_TOKEN,
