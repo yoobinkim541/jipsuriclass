@@ -10,7 +10,9 @@
     "dev:vite": "vite --host 0.0.0.0",
     "build:vite": "tsc -b && vite build && node scripts/patch-static-html.mjs",
     "astro": "astro",
-    "test:blog": "playwright test"
+    "test:blog": "playwright test",
+    "test:naver-sa": "node --test tests/naver-sa-report.test.mjs",
+    "report:naver-sa": "node scripts/naver-sa-report.mjs"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.2.8",
