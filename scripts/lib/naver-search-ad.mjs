@@ -77,6 +77,9 @@ export function createNaverSearchAdClient({
   if (!accessLicense || !secretKey || !customerId) {
     throw new Error("NAVER_SA_ACCESS_LICENSE, NAVER_SA_SECRET_KEY, and NAVER_SA_CUSTOMER_ID are required");
   }
+  if (!/^\d+$/.test(String(customerId))) {
+    throw new Error("NAVER_SA_CUSTOMER_ID must contain digits only");
+  }
   if (typeof fetchImpl !== "function") {
     throw new Error("A fetch implementation is required");
   }

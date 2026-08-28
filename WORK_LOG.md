@@ -10,6 +10,7 @@
 - `naver_sa_daily_reports` Supabase migration과 관리자 조회용 RLS 정책을 추가했다. migration은 Supabase CLI가 설치되지 않아 timestamp 규칙으로 작성했으며, SQL Editor에서 적용해야 한다.
 - Oracle VM 환경변수, KST 기준 cron, 기존 Telegram polling/webhook과의 동시 운영 조건, 실패 대응 절차를 README에 구체화했다.
 - 검증: `npm run test:naver-sa` 통과. 실제 SA 계정·Telegram 도착·원격 VM cron은 이 세션에 SSH/터미널이 연결되지 않아 검증하지 못했다.
+- Hermes VM 확인에서 `NAVER_SA_CUSTOMER_ID`가 숫자 ID가 아닌 라벨 포함 값으로 설정되어 403이 발생함을 확인했고, env/.env.local 권한을 `600`으로 낮췄다. 코드에는 숫자 전용 사전 검증을 추가했다.
 
 ### Trade-off
 

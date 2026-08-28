@@ -27,6 +27,13 @@ test("signs the method and URI without query parameters", () => {
   );
 });
 
+test("rejects a customer ID that is not numeric", () => {
+  assert.throws(
+    () => createNaverSearchAdClient({ accessLicense: "license", secretKey: "secret", customerId: "customerId:12" }),
+    /NAVER_SA_CUSTOMER_ID must contain digits only/,
+  );
+});
+
 test("serializes repeated ids and JSON stats fields", async () => {
   const requests = [];
   const client = createNaverSearchAdClient({

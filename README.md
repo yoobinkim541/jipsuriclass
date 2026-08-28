@@ -334,7 +334,7 @@ sudoedit /etc/jipsuri-sa-report.env
 ```env
 NAVER_SA_ACCESS_LICENSE=발급받은_액세스_라이선스
 NAVER_SA_SECRET_KEY=발급받은_비밀키
-NAVER_SA_CUSTOMER_ID=광고주_고객ID
+NAVER_SA_CUSTOMER_ID=숫자로만_된_광고주_고객ID
 NAVER_SA_API_BASE_URL=https://api.searchad.naver.com
 TELEGRAM_BOT_TOKEN=봇토큰
 TELEGRAM_REPORT_CHAT_ID=리포트_채팅방_ID
