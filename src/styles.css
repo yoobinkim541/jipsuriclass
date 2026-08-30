@@ -3478,6 +3478,16 @@ textarea {
   background-size: cover;
 }
 
+/* 외벽 보수: 작업 장면은 우측에 선명하게 남기고, 좌측 상담 문구는 밝은 영역 위에 둔다. */
+.landing-hero--exterior {
+  background-image:
+    linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
+    url("/assets/exterior-hero.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 /* 도배·바닥: 벽지 질감과 바닥 마감을 함께 보여 주되, 좌측 상담 문구는 또렷하게 유지한다. */
 .landing-hero--wallpaper-floor {
   background-image:
@@ -3528,6 +3538,12 @@ textarea {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
     url("/assets/electric-hero.png");
+}
+
+:root[data-theme="dark"] .landing-hero--exterior {
+  background-image:
+    linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
+    url("/assets/exterior-hero.png");
 }
 
 :root[data-theme="dark"] .landing-hero--wallpaper-floor {
@@ -12850,6 +12866,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-size: auto 280px;
   }
 
+  .landing-hero--exterior {
+    background-image:
+      linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
+      url("/assets/exterior-hero.png");
+    background-position: center top;
+    background-size: auto 280px;
+  }
+
   .landing-hero--wallpaper-floor {
     background-image:
       linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
@@ -12898,6 +12922,12 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
       url("/assets/electric-hero.png");
+  }
+
+  :root[data-theme="dark"] .landing-hero--exterior {
+    background-image:
+      linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
+      url("/assets/exterior-hero.png");
   }
 
   :root[data-theme="dark"] .landing-hero--wallpaper-floor {
