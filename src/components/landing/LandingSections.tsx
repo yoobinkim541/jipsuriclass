@@ -33,7 +33,7 @@ export function LandingSummarySection({ content }: { content: LandingPageDefinit
   const isServicePage = content.categoryLabel === "서비스";
   return (
     <section
-      className={`landing-hero section${isServicePage ? " landing-hero--service" : ""}${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}${content.path === "/service/waterproofing-tile" ? " landing-hero--waterproofing-tile" : ""}${content.path === "/service/carpentry" ? " landing-hero--carpentry" : ""}${content.path === "/service/film" ? " landing-hero--film" : ""}${content.path === "/service/paint" ? " landing-hero--paint" : ""}${content.path === "/service/wallpaper-floor" ? " landing-hero--wallpaper-floor" : ""}`}
+      className={`landing-hero section${isServicePage ? " landing-hero--service" : ""}${content.path === "/service/plumbing" ? " landing-hero--plumbing" : ""}${content.path === "/service/bathroom" ? " landing-hero--bathroom" : ""}${content.path === "/service/waterproofing-tile" ? " landing-hero--waterproofing-tile" : ""}${content.path === "/service/carpentry" ? " landing-hero--carpentry" : ""}${content.path === "/service/film" ? " landing-hero--film" : ""}${content.path === "/service/paint" ? " landing-hero--paint" : ""}${content.path === "/service/electric" ? " landing-hero--electric" : ""}${content.path === "/service/wallpaper-floor" ? " landing-hero--wallpaper-floor" : ""}`}
       aria-labelledby="landing-title"
     >
       {isAreaPage && (

@@ -3468,6 +3468,16 @@ textarea {
   background-size: cover;
 }
 
+/* 전기·조명: 실제 조명 교체 결과가 보이는 실내를 우측에 두고, 좌측 상담 문구는 또렷하게 유지한다. */
+.landing-hero--electric {
+  background-image:
+    linear-gradient(90deg, #faf7f2 0%, rgba(250, 247, 242, 0.985) 31%, rgba(250, 247, 242, 0.72) 52%, rgba(250, 247, 242, 0.12) 74%, rgba(250, 247, 242, 0.3) 100%),
+    url("/assets/electric-hero.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
 /* 도배·바닥: 벽지 질감과 바닥 마감을 함께 보여 주되, 좌측 상담 문구는 또렷하게 유지한다. */
 .landing-hero--wallpaper-floor {
   background-image:
@@ -3512,6 +3522,12 @@ textarea {
   background-image:
     linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
     url("/assets/paint-hero-interior.webp");
+}
+
+:root[data-theme="dark"] .landing-hero--electric {
+  background-image:
+    linear-gradient(90deg, #0b1220 0%, rgba(11, 18, 32, 0.98) 38%, rgba(11, 18, 32, 0.74) 58%, rgba(11, 18, 32, 0.9) 100%),
+    url("/assets/electric-hero.png");
 }
 
 :root[data-theme="dark"] .landing-hero--wallpaper-floor {
@@ -12826,6 +12842,14 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-size: auto 260px;
   }
 
+  .landing-hero--electric {
+    background-image:
+      linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
+      url("/assets/electric-hero.png");
+    background-position: center top;
+    background-size: auto 280px;
+  }
+
   .landing-hero--wallpaper-floor {
     background-image:
       linear-gradient(180deg, rgba(250, 247, 242, 0.84) 0%, rgba(250, 247, 242, 0.975) 48%, #faf7f2 78%),
@@ -12868,6 +12892,12 @@ main.landing-page .blog-card-grid.landing-blog-grid .blog-card-featured h3 {
     background-image:
       linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
       url("/assets/paint-hero-interior.webp");
+  }
+
+  :root[data-theme="dark"] .landing-hero--electric {
+    background-image:
+      linear-gradient(180deg, rgba(11, 18, 32, 0.84) 0%, rgba(11, 18, 32, 0.98) 52%, #0b1220 82%),
+      url("/assets/electric-hero.png");
   }
 
   :root[data-theme="dark"] .landing-hero--wallpaper-floor {
