@@ -34,11 +34,11 @@ export const exteriorPricingCategories: PricingCategory[] = [
   },
   {
     id: "decking",
-    title: "데킹·난간",
+    title: "데크·난간",
     note: "자재 비용 별도",
     items: [
-      { name: "천연방부목 데킹 (3개 이내)", unit: "건", price: 130000, priceLabel: "130,000원~", materialNote: "별도" },
-      { name: "WPC 합성목재 데킹 (3개 이내)", unit: "건", price: 200000, priceLabel: "200,000원~", materialNote: "별도" },
+      { name: "천연방부목 데크 (3개 이내)", unit: "건", price: 130000, priceLabel: "130,000원~", materialNote: "별도" },
+      { name: "WPC 합성목재 데크 (3개 이내)", unit: "건", price: 200000, priceLabel: "200,000원~", materialNote: "별도" },
       { name: "외부 난간 보수", unit: "M당", price: 100000, priceLabel: "100,000원~", materialNote: "별도" },
     ],
   },

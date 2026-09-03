@@ -107,7 +107,7 @@ export const servicePricingRegistry: Record<string, ServicePricingConfig> = {
     pricingPagePath: "/service/exterior/pricing",
     categories: exteriorPricingCategories,
     disclaimer:
-      "자재(외장재, 데킹재 등) 비용은 별도입니다. 고층 작업 시 장비 사용료가 추가됩니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
+      "자재(외장재, 데크재 등) 비용은 별도입니다. 고층 작업 시 장비 사용료가 추가됩니다. 출장비(평일 15,000원, 주말 25,000원)는 수리비와 별도 청구됩니다. 부가세 별도.",
   },
 };
 

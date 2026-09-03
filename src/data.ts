@@ -165,7 +165,7 @@ export const services: ServiceCategory[] = [
   { title: "도배·바닥", icon: PaintRoller, text: "도배, 장판, 바닥 마감, 오염·들뜸 부분 복구", href: "/service/wallpaper-floor" },
   { title: "도장·페인트", icon: Building2, text: "실내외 페인트, 도장 마감, 보수 도색 작업", href: "/service/paint" },
   { title: "인테리어 필름", icon: Wrench, text: "문, 몰딩, 가구, 싱크대 표면 필름 시공과 리폼", href: "/service/film" },
-  { title: "외부 부분보수", icon: Hammer, text: "외벽 파손, 드라이비트, 데킹, 난간, 어닝 보수", href: "/service/exterior" }
+  { title: "외부 부분보수", icon: Hammer, text: "외벽 파손, 드라이비트, 데크, 난간, 어닝 보수", href: "/service/exterior" }
 ];
 
 export const symptoms = [
