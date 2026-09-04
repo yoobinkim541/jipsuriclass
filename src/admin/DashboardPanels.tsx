@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 import {
   ArrowLeft,
   Building2,
@@ -470,7 +471,11 @@ export function BlogTab({ toast }: { toast: (message: string) => void }) {
   async function syncSnapshot() {
     setSyncing(true);
     try {
-      const response = await fetch("/api/naver-blog?mode=all");
+      // mode=all은 관리자만 호출 가능하도록 보호돼 있어(api/naver-blog.ts) 세션 토큰을 함께 보낸다.
+      const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+      const response = await fetch("/api/naver-blog?mode=all", {
+        headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}
+      });
       const payload = (await response.json()) as { items?: BlogItem[] };
       const blogItems = Array.isArray(payload.items) ? payload.items : [];
       if (!blogItems.length) {

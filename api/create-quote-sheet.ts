@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { isAdminRequest } from "./adminAuth.js";
 
 /**
  * 견적을 대표님 구글 계정의 Apps Script 웹앱으로 보내 '견적완료건' 템플릿 시트를 생성한다.
@@ -11,6 +12,14 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== "POST") {
     response.status(405).json({ error: "POST만 허용됩니다." });
+    return;
+  }
+
+  // 인증 없이 열어두면 반복 호출로 대표님 구글 드라이브에 시트/PDF가 계속 생성될 수 있어
+  // 관리자만 호출 가능하도록 제한한다.
+  const authorization = typeof request.headers.authorization === "string" ? request.headers.authorization : undefined;
+  if (!(await isAdminRequest(authorization))) {
+    response.status(401).json({ error: "관리자 로그인이 필요합니다." });
     return;
   }
 
