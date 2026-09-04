@@ -12,8 +12,8 @@ const DEFAULT_STATS_FIELDS = [
 ];
 
 export class NaverSearchAdError extends Error {
-  constructor(message, { status = 0, payload = null } = {}) {
-    super(message);
+  constructor(message, { status = 0, payload = null, cause } = {}) {
+    super(message, cause === undefined ? undefined : { cause });
     this.name = "NaverSearchAdError";
     this.status = status;
     this.payload = payload;
@@ -99,11 +99,29 @@ export function createNaverSearchAdClient({
         "X-Customer": String(customerId),
         "X-Signature": signRequest({ timestamp, method, uri: path, secretKey }),
       };
-      const response = await fetchImpl(url.toString(), {
-        method,
-        headers,
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      });
+      let response;
+      try {
+        response = await fetchImpl(url.toString(), {
+          method,
+          headers,
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        });
+      } catch (networkError) {
+        // fetch 자체가 거부되는 net-level 실패(DNS·타임아웃·연결끊김 등)도 HTTP 429/5xx와
+        // 동일하게 재시도한다 — 이 케이스가 재시도 없이 그대로 던져지면 크론이 완전 무음 실패한다.
+        const canRetryNetwork = attempt < maxRetries;
+        if (!canRetryNetwork) {
+          throw new NaverSearchAdError(`Naver SA network request failed: ${networkError.message}`, {
+            status: 0,
+            payload: null,
+            cause: networkError,
+          });
+        }
+        const waitFor = retryDelayMs * 2 ** attempt;
+        attempt += 1;
+        await sleep(waitFor);
+        continue;
+      }
       const payload = parseResponseBody(await response.text());
 
       if (response.ok) return payload;

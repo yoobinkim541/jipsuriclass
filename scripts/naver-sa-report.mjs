@@ -67,90 +67,110 @@ export async function runReport({
     throw new Error("TELEGRAM_BOT_TOKEN and TELEGRAM_REPORT_CHAT_ID (or TELEGRAM_CHAT_ID) are required");
   }
 
-  const client = createNaverSearchAdClient({
-    accessLicense: env.NAVER_SA_ACCESS_LICENSE,
-    secretKey: env.NAVER_SA_SECRET_KEY,
-    customerId: env.NAVER_SA_CUSTOMER_ID,
-    baseUrl: env.NAVER_SA_API_BASE_URL || undefined,
-    fetchImpl,
-  });
-  const campaigns = await client.listCampaigns();
-  const campaignIds = campaigns
-    .map((campaign) => campaign?.nccCampaignId ?? campaign?.id)
-    .filter(Boolean)
-    .map(String);
-  const stats = await client.getStats({ ids: campaignIds, since: reportDate, until: reportDate });
-  const summary = summarizeCampaignStats(campaigns, stats);
+  try {
+    const client = createNaverSearchAdClient({
+      accessLicense: env.NAVER_SA_ACCESS_LICENSE,
+      secretKey: env.NAVER_SA_SECRET_KEY,
+      customerId: env.NAVER_SA_CUSTOMER_ID,
+      baseUrl: env.NAVER_SA_API_BASE_URL || undefined,
+      fetchImpl,
+    });
+    const campaigns = await client.listCampaigns();
+    const campaignIds = campaigns
+      .map((campaign) => campaign?.nccCampaignId ?? campaign?.id)
+      .filter(Boolean)
+      .map(String);
+    const stats = await client.getStats({ ids: campaignIds, since: reportDate, until: reportDate });
+    const summary = summarizeCampaignStats(campaigns, stats);
 
-  let storage = null;
-  let history = [];
-  if (!dryRun) {
-    try {
-      storage = createStorageFromEnv(env, fetchImpl);
-      if (storage) {
-        history = await storage.listRecentReports({
-          customerId: env.NAVER_SA_CUSTOMER_ID,
-          beforeDate: reportDate,
-        });
+    let storage = null;
+    let history = [];
+    if (!dryRun) {
+      try {
+        storage = createStorageFromEnv(env, fetchImpl);
+        if (storage) {
+          history = await storage.listRecentReports({
+            customerId: env.NAVER_SA_CUSTOMER_ID,
+            beforeDate: reportDate,
+          });
+        }
+      } catch (error) {
+        storage = null;
+        output(`[naver-sa-report] Supabase 이력 조회를 건너뜁니다. Telegram 전송은 계속합니다: ${error.message}`);
       }
-    } catch (error) {
-      storage = null;
-      output(`[naver-sa-report] Supabase 이력 조회를 건너뜁니다. Telegram 전송은 계속합니다: ${error.message}`);
     }
-  }
 
-  const recommendations = buildRecommendations(summary, history);
-  const keywordHints = splitKeywords(env.NAVER_SA_KEYWORD_HINTS);
-  const keywordIdeas = keywordHints.length > 0
-    ? await client.getRelatedKeywords({ hintKeywords: keywordHints.join(",") })
-    : [];
-  const message = formatReportMessage({
-    reportDate,
-    summary,
-    recommendations,
-    keywordIdeas,
-  });
-  const report = {
-    reportDate,
-    customerId: String(env.NAVER_SA_CUSTOMER_ID),
-    summary,
-    recommendations,
-    keywordIdeas,
-    message,
-  };
+    const recommendations = buildRecommendations(summary, history);
+    const keywordHints = splitKeywords(env.NAVER_SA_KEYWORD_HINTS);
+    const keywordIdeas = keywordHints.length > 0
+      ? await client.getRelatedKeywords({ hintKeywords: keywordHints.join(",") })
+      : [];
+    const message = formatReportMessage({
+      reportDate,
+      summary,
+      recommendations,
+      keywordIdeas,
+    });
+    const report = {
+      reportDate,
+      customerId: String(env.NAVER_SA_CUSTOMER_ID),
+      summary,
+      recommendations,
+      keywordIdeas,
+      message,
+    };
 
-  if (dryRun) {
-    output(message);
+    if (dryRun) {
+      output(message);
+      return report;
+    }
+
+    if (storage) {
+      try {
+        await storage.upsertReport({
+          reportDate,
+          customerId: env.NAVER_SA_CUSTOMER_ID,
+          totals: summary.totals,
+          campaigns: summary.campaigns,
+          recommendations,
+          keywordIdeas,
+        });
+      } catch (error) {
+        output(`[naver-sa-report] Supabase 리포트 저장을 건너뜁니다. Telegram 전송은 계속합니다: ${error.message}`);
+      }
+    }
+    await sendTelegramMessage({
+      token: env.TELEGRAM_BOT_TOKEN,
+      chatId: reportChatId,
+      text: message,
+      fetchImpl,
+    });
+    output(`네이버 광고 리포트 전송 완료: ${reportDate}`);
     return report;
-  }
-
-  if (storage) {
-    try {
-      await storage.upsertReport({
-        reportDate,
-        customerId: env.NAVER_SA_CUSTOMER_ID,
-        totals: summary.totals,
-        campaigns: summary.campaigns,
-        recommendations,
-        keywordIdeas,
-      });
-    } catch (error) {
-      output(`[naver-sa-report] Supabase 리포트 저장을 건너뜁니다. Telegram 전송은 계속합니다: ${error.message}`);
+  } catch (error) {
+    // 실행 중 어느 단계에서 실패하든(네트워크·인증·포맷 등) 완전 무음으로 끝나지 않도록
+    // 가능하면 텔레그램으로 실패 사실을 알린다. dry-run은 로컬 점검 용도라 알리지 않는다.
+    if (!dryRun && env.TELEGRAM_BOT_TOKEN && reportChatId) {
+      const detail = error?.cause ? `${error.message} (원인: ${error.cause})` : error.message;
+      try {
+        await sendTelegramMessage({
+          token: env.TELEGRAM_BOT_TOKEN,
+          chatId: reportChatId,
+          text: `⚠️ 네이버 광고 리포트 생성 실패 (${reportDate})\n${detail}`,
+          fetchImpl,
+        });
+      } catch (notifyError) {
+        output(`[naver-sa-report] 실패 알림 전송도 실패: ${notifyError.message}`);
+      }
     }
+    throw error;
   }
-  await sendTelegramMessage({
-    token: env.TELEGRAM_BOT_TOKEN,
-    chatId: reportChatId,
-    text: message,
-    fetchImpl,
-  });
-  output(`네이버 광고 리포트 전송 완료: ${reportDate}`);
-  return report;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   runReport().catch((error) => {
-    console.error(`[naver-sa-report] ${error.message}`);
+    const detail = error?.cause ? `${error.message} (원인: ${error.cause})` : error.message;
+    console.error(`[naver-sa-report] ${detail}`);
     process.exitCode = 1;
   });
 }

@@ -80,6 +80,51 @@ test("retries a rate-limited request with exponential delay", async () => {
   assert.deepEqual(delays, [800]);
 });
 
+test("retries a network-level fetch failure (fetch rejects, not just non-2xx)", async () => {
+  let attempts = 0;
+  const delays = [];
+  const client = createNaverSearchAdClient({
+    accessLicense: "license",
+    secretKey: "secret",
+    customerId: "123",
+    fetchImpl: async () => {
+      attempts += 1;
+      if (attempts === 1) throw new TypeError("fetch failed");
+      return new Response(JSON.stringify([]), { status: 200 });
+    },
+    sleep: async (delay) => delays.push(delay),
+  });
+
+  const result = await client.listCampaigns();
+
+  assert.equal(attempts, 2);
+  assert.deepEqual(delays, [800]);
+  assert.deepEqual(result, []);
+});
+
+test("wraps a persistent network failure with the original error as cause", async () => {
+  const networkError = new TypeError("fetch failed");
+  const client = createNaverSearchAdClient({
+    accessLicense: "license",
+    secretKey: "secret",
+    customerId: "123",
+    maxRetries: 1,
+    fetchImpl: async () => {
+      throw networkError;
+    },
+    sleep: async () => {},
+  });
+
+  await assert.rejects(
+    () => client.listCampaigns(),
+    (error) => {
+      assert.match(error.message, /Naver SA network request failed/);
+      assert.equal(error.cause, networkError);
+      return true;
+    },
+  );
+});
+
 test("aggregates campaign stats and recalculates CTR and CPC", () => {
   const summary = summarizeCampaignStats(
     [{ nccCampaignId: "cmp-1", name: "누수 캠페인" }],
@@ -262,4 +307,96 @@ test("continues Telegram delivery when Supabase storage is unavailable", async (
   assert.equal(requests.some((request) => request.url.includes("telegram.org")), true);
   assert.ok(output.some((message) => message.includes("Supabase")));
   assert.ok(output.some((message) => message.includes("전송 완료")));
+});
+
+test("sends a Telegram failure notice when the Naver SA API call fails", async () => {
+  const requests = [];
+  const output = [];
+
+  await assert.rejects(
+    () =>
+      runReport({
+        argv: ["--date=2026-08-27"],
+        env: {
+          NAVER_SA_ACCESS_LICENSE: "license",
+          NAVER_SA_SECRET_KEY: "secret",
+          NAVER_SA_CUSTOMER_ID: "123",
+          TELEGRAM_BOT_TOKEN: "bot-token",
+          TELEGRAM_REPORT_CHAT_ID: "chat-1",
+        },
+        output: (message) => output.push(message),
+        fetchImpl: async (url, options) => {
+          requests.push({ url, options });
+          if (url.includes("/ncc/campaigns")) {
+            throw new TypeError("fetch failed");
+          }
+          if (url.includes("telegram.org")) {
+            return new Response(JSON.stringify({ ok: true }), { status: 200 });
+          }
+          throw new Error(`unexpected request: ${url}`);
+        },
+      }),
+    /Naver SA network request failed/,
+  );
+
+  const telegramRequests = requests.filter((request) => request.url.includes("telegram.org"));
+  assert.equal(telegramRequests.length, 1);
+  const body = JSON.parse(telegramRequests[0].options.body);
+  assert.equal(body.chat_id, "chat-1");
+  assert.match(body.text, /실패/);
+  assert.match(body.text, /2026-08-27/);
+});
+
+test("does not attempt a Telegram failure notice during dry-run", async () => {
+  const requests = [];
+
+  await assert.rejects(
+    () =>
+      runReport({
+        argv: ["--dry-run", "--date=2026-08-27"],
+        env: {
+          NAVER_SA_ACCESS_LICENSE: "license",
+          NAVER_SA_SECRET_KEY: "secret",
+          NAVER_SA_CUSTOMER_ID: "123",
+        },
+        output: () => {},
+        fetchImpl: async (url, options) => {
+          requests.push({ url, options });
+          if (url.includes("/ncc/campaigns")) {
+            throw new TypeError("fetch failed");
+          }
+          throw new Error(`unexpected request: ${url}`);
+        },
+      }),
+    /Naver SA network request failed/,
+  );
+
+  assert.equal(requests.some((request) => request.url.includes("telegram.org")), false);
+});
+
+test("logs the underlying network cause instead of swallowing it when the failure notice also fails", async () => {
+  const output = [];
+
+  await assert.rejects(
+    () =>
+      runReport({
+        argv: ["--date=2026-08-27"],
+        env: {
+          NAVER_SA_ACCESS_LICENSE: "license",
+          NAVER_SA_SECRET_KEY: "secret",
+          NAVER_SA_CUSTOMER_ID: "123",
+          TELEGRAM_BOT_TOKEN: "bot-token",
+          TELEGRAM_REPORT_CHAT_ID: "chat-1",
+        },
+        output: (message) => output.push(message),
+        fetchImpl: async (url) => {
+          if (url.includes("/ncc/campaigns")) throw new TypeError("fetch failed");
+          if (url.includes("telegram.org")) throw new TypeError("fetch failed");
+          throw new Error(`unexpected request: ${url}`);
+        },
+      }),
+    /Naver SA network request failed/,
+  );
+
+  assert.ok(output.some((message) => message.includes("실패 알림 전송도 실패")));
 });
