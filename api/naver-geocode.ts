@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-const DEFAULT_LAT = 37.6522095;
-const DEFAULT_LNG = 127.3007050;
+const DEFAULT_LAT = 37.6559531;
+const DEFAULT_LNG = 127.2881411;
 
 export default async function handler(request: VercelRequest, response: VercelResponse) {
   const clientId = process.env.NAVER_GEOCODE_CLIENT_ID || process.env.NAVER_CLIENT_ID;
@@ -19,7 +19,7 @@ export default async function handler(request: VercelRequest, response: VercelRe
   }
 
   try {
-    const naverResponse = await fetch(`https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`, {
+    const naverResponse = await fetch(`https://maps.apigw.ntruss.com/map-geocode/v2/geocode?query=${encodeURIComponent(address)}`, {
       headers: {
         "x-ncp-apigw-api-key-id": clientId,
         "x-ncp-apigw-api-key": clientSecret,
