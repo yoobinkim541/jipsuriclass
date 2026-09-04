@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { loadNaverBlogCandidates, loadAllBlogPosts } from "./naver-blog-source.js";
+import { isAdminRequest } from "./adminAuth.js";
 
 type NaverBlogItem = {
   title: string;
@@ -45,6 +46,24 @@ export default async function handler(_request: VercelRequest, response: VercelR
 
   try {
     if (mode === "all") {
+      // 전체 글 수집은 페이지네이션으로 네이버에 최대 수십 회 순차 요청을 보내는 무거운 동작이라,
+      // 누구나 호출 가능한 상태로 두면 반복 호출로 리소스를 소모시킬 수 있다(관리자 또는 동기화
+      // cron만 호출하도록 제한). sync-blog-snapshot.ts는 x-sync-secret로, 관리자 화면은
+      // Authorization 세션 토큰으로 인증한다.
+      const syncSecret = process.env.BLOG_SYNC_SECRET;
+      const providedSyncSecret = _request.headers["x-sync-secret"];
+      const hasSyncSecret =
+        typeof syncSecret === "string" &&
+        syncSecret.length > 0 &&
+        typeof providedSyncSecret === "string" &&
+        providedSyncSecret === syncSecret;
+      const authorization = typeof _request.headers.authorization === "string" ? _request.headers.authorization : undefined;
+
+      if (!hasSyncSecret && !(await isAdminRequest(authorization))) {
+        response.status(401).json({ items: [], source: "fallback", reason: "unauthorized" });
+        return;
+      }
+
       // 전체 글: 모바일 post-list 페이지네이션으로 모두 수집(AI 요약·이미지 검증 없이 가벼운 카드).
       // totalCount는 블로그 전체 글 수(표시용, 수집 카드 수보다 많을 수 있음).
       const { items, totalCount } = await loadAllBlogPosts(blogId);

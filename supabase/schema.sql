@@ -232,9 +232,27 @@ on conflict (id) do update set
   allowed_mime_types = excluded.allowed_mime_types;
 
 alter table storage.objects enable row level security;
+
+-- inquiries/(고객 공개 업로드)는 익명 허용, homepage/·cases/(관리자 편집용)는 관리자만.
+-- bucket_id만으로는 두 용도를 구분할 수 없어 폴더(경로 첫 세그먼트) 기준으로 나눈다.
 drop policy if exists "Anyone can upload jipsuri media" on storage.objects;
-create policy "Anyone can upload jipsuri media"
+drop policy if exists "Anyone can upload inquiry attachments" on storage.objects;
+create policy "Anyone can upload inquiry attachments"
   on storage.objects
   for insert
   to anon, authenticated
-  with check (bucket_id = 'jipsuri-media');
+  with check (
+    bucket_id = 'jipsuri-media'
+    and (storage.foldername(name))[1] = 'inquiries'
+  );
+
+drop policy if exists "Admins can upload site media" on storage.objects;
+create policy "Admins can upload site media"
+  on storage.objects
+  for insert
+  to authenticated
+  with check (
+    bucket_id = 'jipsuri-media'
+    and (storage.foldername(name))[1] in ('homepage', 'cases')
+    and private.is_admin_user()
+  );

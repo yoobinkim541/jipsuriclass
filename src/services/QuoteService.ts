@@ -1,4 +1,5 @@
 import type jsPDF from "jspdf";
+import { supabase } from "../lib/supabaseClient";
 import { servicePricingRegistry } from "../pricing/registry";
 import { waterproofingTilePriceCategories, waterproofingPriceCategories } from "../waterproofingTilePriceData";
 import type {
@@ -376,12 +377,17 @@ export function buildQuoteSheetPayload(inquiry: InquiryRow, quote: InquiryQuoteS
  * 견적을 구글시트(견적완료건 템플릿)로 발행한다.
  * /api/create-quote-sheet 가 대표님 계정의 Apps Script 웹앱을 호출해 시트를 생성하고 링크를 돌려준다.
  */
+async function buildAdminAuthHeaders(): Promise<Record<string, string>> {
+  const session = supabase ? (await supabase.auth.getSession()).data.session : null;
+  return session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {};
+}
+
 export async function createQuoteSheet(input: { inquiry: InquiryRow; quote: InquiryQuoteSnapshot }): Promise<{ sheetUrl: string; pdfUrl: string | null }> {
   const payload = buildQuoteSheetPayload(input.inquiry, input.quote);
   const endpoint = new URL("/api/create-quote-sheet", typeof window !== "undefined" ? window.location.origin : "http://localhost");
   const response = await fetch(endpoint.toString(), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(await buildAdminAuthHeaders()) },
     body: JSON.stringify(payload)
   });
   const data = (await response.json().catch(() => null)) as { sheetUrl?: string; pdfUrl?: string; error?: string } | null;
@@ -410,7 +416,7 @@ export async function createQuotePdf(input: { sheetUrl: string }): Promise<{ pdf
   const endpoint = new URL("/api/create-quote-sheet", typeof window !== "undefined" ? window.location.origin : "http://localhost");
   const response = await fetch(endpoint.toString(), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...(await buildAdminAuthHeaders()) },
     body: JSON.stringify({ action: "pdf", sheetUrl: input.sheetUrl })
   });
   const data = (await response.json().catch(() => ({}))) as { pdfUrl?: string; error?: string };

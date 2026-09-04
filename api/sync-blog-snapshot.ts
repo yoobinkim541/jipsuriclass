@@ -40,7 +40,11 @@ export default async function handler(request: VercelRequest, response: VercelRe
     const host = request.headers["x-forwarded-host"] || request.headers.host;
     const proto = (request.headers["x-forwarded-proto"] as string) || "https";
     const origin = host ? `${proto}://${host}` : "";
-    const blogResponse = await fetch(`${origin}/api/naver-blog?mode=all`);
+    // naver-blog?mode=all은 관리자/동기화만 호출 가능하도록 보호돼 있어(api/naver-blog.ts),
+    // 여기서도 이미 검증한 syncSecret을 그대로 실어 보낸다.
+    const blogResponse = await fetch(`${origin}/api/naver-blog?mode=all`, {
+      headers: { "x-sync-secret": syncSecret }
+    });
     const blogPayload = (await blogResponse.json().catch(() => ({}))) as { items?: unknown[] };
     const items = Array.isArray(blogPayload.items) ? blogPayload.items : [];
 
