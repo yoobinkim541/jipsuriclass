@@ -71,7 +71,11 @@ export function createNaverSearchAdClient({
   fetchImpl = globalThis.fetch,
   now = () => Date.now(),
   sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
-  maxRetries = 2,
+  // VM의 짧은 네트워크 순단(DNS 재조회, 연결 끊김 등)이 몇 초 내에 회복되는 경우가 많아
+  // 이전 기본값(재시도 2회, 총 대기 ~2.4초)으로는 실제 순단을 못 버티고 크론이 실패했다
+  // (2026-09-04, 09-05 연속 실패로 확인). 지수 백오프를 유지하며 예산을 넉넉히 늘린다
+  // (재시도 4회, 총 대기 ~12.6초) — 일일 크론이라 지연은 문제되지 않는다.
+  maxRetries = 4,
   retryDelayMs = 800,
 } = {}) {
   if (!accessLicense || !secretKey || !customerId) {
