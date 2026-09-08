@@ -1,6 +1,19 @@
 # Work Log
 
-## 2026-08-28
+## 2026-09-08 — 네이버 SA 자동화: 순단 대비 재시도 강화 브랜치 2건 main 통합
+
+자율 백로그 점검(P0/P1) 중 미머지 상태로 남아있던 fix 브랜치 2건을 main으로 cherry-pick 통합했다. 둘 다 22883bb 직계 자손, 파일 비중첩.
+
+- `fix/naver-sa-retry-budget` (d504ec4): `createNaverSearchAdClient`의 `maxRetries` 기본값 2→4 (총 대기 ~2.4s→~12.6s). 09-04·09-05 VM 네트워크 순단으로 크론이 연속 실패한 실측에 대응. 일일 크론이라 지연 무해.
+- `fix/telegram-storage-retry` (98420ae): `sendTelegramMessage`·`createReportStorage.request`에도 net-level(fetch reject) + 429/5xx 지수 백오프 재시도 추가(naver-search-ad.mjs와 동일 패턴, 기본 maxRetries 2). 파이프라인 마지막 텔레그램 호출만 재시도 없이 즉시 실패하던 것이 실제 크론 실패 원인이었다.
+
+검증: `npm run test:naver-sa`(17건) 통과, `npx tsc --noEmit` 통과, `npm run build` 통과. main push 완료(1471fde).
+
+발견(구현 안 함, backlog):
+- **P2 — 일일 문의 다이제스트 이메일 중복 발송**: `/api/notify-inquiries`를 GitHub Actions(`inquiry-alerts.yml`, `0 0 * * *`)와 Vercel cron(`vercel.json`, `0 0 * * *`)이 동시에 호출한다. 엔드포인트가 멱등이 아니라(발송 표시 안 함) 관리자가 매일 동일 요약 메일 2통 수신. 5387498 "Move inquiry alerts to GitHub Actions"에서 Vercel cron을 제거했는데 2a79cdc가 "안 돌아간다"는 오해로 재추가하며 중복 부활. GH Actions는 매일 성공 중이므로 `vercel.json`의 `crons` 블록 제거가 정답(실시간 알림은 api/inquiries.ts라 영향 없음).
+- **P2 — naver-sa 테스트 스위트 40s로 느려짐**: retry 예산 확대로 실패 경로 테스트가 실제 백오프 sleep을 탄다(7s→40s). `runReport`가 `sleep` 옵션을 클라이언트에 전달하도록 스레딩하면 테스트에서 stub 주입 가능.
+
+
 
 ### 네이버 SA 텔레그램 일일 리포트
 
