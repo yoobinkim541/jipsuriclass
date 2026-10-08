@@ -1,3 +1,4 @@
+import net from "node:net";
 import { pathToFileURL } from "node:url";
 
 import { createNaverSearchAdClient } from "./lib/naver-search-ad.mjs";
@@ -9,6 +10,11 @@ import {
 } from "./lib/naver-sa-report.mjs";
 import { createReportStorage } from "./lib/report-storage.mjs";
 import { sendTelegramMessage } from "./lib/telegram.mjs";
+
+// 크론 서버(Oracle)는 IPv6 외부 경로가 없고 api.telegram.org TCP 연결에 0.23~0.27초가 걸린다.
+// Node 22 fetch의 주소별 연결 시도 제한(기본 250ms)에 걸려 IPv4 시도가 끊기고 IPv6로 넘어가
+// ETIMEDOUT("fetch failed")가 나던 것이 2026-10 텔레그램 전송 실패의 원인이었다.
+net.setDefaultAutoSelectFamilyAttemptTimeout(2000);
 
 function getArgument(argv, name) {
   const prefix = `${name}=`;
