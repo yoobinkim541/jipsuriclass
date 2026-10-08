@@ -2,12 +2,6 @@
   "buildCommand": "astro build",
   "framework": "astro",
   "outputDirectory": "dist",
-  "crons": [
-    {
-      "path": "/api/notify-inquiries",
-      "schedule": "0 0 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/assets/plumbing-hero-pipes.webp",
